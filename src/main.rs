@@ -4,6 +4,8 @@ pub mod paths;
 pub mod state;
 pub mod view;
 pub mod word;
+pub mod designed_level;
+pub mod input;
 use bevy::{log::LogPlugin, window::PrimaryWindow};
 
 pub use crate::prelude::*;
@@ -204,8 +206,10 @@ pub mod prelude {
 
     pub use crate::character::*;
     pub use crate::constants::*;
+    pub use crate::designed_level::*;
     pub use crate::state::*;
     pub use crate::view::*;
+    pub use crate::input::*;
     pub use crate::word::*;
     pub use std::array;
 
@@ -233,4 +237,5 @@ pub mod prelude {
 
         Some(Grid::from_inner(arr))
     }
+
 }

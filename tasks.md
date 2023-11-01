@@ -1,0 +1,8 @@
+- Hide tiles which are not longer needed
+- Animations for tiles
+- Animations for Found words
+- Dynamic resolution
+- Host on the web
+- Level Generator
+- Smaller tile hitbox
+- Better history
