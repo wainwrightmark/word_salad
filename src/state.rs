@@ -31,6 +31,7 @@ impl TrackableResource for CurrentLevel {
 #[derive(Debug, Clone, Resource, Default, Serialize, Deserialize)]
 pub struct FoundWordsState {
     pub found: HashSet<CharsArray>,
+    pub unneeded_tiles: GridSet
 }
 
 impl TrackableResource for FoundWordsState {
@@ -44,7 +45,7 @@ impl Default for CurrentLevel {
 }
 
 fn track_found_words(
-    chosen: Res<ChosenState>,
+    mut chosen: ResMut<ChosenState>,
     level: Res<CurrentLevel>,
     mut found_words: ResMut<FoundWordsState>,
 ) {
@@ -55,6 +56,12 @@ fn track_found_words(
         if level.level().words_set.contains(&chars) {
             if !found_words.found.contains(&chars) {
                 found_words.found.insert(chars);
+
+                found_words.unneeded_tiles = level.level().calculate_unneeded_tiles(&found_words.found);
+
+                if chosen.0.iter().any(|x| found_words.unneeded_tiles.get_bit(x)){
+                    *chosen = ChosenState::default();
+                }
             }
         }
     }

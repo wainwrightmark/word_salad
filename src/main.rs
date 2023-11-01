@@ -89,6 +89,7 @@ fn handle_mouse_input(
     mut chosen_state: ResMut<ChosenState>,
     current_level: Res<CurrentLevel>,
     mut input_state: Local<InputState>,
+    found_words: Res<FoundWordsState>
 ) {
     if mouse_input.just_released(MouseButton::Left) {
         if let Some(tile) = try_get_cursor_tile(q_windows) {
@@ -100,12 +101,12 @@ fn handle_mouse_input(
         let Some(tile) = try_get_cursor_tile(q_windows) else {
             return;
         };
-        input_state.handle_input_start(&mut chosen_state, tile, &current_level.level().grid)
+        input_state.handle_input_start(&mut chosen_state, tile, &current_level.level().grid, &found_words)
     } else if mouse_input.pressed(MouseButton::Left) {
         let Some(tile) = try_get_cursor_tile(q_windows) else {
             return;
         };
-        input_state.handle_input_move(&mut chosen_state, tile,  &current_level.level().grid)
+        input_state.handle_input_move(&mut chosen_state, tile,  &current_level.level().grid, &found_words)
     }
 }
 
@@ -126,6 +127,7 @@ fn handle_touch_input(
     mut chosen_state: ResMut<ChosenState>,
     current_level: Res<CurrentLevel>,
     mut input_state: Local<InputState>,
+    found_words: Res<FoundWordsState>
 ) {
     for ev in touch_events.into_iter() {
         match ev.phase {
@@ -133,13 +135,13 @@ fn handle_touch_input(
                 let Some(tile) = try_get_tile(ev.position, &q_camera) else {
                     continue;
                 };
-                input_state.handle_input_start(&mut chosen_state, tile, &current_level.level().grid);
+                input_state.handle_input_start(&mut chosen_state, tile, &current_level.level().grid, &found_words);
             }
             bevy::input::touch::TouchPhase::Moved => {
                 let Some(tile) = try_get_tile(ev.position, &q_camera) else {
                     continue;
                 };
-                input_state.handle_input_move(&mut chosen_state, tile, &current_level.level().grid);
+                input_state.handle_input_move(&mut chosen_state, tile, &current_level.level().grid, &found_words);
             }
             bevy::input::touch::TouchPhase::Ended => {
                 if let Some(tile) = try_get_tile(ev.position, &q_camera) {

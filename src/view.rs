@@ -198,13 +198,17 @@ impl MavericNode for GridTiles {
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
                 for (tile, character) in context.1.level() .grid.enumerate() {
-                    let selected = context.0.0.last() == Some(&tile); //TODO do something different
+                    let selected = context.0.0.last() == Some(&tile);
+
+                    let needed = !context.2.unneeded_tiles.get_bit(&tile);
+
                     commands.add_child(
                         tile.inner() as u32,
                         GridTile {
                             tile,
                             character: *character,
                             selected,
+                            needed
                         },
                         &(),
                     );
@@ -218,6 +222,7 @@ pub struct GridTile {
     pub tile: Tile,
     pub character: Character,
     pub selected: bool,
+    pub needed: bool
 }
 
 maveric::define_lens!(StrokeColorLens, Stroke, Color, color);
@@ -228,11 +233,17 @@ impl MavericNode for GridTile {
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands.insert_with_node(|node| {
+
+            let visibility = if node.needed { Visibility::Visible} else { Visibility::Hidden};
+
             (
                 TransformBundle::from_transform(Transform::from_translation(
                     (node.tile.get_north_west_vertex().get_center(SCALE) + GRID_TOP_LEFT).extend(0.0),
                 )),
-                VisibilityBundle::default(),
+                VisibilityBundle{
+                    visibility,
+                    ..Default::default()
+                },
             )
         });
     }
