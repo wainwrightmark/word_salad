@@ -1,0 +1,41 @@
+<html>
+  <head>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta charset="utf-8" />
+    <title>Word Salad</title>
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Word Salad />
+
+    <meta property="og:site_name" content="Word Salad" />
+    <meta
+      property="og:description"
+      content="A new classic word puzzle"
+    />
+    <meta
+      name="description"
+      content="A new classic word puzzle"
+    />
+
+    <link data-trunk rel="inline" href="styles.css" />
+
+
+  </head>
+
+  <body>
+
+    <link
+      rel="rust"
+      data-trunk
+      href="Cargo.toml"
+      data-bin="word_salad"
+      data-wasm-opt="z"
+    />
+
+    <canvas id="game"> </canvas>
+  </body>
+</html>
