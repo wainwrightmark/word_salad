@@ -54,6 +54,7 @@ fn main() {
     app.add_plugins(StatePlugin);
 
     app.register_transition::<FillColorLens>();
+    app.register_transition::<TransformRotationYLens>();
 
     app.add_systems(Update, handle_mouse_input);
     app.add_systems(Update, handle_touch_input);
