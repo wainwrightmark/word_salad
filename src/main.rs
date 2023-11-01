@@ -4,7 +4,7 @@ pub mod paths;
 pub mod state;
 pub mod view;
 pub mod word;
-use bevy::{input::mouse::MouseButtonInput, log::LogPlugin, window::PrimaryWindow};
+use bevy::{log::LogPlugin, window::PrimaryWindow};
 
 pub use crate::prelude::*;
 fn main() {
@@ -82,53 +82,80 @@ fn adjust_cursor_position(p: Vec2) -> Vec2 {
 }
 
 fn handle_mouse_input(
-    mut mouse_events: EventReader<MouseButtonInput>,
-
+    mouse_input: Res<Input<MouseButton>>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
-    mut state: ResMut<ChosenState>,
-    level: Res<CurrentLevel>,
+    mut chosen_state: ResMut<ChosenState>,
+    mut input_state: Local<InputState>,
 ) {
-    for ev in mouse_events.into_iter() {
-        if !ev.state.is_pressed() {
-            continue;
+    if mouse_input.just_released(MouseButton::Left) {
+        if let Some(tile) = try_get_cursor_tile(q_windows) {
+            input_state.handle_input_end(&mut chosen_state, tile);
+        } else {
+            input_state.handle_input_end_no_location();
         }
-        if ev.button != MouseButton::Left {
-            continue;
-        }
+    } else if mouse_input.just_pressed(MouseButton::Left) {
+        let Some(tile) = try_get_cursor_tile(q_windows) else {
+            return;
+        };
+        input_state.handle_input_start(&mut chosen_state, tile)
+    } else if mouse_input.pressed(MouseButton::Left) {
+        let Some(tile) = try_get_cursor_tile(q_windows) else {
+            return;
+        };
+        input_state.handle_input_move(&mut chosen_state, tile)
+    }
+}
 
-        for window in q_windows.iter() {
-            let Some(cursor_position) = window.cursor_position() else {
-                continue;
-            };
-            let cursor_position = adjust_cursor_position(cursor_position);
-            let tile = pick_tile(cursor_position);
+fn try_get_cursor_tile(q_windows: Query<&Window, With<PrimaryWindow>>) -> Option<Tile> {
+    let window = q_windows.iter().next()?;
 
-            if let Some(tile) = Tile::try_from_dynamic(tile) {
-                state.on_click(tile, &level);
+    let cursor_position = window.cursor_position()?;
+    let cursor_position = adjust_cursor_position(cursor_position);
+    let tile = pick_tile(cursor_position);
+
+    Tile::try_from_dynamic(tile)
+}
+
+fn handle_touch_input(
+    mut touch_events: EventReader<TouchInput>,
+
+    q_camera: Query<(&Camera, &GlobalTransform)>,
+    mut chosen_state: ResMut<ChosenState>,
+    mut input_state: Local<InputState>,
+) {
+    for ev in touch_events.into_iter() {
+        match ev.phase {
+            bevy::input::touch::TouchPhase::Started => {
+                let Some(tile) = try_get_tile(ev.position, &q_camera) else {
+                    continue;
+                };
+                input_state.handle_input_start(&mut chosen_state, tile);
+            }
+            bevy::input::touch::TouchPhase::Moved => {
+                let Some(tile) = try_get_tile(ev.position, &q_camera) else {
+                    continue;
+                };
+                input_state.handle_input_move(&mut chosen_state, tile);
+            }
+            bevy::input::touch::TouchPhase::Ended => {
+                if let Some(tile) = try_get_tile(ev.position, &q_camera) {
+                    input_state.handle_input_end(&mut chosen_state, tile);
+                } else {
+                    input_state.handle_input_end_no_location();
+                }
+            }
+            bevy::input::touch::TouchPhase::Canceled => {
+                input_state.handle_input_end_no_location();
             }
         }
     }
 }
 
-fn handle_touch_input(mut touch_events: EventReader<TouchInput>,
-
-    q_camera: Query<(&Camera, &GlobalTransform)>,
-    mut state: ResMut<ChosenState>,
-    level: Res<CurrentLevel>,
-) {
-    for ev in touch_events.into_iter() {
-        match ev.phase {
-            bevy::input::touch::TouchPhase::Started => {
-                let Some(position) = convert_screen_to_world_position(ev.position, &q_camera) else {continue;};
-                let tile = pick_tile(position);
-
-                if let Some(tile) = Tile::try_from_dynamic(tile) {
-                    state.on_click(tile, &level);
-                }
-            }
-            _ => {}
-        }
-    }
+fn try_get_tile(position: Vec2, q_camera: &Query<(&Camera, &GlobalTransform)>) -> Option<Tile> {
+    let position = convert_screen_to_world_position(position, q_camera)?;
+    let tile = pick_tile(position);
+    let tile = Tile::try_from_dynamic(tile)?;
+    Some(tile)
 }
 
 fn convert_screen_to_world_position(
@@ -140,7 +167,7 @@ fn convert_screen_to_world_position(
 }
 
 pub fn pick_tile(position: Vec2) -> DynamicTile {
-    let position = position - GRID_TOP_LEFT;// - (TILE_SIZE * 0.5);
+    let position = position - GRID_TOP_LEFT; // - (TILE_SIZE * 0.5);
 
     let dv = DynamicVertex::from_center(&position, SCALE);
     let dt = dv.get_tile(&Corner::SouthEast);

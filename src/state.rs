@@ -1,4 +1,4 @@
-use bevy::utils::{HashMap, HashSet};
+use bevy::utils::HashSet;
 use bevy_utils::{CanInitTrackedResource, TrackableResource};
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
@@ -20,8 +20,6 @@ impl Plugin for StatePlugin {
 
 #[derive(Debug, Clone, Resource, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct ChosenState(pub Solution);
-
-
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DesignedLevel {
@@ -113,28 +111,82 @@ impl DesignedLevel {
     }
 }
 
-impl ChosenState {
-    pub fn on_click(&mut self, location: Tile, level: &CurrentLevel) {
-        //todo better interactions
+#[derive(Debug, Default)]
+pub struct InputState {
+    last_tile: Option<Tile>,
+    delete_on_end: bool,
+}
 
-        if let Some(last) = self.0.last() {
-            if let Some(index) = self.0.iter().position(|x| *x == location) {
+impl InputState {
+    pub fn handle_input_start(&mut self, chosen_state: &mut ResMut<ChosenState>, location: Tile) {
+        if self.last_tile == Some(location) {
+            self.delete_on_end = true;
+            return;
+        }
+        self.delete_on_end = false;
+        self.last_tile = Some(location);
+
+        if let Some(last) = chosen_state.0.last() {
+            if let Some(index) = chosen_state.0.iter().position(|x| *x == location) {
                 // element is already present
-                if index + 1 == self.0.len() {
-                    self.0.clear();
+                if index + 1 == chosen_state.0.len() {
+                    self.delete_on_end = true;
+                    //chosen_state.0.clear(); do nothing
                 } else {
-                    self.0.truncate(index + 1);
+                    chosen_state.0.truncate(index + 1);
                 }
             } else if last.is_adjacent_to(&location) {
                 //element is not already present
-                self.0.push(location);
+                chosen_state.0.push(location);
             }
         } else {
             //array is empty
-            self.0.push(location);
+            chosen_state.0.push(location);
         }
     }
+
+    pub fn handle_input_move(&mut self, chosen_state: &mut ResMut<ChosenState>, location: Tile) {
+        if self.last_tile == Some(location) {
+            return;
+        }
+        self.delete_on_end = false;
+        self.last_tile = Some(location);
+
+        if let Some(last) = chosen_state.0.last() {
+            if let Some(index) = chosen_state.0.iter().position(|x| *x == location) {
+                // element is already present
+                if index + 1 == chosen_state.0.len() {
+                    //chosen_state.0.clear(); do nothing
+                } else {
+                    chosen_state.0.truncate(index + 1);
+                }
+            } else if last.is_adjacent_to(&location) {
+                //element is not already present
+                chosen_state.0.push(location);
+            }
+        }
+    }
+
+    pub fn handle_input_end(&mut self, chosen_state: &mut ResMut<ChosenState>, location: Tile) {
+        if self.delete_on_end && self.last_tile == Some(location) {
+            chosen_state.0.clear();
+        }
+        self.last_tile = None;
+        self.delete_on_end = false;
+    }
+
+    pub fn handle_input_end_no_location(&mut self){
+        self.last_tile = None;
+        self.delete_on_end = false;
+    }
 }
+
+// impl ChosenState {
+//     pub fn on_input(&mut self, location: Tile) {
+//         //todo better interactions
+
+//     }
+// }
 
 fn track_level_change(
     level: Res<CurrentLevel>,
@@ -162,8 +214,8 @@ fn track_found_words(
         let grid = level.level().grid;
         let chars: CharsArray = chosen.0.iter().map(|t| grid[*t]).collect();
 
-        if level.level().words_set.contains(&chars){
-            if !found_words.found.contains(&chars){
+        if level.level().words_set.contains(&chars) {
+            if !found_words.found.contains(&chars) {
                 found_words.found.insert(chars);
             }
         }
