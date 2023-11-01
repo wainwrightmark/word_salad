@@ -53,9 +53,19 @@ fn main() {
 
     app.register_transition::<FillColorLens>();
 
-    app.add_systems(Update, on_click);
+    app.add_systems(Update, handle_mouse_input);
+    app.add_systems(Update, handle_touch_input);
     //app.add_systems(Update, draw_shape);
     app.add_systems(Update, button_system);
+
+    #[cfg(feature = "steam")]
+    {
+        app.insert_resource(bevy_pkv::PkvStore::new_in_dir("saves"));
+    }
+    #[cfg(not(feature = "steam"))]
+    {
+        app.insert_resource(bevy_pkv::PkvStore::new("bleppo", "word_salad"));
+    }
 
     app.run();
 }
@@ -71,13 +81,14 @@ fn adjust_cursor_position(p: Vec2) -> Vec2 {
     }
 }
 
-fn on_click(
-    mut events: EventReader<MouseButtonInput>,
+fn handle_mouse_input(
+    mut mouse_events: EventReader<MouseButtonInput>,
+
     q_windows: Query<&Window, With<PrimaryWindow>>,
     mut state: ResMut<ChosenState>,
     level: Res<CurrentLevel>,
 ) {
-    for ev in events.into_iter() {
+    for ev in mouse_events.into_iter() {
         if !ev.state.is_pressed() {
             continue;
         }
@@ -99,8 +110,37 @@ fn on_click(
     }
 }
 
+fn handle_touch_input(mut touch_events: EventReader<TouchInput>,
+
+    q_camera: Query<(&Camera, &GlobalTransform)>,
+    mut state: ResMut<ChosenState>,
+    level: Res<CurrentLevel>,
+) {
+    for ev in touch_events.into_iter() {
+        match ev.phase {
+            bevy::input::touch::TouchPhase::Started => {
+                let Some(position) = convert_screen_to_world_position(ev.position, &q_camera) else {continue;};
+                let tile = pick_tile(position);
+
+                if let Some(tile) = Tile::try_from_dynamic(tile) {
+                    state.on_click(tile, &level);
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+fn convert_screen_to_world_position(
+    screen_pos: Vec2,
+    q_camera: &Query<(&Camera, &GlobalTransform)>,
+) -> Option<Vec2> {
+    let (camera, camera_transform) = q_camera.single();
+    camera.viewport_to_world_2d(camera_transform, screen_pos)
+}
+
 pub fn pick_tile(position: Vec2) -> DynamicTile {
-    let position = position - TOP_LEFT - (TILE_SIZE * 0.5);
+    let position = position - GRID_TOP_LEFT;// - (TILE_SIZE * 0.5);
 
     let dv = DynamicVertex::from_center(&position, SCALE);
     let dt = dv.get_tile(&Corner::SouthEast);
@@ -120,7 +160,7 @@ fn button_system(
                     current_level.set_changed();
                 }
                 ButtonMarker::NextLevel => {
-                    *current_level = CurrentLevel::get_level(current_level.level_index + 1)
+                    current_level.level_index += 1;
                 }
             }
         }

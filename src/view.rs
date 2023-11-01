@@ -70,6 +70,8 @@ impl MavericNode for UI {
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands.ignore_node().ignore_context().insert(NodeBundle {
             style: Style {
+                top: Val::Px(UI_TOP_LEFT.y),
+                left: Val::Px(UI_TOP_LEFT.x),
                 display: Display::Flex,
                 flex_direction: FlexDirection::Column,
                 ..Default::default()
@@ -82,7 +84,21 @@ impl MavericNode for UI {
         commands
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
+
+
+
                 commands.add_child("buttons", ButtonsNode, &context.3);
+
+                let title = context.1.level().name.clone();
+
+                commands.add_child("title", TextNode {
+                    text: title,
+                    font_size: 32.0,
+                    color: BUTTON_TEXT_COLOR,
+                    font: FONT_PATH,
+                    alignment: TextAlignment::Center,
+                    linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                }, &context.3);
 
                 commands.add_child("words", WordsNode, context);
             });
@@ -171,7 +187,7 @@ impl MavericNode for GridTiles {
         commands
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
-                for (tile, character) in context.1.grid.enumerate() {
+                for (tile, character) in context.1.level() .grid.enumerate() {
                     let selected = context.0.0.last() == Some(&tile); //TODO do something different
                     commands.add_child(
                         tile.inner() as u32,
@@ -204,7 +220,7 @@ impl MavericNode for GridTile {
         commands.insert_with_node(|node| {
             (
                 TransformBundle::from_transform(Transform::from_translation(
-                    (node.tile.get_north_west_vertex().get_center(SCALE) + TOP_LEFT).extend(0.0),
+                    (node.tile.get_north_west_vertex().get_center(SCALE) + GRID_TOP_LEFT).extend(0.0),
                 )),
                 VisibilityBundle::default(),
             )
@@ -335,8 +351,8 @@ impl MavericNode for WordsNode {
         commands
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
-                for (index, word) in context.1.words.iter().enumerate() {
-                    let complete = context.2.found.get(&word.characters) == Some(&true);
+                for (index, word) in context.1.level().words.iter().enumerate() {
+                    let complete = context.2.found.contains(&word.characters);
                     commands.add_child(
                         index as u32,
                         WordNode {
@@ -361,7 +377,7 @@ impl MavericNode for WordLine {
             let mut builder = PathBuilder::new();
 
             for (index, tile) in context.0.iter().enumerate() {
-                let location = tile.get_center(SCALE) + TOP_LEFT;
+                let location = tile.get_center(SCALE) + GRID_TOP_LEFT - (TILE_SIZE * 0.5);
                 if index == 0 {
                     builder.move_to(location);
                 } else {

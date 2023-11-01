@@ -1,7 +1,6 @@
-use crate::prelude::*;
+use serde::{Deserialize, Serialize};
 
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum Character {
     Blank,
     A,

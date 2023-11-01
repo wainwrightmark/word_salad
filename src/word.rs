@@ -1,11 +1,12 @@
 use arrayvec::ArrayVec;
+use serde::{Serialize, Deserialize};
 
 use crate::prelude::*;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Word {
     pub characters: CharsArray,
-    pub text: &'static str,
+    pub text: String,
 }
 
 impl Word {
@@ -17,7 +18,7 @@ impl Word {
             characters.try_push(character).map_err(|_| ())?;
         }
 
-        Ok(Self { characters, text })
+        Ok(Self { characters, text: text.to_string() })
     }
 
     pub fn find_solution(&self, grid: &Grid) -> Option<Solution> {
