@@ -45,16 +45,27 @@ impl Default for CurrentLevel {
 }
 
 fn track_found_words(
+    mut commands: Commands,
     mut chosen: ResMut<ChosenState>,
     level: Res<CurrentLevel>,
     mut found_words: ResMut<FoundWordsState>,
+    asset_server: Res<AssetServer>,
 ) {
     if chosen.is_changed() {
         let grid = level.level().grid;
         let chars: CharsArray = chosen.0.iter().map(|t| grid[*t]).collect();
 
-        if level.level().words_set.contains(&chars) {
-            if !found_words.found.contains(&chars) {
+        if let Some(word) = level.level().words_map.get(&chars) {
+
+            let is_first_time = !found_words.found.contains(&chars);
+
+            if let Some(last_tile) = chosen.0.last(){
+                crate::animated_solutions::animate_solution(&mut commands, *last_tile, word, is_first_time, &asset_server);
+            }
+
+
+
+            if is_first_time {
                 found_words.found.insert(chars);
 
                 found_words.unneeded_tiles = level.level().calculate_unneeded_tiles(&found_words.found);
@@ -63,6 +74,8 @@ fn track_found_words(
                     *chosen = ChosenState::default();
                 }
             }
+
+
         }
     }
 }

@@ -6,6 +6,8 @@ pub mod view;
 pub mod word;
 pub mod designed_level;
 pub mod input;
+pub mod animated_solutions;
+use animated_solutions::AnimatedSolutionPlugin;
 use bevy::{log::LogPlugin, window::PrimaryWindow};
 
 pub use crate::prelude::*;
@@ -52,6 +54,7 @@ fn main() {
 
     app.register_maveric::<ViewRoot>();
     app.add_plugins(StatePlugin);
+    app.add_plugins(AnimatedSolutionPlugin);
 
     app.register_transition::<FillColorLens>();
     app.register_transition::<TransformRotationYLens>();
