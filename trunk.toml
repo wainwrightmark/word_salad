@@ -4,3 +4,4 @@ dist = "dist"
 
 [serve]
 port = 8080
+address = "192.168.68.124"

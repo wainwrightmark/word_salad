@@ -1,0 +1,7 @@
+[build]
+publish = "dist"
+command = "rustup target add wasm32-unknown-unknown; rustup update stable; cargo install trunk --locked; trunk build index.html --release"
+
+
+[context.production]
+environment = { NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE = "true" }
