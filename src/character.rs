@@ -31,6 +31,42 @@ pub enum Character {
     Z,
 }
 
+impl Character {
+    pub fn as_char(&self)-> char{
+        match self{
+            Character::Blank =>  ' ',
+            Character::A => 'A',
+            Character::B => 'B',
+            Character::C => 'C',
+            Character::D => 'D',
+            Character::E => 'E',
+            Character::F => 'F',
+            Character::G => 'G',
+            Character::H => 'H',
+            Character::I => 'I',
+            Character::J => 'J',
+            Character::K => 'K',
+            Character::L => 'L',
+            Character::M => 'M',
+            Character::N => 'N',
+            Character::O => 'O',
+            Character::P => 'P',
+            Character::Q => 'Q',
+            Character::R => 'R',
+            Character::S => 'S',
+            Character::T => 'T',
+            Character::U => 'U',
+            Character::V => 'V',
+            Character::W => 'W',
+            Character::X => 'X',
+            Character::Y => 'Y',
+            Character::Z => 'Z',
+        }
+    }
+}
+
+
+
 impl TryFrom<char> for Character {
     type Error = ();
 

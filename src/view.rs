@@ -84,8 +84,18 @@ impl MavericNode for UI {
         commands
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
+                let level = context.1.level();
+                let current_string: String = context.0.0.iter().map(|tile| level.grid[*tile]).map(|c|c.as_char()).collect();
+                let current_string: String = format!("{current_string:^24}");
 
-
+                commands.add_child("current", TextNode {
+                    text: current_string,
+                    font_size: 32.0,
+                    color: BUTTON_TEXT_COLOR,
+                    font: FONT_PATH,
+                    alignment: TextAlignment::Center,
+                    linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                }, &context.3);
 
                 commands.add_child("buttons", ButtonsNode, &context.3);
 
