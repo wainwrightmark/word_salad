@@ -14,7 +14,7 @@ impl Plugin for StatePlugin {
         app.init_tracked_resource::<FoundWordsState>();
 
         app.add_systems(Update, track_found_words);
-        app.add_systems(Update, track_level_change);
+        // app.add_systems(Update, track_level_change);
     }
 }
 
@@ -188,22 +188,22 @@ impl InputState {
 //     }
 // }
 
-fn track_level_change(
-    level: Res<CurrentLevel>,
-    mut chosen: ResMut<ChosenState>,
-    mut found_words: ResMut<FoundWordsState>,
-) {
-    if level.is_changed() {
-        chosen.0.clear();
-        found_words.found.clear();
-        // found_words.found = level
-        //     .level()
-        //     .words
-        //     .iter()
-        //     .map(|w| (w.characters.clone(), false))
-        //     .collect();
-    }
-}
+// fn track_level_change(
+//     level: Res<CurrentLevel>,
+//     mut chosen: ResMut<ChosenState>,
+//     mut found_words: ResMut<FoundWordsState>,
+// ) {
+//     if level.is_changed() {
+//         chosen.0.clear();
+//         found_words.found.clear();
+//         // found_words.found = level
+//         //     .level()
+//         //     .words
+//         //     .iter()
+//         //     .map(|w| (w.characters.clone(), false))
+//         //     .collect();
+//     }
+// }
 
 fn track_found_words(
     chosen: Res<ChosenState>,

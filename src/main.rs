@@ -177,17 +177,21 @@ pub fn pick_tile(position: Vec2) -> DynamicTile {
 fn button_system(
     mut interaction_query: Query<(&Interaction, &ButtonMarker), Changed<Interaction>>,
     mut current_level: ResMut<CurrentLevel>,
-    // mut found_words: ResMut<FoundWordsState>,
-    // mut chosen_state: ResMut<ChosenState>,
+    mut found_words: ResMut<FoundWordsState>,
+    mut chosen_state: ResMut<ChosenState>,
 ) {
     for (interaction, button_marker) in &mut interaction_query {
         if *interaction == Interaction::Pressed {
             match button_marker {
                 ButtonMarker::Reset => {
                     current_level.set_changed();
+                    *found_words = FoundWordsState::default();
+                    *chosen_state = ChosenState::default();
                 }
                 ButtonMarker::NextLevel => {
                     current_level.level_index += 1;
+                    *found_words = FoundWordsState::default();
+                    *chosen_state = ChosenState::default();
                 }
             }
         }
