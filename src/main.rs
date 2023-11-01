@@ -85,6 +85,7 @@ fn handle_mouse_input(
     mouse_input: Res<Input<MouseButton>>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
     mut chosen_state: ResMut<ChosenState>,
+    current_level: Res<CurrentLevel>,
     mut input_state: Local<InputState>,
 ) {
     if mouse_input.just_released(MouseButton::Left) {
@@ -97,12 +98,12 @@ fn handle_mouse_input(
         let Some(tile) = try_get_cursor_tile(q_windows) else {
             return;
         };
-        input_state.handle_input_start(&mut chosen_state, tile)
+        input_state.handle_input_start(&mut chosen_state, tile, &current_level.level().grid)
     } else if mouse_input.pressed(MouseButton::Left) {
         let Some(tile) = try_get_cursor_tile(q_windows) else {
             return;
         };
-        input_state.handle_input_move(&mut chosen_state, tile)
+        input_state.handle_input_move(&mut chosen_state, tile,  &current_level.level().grid)
     }
 }
 
@@ -121,6 +122,7 @@ fn handle_touch_input(
 
     q_camera: Query<(&Camera, &GlobalTransform)>,
     mut chosen_state: ResMut<ChosenState>,
+    current_level: Res<CurrentLevel>,
     mut input_state: Local<InputState>,
 ) {
     for ev in touch_events.into_iter() {
@@ -129,13 +131,13 @@ fn handle_touch_input(
                 let Some(tile) = try_get_tile(ev.position, &q_camera) else {
                     continue;
                 };
-                input_state.handle_input_start(&mut chosen_state, tile);
+                input_state.handle_input_start(&mut chosen_state, tile, &current_level.level().grid);
             }
             bevy::input::touch::TouchPhase::Moved => {
                 let Some(tile) = try_get_tile(ev.position, &q_camera) else {
                     continue;
                 };
-                input_state.handle_input_move(&mut chosen_state, tile);
+                input_state.handle_input_move(&mut chosen_state, tile, &current_level.level().grid);
             }
             bevy::input::touch::TouchPhase::Ended => {
                 if let Some(tile) = try_get_tile(ev.position, &q_camera) {

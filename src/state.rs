@@ -118,7 +118,12 @@ pub struct InputState {
 }
 
 impl InputState {
-    pub fn handle_input_start(&mut self, chosen_state: &mut ResMut<ChosenState>, location: Tile) {
+    pub fn handle_input_start(
+        &mut self,
+        chosen_state: &mut ResMut<ChosenState>,
+        location: Tile,
+        grid: &Grid,
+    ) {
         if self.last_tile == Some(location) {
             self.delete_on_end = true;
             return;
@@ -137,15 +142,19 @@ impl InputState {
                 }
             } else if last.is_adjacent_to(&location) {
                 //element is not already present
-                chosen_state.0.push(location);
+                if !grid[location].is_blank() {
+                    chosen_state.0.push(location);
+                }
             }
         } else {
             //array is empty
-            chosen_state.0.push(location);
+            if !grid[location].is_blank() {
+                chosen_state.0.push(location);
+            }
         }
     }
 
-    pub fn handle_input_move(&mut self, chosen_state: &mut ResMut<ChosenState>, location: Tile) {
+    pub fn handle_input_move(&mut self, chosen_state: &mut ResMut<ChosenState>, location: Tile, grid: &Grid,) {
         if self.last_tile == Some(location) {
             return;
         }
@@ -162,7 +171,9 @@ impl InputState {
                 }
             } else if last.is_adjacent_to(&location) {
                 //element is not already present
-                chosen_state.0.push(location);
+                if !grid[location].is_blank() {
+                    chosen_state.0.push(location);
+                }
             }
         }
     }
@@ -175,35 +186,11 @@ impl InputState {
         self.delete_on_end = false;
     }
 
-    pub fn handle_input_end_no_location(&mut self){
+    pub fn handle_input_end_no_location(&mut self) {
         self.last_tile = None;
         self.delete_on_end = false;
     }
 }
-
-// impl ChosenState {
-//     pub fn on_input(&mut self, location: Tile) {
-//         //todo better interactions
-
-//     }
-// }
-
-// fn track_level_change(
-//     level: Res<CurrentLevel>,
-//     mut chosen: ResMut<ChosenState>,
-//     mut found_words: ResMut<FoundWordsState>,
-// ) {
-//     if level.is_changed() {
-//         chosen.0.clear();
-//         found_words.found.clear();
-//         // found_words.found = level
-//         //     .level()
-//         //     .words
-//         //     .iter()
-//         //     .map(|w| (w.characters.clone(), false))
-//         //     .collect();
-//     }
-// }
 
 fn track_found_words(
     chosen: Res<ChosenState>,

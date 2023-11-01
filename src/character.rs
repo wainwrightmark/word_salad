@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
+use strum::{EnumCount, EnumIter, EnumIs};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, EnumCount, EnumIter, EnumIs)]
 pub enum Character {
     Blank,
     A,
