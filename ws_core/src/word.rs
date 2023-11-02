@@ -15,7 +15,9 @@ impl Word {
 
         for c in text.chars() {
             let character = Character::try_from(c)?;
-            characters.try_push(character).map_err(|_| ())?;
+            if !character.is_blank(){
+                characters.try_push(character).map_err(|_| ())?;
+            }
         }
 
         Ok(Self {

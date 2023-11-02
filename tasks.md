@@ -6,3 +6,4 @@
 - Level Generator
 - Smaller tile hitbox
 - Better history
+- Hint button
