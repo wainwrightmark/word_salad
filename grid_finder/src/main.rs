@@ -1,23 +1,34 @@
 use itertools::Itertools;
-use std::{collections::BTreeMap, time::Instant};
+use log::{info, Log};
+use simplelog::*;
+use std::collections::BTreeMap;
 use ws_core::prelude::*;
 
 fn main() {
-    println!("Hello, world!");
+    CombinedLogger::init(vec![
+        TermLogger::new(
+            LevelFilter::Info,
+            Config::default(),
+            TerminalMode::Mixed,
+            ColorChoice::Auto,
+        ),
+        //WriteLogger::new(LevelFilter::Info, Config::default(), File::create("my_rust_binary.log").unwrap()),
+    ])
+    .unwrap();
+
+    info!("Starting up");
 
     let file = include_str!("animals.txt");
     let words = make_words_from_file(file);
 
-    create_grid_for_most_words(words,100);
+    create_grid_for_most_words(words, 100);
 }
 
-fn make_words_from_file(text: &'static str)-> Vec<FinderWord>{
+fn make_words_from_file(text: &'static str) -> Vec<FinderWord> {
     text.lines().map(|x| FinderWord::new(x)).collect_vec()
 }
 
 fn create_grid_for_most_words(words: Vec<FinderWord>, max_tries: usize) {
-    let now = Instant::now();
-
     let mut possible_combinations: Vec<Vec<FinderWord>> = Default::default();
 
     get_combinations(
@@ -26,22 +37,22 @@ fn create_grid_for_most_words(words: Vec<FinderWord>, max_tries: usize) {
         Multiplicities::default(),
         words,
         16,
-        &now,
     );
+    info!("");
+    info!("{c} possible combinations found",c = possible_combinations.len());
+    info!("");
 
-    println!(
-        "\n{elapsed:?}: {c} possible combinations found\n",
-        elapsed = now.elapsed(),
-        c = possible_combinations.len()
-    );
-
-    let groups = possible_combinations.into_iter().into_group_map_by(|x|x.len());
-    let ordered_groups = groups.into_iter().sorted_unstable_by(|a, b| b.0.cmp(&a.0)).collect_vec();
+    let groups = possible_combinations
+        .into_iter()
+        .into_group_map_by(|x| x.len());
+    let ordered_groups = groups
+        .into_iter()
+        .sorted_unstable_by(|a, b| b.0.cmp(&a.0))
+        .collect_vec();
 
     for (size, group) in ordered_groups {
-        println!(
-            "{elapsed:?}: {len} possible combinations of size {size} found",
-            elapsed = now.elapsed(),
+        info!(
+            "{len} possible combinations of size {size} found",
             len = group.len()
         )
     }
@@ -53,7 +64,6 @@ fn get_combinations(
     multiplicities: Multiplicities,
     possible_words: Vec<FinderWord>,
     max_size: u8,
-    time_started: &Instant,
 ) {
     let mut new_possible_words = possible_words.clone();
 
@@ -73,14 +83,12 @@ fn get_combinations(
                 new_multiplicities,
                 new_possible_words.clone(),
                 max_size,
-                &time_started,
             );
         }
 
         if must_words.len() == 0 {
-            println!(
-                "{elapsed:?}: '{word_text}' eliminated. {found} options found. {remaining} remain",
-                elapsed = time_started.elapsed(),
+            info!(
+                "'{word_text}' eliminated. {found} options found. {remaining} remain",
                 found = possible_combinations.len(),
                 remaining = new_possible_words.len()
             )
@@ -96,6 +104,12 @@ struct FinderWord {
     pub text: &'static str,
     pub array: CharsArray,
     pub counts: BTreeMap<Character, u8>,
+}
+
+impl std::fmt::Display for FinderWord {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.text)
+    }
 }
 
 impl FinderWord {
@@ -149,4 +163,46 @@ impl Multiplicities {
     }
 }
 
+#[cfg(test)]
+pub mod tests {
+    use super::*;
+    #[test]
+    pub fn test() {
+        let file = "monkey\ncow\nant\nantelope";
 
+        let words = make_words_from_file(file);
+
+        let mut possible_combinations: Vec<Vec<FinderWord>> = Default::default();
+
+        get_combinations(
+            &mut possible_combinations,
+            vec![],
+            Multiplicities::default(),
+            words,
+            16,
+        );
+
+        let expected = "[antelope]\n\
+        [antelope, ant]\n\
+        [antelope, ant, cow]\n\
+        [antelope, ant, cow, monkey]\n\
+        [antelope, ant, monkey]\n\
+        [antelope, cow]\n\
+        [antelope, cow, monkey]\n\
+        [antelope, monkey]\n\
+        [ant]\n\
+        [ant, cow]\n\
+        [ant, cow, monkey]\n\
+        [ant, monkey]\n\
+        [cow]\n\
+        [cow, monkey]\n\
+        [monkey]";
+
+        let actual = possible_combinations
+            .into_iter()
+            .map(|x| format!("[{}]", x.iter().join(", ")))
+            .join("\n");
+
+        assert_eq!(expected, actual)
+    }
+}
