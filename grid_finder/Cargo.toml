@@ -16,3 +16,5 @@ base64 = "0.21"
 geometrid = { version = "0.4", features = ["glam", "serde"] }
 log = "0.4.20"
 simplelog = "0.12.1"
+
+prime_bag = { git = 'https://github.com/wainwrightmark/prime-bag'}

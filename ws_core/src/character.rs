@@ -1,41 +1,72 @@
+use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 use serde::{Deserialize, Serialize};
-use strum::{EnumCount, EnumIter, EnumIs};
+use strum::{EnumCount, EnumIs, EnumIter};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, EnumCount, EnumIter, EnumIs)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    Serialize,
+    Deserialize,
+    EnumCount,
+    EnumIter,
+    EnumIs,
+    FromPrimitive
+)]
+#[repr(u8)]
+
 pub enum Character {
+    E = 0,
+    T = 1,
+    A = 2,
+    I = 3,
+    N = 4,
+    O = 5,
+    S = 6,
+    H = 7,
+    R = 8,
+    D = 9,
+    L = 10,
+    U = 11,
+    C = 12,
+    M = 13,
+    F = 14,
+    W = 15,
+    Y = 16,
+    G = 17,
+    P = 18,
+    B = 19,
+    V = 20,
+    K = 21,
+    Q = 22,
+    J = 23,
+    X = 24,
+    Z = 25,
     Blank,
-    A,
-    B,
-    C,
-    D,
-    E,
-    F,
-    G,
-    H,
-    I,
-    J,
-    K,
-    L,
-    M,
-    N,
-    O,
-    P,
-    Q,
-    R,
-    S,
-    T,
-    U,
-    V,
-    W,
-    X,
-    Y,
-    Z,
+}
+
+impl Into<usize> for Character {
+    fn into(self) -> usize {
+        self as usize
+    }
+}
+
+impl From<usize> for Character{
+    fn from(value: usize) -> Self {
+        FromPrimitive::from_usize(value).expect("Could not cast usize to character")
+    }
 }
 
 impl Character {
-    pub fn as_char(&self)-> char{
-        match self{
-            Character::Blank =>  ' ',
+    pub fn as_char(&self) -> char {
+        match self {
+            Character::Blank => ' ',
             Character::A => 'A',
             Character::B => 'B',
             Character::C => 'C',
@@ -65,8 +96,6 @@ impl Character {
         }
     }
 }
-
-
 
 impl TryFrom<char> for Character {
     type Error = ();

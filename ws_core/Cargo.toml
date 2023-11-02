@@ -20,7 +20,8 @@ serde_yaml = "0.9"
 serde_repr = "0.1"
 enumset = { version = "1", features = ["serde"] }
 arrayvec = { version = "0.7.4", features = ["serde"] }
-
+num-traits = "0.2"
+num-derive = "0.4"
 
 [dev-dependencies]
 insta = "1"
