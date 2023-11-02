@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use bevy::prelude::*;
 use maveric::transition::speed::calculate_speed;
-use crate::Tile;
+use ws_core::Tile;
 
 pub struct AnimatedSolutionPlugin;
 

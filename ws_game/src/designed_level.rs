@@ -99,7 +99,8 @@ impl CurrentLevel {
 
 #[cfg(test)]
 pub mod tests {
-    use crate::{CharsArray, DesignedLevel, GridSet, Tile, Word};
+    use crate::prelude::*;
+    use ws_core::Tile;
 
     #[test]
     pub fn test_calculate_needed_tiles() {

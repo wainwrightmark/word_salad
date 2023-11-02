@@ -1,6 +1,6 @@
 use maveric::transition::speed::ScalarSpeed;
 use std::time::Duration;
-
+use ws_core::Tile;
 use crate::{paths::get_path, prelude::*};
 
 pub struct ViewRoot;

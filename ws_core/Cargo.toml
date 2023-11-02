@@ -1,0 +1,27 @@
+[package]
+name = "ws_core"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rand = "0.8.5"
+itertools = "0.11"
+strum = { version = "0.25", features = ["derive"] }
+chrono = { version = "0.4", features = ["serde", "wasmbind"] }
+serde = { version = "1", features = ["derive", "rc"] }
+anyhow = "1"
+base64 = "0.21"
+geometrid = { version = "0.4", features = ["glam", "serde"] }
+serde_with = "3"
+lazy_static = "1.4"
+serde_yaml = "0.9"
+serde_repr = "0.1"
+enumset = { version = "1", features = ["serde"] }
+arrayvec = { version = "0.7.4", features = ["serde"] }
+
+
+[dev-dependencies]
+insta = "1"
+test-case = "3"

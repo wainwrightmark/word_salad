@@ -1,17 +1,9 @@
-pub mod character;
-pub mod constants;
-pub mod paths;
-pub mod state;
-pub mod view;
-pub mod word;
-pub mod designed_level;
-pub mod input;
-pub mod animated_solutions;
-use animated_solutions::AnimatedSolutionPlugin;
 use bevy::{log::LogPlugin, window::PrimaryWindow};
-
+use crate::animated_solutions::AnimatedSolutionPlugin;
 pub use crate::prelude::*;
-fn main() {
+
+
+pub fn go() {
     let mut app = App::new();
 
     let window_plugin = WindowPlugin {
@@ -93,7 +85,7 @@ fn handle_mouse_input(
     mut chosen_state: ResMut<ChosenState>,
     current_level: Res<CurrentLevel>,
     mut input_state: Local<InputState>,
-    found_words: Res<FoundWordsState>
+    found_words: Res<FoundWordsState>,
 ) {
     if mouse_input.just_released(MouseButton::Left) {
         if let Some(tile) = try_get_cursor_tile(q_windows) {
@@ -105,12 +97,22 @@ fn handle_mouse_input(
         let Some(tile) = try_get_cursor_tile(q_windows) else {
             return;
         };
-        input_state.handle_input_start(&mut chosen_state, tile, &current_level.level().grid, &found_words)
+        input_state.handle_input_start(
+            &mut chosen_state,
+            tile,
+            &current_level.level().grid,
+            &found_words,
+        )
     } else if mouse_input.pressed(MouseButton::Left) {
         let Some(tile) = try_get_cursor_tile(q_windows) else {
             return;
         };
-        input_state.handle_input_move(&mut chosen_state, tile,  &current_level.level().grid, &found_words)
+        input_state.handle_input_move(
+            &mut chosen_state,
+            tile,
+            &current_level.level().grid,
+            &found_words,
+        )
     }
 }
 
@@ -131,7 +133,7 @@ fn handle_touch_input(
     mut chosen_state: ResMut<ChosenState>,
     current_level: Res<CurrentLevel>,
     mut input_state: Local<InputState>,
-    found_words: Res<FoundWordsState>
+    found_words: Res<FoundWordsState>,
 ) {
     for ev in touch_events.into_iter() {
         match ev.phase {
@@ -139,13 +141,23 @@ fn handle_touch_input(
                 let Some(tile) = try_get_tile(ev.position, &q_camera) else {
                     continue;
                 };
-                input_state.handle_input_start(&mut chosen_state, tile, &current_level.level().grid, &found_words);
+                input_state.handle_input_start(
+                    &mut chosen_state,
+                    tile,
+                    &current_level.level().grid,
+                    &found_words,
+                );
             }
             bevy::input::touch::TouchPhase::Moved => {
                 let Some(tile) = try_get_tile(ev.position, &q_camera) else {
                     continue;
                 };
-                input_state.handle_input_move(&mut chosen_state, tile, &current_level.level().grid, &found_words);
+                input_state.handle_input_move(
+                    &mut chosen_state,
+                    tile,
+                    &current_level.level().grid,
+                    &found_words,
+                );
             }
             bevy::input::touch::TouchPhase::Ended => {
                 if let Some(tile) = try_get_tile(ev.position, &q_camera) {
@@ -206,42 +218,4 @@ fn button_system(
             }
         }
     }
-}
-
-pub mod prelude {
-
-    pub use crate::character::*;
-    pub use crate::constants::*;
-    pub use crate::designed_level::*;
-    pub use crate::state::*;
-    pub use crate::view::*;
-    pub use crate::input::*;
-    pub use crate::word::*;
-    pub use std::array;
-
-    pub use bevy::prelude::*;
-    use bevy_prototype_lyon::prelude::tess::geom::arrayvec::ArrayVec;
-    pub use geometrid::prelude::*;
-
-    pub use bevy_prototype_lyon::prelude::*;
-    pub use geometrid::prelude::HasCenter;
-    pub use maveric::prelude::*;
-
-    pub type Tile = geometrid::tile::Tile<4, 4>;
-    pub type CharsArray = ArrayVec<Character, 16>;
-    pub type Grid = geometrid::tile_map::TileMap<Character, 4, 4, 16>;
-    pub type GridSet = geometrid::tile_set::TileSet16<4, 4, 16>;
-    pub type Vertex = geometrid::vertex::Vertex<4, 4>;
-    pub type Solution = ArrayVec<Tile, 16>;
-
-    pub fn try_make_grid(text: &str) -> Option<Grid> {
-        let mut arr = [Character::Blank; 16];
-        for (index, char) in text.chars().enumerate() {
-            let c = Character::try_from(char).ok()?;
-            *arr.get_mut(index)? = c;
-        }
-
-        Some(Grid::from_inner(arr))
-    }
-
 }

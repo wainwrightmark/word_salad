@@ -1,6 +1,6 @@
 [build]
-publish = "dist"
-command = "rustup target add wasm32-unknown-unknown; rustup update stable; cargo install trunk --locked; trunk build index.html --release"
+publish = "ws_game/dist"
+command = "rustup target add wasm32-unknown-unknown; rustup update stable; cargo install trunk --locked; trunk build ws_game/index.html --release"
 
 
 [context.production]

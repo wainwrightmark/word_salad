@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use ws_core::Tile;
 
 #[derive(Debug, Default)]
 pub struct InputState {
