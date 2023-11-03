@@ -3,10 +3,12 @@ use clap::Parser;
 use itertools::Itertools;
 use log::info;
 use prime_bag::PrimeBag128;
+use rayon::prelude::*;
 use simplelog::*;
 use std::{
     collections::{BTreeMap, HashMap},
     io,
+    sync::atomic::AtomicUsize,
 };
 use ws_core::prelude::*;
 
@@ -98,7 +100,12 @@ fn create_grid_for_most_words(word_map: WordMultiMap, options: &Options) {
         if size < options.min_words {
             break;
         }
-        for (letters, _) in group {
+
+        let solution_count = AtomicUsize::new(0);
+        let impossible_count = AtomicUsize::new(0);
+        let given_up_count = AtomicUsize::new(0);
+
+        group.par_iter().for_each(|(letters, _)| {
             //todo if there are blanks, try to fill them with needed characters
 
             let letter_words: Vec<ArrayVec<Character, 16>> = word_map
@@ -110,7 +117,7 @@ fn create_grid_for_most_words(word_map: WordMultiMap, options: &Options) {
             let raw_text = get_raw_text(&letters);
             let words_text = get_possible_words_text(&letters, &word_map);
             let result = node::try_make_grid_with_blank_filling(
-                letters,
+                *letters,
                 &letter_words,
                 Character::E,
                 options.tries,
@@ -118,25 +125,35 @@ fn create_grid_for_most_words(word_map: WordMultiMap, options: &Options) {
             let tries = result.tries;
             match result.grid {
                 Some(solution) => {
+                    solution_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
                     info!("Solution found after {tries} tries:\n{words_text}\n{solution}")
                 }
                 None => {
-                    if options.verbose {
-                        if tries >= options.tries {
+                    if tries >= options.tries {
+                        if options.verbose {
                             info!(
-                                "Gave up looking for {raw_text} ({tries} tries): ({count}) ({words_text})",
-                                count = letters.into_iter().count()
-                            )
-                        } else {
-                            info!(
-                                "No solution possible for {raw_text} ({tries} tries): ({count}) ({words_text})",
-                                count = letters.into_iter().count()
-                            )
+                "Gave up looking for {raw_text} ({tries} tries): ({count}) ({words_text})",
+                count = letters.into_iter().count()
+            )
                         }
+                        given_up_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                    } else {
+                        if options.verbose {
+                            info!(
+                "No solution possible for {raw_text} ({tries} tries): ({count}) ({words_text})",
+                count = letters.into_iter().count()
+            )
+                        }
+                        impossible_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
                     }
                 }
             }
-        }
+        });
+
+        let solution_count = solution_count.into_inner();
+        let impossible_count = impossible_count.into_inner();
+        let given_up_count = given_up_count.into_inner();
+        info!("Groups of {size} words: {solution_count} Solutions. {impossible_count} Impossible. {given_up_count} Given Up On.")
     }
 }
 
