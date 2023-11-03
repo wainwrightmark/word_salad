@@ -23,19 +23,23 @@ fn main() {
 
     info!("Starting up");
 
-    let file = include_str!("series_a.txt");
+    let file = include_str!("colors.txt");
     let words = make_words_from_file(file);
 
-    create_grid_for_most_words(words, 100);
+    for word in words.iter().flat_map(|(_, v)| v) {
+        println!("'{word}'");
+    }
+
+    create_grid_for_most_words(words);
 }
 
 fn make_words_from_file(text: &'static str) -> WordMultiMap {
-    text.lines()
+    text.lines().flat_map(|x|x.split(','))
         .map(|x| FinderWord::new(x))
         .into_group_map_by(|x| x.counts)
 }
 
-fn create_grid_for_most_words(word_map: WordMultiMap, max_tries: usize) {
+fn create_grid_for_most_words(word_map: WordMultiMap) {
     let mut possible_combinations: BTreeMap<LetterCounts, usize> = Default::default();
 
     let word_letters: Vec<LetterCounts> = word_map.keys().cloned().sorted().collect_vec();
@@ -65,22 +69,37 @@ fn create_grid_for_most_words(word_map: WordMultiMap, max_tries: usize) {
         )
     }
 
-    for (_, group) in ordered_groups{
-        for (letters, _) in group{
+    for (_, group) in ordered_groups {
+        for (letters, _) in group {
             //todo if there are blanks, try to fill them with needed characters
 
-            let letter_words: Vec<ArrayVec<Character, 16>> = word_map.iter().flat_map(|s|s.1)
-            .filter(|word| letters.is_superset(&word.counts))
-            .map(|z|z.array.clone()).collect();
+            let letter_words: Vec<ArrayVec<Character, 16>> = word_map
+                .iter()
+                .flat_map(|s| s.1)
+                .filter(|word| letters.is_superset(&word.counts))
+                .map(|z| z.array.clone())
+                .collect();
             let raw_text = get_raw_text(&letters);
             let words_text = get_possible_words_text(&letters, &word_map);
-            match node::try_make_grid(letters, &letter_words){
+            let result = node::try_make_grid_with_blank_filling(letters, &letter_words);
+            let tries = result.tries;
+            match result.grid {
                 Some(solution) => {
-                    info!("Solution found:\n{words_text}\n{solution}")
-                },
+                    info!("Solution found after {tries} tries:\n{words_text}\n{solution}")
+                }
                 None => {
-                    info!("No solution possible for {raw_text}: ({words_text}) ")
-                },
+                    if tries >= 1000000 {
+                        info!(
+                            "Gave up looking for {raw_text} ({tries} tries): ({count}) ({words_text})",
+                            count = letters.into_iter().count()
+                        )
+                    } else {
+                        info!(
+                            "No solution possible for {raw_text} ({tries} tries): ({count}) ({words_text})",
+                            count = letters.into_iter().count()
+                        )
+                    }
+                }
             }
         }
     }
@@ -144,8 +163,12 @@ fn get_combinations(
     }
 }
 
-fn get_raw_text(counts: &LetterCounts)-> String{
+pub fn get_raw_text(counts: &LetterCounts) -> String {
     counts.into_iter().join("")
+}
+
+pub fn write_words(word: &Vec<CharsArray>) -> String {
+    word.iter().map(|c| c.iter().join("")).join(", ")
 }
 
 fn get_text(counts: &LetterCounts, word_map: &WordMultiMap) -> String {
@@ -156,12 +179,13 @@ fn get_text(counts: &LetterCounts, word_map: &WordMultiMap) -> String {
 }
 
 fn get_possible_words_text(counts: &LetterCounts, word_map: &WordMultiMap) -> String {
-    word_map
-        .iter()
-        .filter(|(c, _w)| counts.is_superset(c))
+    let words = word_map.iter().filter(|(c, _w)| counts.is_superset(c));
+    let suffix = format!("({})", words.clone().count());
+    words
         .flat_map(|(_c, words)| words.iter().map(|w| w.text))
         .sorted()
         .join(", ")
+        + suffix.as_str()
 }
 
 // fn try_create()-> Option<Grid>
@@ -187,6 +211,7 @@ impl std::fmt::Display for FinderWord {
 
 impl FinderWord {
     fn new(text: &'static str) -> Self {
+        //println!("'{text}'");
         let array = match Word::from_static_str(text) {
             Ok(w) => w.characters,
             Err(..) => panic!("'{text}' is not a valid word"),
@@ -236,16 +261,17 @@ impl Multiplicities {
 
 #[cfg(test)]
 pub mod tests {
-    use std::time::Instant;
-
     use super::*;
+    use std::time::Instant;
+    use test_case::test_case;
+
     #[test]
     pub fn test() {
-        let file = "monkey\ncow\nant\nantelope";
+        let input = "monkey\ncow\nant\nantelope";
 
         let now = Instant::now();
 
-        let words = make_words_from_file(file);
+        let words = make_words_from_file(input);
         let word_letters: Vec<LetterCounts> = words.keys().cloned().collect_vec();
 
         let mut possible_combinations: BTreeMap<LetterCounts, usize> = Default::default();
@@ -261,7 +287,7 @@ pub mod tests {
 
         println!("{:?}", now.elapsed());
 
-        let expected = "[ant]\n[cow]\n[ant, cow]\n[ant, antelope]\n[monkey]\n[ant, monkey]\n[ant, antelope, cow]\n[cow, monkey]\n[ant, cow, monkey]\n[ant, antelope, monkey]\n[ant, antelope, cow, monkey]";
+        let expected = "[ant(1)]\n[cow(1)]\n[ant, cow(2)]\n[ant, antelope(2)]\n[monkey(1)]\n[ant, monkey(2)]\n[ant, antelope, cow(3)]\n[cow, monkey(2)]\n[ant, cow, monkey(3)]\n[ant, antelope, monkey(3)]\n[ant, antelope, cow, monkey(4)]";
 
         let actual = possible_combinations
             .into_iter()
@@ -269,5 +295,50 @@ pub mod tests {
             .join("\n");
 
         assert_eq!(expected, actual)
+    }
+
+    #[test_case("monkey\ncow\nant\nantelope", "monkey\ncow\nant\nantelope")]
+    #[test_case("POLITICIAN, OPTICIAN, CASHIER, FLORIST, ARTIST, TAILOR, ACTOR", "POLITICIAN, OPTICIAN, CASHIER, FLORIST, ARTIST, TAILOR, ACTOR")]
+    #[test_case("SILVER, ORANGE, GREEN, IVORY, CORAL, OLIVE, TEAL, GRAY, CYAN, RED", "SILVER, ORANGE, GREEN, IVORY, CORAL, OLIVE, TEAL, GRAY, CYAN, RED")]
+    pub fn test_membership(input: &'static str, expected_member: &'static str) {
+        let now = Instant::now();
+
+        let expected_words = make_words_from_file(expected_member);
+        let mut expected = LetterCounts::default();
+        for (w, _) in expected_words {
+            expected = expected
+                .try_union(&w)
+                .expect("Should be able to union expected");
+        }
+
+        let words = make_words_from_file(input);
+
+        let word_letters: Vec<LetterCounts> = words.keys().cloned().collect_vec();
+
+        let mut possible_combinations: BTreeMap<LetterCounts, usize> = Default::default();
+
+        get_combinations(
+            &mut possible_combinations,
+            vec![],
+            Multiplicities::default(),
+            word_letters,
+            16,
+            &words,
+        );
+
+        println!("{:?}", now.elapsed());
+
+        let contains_expected = possible_combinations.contains_key(&expected);
+
+        if !contains_expected {
+            let actual = possible_combinations
+                .into_iter()
+                .map(|x| format!("[{}]", get_possible_words_text(&x.0, &words)))
+                .join("\n");
+
+            println!("{actual}");
+        }
+
+        assert!(contains_expected);
     }
 }

@@ -11,8 +11,65 @@ use std::{println as info, println as warn}; // Workaround to use prinltn! for l
 
 type Tile = geometrid::tile::Tile<4, 4>;
 
-pub fn try_make_grid(letters: LetterCounts, words: &Vec<CharsArray>) -> Option<Grid> {
-    //info!("Try to make grid\n{letters:?}\n{words:?}", );
+//todo benchmark more efficient collections, different heuristics
+
+pub struct GridResult {
+    pub tries: usize,
+    pub grid: Option<Grid>,
+}
+
+pub fn try_make_grid_with_blank_filling(
+    letters: LetterCounts,
+    words: &Vec<CharsArray>,
+) -> GridResult {
+    let result = try_make_grid(letters, words);
+    if result.grid.is_some() {
+        return result;
+    }
+    let mut tries = result.tries;
+
+    if letters.contains(Character::Blank) {
+        // todo order calls so we don't do AB and then BA
+        let ordered_replacements = words
+            .iter()
+            .flat_map(|x| x)
+            .counts()
+            .into_iter()
+            .filter(|x| !x.0.is_blank())
+            .sorted_by(|a, b| b.1.cmp(&a.1));
+
+        for (replacement, count) in ordered_replacements {
+            if count <= 1 {
+                continue; //no point having two copies of this letter
+            }
+            let new_letters = letters.clone();
+            let new_letters = new_letters
+                .try_remove(Character::Blank)
+                .expect("prime bag error");
+            let new_letters = new_letters
+                .try_insert(*replacement)
+                .expect("prime bag error");
+
+            let result = try_make_grid_with_blank_filling(new_letters, words);
+            match result.grid {
+                Some(grid) => {
+                    return GridResult {
+                        tries: tries + result.tries,
+                        grid: Some(grid),
+                    };
+                }
+                None => {
+                    tries += result.tries;
+                }
+            }
+        }
+    }
+
+    return GridResult { tries, grid: None };
+}
+
+pub fn try_make_grid(letters: LetterCounts, words: &Vec<CharsArray>) -> GridResult {
+    //info!("Try to make grid: {l:?} : {w:?}", l= crate::get_raw_text(&letters), w= crate::write_words(words) );
     let mut nodes_map: BTreeMap<Character, Vec<Node>> = Default::default();
 
     let mut next_node_id: u8 = 0;
@@ -33,15 +90,45 @@ pub fn try_make_grid(letters: LetterCounts, words: &Vec<CharsArray>) -> Option<G
         }
     }
 
-    //add constraints from words
-    let mut all_constraints_representable = true;
-
     for word in words {
         for (a, b) in word.iter().tuple_windows() {
             let added = try_add_constraint(a, b, &mut nodes_map);
             let added2 = try_add_constraint(b, a, &mut nodes_map);
             if !added && !added2 {
-                all_constraints_representable = false
+                if let Some(a_first) = nodes_map.get(a).and_then(|v| v.first()) {
+                    if a_first
+                        .constraints
+                        .iter()
+                        .all(|c| c.is_to_character(a, &nodes_map))
+                    {
+                        if let Some(b_first) = nodes_map.get(b).and_then(|v| v.first()) {
+                            if b_first
+                                .constraints
+                                .iter()
+                                .all(|c| c.is_to_character(b, &nodes_map))
+                            {
+                                let a_to_b_constraint = Constraint::Single(b_first.id);
+                                let b_to_a_constraint = Constraint::Single(a_first.id);
+                                // these nodes are otherwise unconstrained
+                                let a_constraints = &mut nodes_map
+                                    .get_mut(a)
+                                    .unwrap()
+                                    .first_mut()
+                                    .unwrap()
+                                    .constraints;
+                                a_constraints.insert(a_to_b_constraint);
+                                let b_constraints = &mut nodes_map
+                                    .get_mut(b)
+                                    .unwrap()
+                                    .first_mut()
+                                    .unwrap()
+                                    .constraints;
+
+                                b_constraints.insert(b_to_a_constraint);
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -62,19 +149,20 @@ pub fn try_make_grid(letters: LetterCounts, words: &Vec<CharsArray>) -> Option<G
         .flat_map(|x| x.1.into_iter())
         .sorted_by_key(|x| x.constraints.len())
         .collect_vec();
-
-    let solution = grid.solve_recursive(&nodes, &nodes, 0)?;
+    let mut counter = 0usize;
+    let Some(solution) = grid.solve_recursive(&mut counter, &nodes, &nodes, 0, words) else {
+        return GridResult {
+            tries: counter,
+            grid: None,
+        };
+    };
 
     let solution_grid = solution.to_grid(&nodes);
 
-    //info!("Solution found:\n{solution_grid}");
-    for word in words {
-        if find_solution(word, &solution_grid).is_none() {
-            return None;
-        }
+    GridResult {
+        tries: counter,
+        grid: Some(solution_grid),
     }
-
-    Some(solution_grid)
 }
 
 fn try_add_constraint(
@@ -99,7 +187,7 @@ fn try_add_constraint(
         return false;
     };
 
-    if !(source_nodes.len() == 1 || (source_nodes.len() == 2 && from == to)){
+    if !(source_nodes.len() == 1 || (source_nodes.len() == 2 && from == to)) {
         return false;
     }
 
@@ -131,6 +219,21 @@ pub enum Constraint {
 }
 
 impl Constraint {
+    pub fn is_to_character(
+        &self,
+        character: &Character,
+        map: &BTreeMap<Character, Vec<Node>>,
+    ) -> bool {
+        let Self::Single(id) = self else {
+            return false;
+        };
+
+        let Some(nodes) = map.get(&character) else {
+            return false;
+        };
+        nodes.iter().map(|x| x.id).contains(id)
+    }
+
     pub fn is_met(&self, tile: Tile, map: &BTreeMap<NodeId, Tile>) -> Option<bool> {
         match self {
             Constraint::Single(node_id) => match map.get(node_id) {
@@ -201,13 +304,32 @@ impl PartialGrid {
         grid
     }
 
+    pub fn check_matches(&self, nodes: &Vec<Node>, words: &Vec<CharsArray>) -> bool {
+        let solution_grid = self.to_grid(&nodes);
+
+        //info!("Solution found:\n{solution_grid}");
+        for word in words {
+            if find_solution(word, &solution_grid).is_none() {
+                return false;
+            }
+        }
+        return true;
+    }
+
     pub fn solve_recursive(
         //change to an iterator
         &self,
+        counter: &mut usize,
         all_nodes: &Vec<Node>,
         nodes_to_add: &Vec<Node>,
         level: usize,
+        words: &Vec<CharsArray>,
     ) -> Option<Self> {
+        if *counter >= 1000000usize {
+            return None;
+        }
+        *counter += 1;
+
         //info!("{g}\n\n", g = self.to_grid(all_nodes));
 
         let Some((index, node, potential_locations)) = nodes_to_add
@@ -229,7 +351,12 @@ impl PartialGrid {
                     .then(b.1.constraints.len().cmp(&a.1.constraints.len()))
             })
         else {
-            return Some(self.clone());
+            //run out of options
+            if self.check_matches(all_nodes, words) {
+                return Some(self.clone());
+            } else {
+                return None;
+            }
         };
 
         lazy_static::lazy_static! {
@@ -297,7 +424,9 @@ impl PartialGrid {
                 continue;
             };
 
-            if let Some(result) = new_grid.solve_recursive(&all_nodes, &new_nodes, level + 1) {
+            if let Some(result) =
+                new_grid.solve_recursive(counter, &all_nodes, &new_nodes, level + 1, words)
+            {
                 return Some(result);
             }
         }
@@ -404,6 +533,8 @@ impl PartialGrid {
             ng
         };
 
+        //check adjacent nodes aren't locked out (e.g. if an adjacent node is on an edge and has five constraints but isn't connected to this, the grid is now invalid)
+
         Some(Self {
             used_grid: new_grid,
             map: new_map,
@@ -427,8 +558,11 @@ fn get_adjacent_tiles(tile: &Tile) -> GridSet {
 
 #[cfg(test)]
 mod tests {
+    use std::time::Instant;
+
     use super::*;
-    use crate::FinderWord;
+    use crate::{make_words_from_file, FinderWord};
+    use test_case::test_case;
 
     #[test]
     pub fn test_adjacent_tiles() {
@@ -437,25 +571,25 @@ mod tests {
         assert_eq!("***_\n*_*_\n***_\n____", tiles.to_string())
     }
 
-    #[test]
-    pub fn test_try_make_grid() {
-        let words: &[FinderWord] = &[
-            FinderWord::new("ant"),
-            FinderWord::new("Bear"),
-            FinderWord::new("fish"),
-            FinderWord::new("goat"),
-            FinderWord::new("bee"),
-
-
-            // FinderWord::new("croatia"),
-            // FinderWord::new("france"),
-            // FinderWord::new("ireland"),
-            // FinderWord::new("latvia"),
-            // FinderWord::new("malta"),
-            // FinderWord::new("poland"),
-            // FinderWord::new("romania"),
-            // FinderWord::new("lil"), //TO make it aware it needs two ls
-        ];
+    //#[test_case("DOG, TOAD, PIGEON, OWL, PIG, ANT, CAT, LION, DEER, COW, GOAT, BEE, TIGER")]
+    // #[test_case("SILVER, ORANGE, GREEN, IVORY, CORAL, OLIVE, TEAL, GRAY, CYAN, RED")]
+    #[test_case("CROATIA, ROMANIA, IRELAND, LATVIA, POLAND, FRANCE, MALTA")]
+    // #[test_case("PIEPLATE, STRAINER, TEAPOT, GRATER, APRON, SPOON, POT")]
+    // #[test_case("THIRTEEN, FOURTEEN, FIFTEEN, SEVENTY, THIRTY, NINETY, THREE, SEVEN, FORTY, FIFTY, FIFTH, FOUR, NINE, ONE, TEN")]
+    // #[test_case("POLO, SHOOTING, KENDO, SAILING, LUGE, SKIING")]
+    // #[test_case("IOWA, OHIO, IDAHO, UTAH, HAWAII, INDIANA, MONTANA")]
+    // #[test_case("ROSEMARY, CARROT, PARSLEY, SOY, PEANUT, YAM, PEA, BEAN")]
+    // #[test_case("WEEDLE, MUK, SLOWPOKE, GOLEM, SEEL, MEW, EEVEE, GLOOM")]
+    // #[test_case("POLITICIAN, OPTICIAN, CASHIER, FLORIST, ARTIST, TAILOR, ACTOR")]
+    // #[test_case("ALDGATE, ANGEL, ALDGATEEAST, BANK, LANCASTERGATE")]
+    // #[test_case("WELLS, LEEDS, ELY, LISBURN, DERBY, NEWRY, SALISBURY")]
+    pub fn test_try_make_grid(input: &'static str) {
+        let now = Instant::now();
+        let words = make_words_from_file(input);
+        let words = words
+            .into_iter()
+            .flat_map(|x| x.1.into_iter())
+            .collect_vec();
 
         let mut letters = LetterCounts::default();
         for word in words.iter() {
@@ -463,17 +597,33 @@ mod tests {
                 .try_union(&word.counts)
                 .expect("Should be able to combine letters");
         }
+        let letter_count = letters.into_iter().count();
+        println!("{} letters {}", letter_count, letters.into_iter().join(""));
 
-        println!("{} letters {}", letters.into_iter().count(), letters.into_iter().join("") );
+        if letter_count > 16 {
+            panic!("Too many letters");
+        }
         let arrays = words.into_iter().map(|x| x.array.clone()).collect();
 
-        let solution = try_make_grid(letters, &arrays);
-
-        match solution {
-            Some(solution) => {
-                info!("{solution}");
+        let mut blanks_to_add = 16usize.saturating_sub(letter_count);
+        while blanks_to_add > 0 {
+            match letters.try_insert(Character::Blank) {
+                Some(n) => letters = n,
+                None => {
+                    println!("Prime bag wont accept more blanks")
+                }
             }
-            None => panic!("No Solution found"),
+            blanks_to_add -= 1;
+        }
+
+        let solution = try_make_grid_with_blank_filling(letters, &arrays);
+        println!("{:?}", now.elapsed());
+        match solution.grid {
+            Some(grid) => {
+                info!("Found after {} tries", solution.tries);
+                info!("{grid}");
+            }
+            None => panic!("No Solution found after {} tries", solution.tries),
         }
     }
 }
