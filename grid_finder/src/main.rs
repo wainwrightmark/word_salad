@@ -23,7 +23,7 @@ fn main() {
 
     info!("Starting up");
 
-    let file = include_str!("animals.txt");
+    let file = include_str!("series_a.txt");
     let words = make_words_from_file(file);
 
     create_grid_for_most_words(words, 100);

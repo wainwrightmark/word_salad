@@ -98,7 +98,8 @@ fn try_add_constraint(
     let Some(source_nodes) = nodes_map.get_mut(&from) else {
         return false;
     };
-    if source_nodes.len() != 1 {
+
+    if !(source_nodes.len() == 1 || (source_nodes.len() == 2 && from == to)){
         return false;
     }
 
@@ -439,19 +440,21 @@ mod tests {
     #[test]
     pub fn test_try_make_grid() {
         let words: &[FinderWord] = &[
-            // FinderWord::new("ant"),
-            // FinderWord::new("Bear"),
-            // FinderWord::new("fish"),
-            // FinderWord::new("goat"),
+            FinderWord::new("ant"),
+            FinderWord::new("Bear"),
+            FinderWord::new("fish"),
+            FinderWord::new("goat"),
+            FinderWord::new("bee"),
 
-            FinderWord::new("croatia"),
-            FinderWord::new("france"),
-            FinderWord::new("ireland"),
-            FinderWord::new("latvia"),
-            FinderWord::new("malta"),
-            FinderWord::new("poland"),
-            FinderWord::new("romania"),
-            FinderWord::new("lil"), //TO make it aware it needs two ls
+
+            // FinderWord::new("croatia"),
+            // FinderWord::new("france"),
+            // FinderWord::new("ireland"),
+            // FinderWord::new("latvia"),
+            // FinderWord::new("malta"),
+            // FinderWord::new("poland"),
+            // FinderWord::new("romania"),
+            // FinderWord::new("lil"), //TO make it aware it needs two ls
         ];
 
         let mut letters = LetterCounts::default();
