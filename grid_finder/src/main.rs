@@ -1,13 +1,30 @@
 pub mod node;
+use clap::Parser;
 use itertools::Itertools;
-use log::{info, Log};
+use log::info;
 use prime_bag::PrimeBag128;
 use simplelog::*;
-use std::collections::{BTreeMap, BTreeSet, HashMap};
+use std::{
+    collections::{BTreeMap, HashMap},
+    io,
+};
 use ws_core::prelude::*;
 
 type LetterCounts = PrimeBag128<Character>;
 type WordMultiMap = HashMap<LetterCounts, Vec<FinderWord>>;
+
+#[derive(Parser, Debug)]
+#[command()]
+struct Options {
+    #[arg(short, long, default_value = "data.txt")]
+    pub path: String,
+    #[arg(short, long, default_value_t = 1000000)]
+    pub tries: usize,
+    #[arg(short, long, default_value_t = 6)]
+    pub min_words: usize,
+    #[arg(short, long, default_value_t = false)]
+    pub verbose: bool,
+}
 
 fn main() {
     CombinedLogger::init(vec![
@@ -21,25 +38,33 @@ fn main() {
     ])
     .unwrap();
 
+    let options = Options::parse();
+
+    //todo parallel
+
     info!("Starting up");
 
-    let file = include_str!("colors.txt");
+    let file = std::fs::read_to_string(options.path.clone())
+        .expect("There should be a file called data.txt");
+    let file = file.leak(); //cheeky
+
+    //let file = include_str!("colors.txt");
     let words = make_words_from_file(file);
 
-    for word in words.iter().flat_map(|(_, v)| v) {
-        println!("'{word}'");
-    }
+    create_grid_for_most_words(words, &options);
 
-    create_grid_for_most_words(words);
+    println!("Finished... Press enter");
+    io::stdin().read_line(&mut String::new()).unwrap();
 }
 
 fn make_words_from_file(text: &'static str) -> WordMultiMap {
-    text.lines().flat_map(|x|x.split(','))
-        .map(|x| FinderWord::new(x))
+    text.lines()
+        .flat_map(|x| x.split(','))
+        .flat_map(|x| FinderWord::try_new(x))
         .into_group_map_by(|x| x.counts)
 }
 
-fn create_grid_for_most_words(word_map: WordMultiMap) {
+fn create_grid_for_most_words(word_map: WordMultiMap, options: &Options) {
     let mut possible_combinations: BTreeMap<LetterCounts, usize> = Default::default();
 
     let word_letters: Vec<LetterCounts> = word_map.keys().cloned().sorted().collect_vec();
@@ -69,7 +94,10 @@ fn create_grid_for_most_words(word_map: WordMultiMap) {
         )
     }
 
-    for (_, group) in ordered_groups {
+    for (size, group) in ordered_groups {
+        if size < options.min_words {
+            break;
+        }
         for (letters, _) in group {
             //todo if there are blanks, try to fill them with needed characters
 
@@ -81,23 +109,30 @@ fn create_grid_for_most_words(word_map: WordMultiMap) {
                 .collect();
             let raw_text = get_raw_text(&letters);
             let words_text = get_possible_words_text(&letters, &word_map);
-            let result = node::try_make_grid_with_blank_filling(letters, &letter_words);
+            let result = node::try_make_grid_with_blank_filling(
+                letters,
+                &letter_words,
+                Character::E,
+                options.tries,
+            );
             let tries = result.tries;
             match result.grid {
                 Some(solution) => {
                     info!("Solution found after {tries} tries:\n{words_text}\n{solution}")
                 }
                 None => {
-                    if tries >= 1000000 {
-                        info!(
-                            "Gave up looking for {raw_text} ({tries} tries): ({count}) ({words_text})",
-                            count = letters.into_iter().count()
-                        )
-                    } else {
-                        info!(
-                            "No solution possible for {raw_text} ({tries} tries): ({count}) ({words_text})",
-                            count = letters.into_iter().count()
-                        )
+                    if options.verbose {
+                        if tries >= options.tries {
+                            info!(
+                                "Gave up looking for {raw_text} ({tries} tries): ({count}) ({words_text})",
+                                count = letters.into_iter().count()
+                            )
+                        } else {
+                            info!(
+                                "No solution possible for {raw_text} ({tries} tries): ({count}) ({words_text})",
+                                count = letters.into_iter().count()
+                            )
+                        }
                     }
                 }
             }
@@ -210,28 +245,16 @@ impl std::fmt::Display for FinderWord {
 }
 
 impl FinderWord {
-    fn new(text: &'static str) -> Self {
+    fn try_new(text: &'static str) -> Option<Self> {
         //println!("'{text}'");
-        let array = match Word::from_static_str(text) {
-            Ok(w) => w.characters,
-            Err(..) => panic!("'{text}' is not a valid word"),
-        };
+        let array = Word::from_static_str(text).ok().map(|x| x.characters)?;
 
-        let counts: PrimeBag128<Character> =
-            PrimeBag128::try_from_iter(array.iter().cloned()).expect("Could not make prime bag");
-
-        // let counts: BTreeMap<Character, u8> = array
-        //     .clone()
-        //     .into_iter()
-        //     .counts()
-        //     .into_iter()
-        //     .map(|(char, count)| (char, count as u8))
-        //     .collect();
-        Self {
+        let counts: PrimeBag128<Character> = PrimeBag128::try_from_iter(array.iter().cloned())?;
+        Some(Self {
             array,
             counts,
             text,
-        }
+        })
     }
 }
 
@@ -298,8 +321,14 @@ pub mod tests {
     }
 
     #[test_case("monkey\ncow\nant\nantelope", "monkey\ncow\nant\nantelope")]
-    #[test_case("POLITICIAN, OPTICIAN, CASHIER, FLORIST, ARTIST, TAILOR, ACTOR", "POLITICIAN, OPTICIAN, CASHIER, FLORIST, ARTIST, TAILOR, ACTOR")]
-    #[test_case("SILVER, ORANGE, GREEN, IVORY, CORAL, OLIVE, TEAL, GRAY, CYAN, RED", "SILVER, ORANGE, GREEN, IVORY, CORAL, OLIVE, TEAL, GRAY, CYAN, RED")]
+    #[test_case(
+        "POLITICIAN, OPTICIAN, CASHIER, FLORIST, ARTIST, TAILOR, ACTOR",
+        "POLITICIAN, OPTICIAN, CASHIER, FLORIST, ARTIST, TAILOR, ACTOR"
+    )]
+    #[test_case(
+        "SILVER, ORANGE, GREEN, IVORY, CORAL, OLIVE, TEAL, GRAY, CYAN, RED",
+        "SILVER, ORANGE, GREEN, IVORY, CORAL, OLIVE, TEAL, GRAY, CYAN, RED"
+    )]
     pub fn test_membership(input: &'static str, expected_member: &'static str) {
         let now = Instant::now();
 

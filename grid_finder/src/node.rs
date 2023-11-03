@@ -3,12 +3,6 @@ use itertools::Itertools;
 use std::collections::{BTreeMap, BTreeSet};
 use ws_core::{find_solution, ArrayVec, Character, CharsArray, Grid, GridSet, TileMap};
 
-#[cfg(not(test))]
-use log::{info, warn}; // Use log crate when building application
-
-#[cfg(test)]
-use std::{println as info, println as warn}; // Workaround to use prinltn! for logs.
-
 type Tile = geometrid::tile::Tile<4, 4>;
 
 //todo benchmark more efficient collections, different heuristics
@@ -18,24 +12,41 @@ pub struct GridResult {
     pub grid: Option<Grid>,
 }
 
+pub struct Counter {
+    pub max: usize,
+    pub current: usize,
+}
+
+impl Counter {
+    pub fn try_increment(&mut self) -> bool {
+        if self.current >= self.max {
+            return false;
+        }
+        self.current += 1;
+        return true;
+    }
+}
+
 pub fn try_make_grid_with_blank_filling(
     letters: LetterCounts,
     words: &Vec<CharsArray>,
+    first_blank_replacement: Character,
+    max_tries: usize,
 ) -> GridResult {
-    let result = try_make_grid(letters, words);
+    let result = try_make_grid(letters, words, max_tries);
     if result.grid.is_some() {
         return result;
     }
     let mut tries = result.tries;
 
     if letters.contains(Character::Blank) {
-        // todo order calls so we don't do AB and then BA
         let ordered_replacements = words
             .iter()
             .flat_map(|x| x)
             .counts()
             .into_iter()
             .filter(|x| !x.0.is_blank())
+            .filter(|x| *x.0 >= first_blank_replacement)
             .sorted_by(|a, b| b.1.cmp(&a.1));
 
         for (replacement, count) in ordered_replacements {
@@ -50,7 +61,8 @@ pub fn try_make_grid_with_blank_filling(
                 .try_insert(*replacement)
                 .expect("prime bag error");
 
-            let result = try_make_grid_with_blank_filling(new_letters, words);
+            let result =
+                try_make_grid_with_blank_filling(new_letters, words, *replacement, max_tries);
             match result.grid {
                 Some(grid) => {
                     return GridResult {
@@ -68,7 +80,11 @@ pub fn try_make_grid_with_blank_filling(
     return GridResult { tries, grid: None };
 }
 
-pub fn try_make_grid(letters: LetterCounts, words: &Vec<CharsArray>) -> GridResult {
+pub fn try_make_grid(
+    letters: LetterCounts,
+    words: &Vec<CharsArray>,
+    max_tries: usize,
+) -> GridResult {
     //info!("Try to make grid: {l:?} : {w:?}", l= crate::get_raw_text(&letters), w= crate::write_words(words) );
     let mut nodes_map: BTreeMap<Character, Vec<Node>> = Default::default();
 
@@ -149,10 +165,13 @@ pub fn try_make_grid(letters: LetterCounts, words: &Vec<CharsArray>) -> GridResu
         .flat_map(|x| x.1.into_iter())
         .sorted_by_key(|x| x.constraints.len())
         .collect_vec();
-    let mut counter = 0usize;
+    let mut counter = Counter {
+        max: max_tries,
+        current: 0,
+    };
     let Some(solution) = grid.solve_recursive(&mut counter, &nodes, &nodes, 0, words) else {
         return GridResult {
-            tries: counter,
+            tries: counter.current,
             grid: None,
         };
     };
@@ -160,7 +179,7 @@ pub fn try_make_grid(letters: LetterCounts, words: &Vec<CharsArray>) -> GridResu
     let solution_grid = solution.to_grid(&nodes);
 
     GridResult {
-        tries: counter,
+        tries: counter.current,
         grid: Some(solution_grid),
     }
 }
@@ -319,16 +338,15 @@ impl PartialGrid {
     pub fn solve_recursive(
         //change to an iterator
         &self,
-        counter: &mut usize,
+        counter: &mut Counter,
         all_nodes: &Vec<Node>,
         nodes_to_add: &Vec<Node>,
         level: usize,
         words: &Vec<CharsArray>,
     ) -> Option<Self> {
-        if *counter >= 1000000usize {
+        if !counter.try_increment() {
             return None;
         }
-        *counter += 1;
 
         //info!("{g}\n\n", g = self.to_grid(all_nodes));
 
@@ -561,7 +579,7 @@ mod tests {
     use std::time::Instant;
 
     use super::*;
-    use crate::{make_words_from_file, FinderWord};
+    use crate::make_words_from_file;
     use test_case::test_case;
 
     #[test]
@@ -616,12 +634,12 @@ mod tests {
             blanks_to_add -= 1;
         }
 
-        let solution = try_make_grid_with_blank_filling(letters, &arrays);
+        let solution = try_make_grid_with_blank_filling(letters, &arrays, Character::E, 1000000);
         println!("{:?}", now.elapsed());
         match solution.grid {
             Some(grid) => {
-                info!("Found after {} tries", solution.tries);
-                info!("{grid}");
+                println!("Found after {} tries", solution.tries);
+                println!("{grid}");
             }
             None => panic!("No Solution found after {} tries", solution.tries),
         }
