@@ -9,13 +9,81 @@ pub struct Word {
     pub text: String,
 }
 
+pub fn find_solution(characters: &CharsArray, grid: &Grid) -> Option<Solution> {
+    //TODO more efficient path if word has no duplicate letters
+
+    let Some(first_char) = characters.get(0) else {
+        return Default::default();
+    };
+
+    for first_tile in Tile::iter_by_row().filter(|tile| grid[*tile] == *first_char) {
+        let mut path: ArrayVec<Tile, 16> = Default::default();
+        let mut used_tiles: GridSet = Default::default();
+        let mut indices: ArrayVec<u8, 16> = Default::default();
+
+        let mut current_index: u8 = 0;
+        let mut current_tile: Tile = first_tile;
+        let mut char_to_find: Character = match characters.get(1) {
+            Some(c) => *c,
+            None => {
+                path.push(current_tile);
+                return Some(path);
+            }
+        };
+
+        loop {
+            if let Some(vector) = Vector::UNITS.get(current_index as usize) {
+                current_index += 1;
+                if let Some(adjacent_tile) = current_tile + vector {
+                    if grid[adjacent_tile] == char_to_find {
+                        if used_tiles.get_bit(&adjacent_tile) == false {
+                            //we need to go deeper
+                            path.push(current_tile);
+                            used_tiles.set_bit(&current_tile, true);
+                            indices.push(current_index);
+                            current_index = 0;
+                            current_tile = adjacent_tile;
+                            char_to_find = match characters.get(path.len() + 1) {
+                                Some(c) => *c,
+                                None => {
+                                    path.push(current_tile);
+                                    return Some(path);
+                                }
+                            };
+                        }
+                    }
+                }
+            } else {
+                //we have run out of options to try - go up a level
+                let Some(ct) = path.pop() else {
+                    break;
+                };
+
+                used_tiles.set_bit(&ct, false);
+                current_tile = ct;
+                let Some(ci) = indices.pop() else {
+                    break;
+                };
+                current_index = ci;
+
+                char_to_find = match characters.get(path.len() + 1) {
+                    Some(c) => *c,
+                    None => break,
+                };
+            }
+        }
+    }
+
+    None
+}
+
 impl Word {
     pub fn from_static_str(text: &'static str) -> Result<Self, ()> {
         let mut characters = ArrayVec::<Character, 16>::default();
 
         for c in text.chars() {
             let character = Character::try_from(c)?;
-            if !character.is_blank(){
+            if !character.is_blank() {
                 characters.try_push(character).map_err(|_| ())?;
             }
         }
@@ -29,69 +97,7 @@ impl Word {
     pub fn find_solution(&self, grid: &Grid) -> Option<Solution> {
         //TODO more efficient path if word has no duplicate letters
 
-        let Some(first_char) = self.characters.get(0) else {
-            return Default::default();
-        };
-
-        for first_tile in Tile::iter_by_row().filter(|tile| grid[*tile] == *first_char) {
-            let mut path: ArrayVec<Tile, 16> = Default::default();
-            let mut used_tiles: GridSet = Default::default();
-            let mut indices: ArrayVec<u8, 16> = Default::default();
-
-            let mut current_index: u8 = 0;
-            let mut current_tile: Tile = first_tile;
-            let mut char_to_find: Character = match self.characters.get(1) {
-                Some(c) => *c,
-                None => {
-                    path.push(current_tile);
-                    return Some(path);
-                }
-            };
-
-            loop {
-                if let Some(vector) = Vector::UNITS.get(current_index as usize) {
-                    current_index += 1;
-                    if let Some(adjacent_tile) = current_tile + vector {
-                        if grid[adjacent_tile] == char_to_find {
-                            if used_tiles.get_bit(&adjacent_tile) == false {
-                                //we need to go deeper
-                                path.push(current_tile);
-                                used_tiles.set_bit(&current_tile, true);
-                                indices.push(current_index);
-                                current_index = 0;
-                                current_tile = adjacent_tile;
-                                char_to_find = match self.characters.get(path.len() + 1) {
-                                    Some(c) => *c,
-                                    None => {
-                                        path.push(current_tile);
-                                        return Some(path);
-                                    }
-                                };
-                            }
-                        }
-                    }
-                } else {
-                    //we have run out of options to try - go up a level
-                    let Some(ct) = path.pop() else {
-                        break;
-                    };
-
-                    used_tiles.set_bit(&ct, false);
-                    current_tile = ct;
-                    let Some(ci) = indices.pop() else {
-                        break;
-                    };
-                    current_index = ci;
-
-                    char_to_find = match self.characters.get(path.len() + 1) {
-                        Some(c) => *c,
-                        None => break,
-                    };
-                }
-            }
-        }
-
-        None
+        find_solution(&self.characters, grid)
     }
 
     pub fn find_solutions(&self, grid: &Grid) -> Vec<Solution> {

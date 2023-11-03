@@ -1,3 +1,4 @@
+pub mod node;
 use itertools::Itertools;
 use log::{info, Log};
 use prime_bag::PrimeBag128;
@@ -34,10 +35,10 @@ fn make_words_from_file(text: &'static str) -> WordMultiMap {
         .into_group_map_by(|x| x.counts)
 }
 
-fn create_grid_for_most_words(words: WordMultiMap, max_tries: usize) {
+fn create_grid_for_most_words(word_map: WordMultiMap, max_tries: usize) {
     let mut possible_combinations: BTreeMap<LetterCounts, usize> = Default::default();
 
-    let word_letters: Vec<LetterCounts> = words.keys().cloned().sorted().collect_vec();
+    let word_letters: Vec<LetterCounts> = word_map.keys().cloned().sorted().collect_vec();
 
     get_combinations(
         &mut possible_combinations,
@@ -45,7 +46,7 @@ fn create_grid_for_most_words(words: WordMultiMap, max_tries: usize) {
         Multiplicities::default(),
         word_letters,
         16,
-        &words,
+        &word_map,
     );
     info!("");
     info!(
@@ -57,11 +58,31 @@ fn create_grid_for_most_words(words: WordMultiMap, max_tries: usize) {
     let groups = possible_combinations.into_iter().into_group_map_by(|x| x.1);
     let ordered_groups = groups.into_iter().sorted_unstable().rev().collect_vec();
 
-    for (size, group) in ordered_groups {
+    for (size, group) in ordered_groups.iter() {
         info!(
             "{len} possible combinations of size {size} found",
             len = group.len()
         )
+    }
+
+    for (_, group) in ordered_groups{
+        for (letters, _) in group{
+            //todo if there are blanks, try to fill them with needed characters
+
+            let letter_words: Vec<ArrayVec<Character, 16>> = word_map.iter().flat_map(|s|s.1)
+            .filter(|word| letters.is_superset(&word.counts))
+            .map(|z|z.array.clone()).collect();
+            let raw_text = get_raw_text(&letters);
+            let words_text = get_possible_words_text(&letters, &word_map);
+            match node::try_make_grid(letters, &letter_words){
+                Some(solution) => {
+                    info!("Solution found:\n{words_text}\n{solution}")
+                },
+                None => {
+                    info!("No solution possible for {raw_text}: ({words_text}) ")
+                },
+            }
+        }
     }
 }
 
@@ -121,6 +142,10 @@ fn get_combinations(
             )
         }
     }
+}
+
+fn get_raw_text(counts: &LetterCounts)-> String{
+    counts.into_iter().join("")
 }
 
 fn get_text(counts: &LetterCounts, word_map: &WordMultiMap) -> String {

@@ -1624,6 +1624,7 @@ dependencies = [
  "base64",
  "geometrid",
  "itertools",
+ "lazy_static",
  "log",
  "prime_bag",
  "rand",

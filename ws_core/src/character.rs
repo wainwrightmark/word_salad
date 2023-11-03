@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 use serde::{Deserialize, Serialize};
@@ -60,6 +62,12 @@ impl Into<usize> for Character {
 impl From<usize> for Character{
     fn from(value: usize) -> Self {
         FromPrimitive::from_usize(value).expect("Could not cast usize to character")
+    }
+}
+
+impl std::fmt::Display for Character{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_char())
     }
 }
 
