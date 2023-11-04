@@ -1,9 +1,13 @@
 use crate::LetterCounts;
 use itertools::Itertools;
 use std::collections::{BTreeMap, BTreeSet};
-use ws_core::{find_solution, ArrayVec, Character, CharsArray, Grid, GridSet, TileMap};
+use ws_core::{find_solution, Character, CharsArray, Grid, GridSet, TileMap};
 
 type Tile = geometrid::tile::Tile<4, 4>;
+
+type NodeId = geometrid::tile::Tile<16,1>;
+
+type NodeTiles = geometrid::tile_map::TileMap<Option<Tile>,16,1, 16>;
 
 //todo benchmark more efficient collections, different heuristics
 
@@ -34,10 +38,12 @@ pub fn try_make_grid_with_blank_filling(
     max_tries: usize,
 ) -> GridResult {
     let result = try_make_grid(letters, words, max_tries);
+    //println!("{} tries", result.tries);
     if result.grid.is_some() {
         return result;
     }
     let mut tries = result.tries;
+
 
     if letters.contains(Character::Blank) {
         let ordered_replacements = words
@@ -47,7 +53,7 @@ pub fn try_make_grid_with_blank_filling(
             .into_iter()
             .filter(|x| !x.0.is_blank())
             .filter(|x| *x.0 >= first_blank_replacement)
-            .sorted_by(|a, b| b.1.cmp(&a.1));
+            .sorted_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(b.0)));
 
         for (replacement, count) in ordered_replacements {
             if count <= 1 {
@@ -85,13 +91,13 @@ pub fn try_make_grid(
     words: &Vec<CharsArray>,
     max_tries: usize,
 ) -> GridResult {
-    //info!("Try to make grid: {l:?} : {w:?}", l= crate::get_raw_text(&letters), w= crate::write_words(words) );
+    //println!("Try to make grid: {l:?} : {w:?}", l= crate::get_raw_text(&letters), w= crate::write_words(words) );
     let mut nodes_map: BTreeMap<Character, Vec<Node>> = Default::default();
 
     let mut next_node_id: u8 = 0;
     for character in letters.into_iter() {
         let node = Node {
-            id: NodeId(next_node_id),
+            id: NodeId::try_from_inner(next_node_id).expect("Should be able to create node id"),
             character,
             constraints: Default::default(),
         };
@@ -149,6 +155,8 @@ pub fn try_make_grid(
         }
     }
 
+    //todo check that a grid is actually possible with the given constraint multiplicities
+
     // #[cfg(test)]
     // {
     //     for (_, nodes) in nodes_map.iter() {
@@ -198,7 +206,7 @@ fn try_add_constraint(
     let constraint = if target_nodes.len() == 1 {
         Constraint::Single(target_nodes[0].id)
     } else {
-        Constraint::OneOf(target_nodes.iter().map(|z| z.id).collect())
+        Constraint::OneOf(geometrid::tile_set::TileSet16::from_iter(target_nodes.iter().map(|z| z.id)))
     };
 
     // let node_id = constraints.get(key)
@@ -221,20 +229,20 @@ fn try_add_constraint(
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Node {
     pub id: NodeId,
     pub character: Character,
     pub constraints: BTreeSet<Constraint>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct NodeId(u8);
+// #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+// pub struct  Tile::<1,16>;// NodeId(u8); //TODO replace with Tile<1,16>
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Constraint {
     Single(NodeId),
-    OneOf(ArrayVec<NodeId, 4>), //Use something like a bitset
+    OneOf(geometrid::tile_set::TileSet16<16,1,16>),
 }
 
 impl Constraint {
@@ -253,19 +261,19 @@ impl Constraint {
         nodes.iter().map(|x| x.id).contains(id)
     }
 
-    pub fn is_met(&self, tile: Tile, map: &BTreeMap<NodeId, Tile>) -> Option<bool> {
+    pub fn is_met(&self, tile: Tile, map: &NodeTiles) -> Option<bool> {
         match self {
-            Constraint::Single(node_id) => match map.get(node_id) {
-                Some(other_tile) => Some(tile.is_adjacent_to(other_tile)),
+            Constraint::Single(node_id) => match map[*node_id] {
+                Some(other_tile) => Some(tile.is_adjacent_to(&other_tile)),
                 None => None,
             },
             Constraint::OneOf(ids) => {
                 let mut any_maybe = false;
 
-                for node_id in ids {
-                    match map.get(node_id) {
+                for node_id in ids.iter_true_tiles() {
+                    match map[node_id] {
                         Some(other_tile) => {
-                            if tile.is_adjacent_to(other_tile) {
+                            if tile.is_adjacent_to(&other_tile) {
                                 return Some(true);
                             }
                         }
@@ -288,7 +296,7 @@ impl Constraint {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PartialGrid {
     pub used_grid: GridSet,
-    pub map: BTreeMap<NodeId, Tile>,
+    pub map: NodeTiles,
     pub unchecked_constraints: Vec<(Tile, Constraint)>,
 }
 
@@ -316,8 +324,8 @@ impl PartialGrid {
     pub fn to_grid(&self, nodes: &Vec<Node>) -> Grid {
         let mut grid: Grid = Grid::from_fn(|_| Character::Blank);
         for node in nodes {
-            if let Some(tile) = self.map.get(&node.id) {
-                grid[*tile] = node.character;
+            if let Some(tile) = self.map[node.id] {
+                grid[tile] = node.character;
             }
         }
         grid
@@ -487,9 +495,9 @@ impl PartialGrid {
         for constraint in node.constraints.iter() {
             match constraint {
                 Constraint::Single(adjacent_node) => {
-                    match self.map.get(&adjacent_node) {
+                    match self.map[*adjacent_node] {
                         Some(tile) => {
-                            let adjacent = get_adjacent_tiles(tile);
+                            let adjacent = get_adjacent_tiles(&tile);
                             allowed = allowed.intersect(&adjacent);
                             if allowed == GridSet::EMPTY {
                                 return allowed;
@@ -510,7 +518,7 @@ impl PartialGrid {
     }
 
     pub fn try_place_node(&self, node: &Node, tile: Tile) -> Option<Self> {
-        if self.map.contains_key(&node.id) {
+        if self.map[node.id].is_some() {
             return None;
         }
         if self.used_grid.get_bit(&tile) {
@@ -519,7 +527,7 @@ impl PartialGrid {
 
         let new_map = {
             let mut nm = self.map.clone();
-            nm.insert(node.id, tile);
+            nm[node.id] = Some(tile);
             nm
         };
 
