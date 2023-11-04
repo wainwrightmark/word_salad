@@ -164,7 +164,7 @@ pub fn try_make_grid(
     //     }
     // }
 
-    let grid: PartialGrid = Default::default();
+    let mut grid: PartialGrid = Default::default();
 
     //let nodes: NodeMap = NodeMap::from_fn(|z|Node{});
 
@@ -174,7 +174,7 @@ pub fn try_make_grid(
         .map(|n| (n.id, n))
         .collect();
 
-    let nodes: NodeMap = NodeMap::from_fn(|tile| nodes_by_id.remove(&tile).expect("Could not find node"));
+    let nodes: NodeMap = NodeMap::from_fn(|tile| nodes_by_id.remove(&tile).unwrap_or_else(||Node { id: tile, character: Character::Blank, constraints: Default::default() }));
 
 
     let mut counter = Counter {

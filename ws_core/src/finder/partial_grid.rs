@@ -55,8 +55,7 @@ impl PartialGrid {
     }
 
     pub fn solve_recursive(
-        //change to an iterator
-        &self, //TODO mut self
+        &mut self,
         counter: &mut Counter,
         all_nodes: &NodeMap,
         level: usize,
@@ -152,13 +151,15 @@ impl PartialGrid {
             .iter()
             .filter(|t| potential_locations.get_bit(t))
         {
-            let Some(new_grid) = self.try_place_node(&node, *tile) else {
+            if !self.try_place_node(node, *tile){
                 continue;
-            };
+            }
 
-            if let Some(result) = new_grid.solve_recursive(counter, &all_nodes, level + 1, words) {
+            if let Some(result) = self.solve_recursive(counter, &all_nodes, level + 1, words) {
                 return Some(result);
             }
+
+            self.remove_node(node.id, *tile);
         }
         // #[cfg(test)]
         // {
@@ -221,46 +222,40 @@ impl PartialGrid {
         allowed
     }
 
-    pub fn try_place_node(&self, node: &Node, tile: Tile) -> Option<Self> {
+    pub fn remove_node(&mut self, node_id: NodeId, tile: Tile){
+        self.map[node_id] = None;
+        self.used_grid.set_bit(&tile, false);
+        self.nodes_to_add.set_bit(&node_id, true);
+    }
+
+    fn try_place_node(&mut self, node: &Node, tile: Tile) -> bool {
         if self.map[node.id].is_some() {
-            return None;
+            return false;
         }
         if self.used_grid.get_bit(&tile) {
-            return None;
+            return false;
         }
 
-        let new_map = {
-            let mut nm = self.map.clone();
-            nm[node.id] = Some(tile);
-            nm
-        };
+        self.map[node.id] = Some(tile);
 
         for constraint in node.constraints.iter() {
-            match constraint.is_met(tile, &new_map) {
+            match constraint.is_met(tile, &self.map) {
                 Some(true) => {}
                 Some(false) => {
-                    return None;
+                    self.map[node.id] = None; //reverse this change
+                    return false;
                 }
                 None => {} // todo only push unidirectional constraints
             }
         }
 
-        let new_grid = {
-            let mut ng = self.used_grid.clone();
-            ng.set_bit(&tile, true);
-            ng
-        };
+        self.used_grid.set_bit(&tile, true);
 
         //check adjacent nodes aren't locked out (e.g. if an adjacent node is on an edge and has five constraints but isn't connected to this, the grid is now invalid)
 
-        let mut new_nodes_to_add = self.nodes_to_add.clone();
-        new_nodes_to_add.set_bit(&node.id, false);
+        self.nodes_to_add.set_bit(&node.id, false);
 
-        Some(Self {
-            used_grid: new_grid,
-            map: new_map,
-            nodes_to_add: new_nodes_to_add,
-        })
+        true
     }
 }
 
