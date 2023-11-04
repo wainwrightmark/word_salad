@@ -1,7 +1,8 @@
-use crate::LetterCounts;
 use itertools::Itertools;
 use std::collections::{BTreeMap, BTreeSet};
-use ws_core::{find_solution, Character, CharsArray, Grid, GridSet, TileMap};
+use crate::{find_solution, Character, CharsArray, Grid, GridSet, TileMap};
+
+use super::helpers::LetterCounts;
 
 type Tile = geometrid::tile::Tile<4, 4>;
 
@@ -539,7 +540,7 @@ impl PartialGrid {
                 Some(false) => {
                     return None;
                 }
-                None => new_unchecked_constraints.push((tile, constraint.clone())),
+                None => new_unchecked_constraints.push((tile, constraint.clone())),// todo only push unidirectional constraints
             }
         }
 
@@ -587,7 +588,6 @@ mod tests {
     use std::time::Instant;
 
     use super::*;
-    use crate::make_words_from_file;
     use test_case::test_case;
 
     #[test]
@@ -611,7 +611,7 @@ mod tests {
     // #[test_case("WELLS, LEEDS, ELY, LISBURN, DERBY, NEWRY, SALISBURY")]
     pub fn test_try_make_grid(input: &'static str) {
         let now = Instant::now();
-        let words = make_words_from_file(input);
+        let words = crate::finder::helpers::make_words_from_file(input);
         let words = words
             .into_iter()
             .flat_map(|x| x.1.into_iter())

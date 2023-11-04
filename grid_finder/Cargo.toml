@@ -17,7 +17,6 @@ geometrid = { version = "0.4", features = ["glam", "serde"] }
 log = "0.4.20"
 simplelog = "0.12.1"
 
-prime_bag = { git = 'https://github.com/wainwrightmark/prime-bag'}
 lazy_static = "1.4.0"
 clap = { version = "4.4.7", features = ["derive"] }
 rayon = "1.8.0"

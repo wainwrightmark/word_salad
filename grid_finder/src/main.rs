@@ -1,19 +1,17 @@
-pub mod node;
+
 use clap::Parser;
 use itertools::Itertools;
 use log::info;
-use prime_bag::PrimeBag128;
 use rayon::prelude::*;
 use simplelog::*;
 use std::{
-    collections::{BTreeMap, HashMap},
+    collections::{BTreeMap},
     io,
     sync::atomic::AtomicUsize,
 };
-use ws_core::prelude::*;
+use ws_core::{prelude::*, finder::helpers::*};
 
-type LetterCounts = PrimeBag128<Character>;
-type WordMultiMap = HashMap<LetterCounts, Vec<FinderWord>>;
+
 
 #[derive(Parser, Debug)]
 #[command()]
@@ -59,12 +57,7 @@ fn main() {
     io::stdin().read_line(&mut String::new()).unwrap();
 }
 
-fn make_words_from_file(text: &'static str) -> WordMultiMap {
-    text.lines()
-        .flat_map(|x| x.split(','))
-        .flat_map(|x| FinderWord::try_new(x))
-        .into_group_map_by(|x| x.counts)
-}
+
 
 fn create_grid_for_most_words(word_map: WordMultiMap, options: &Options) {
     let mut possible_combinations: BTreeMap<LetterCounts, usize> = Default::default();
@@ -116,7 +109,7 @@ fn create_grid_for_most_words(word_map: WordMultiMap, options: &Options) {
                 .collect();
             let raw_text = get_raw_text(&letters);
             let words_text = get_possible_words_text(&letters, &word_map);
-            let result = node::try_make_grid_with_blank_filling(
+            let result = ws_core::finder::node::try_make_grid_with_blank_filling(
                 *letters,
                 &letter_words,
                 Character::E,
@@ -248,32 +241,7 @@ fn get_possible_words_text(counts: &LetterCounts, word_map: &WordMultiMap) -> St
 #[derive(Debug, Clone, PartialEq, Default)]
 struct CharacterCounter([u8; 26]);
 
-#[derive(Debug, Clone, PartialEq)]
-struct FinderWord {
-    pub text: &'static str,
-    pub array: CharsArray,
-    pub counts: PrimeBag128<Character>,
-}
 
-impl std::fmt::Display for FinderWord {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.text)
-    }
-}
-
-impl FinderWord {
-    fn try_new(text: &'static str) -> Option<Self> {
-        //println!("'{text}'");
-        let array = Word::from_static_str(text).ok().map(|x| x.characters)?;
-
-        let counts: PrimeBag128<Character> = PrimeBag128::try_from_iter(array.iter().cloned())?;
-        Some(Self {
-            array,
-            counts,
-            text,
-        })
-    }
-}
 
 #[derive(Debug, Clone, PartialEq, Default, Copy, Ord, PartialOrd, Eq)]
 struct Multiplicities {
