@@ -1,14 +1,14 @@
+use crate::{find_solution, Character, CharsArray, Grid, GridSet, TileMap};
 use itertools::Itertools;
 use std::collections::{BTreeMap, BTreeSet};
-use crate::{find_solution, Character, CharsArray, Grid, GridSet, TileMap};
 
 use super::helpers::LetterCounts;
 
 type Tile = geometrid::tile::Tile<4, 4>;
 
-type NodeId = geometrid::tile::Tile<16,1>;
+type NodeId = geometrid::tile::Tile<16, 1>;
 
-type NodeTiles = geometrid::tile_map::TileMap<Option<Tile>,16,1, 16>;
+type NodeTiles = geometrid::tile_map::TileMap<Option<Tile>, 16, 1, 16>;
 
 //todo benchmark more efficient collections, different heuristics
 
@@ -44,7 +44,6 @@ pub fn try_make_grid_with_blank_filling(
         return result;
     }
     let mut tries = result.tries;
-
 
     if letters.contains(Character::Blank) {
         let ordered_replacements = words
@@ -207,7 +206,9 @@ fn try_add_constraint(
     let constraint = if target_nodes.len() == 1 {
         Constraint::Single(target_nodes[0].id)
     } else {
-        Constraint::OneOf(geometrid::tile_set::TileSet16::from_iter(target_nodes.iter().map(|z| z.id)))
+        Constraint::OneOf(geometrid::tile_set::TileSet16::from_iter(
+            target_nodes.iter().map(|z| z.id),
+        ))
     };
 
     // let node_id = constraints.get(key)
@@ -243,7 +244,7 @@ pub struct Node {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Constraint {
     Single(NodeId),
-    OneOf(geometrid::tile_set::TileSet16<16,1,16>),
+    OneOf(geometrid::tile_set::TileSet16<16, 1, 16>),
 }
 
 impl Constraint {
@@ -298,7 +299,7 @@ impl Constraint {
 pub struct PartialGrid {
     pub used_grid: GridSet,
     pub map: NodeTiles,
-    pub unchecked_constraints: Vec<(Tile, Constraint)>,
+    //pub unchecked_constraints: Vec<(Tile, Constraint)>,
 }
 
 impl Default for PartialGrid {
@@ -306,7 +307,7 @@ impl Default for PartialGrid {
         Self {
             used_grid: Default::default(),
             map: Default::default(),
-            unchecked_constraints: Default::default(),
+            //unchecked_constraints: Default::default(),
         }
     }
 }
@@ -532,7 +533,7 @@ impl PartialGrid {
             nm
         };
 
-        let mut new_unchecked_constraints: Vec<(Tile, Constraint)> = vec![];
+        //let mut new_unchecked_constraints: Vec<(Tile, Constraint)> = vec![];
 
         for constraint in node.constraints.iter() {
             match constraint.is_met(tile, &new_map) {
@@ -540,19 +541,19 @@ impl PartialGrid {
                 Some(false) => {
                     return None;
                 }
-                None => new_unchecked_constraints.push((tile, constraint.clone())),// todo only push unidirectional constraints
+                None => {}, // todo only push unidirectional constraints
             }
         }
 
-        for (tile, constraint) in self.unchecked_constraints.iter() {
-            match constraint.is_met(*tile, &new_map) {
-                Some(true) => {}
-                Some(false) => {
-                    return None;
-                }
-                None => new_unchecked_constraints.push((*tile, constraint.clone())),
-            }
-        }
+        // for (tile, constraint) in self.unchecked_constraints.iter() {
+        //     match constraint.is_met(*tile, &new_map) {
+        //         Some(true) => {}
+        //         Some(false) => {
+        //             return None;
+        //         }
+        //         None => {},
+        //     }
+        // }
 
         let new_grid = {
             let mut ng = self.used_grid.clone();
@@ -565,7 +566,7 @@ impl PartialGrid {
         Some(Self {
             used_grid: new_grid,
             map: new_map,
-            unchecked_constraints: new_unchecked_constraints,
+            //unchecked_constraints: new_unchecked_constraints,
         })
     }
 }
