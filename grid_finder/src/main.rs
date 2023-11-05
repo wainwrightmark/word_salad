@@ -89,6 +89,9 @@ fn create_grid_for_most_words(word_map: WordMultiMap, options: &Options) {
         )
     }
 
+    let db = sled::open("/word_salad_grids").expect("Could not open database");
+
+
     for (size, group) in ordered_groups {
         if size < options.min_words {
             break;
@@ -119,6 +122,9 @@ fn create_grid_for_most_words(word_map: WordMultiMap, options: &Options) {
             match result.grid {
                 Some(solution) => {
                     solution_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                    let value = solution.iter().join("");
+                    let key = words_text.clone();
+                    db.insert(key.as_str(), value.as_str()).expect("Could not insert data");
                     info!("Solution found after {tries} tries:\n{words_text}\n{solution}")
                 }
                 None => {
@@ -146,7 +152,9 @@ fn create_grid_for_most_words(word_map: WordMultiMap, options: &Options) {
         let solution_count = solution_count.into_inner();
         let impossible_count = impossible_count.into_inner();
         let given_up_count = given_up_count.into_inner();
-        info!("Groups of {size} words: {solution_count} Solutions. {impossible_count} Impossible. {given_up_count} Given Up On.")
+        info!("Groups of {size} words: {solution_count} Solutions. {impossible_count} Impossible. {given_up_count} Given Up On.");
+
+        db.flush().expect("Could not flush db");
     }
 }
 
