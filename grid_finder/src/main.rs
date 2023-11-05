@@ -1,17 +1,14 @@
-
 use clap::Parser;
 use itertools::Itertools;
 use log::info;
 use rayon::prelude::*;
 use simplelog::*;
 use std::{
-    collections::{BTreeMap, BTreeSet},
+    collections::{BTreeMap, BTreeSet, HashSet},
     io,
-    sync::atomic::AtomicUsize, ops::{RangeInclusive, Range, RangeFrom},
+    sync::atomic::AtomicUsize,
 };
-use ws_core::{prelude::*, finder::helpers::*};
-
-
+use ws_core::{finder::helpers::*, prelude::*};
 
 #[derive(Parser, Debug)]
 #[command()]
@@ -23,6 +20,8 @@ struct Options {
 
     #[arg(short, long, default_value_t = false)]
     pub verbose: bool,
+    #[arg(short, long, default_value_t = false)]
+    pub output: bool,
 }
 
 fn main() {
@@ -48,15 +47,53 @@ fn main() {
     let file = file.leak(); //cheeky
 
     //let file = include_str!("colors.txt");
-    let words = make_words_from_file(file);
+    let word_map = make_words_from_file(file);
 
-    create_grid_for_most_words(words, &options);
+    if options.output {
+        output_saved_data(word_map);
+    } else {
+        create_grid_for_most_words(word_map, &options);
+    }
 
     println!("Finished... Press enter");
     io::stdin().read_line(&mut String::new()).unwrap();
 }
 
+const DB_PATH: &'static str = "/word_salad_grids";
 
+fn output_saved_data(word_map: WordMultiMap) {
+    let word_set: HashSet<&str> = word_map
+        .into_iter()
+        .flat_map(|x| x.1.into_iter())
+        .map(|w| w.text)
+        .collect();
+    let db = sled::open(DB_PATH).expect("Could not open database");
+
+    let mut solutions: BTreeSet<(usize, String)> = Default::default();
+
+    'results: for result in db.into_iter() {
+        let (key, value) = result.unwrap();
+        let key = String::from_utf8_lossy(&key);
+        let value = String::from_utf8_lossy(&value);
+
+        let trimmed_key = key
+            .trim_end_matches(')')
+            .trim_end_matches(char::is_numeric)
+            .trim_end_matches('(');
+
+        let words: Vec<_> = trimmed_key.split(", ").collect();
+
+        if !words.iter().all(|w| word_set.contains(w)) {
+            continue 'results;
+        }
+
+        solutions.insert((words.len(), format!("{value}: {key}")));
+    }
+
+    for (_, text) in solutions.into_iter().rev(){
+        info!("{text}");
+    }
+}
 
 fn create_grid_for_most_words(word_map: WordMultiMap, options: &Options) {
     let mut possible_combinations: BTreeMap<LetterCounts, usize> = Default::default();
@@ -67,7 +104,7 @@ fn create_grid_for_most_words(word_map: WordMultiMap, options: &Options) {
         &mut possible_combinations,
         0,
         Multiplicities::default(),
-        word_letters,
+        word_letters.as_slice(),
         16,
         &word_map,
     );
@@ -88,22 +125,21 @@ fn create_grid_for_most_words(word_map: WordMultiMap, options: &Options) {
         )
     }
 
-    let db = sled::open("/word_salad_grids").expect("Could not open database");
+    let db = sled::open(DB_PATH).expect("Could not open database");
     let mut previous_solutions: BTreeSet<LetterCounts> = Default::default();
 
     let (sender, receiver) = std::sync::mpsc::channel::<LetterCounts>();
     for (size, group) in ordered_groups {
-
-
         let solution_count = AtomicUsize::new(0);
         let impossible_count = AtomicUsize::new(0);
         let given_up_count = AtomicUsize::new(0);
         let redundant_count = AtomicUsize::new(0);
 
-        group.par_iter()
-
-        .for_each(|(letters, _)| {
-            if previous_solutions.range(letters..).any(|prev|prev.is_superset(letters)){
+        group.par_iter().for_each(|(letters, _)| {
+            if previous_solutions
+                .range(letters..)
+                .any(|prev| prev.is_superset(letters))
+            {
                 redundant_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
                 return;
             }
@@ -131,7 +167,8 @@ fn create_grid_for_most_words(word_map: WordMultiMap, options: &Options) {
                     let value = solution.iter().join("");
                     let key = words_text.clone();
 
-                    db.insert(key.as_str(), value.as_str()).expect("Could not insert data");
+                    db.insert(key.as_str(), value.as_str())
+                        .expect("Could not insert data");
 
                     sender.send(*letters).expect("Could not send solution");
                     info!("Solution found after {tries} tries:\n{words_text}\n{solution}")
@@ -169,26 +206,27 @@ fn create_grid_for_most_words(word_map: WordMultiMap, options: &Options) {
     }
 }
 
-
 fn get_combinations(
     possible_combinations: &mut BTreeMap<LetterCounts, usize>,
     word_count: usize,
     multiplicities: Multiplicities,
-    possible_words: Vec<LetterCounts>,
+    mut possible_words: &[LetterCounts],
     max_size: u8,
     multi_map: &WordMultiMap,
 ) {
-    let mut new_possible_words = possible_words.clone();
+    //let mut new_possible_words = possible_words.clone();
 
-    while let Some(word) = new_possible_words.pop() {
-        //let word_text = word.text;
+    loop {
+        let Some((word, npw)) = possible_words.split_last() else {
+            break;
+        };
+        possible_words = npw;
 
         let Some(new_multiplicities) = multiplicities.try_add_word(&word) else {
             panic!("Could not add word to multiplicities");
         };
 
         let new_word_count = word_count + 1;
-
 
         if new_multiplicities.count <= max_size {
             match possible_combinations.entry(new_multiplicities.set) {
@@ -206,7 +244,7 @@ fn get_combinations(
                 possible_combinations,
                 new_word_count,
                 new_multiplicities,
-                new_possible_words.clone(),
+                possible_words,
                 max_size,
                 multi_map,
             );
@@ -217,7 +255,7 @@ fn get_combinations(
                 "'{word_text}' eliminated. {found} options found. {remaining} remain",
                 word_text = get_text(&word, multi_map),
                 found = possible_combinations.len(),
-                remaining = new_possible_words.len()
+                remaining = possible_words.len()
             )
         }
     }
@@ -255,8 +293,6 @@ fn get_possible_words_text(counts: &LetterCounts, word_map: &WordMultiMap) -> St
 
 #[derive(Debug, Clone, PartialEq, Default)]
 struct CharacterCounter([u8; 26]);
-
-
 
 #[derive(Debug, Clone, PartialEq, Default, Copy, Ord, PartialOrd, Eq)]
 struct Multiplicities {
@@ -303,7 +339,7 @@ pub mod tests {
             &mut possible_combinations,
             0,
             Multiplicities::default(),
-            word_letters,
+            word_letters.as_slice(),
             16,
             &words,
         );
@@ -350,7 +386,7 @@ pub mod tests {
             &mut possible_combinations,
             0,
             Multiplicities::default(),
-            word_letters,
+            word_letters.as_slice(),
             16,
             &words,
         );

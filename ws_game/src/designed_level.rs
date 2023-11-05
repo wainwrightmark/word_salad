@@ -43,7 +43,7 @@ impl DesignedLevel {
 
         let words_map: BTreeMap<CharsArray, Word> = words
             .split_ascii_whitespace()
-            .map(|s| Word::from_static_str(s).expect("Could not convert string to word"))
+            .map(|s| Word::from_str(s).expect("Could not convert string to word"))
             .map(|w| (w.characters.clone(), w))
             .collect();
 
@@ -116,7 +116,7 @@ pub mod tests {
 
         assert_eq!(level.calculate_unneeded_tiles(&found_words), expected);
 
-        found_words.insert(Word::from_static_str("kendo").unwrap().characters);
+        found_words.insert(Word::from_str("kendo").unwrap().characters);
         expected.set_bit(&Tile::new_const::<2, 0>(), true);
         let actual: geometrid::tile_set::TileSet16<4, 4, 16> =
             level.calculate_unneeded_tiles(&found_words);

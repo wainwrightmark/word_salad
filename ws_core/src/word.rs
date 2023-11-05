@@ -78,7 +78,7 @@ pub fn find_solution(characters: &CharsArray, grid: &Grid) -> Option<Solution> {
 }
 
 impl Word {
-    pub fn from_static_str(text: &'static str) -> Result<Self, ()> {
+    pub fn from_str(text: &str) -> Result<Self, ()> {
         let mut characters = ArrayVec::<Character, 16>::default();
 
         for c in text.chars() {
@@ -189,7 +189,7 @@ mod tests {
         // spellchecker:disable-next-line
         let grid = try_make_grid("SGOPELWODEMKVEEU").expect("Should be able to make grid");
         // spellchecker:disable-next-line
-        let pokemon = Word::from_static_str("eevee").expect("Should be able to make word");
+        let pokemon = Word::from_str("eevee").expect("Should be able to make word");
 
         let path = pokemon
             .find_solution(&grid)
@@ -214,7 +214,7 @@ mod tests {
     pub fn test_find_paths() {
         // spellchecker:disable-next-line
         let grid = try_make_grid("UOEVFRNEHITSNTFY").expect("Should be able to make grid");
-        let one = Word::from_static_str("one").expect("Should be able to make word");
+        let one = Word::from_str("one").expect("Should be able to make word");
 
         let paths = one.find_solutions(&grid);
 

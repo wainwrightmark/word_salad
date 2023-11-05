@@ -31,7 +31,7 @@ impl std::fmt::Display for FinderWord {
 impl FinderWord {
     fn try_new(text: &'static str) -> Option<Self> {
         //println!("'{text}'");
-        let array = Word::from_static_str(text).ok().map(|x| x.characters)?;
+        let array = Word::from_str(text).ok().map(|x| x.characters)?;
 
         let counts: PrimeBag128<Character> = PrimeBag128::try_from_iter(array.iter().cloned())?;
         Some(Self {
