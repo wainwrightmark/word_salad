@@ -1,9 +1,13 @@
-use crate::{find_solution, Character, CharsArray, Grid, GridSet, TileMap};
+use crate::{Character, CharsArray, Grid, GridSet};
 use itertools::Itertools;
-use std::collections::{BTreeMap, BTreeSet, HashMap};
+use std::{
+    borrow::BorrowMut,
+    cell::{Cell, RefCell},
+    collections::{BTreeMap, BTreeSet},
+};
 
 use super::{
-    helpers::{LetterCounts, iter_true},
+    helpers::{iter_true, LetterCounts},
     partial_grid::{NodeMap, PartialGrid},
 };
 use crate::finder::*;
@@ -84,18 +88,85 @@ pub fn try_make_grid_with_blank_filling(
     return GridResult { tries, grid: None };
 }
 
+struct WordUniquenessHelper {
+    constraining_words: BTreeMap<Character, CharsArray>,
+}
+
+impl WordUniquenessHelper {
+    pub fn new(words: &Vec<CharsArray>, nodes_map: &BTreeMap<Character, Vec<NodeBuilder>>) -> Self {
+        let constraining_words: BTreeMap<Character, CharsArray> = nodes_map
+            .iter()
+            .filter(|(_, nodes)| nodes.len() > 1)
+            .map(|x| x.0)
+            .map(|char| {
+                (
+                    *char,
+                    words
+                        .iter()
+                        .max_by_key(|w| helpers::count_adjacent_indexes(w, *char))
+                        .unwrap()
+                        .clone(),
+                )
+            })
+            .collect();
+
+        Self { constraining_words }
+    }
+
+    pub fn check_letter<'a>(
+        &self,
+        buffered_index: usize,
+        word: &CharsArray,
+        nodes_map: &'a BTreeMap<Character, Vec<NodeBuilder>>,
+    ) -> WordLetterResult<'a> {
+        let Some(true_index) = buffered_index.checked_sub(1) else {
+            return WordLetterResult::Buffer;
+        };
+
+        let Some(character) = word.get(true_index) else {
+            return WordLetterResult::Buffer;
+        };
+
+        let vec = nodes_map
+            .get(character)
+            .expect("Character not associated with any nodes");
+
+        if vec.len() == 1 {
+            return WordLetterResult::UniqueLetter(*character, &vec[0]);
+        } else if let Some(constraining_word) = self.constraining_words.get(character) {
+            if word == constraining_word {
+                let node_index = word[0..true_index]
+                    .iter()
+                    .filter(|x| *x == character)
+                    .count();
+                let node = vec
+                    .get(node_index)
+                    .expect("Should be able to get node by index");
+                return WordLetterResult::UniqueLetter(*character, &node);
+            }
+        }
+
+        WordLetterResult::DuplicateLetter(*character, vec)
+    }
+}
+enum WordLetterResult<'a> {
+    Buffer,
+    UniqueLetter(Character, &'a NodeBuilder),
+    DuplicateLetter(Character, &'a Vec<NodeBuilder>),
+}
+
 pub fn try_make_grid(
     letters: LetterCounts,
     words: &Vec<CharsArray>,
     max_tries: usize,
 ) -> GridResult {
     //println!("Try to make grid: {l:?} : {w:?}", l= crate::get_raw_text(&letters), w= crate::write_words(words) );
-    let mut nodes_map: BTreeMap<Character, Vec<Node>> = Default::default();
+    let mut nodes_map: BTreeMap<Character, Vec<NodeBuilder>> = Default::default();
 
     let mut next_node_id: u8 = 0;
     for character in letters.into_iter() {
         let id = NodeId::try_from_inner(next_node_id).expect("Should be able to create node id");
-        let node = Node::new(id, character);
+        let node = NodeBuilder::new(id, character);
         next_node_id += 1;
         match nodes_map.entry(character) {
             std::collections::btree_map::Entry::Vacant(v) => {
@@ -107,29 +178,64 @@ pub fn try_make_grid(
         }
     }
 
+    let helper: WordUniquenessHelper = WordUniquenessHelper::new(words, &nodes_map);
+
     for word in words {
-        for (a, b) in word.iter().tuple_windows() {
-            let added = try_add_constraint(a, b, &mut nodes_map);
-            let added2 = try_add_constraint(b, a, &mut nodes_map);
-            if !added && !added2 {
-                if let Some(a_first) = nodes_map.get(a).and_then(|v| v.first()) {
-                    if a_first.are_all_constraints_to_character(a, &nodes_map) {
-                        if let Some(b_first) = nodes_map.get(b).and_then(|v| v.first()) {
-                            if b_first.are_all_constraints_to_character(b, &nodes_map) {
-                                let a_first_id = a_first.id;
-                                let b_first_id = b_first.id;
-                                nodes_map
-                                    .get_mut(a)
-                                    .unwrap()
-                                    .first_mut()
-                                    .unwrap()
-                                    .add_single_constraint(b_first_id);
-                                nodes_map
-                                    .get_mut(b)
-                                    .unwrap()
-                                    .first_mut()
-                                    .unwrap()
-                                    .add_single_constraint(a_first_id);
+        let range = 0..(word.len() + 2);
+        for (a_index, b_index, c_index) in range.tuple_windows() {
+            //we are only adding constraints to b here
+
+            let a = helper.check_letter(a_index, word, &nodes_map);
+            let b = helper.check_letter(b_index, word, &nodes_map);
+            let c = helper.check_letter(c_index, word, &nodes_map);
+
+            match b {
+                WordLetterResult::Buffer => {}
+                WordLetterResult::UniqueLetter(_, b_node) => {
+                    match a {
+                        WordLetterResult::Buffer => {}
+                        WordLetterResult::UniqueLetter(_, a_node) => {
+                            b_node.add_single_constraint(a_node.id);
+                        }
+                        WordLetterResult::DuplicateLetter(a_char, a_nodes) => {
+
+                            if a_nodes.len() == 2{
+                                if let WordLetterResult::DuplicateLetter(c_char, ..) = c {
+                                    if a_char == c_char{
+                                        //there are two copies of this character and both must be connected to b
+                                        for a_node in a_nodes{
+                                            b_node.add_single_constraint(a_node.id);
+                                            a_node.add_single_constraint(b_node.id);
+                                        }
+                                        continue;
+                                    }
+                                }
+                            }
+
+                            b_node.add_multiple_constraint(a_nodes);
+                        }
+                    }
+
+                    match c {
+                        WordLetterResult::Buffer => {}
+                        WordLetterResult::UniqueLetter(_, c_node) => {
+                            b_node.add_single_constraint(c_node.id);
+                        }
+                        WordLetterResult::DuplicateLetter(_, c_nodes) => {
+                            b_node.add_multiple_constraint(c_nodes);
+                        }
+                    }
+                }
+                WordLetterResult::DuplicateLetter(b_char, b_nodes) => {
+                    //todo handle pair of same character nodes next door to each other
+                    if b_nodes.len() == 2 {
+                        if let WordLetterResult::DuplicateLetter(c_char, ..) = c {
+                            if c_char == b_char {
+                                let b0 = &b_nodes[0];
+                                let b1 = &b_nodes[1];
+
+                                b0.add_single_constraint(b1.id);
+                                b1.add_single_constraint(b0.id);
                             }
                         }
                     }
@@ -144,6 +250,7 @@ pub fn try_make_grid(
     // {
     //     for (_, nodes) in nodes_map.iter() {
     //         for node in nodes {
+    //             let node: Node = node.clone().into();
     //             println!("{}: {} constraints", node.character, node.constraint_count);
     //         }
     //     }
@@ -151,16 +258,16 @@ pub fn try_make_grid(
 
     let mut grid: PartialGrid = Default::default();
 
-    //let nodes: NodeMap = NodeMap::from_fn(|z|Node{});
-
     let mut nodes_by_id: BTreeMap<NodeId, Node> = nodes_map
         .into_values()
         .flat_map(|v| v.into_iter())
-        .map(|n| (n.id, n))
+        .map(|n| (n.id, n.into()))
         .collect();
 
     let nodes: NodeMap = NodeMap::from_fn(|tile| {
-        nodes_by_id.remove(&tile).unwrap_or_else(|| Node::new(tile, Character::Blank))
+        nodes_by_id
+            .remove(&tile)
+            .unwrap_or_else(|| NodeBuilder::new(tile, Character::Blank).into())
     });
 
     let mut counter = Counter {
@@ -182,49 +289,64 @@ pub fn try_make_grid(
     }
 }
 
-fn try_add_constraint(
-    from: &Character,
-    to: &Character,
-    nodes_map: &mut BTreeMap<Character, Vec<Node>>,
-) -> bool {
-    let Some(target_nodes) = nodes_map.get(&to) else {
-        return false;
-    };
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct NodeBuilder {
+    pub id: NodeId,
+    pub character: Character,
+    single_constraints: Cell<NodeIdSet>,
+    multiple_constraints: RefCell<BTreeSet<NodeIdSet>>,
+}
 
-    let target_set = NodeIdSet::from_iter(target_nodes.iter().map(|x| x.id));
-
-    let Some(source_nodes) = nodes_map.get_mut(&from) else {
-        return false;
-    };
-
-    if !(source_nodes.len() == 1 || (source_nodes.len() == 2 && from == to)) {
-        return false;
+impl NodeBuilder {
+    pub fn new(id: NodeId, character: Character) -> Self {
+        Self {
+            id,
+            character,
+            single_constraints: Default::default(),
+            multiple_constraints: Default::default(),
+        }
     }
 
-    if target_set.count() == 1 {
-        match source_nodes.get_mut(0) {
-            Some(source_node) => {
-                source_node.single_constraints = source_node.single_constraints.union(&target_set);
-                source_node.update_constraint_count();
-                return true;
+    pub fn add_single_constraint(&self, other: NodeId) {
+        let mut s = self.single_constraints.get().clone();
+        s.set_bit(&other, true);
+        self.single_constraints.set(s);
+
+        self.multiple_constraints
+            .borrow_mut()
+            .retain(|mc| mc.intersect(&s) == NodeIdSet::EMPTY);
+    }
+
+    pub fn add_multiple_constraint(&self, nodes: &Vec<NodeBuilder>) {
+        let mut constraint = NodeIdSet::from_iter(nodes.iter().map(|n| n.id));
+        constraint.set_bit(&self.id, false);
+
+        match constraint.count() {
+            0 => {
+                return;
             }
-            None => {
-                return false;
+            1 => self.add_single_constraint(iter_true(&constraint).next().unwrap()),
+            _ => {
+                if self.single_constraints.get().intersect(&constraint) == NodeIdSet::EMPTY {
+                    self.multiple_constraints.borrow_mut().insert(constraint);
+                }
             }
         }
-    } else if target_set.count() > 1 {
-        match source_nodes.get_mut(0) {
-            Some(source_node) => {
-                source_node.multiple_constraints.insert(target_set);
-                source_node.update_constraint_count();
-                return true;
-            }
-            None => {
-                return false;
-            }
+    }
+}
+
+impl Into<Node> for NodeBuilder {
+    fn into(self) -> Node {
+        let constraint_count = self.single_constraints.get().count() as u8
+            + self.multiple_constraints.borrow().len() as u8;
+
+        Node {
+            id: self.id,
+            character: self.character,
+            single_constraints: self.single_constraints.get(),
+            multiple_constraints: self.multiple_constraints.into_inner(),
+            constraint_count,
         }
-    } else {
-        return false;
     }
 }
 
@@ -238,19 +360,6 @@ pub struct Node {
 }
 
 impl Node {
-    pub fn new(
-        id: NodeId,
-        character: Character,
-    ) -> Self {
-        Self {
-            id,
-            character,
-            single_constraints : Default::default(),
-            multiple_constraints: Default::default(),
-            constraint_count : 0,
-        }
-    }
-
     pub fn are_all_constraints_to_character(
         &self,
         character: &Character,
@@ -276,23 +385,11 @@ impl Node {
         return true;
     }
 
-    pub fn add_single_constraint(&mut self, other: NodeId) {
-        self.single_constraints.set_bit(&other, true);
-        self.update_constraint_count()
-    }
-
-    pub fn update_constraint_count(&mut self) {
-        self.constraint_count =
-            self.single_constraints.count() as u8 + self.multiple_constraints.len() as u8;
-    }
-
     pub fn are_constraints_met(&self, tile: &Tile, grid: &PartialGrid) -> bool {
-
         let placed_nodes = grid.nodes_to_add.negate();
         let placed_constraints = placed_nodes.intersect(&self.single_constraints);
         // single constraints
-        for placed in iter_true(&placed_constraints)
-        {
+        for placed in iter_true(&placed_constraints) {
             if let Some(placed_tile) = grid.map[placed] {
                 if !placed_tile.is_adjacent_to(tile) {
                     return false;
@@ -326,19 +423,19 @@ mod tests {
     use super::*;
     use test_case::test_case;
 
-    //#[test_case("DOG, TOAD, PIGEON, OWL, PIG, ANT, CAT, LION, DEER, COW, GOAT, BEE, TIGER")]
-    // #[test_case("SILVER, ORANGE, GREEN, IVORY, CORAL, OLIVE, TEAL, GRAY, CYAN, RED")]
+    #[test_case("DOG, TOAD, PIGEON, OWL, PIG, ANT, CAT, LION, DEER, COW, GOAT, BEE, TIGER")]
+    #[test_case("SILVER, ORANGE, GREEN, IVORY, CORAL, OLIVE, TEAL, GRAY, CYAN, RED")]
     #[test_case("CROATIA, ROMANIA, IRELAND, LATVIA, POLAND, FRANCE, MALTA, LIL")]
     #[test_case("CROATIA, ROMANIA, IRELAND, LATVIA, POLAND, FRANCE, MALTA")]
-    // #[test_case("PIEPLATE, STRAINER, TEAPOT, GRATER, APRON, SPOON, POT")]
-    // #[test_case("THIRTEEN, FOURTEEN, FIFTEEN, SEVENTY, THIRTY, NINETY, THREE, SEVEN, FORTY, FIFTY, FIFTH, FOUR, NINE, ONE, TEN")]
-    // #[test_case("POLO, SHOOTING, KENDO, SAILING, LUGE, SKIING")]
-    // #[test_case("IOWA, OHIO, IDAHO, UTAH, HAWAII, INDIANA, MONTANA")]
-    // #[test_case("ROSEMARY, CARROT, PARSLEY, SOY, PEANUT, YAM, PEA, BEAN")]
-    // #[test_case("WEEDLE, MUK, SLOWPOKE, GOLEM, SEEL, MEW, EEVEE, GLOOM")]
-    // #[test_case("POLITICIAN, OPTICIAN, CASHIER, FLORIST, ARTIST, TAILOR, ACTOR")]
-    // #[test_case("ALDGATE, ANGEL, ALDGATEEAST, BANK, LANCASTERGATE")]
-    // #[test_case("WELLS, LEEDS, ELY, LISBURN, DERBY, NEWRY, SALISBURY")]
+     #[test_case("PIEPLATE, STRAINER, TEAPOT, GRATER, APRON, SPOON, POT")]
+    #[test_case("THIRTEEN, FOURTEEN, FIFTEEN, SEVENTY, THIRTY, NINETY, THREE, SEVEN, FORTY, FIFTY, FIFTH, FOUR, NINE, ONE, TEN")]
+    #[test_case("POLO, SHOOTING, KENDO, SAILING, LUGE, SKIING")]
+    #[test_case("IOWA, OHIO, IDAHO, UTAH, HAWAII, INDIANA, MONTANA")]
+    #[test_case("ROSEMARY, CARROT, PARSLEY, SOY, PEANUT, YAM, PEA, BEAN")]
+    #[test_case("WEEDLE, MUK, SLOWPOKE, GOLEM, SEEL, MEW, EEVEE, GLOOM")]
+    #[test_case("POLITICIAN, OPTICIAN, CASHIER, FLORIST, ARTIST, TAILOR, ACTOR")]
+    #[test_case("ALDGATE, ANGEL, ALDGATEEAST, BANK, LANCASTERGATE")]
+    #[test_case("WELLS, LEEDS, ELY, LISBURN, DERBY, NEWRY, SALISBURY")]
     #[test_case("Cat, Dog")]
     pub fn test_try_make_grid(input: &'static str) {
         let now = Instant::now();

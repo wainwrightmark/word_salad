@@ -138,8 +138,6 @@ impl PartialGrid {
         //     println!("{}", potential_locations);
         // }
 
-
-
         if potential_locations == GridSet::EMPTY {
             // #[cfg(test)]
             // {
@@ -199,8 +197,8 @@ impl PartialGrid {
 
         //println!("{new_allowed}");
 
-        for tile in iter_true(&allowed){
-            if !node.are_constraints_met(&tile, &self){
+        for tile in iter_true(&allowed) {
+            if !node.are_constraints_met(&tile, &self) {
                 new_allowed.set_bit(&tile, false);
                 // println!("{tile}");
                 // println!("{new_allowed}");
@@ -210,13 +208,13 @@ impl PartialGrid {
         new_allowed
     }
 
-    pub fn remove_node(&mut self, node_id: NodeId, tile: Tile){
+    pub fn remove_node(&mut self, node_id: NodeId, tile: Tile) {
         self.map[node_id] = None;
         self.used_grid.set_bit(&tile, false);
         self.nodes_to_add.set_bit(&node_id, true);
     }
 
-    fn place_node(&mut self, node: &Node, tile: Tile){
+    fn place_node(&mut self, node: &Node, tile: Tile) {
         self.map[node.id] = Some(tile);
         self.used_grid.set_bit(&tile, true);
         self.nodes_to_add.set_bit(&node.id, false);
@@ -278,51 +276,50 @@ mod tests {
     }
 
     #[test]
-    pub fn test_potential_locations(){
+    pub fn test_potential_locations() {
         let mut grid = PartialGrid::default();
 
         let a_id = NodeId::try_from_inner(0).unwrap();
-        let a_node = Node::new(a_id, Character::A);
+        let a_node = NodeBuilder::new(a_id, Character::A).into();
 
         let a_locations = grid.potential_locations(&a_node);
 
         let mut expected = GridSet::EMPTY.negate();
 
         assert_sets_eq(a_locations, expected);
-        let a_tile = Tile::new_const::<1,1,>();
+        let a_tile = Tile::new_const::<1, 1>();
 
         grid.place_node(&a_node, a_tile);
 
         let b_id = NodeId::try_from_inner(1).unwrap();
 
-        let mut b_node = Node::new(b_id, Character::B);
+        let b_node = NodeBuilder::new(b_id, Character::B).into();
 
         let b_location_1 = grid.potential_locations(&b_node);
 
-
-
         expected.set_bit(&a_tile, false);
-
 
         assert_sets_eq(b_location_1, expected);
 
-        b_node.add_single_constraint(a_id);
+        let c_id = NodeId::try_from_inner(2).unwrap();
 
-        let b_location_2 = grid.potential_locations(&b_node);
+        let c_node = NodeBuilder::new(c_id, Character::C);
+
+        c_node.add_single_constraint(a_id);
+        let c_node: Node = c_node.into();
+
+        let c_location = grid.potential_locations(&c_node);
 
         expected = GridSet::from_fn(|t| a_tile.is_adjacent_to(&t));
-        assert_sets_eq(b_location_2, expected);
-
-
+        assert_sets_eq(c_location, expected);
     }
 
     #[track_caller]
-    fn assert_sets_eq(actual: GridSet, expected: GridSet){
-        if actual == expected{
+    fn assert_sets_eq(actual: GridSet, expected: GridSet) {
+        if actual == expected {
             return;
         }
 
         panic!("Grid Sets do not match\n\nExpected:\n{expected}\n\nActual:\n{actual}");
-
     }
 }
