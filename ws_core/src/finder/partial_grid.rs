@@ -1,3 +1,4 @@
+use crate::finder::helpers::iter_true;
 use crate::finder::node::*;
 use crate::finder::*;
 use crate::{find_solution, Character, CharsArray, Grid, GridSet, TileMap};
@@ -45,7 +46,7 @@ impl PartialGrid {
     pub fn check_matches(&self, nodes: &NodeMap, words: &Vec<CharsArray>) -> bool {
         let solution_grid = self.to_grid(&nodes);
 
-        //info!("Solution found:\n{solution_grid}");
+        //println!("Solution found:\n{solution_grid}");
         for word in words {
             if find_solution(word, &solution_grid).is_none() {
                 return false;
@@ -65,11 +66,9 @@ impl PartialGrid {
             return None;
         }
 
-        //info!("{g}\n\n", g = self.to_grid(all_nodes));
+        //println!("{g}\n\n", g = self.to_grid(all_nodes));
 
-        let Some((node, potential_locations)) = self
-            .nodes_to_add
-            .iter_true_tiles()
+        let Some((node, potential_locations)) = iter_true(&self.nodes_to_add)
             .map(|tile| {
                 let node = &all_nodes[tile];
                 let set = self.potential_locations(node);
@@ -78,13 +77,13 @@ impl PartialGrid {
             // .inspect(|f| {
             //     #[cfg(test)]
             //     if level == 0 {
-            //         info!("{} possible locations:\n{}", f.1.character, f.2)
+            //         println!("{} possible locations:\n{}", f.0.character, f.1)
             //     }
             // })
             .min_by(|a, b| {
                 a.1.count()
                     .cmp(&b.1.count())
-                    .then(b.0.constraints.len().cmp(&a.0.constraints.len()))
+                    .then(b.0.constraint_count.cmp(&a.0.constraint_count))
             })
         else {
             //run out of options
@@ -135,14 +134,16 @@ impl PartialGrid {
 
         // #[cfg(test)]
         // {
-        //     info!("{}", node.character);
-        //     info!("{}", potential_locations);
+        //     println!("{}", node.character);
+        //     println!("{}", potential_locations);
         // }
+
+
 
         if potential_locations == GridSet::EMPTY {
             // #[cfg(test)]
             // {
-            //     info!("Nowhere to place {}", node.character);
+            //     println!("Nowhere to place {}", node.character);
             // }
             return None;
         }
@@ -151,9 +152,7 @@ impl PartialGrid {
             .iter()
             .filter(|t| potential_locations.get_bit(t))
         {
-            if !self.try_place_node(node, *tile){
-                continue;
-            }
+            self.place_node(node, *tile);
 
             if let Some(result) = self.solve_recursive(counter, &all_nodes, level + 1, words) {
                 return Some(result);
@@ -163,7 +162,7 @@ impl PartialGrid {
         }
         // #[cfg(test)]
         // {
-        //     info!("No solution for placing {}", node.character);
+        //     println!("No solution for placing {}", node.character);
         // }
 
         None
@@ -178,7 +177,7 @@ impl PartialGrid {
             static ref INNER_TILES: GridSet = GridSet::from_fn(|t|!is_tile_edge(&t));
         }
 
-        match node.constraints.len() {
+        match node.constraint_count {
             ..=3 => {}
             4..=5 => {
                 allowed = allowed.intersect(&NOT_CORNERS);
@@ -196,30 +195,19 @@ impl PartialGrid {
                 return GridSet::EMPTY;
             }
         };
+        let mut new_allowed = allowed.clone();
 
-        for constraint in node.constraints.iter() {
-            match constraint {
-                Constraint::Single(adjacent_node) => {
-                    match self.map[*adjacent_node] {
-                        Some(tile) => {
-                            let adjacent = get_adjacent_tiles(&tile);
-                            allowed = allowed.intersect(&adjacent);
-                            if allowed == GridSet::EMPTY {
-                                return allowed;
-                            }
-                        }
-                        None => {
-                            // do nothing - this tile hasn't been placed yet
-                        }
-                    }
-                }
-                Constraint::OneOf(_) => {
-                    // Ignore this constraint for now //todo improve
-                }
+        //println!("{new_allowed}");
+
+        for tile in iter_true(&allowed){
+            if !node.are_constraints_met(&tile, &self){
+                new_allowed.set_bit(&tile, false);
+                // println!("{tile}");
+                // println!("{new_allowed}");
             }
         }
 
-        allowed
+        new_allowed
     }
 
     pub fn remove_node(&mut self, node_id: NodeId, tile: Tile){
@@ -228,35 +216,41 @@ impl PartialGrid {
         self.nodes_to_add.set_bit(&node_id, true);
     }
 
-    fn try_place_node(&mut self, node: &Node, tile: Tile) -> bool {
-        if self.map[node.id].is_some() {
-            return false;
-        }
-        if self.used_grid.get_bit(&tile) {
-            return false;
-        }
-
+    fn place_node(&mut self, node: &Node, tile: Tile){
         self.map[node.id] = Some(tile);
-
-        for constraint in node.constraints.iter() {
-            match constraint.is_met(tile, &self.map) {
-                Some(true) => {}
-                Some(false) => {
-                    self.map[node.id] = None; //reverse this change
-                    return false;
-                }
-                None => {} // todo only push unidirectional constraints
-            }
-        }
-
         self.used_grid.set_bit(&tile, true);
-
-        //check adjacent nodes aren't locked out (e.g. if an adjacent node is on an edge and has five constraints but isn't connected to this, the grid is now invalid)
-
         self.nodes_to_add.set_bit(&node.id, false);
-
-        true
     }
+
+    // fn try_place_node(&mut self, node: &Node, tile: Tile) -> bool {
+    //     if self.map[node.id].is_some() {
+    //         return false;
+    //     }
+    //     if self.used_grid.get_bit(&tile) {
+    //         return false;
+    //     }
+
+    //     self.map[node.id] = Some(tile);
+
+    //     for constraint in node.constraints.iter() {
+    //         match constraint.is_met(tile, &self.map) {
+    //             Some(true) => {}
+    //             Some(false) => {
+    //                 self.map[node.id] = None; //reverse this change
+    //                 return false;
+    //             }
+    //             None => {} // todo only push unidirectional constraints
+    //         }
+    //     }
+
+    //     self.used_grid.set_bit(&tile, true);
+
+    //     //check adjacent nodes aren't locked out (e.g. if an adjacent node is on an edge and has five constraints but isn't connected to this, the grid is now invalid)
+
+    //     self.nodes_to_add.set_bit(&node.id, false);
+
+    //     true
+    // }
 }
 
 lazy_static::lazy_static! {
@@ -268,7 +262,7 @@ lazy_static::lazy_static! {
     };
 }
 
-fn get_adjacent_tiles(tile: &Tile) -> GridSet {
+pub fn get_adjacent_tiles(tile: &Tile) -> GridSet {
     ADJACENT_TILES[*tile]
 }
 
@@ -281,5 +275,54 @@ mod tests {
         let tiles = get_adjacent_tiles(&Tile::new_const::<1, 1>());
 
         assert_eq!("***_\n*_*_\n***_\n____", tiles.to_string())
+    }
+
+    #[test]
+    pub fn test_potential_locations(){
+        let mut grid = PartialGrid::default();
+
+        let a_id = NodeId::try_from_inner(0).unwrap();
+        let a_node = Node::new(a_id, Character::A);
+
+        let a_locations = grid.potential_locations(&a_node);
+
+        let mut expected = GridSet::EMPTY.negate();
+
+        assert_sets_eq(a_locations, expected);
+        let a_tile = Tile::new_const::<1,1,>();
+
+        grid.place_node(&a_node, a_tile);
+
+        let b_id = NodeId::try_from_inner(1).unwrap();
+
+        let mut b_node = Node::new(b_id, Character::B);
+
+        let b_location_1 = grid.potential_locations(&b_node);
+
+
+
+        expected.set_bit(&a_tile, false);
+
+
+        assert_sets_eq(b_location_1, expected);
+
+        b_node.add_single_constraint(a_id);
+
+        let b_location_2 = grid.potential_locations(&b_node);
+
+        expected = GridSet::from_fn(|t| a_tile.is_adjacent_to(&t));
+        assert_sets_eq(b_location_2, expected);
+
+
+    }
+
+    #[track_caller]
+    fn assert_sets_eq(actual: GridSet, expected: GridSet){
+        if actual == expected{
+            return;
+        }
+
+        panic!("Grid Sets do not match\n\nExpected:\n{expected}\n\nActual:\n{actual}");
+
     }
 }

@@ -3,7 +3,7 @@ use itertools::Itertools;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 
 use super::{
-    helpers::LetterCounts,
+    helpers::{LetterCounts, iter_true},
     partial_grid::{NodeMap, PartialGrid},
 };
 use crate::finder::*;
@@ -94,11 +94,8 @@ pub fn try_make_grid(
 
     let mut next_node_id: u8 = 0;
     for character in letters.into_iter() {
-        let node = Node {
-            id: NodeId::try_from_inner(next_node_id).expect("Should be able to create node id"),
-            character,
-            constraints: Default::default(),
-        };
+        let id = NodeId::try_from_inner(next_node_id).expect("Should be able to create node id");
+        let node = Node::new(id, character);
         next_node_id += 1;
         match nodes_map.entry(character) {
             std::collections::btree_map::Entry::Vacant(v) => {
@@ -116,35 +113,23 @@ pub fn try_make_grid(
             let added2 = try_add_constraint(b, a, &mut nodes_map);
             if !added && !added2 {
                 if let Some(a_first) = nodes_map.get(a).and_then(|v| v.first()) {
-                    if a_first
-                        .constraints
-                        .iter()
-                        .all(|c| c.is_to_character(a, &nodes_map))
-                    {
+                    if a_first.are_all_constraints_to_character(a, &nodes_map) {
                         if let Some(b_first) = nodes_map.get(b).and_then(|v| v.first()) {
-                            if b_first
-                                .constraints
-                                .iter()
-                                .all(|c| c.is_to_character(b, &nodes_map))
-                            {
-                                let a_to_b_constraint = Constraint::Single(b_first.id);
-                                let b_to_a_constraint = Constraint::Single(a_first.id);
-                                // these nodes are otherwise unconstrained
-                                let a_constraints = &mut nodes_map
+                            if b_first.are_all_constraints_to_character(b, &nodes_map) {
+                                let a_first_id = a_first.id;
+                                let b_first_id = b_first.id;
+                                nodes_map
                                     .get_mut(a)
                                     .unwrap()
                                     .first_mut()
                                     .unwrap()
-                                    .constraints;
-                                a_constraints.insert(a_to_b_constraint);
-                                let b_constraints = &mut nodes_map
+                                    .add_single_constraint(b_first_id);
+                                nodes_map
                                     .get_mut(b)
                                     .unwrap()
                                     .first_mut()
                                     .unwrap()
-                                    .constraints;
-
-                                b_constraints.insert(b_to_a_constraint);
+                                    .add_single_constraint(a_first_id);
                             }
                         }
                     }
@@ -159,7 +144,7 @@ pub fn try_make_grid(
     // {
     //     for (_, nodes) in nodes_map.iter() {
     //         for node in nodes {
-    //             info!("{}: {} constraints", node.character, node.constraints.len());
+    //             println!("{}: {} constraints", node.character, node.constraint_count);
     //         }
     //     }
     // }
@@ -174,8 +159,9 @@ pub fn try_make_grid(
         .map(|n| (n.id, n))
         .collect();
 
-    let nodes: NodeMap = NodeMap::from_fn(|tile| nodes_by_id.remove(&tile).unwrap_or_else(||Node { id: tile, character: Character::Blank, constraints: Default::default() }));
-
+    let nodes: NodeMap = NodeMap::from_fn(|tile| {
+        nodes_by_id.remove(&tile).unwrap_or_else(|| Node::new(tile, Character::Blank))
+    });
 
     let mut counter = Counter {
         max: max_tries,
@@ -204,18 +190,9 @@ fn try_add_constraint(
     let Some(target_nodes) = nodes_map.get(&to) else {
         return false;
     };
-    if target_nodes.len() == 0 {
-        return false;
-    }
-    let constraint = if target_nodes.len() == 1 {
-        Constraint::Single(target_nodes[0].id)
-    } else {
-        Constraint::OneOf(geometrid::tile_set::TileSet16::from_iter(
-            target_nodes.iter().map(|z| z.id),
-        ))
-    };
 
-    // let node_id = constraints.get(key)
+    let target_set = NodeIdSet::from_iter(target_nodes.iter().map(|x| x.id));
+
     let Some(source_nodes) = nodes_map.get_mut(&from) else {
         return false;
     };
@@ -224,14 +201,30 @@ fn try_add_constraint(
         return false;
     }
 
-    match source_nodes.get_mut(0) {
-        Some(source_node) => {
-            source_node.constraints.insert(constraint);
-            return true;
+    if target_set.count() == 1 {
+        match source_nodes.get_mut(0) {
+            Some(source_node) => {
+                source_node.single_constraints = source_node.single_constraints.union(&target_set);
+                source_node.update_constraint_count();
+                return true;
+            }
+            None => {
+                return false;
+            }
         }
-        None => {
-            return false;
+    } else if target_set.count() > 1 {
+        match source_nodes.get_mut(0) {
+            Some(source_node) => {
+                source_node.multiple_constraints.insert(target_set);
+                source_node.update_constraint_count();
+                return true;
+            }
+            None => {
+                return false;
+            }
         }
+    } else {
+        return false;
     }
 }
 
@@ -239,66 +232,90 @@ fn try_add_constraint(
 pub struct Node {
     pub id: NodeId,
     pub character: Character,
-    pub constraints: BTreeSet<Constraint>,
+    single_constraints: NodeIdSet,
+    multiple_constraints: BTreeSet<NodeIdSet>,
+    pub constraint_count: u8,
 }
 
-// #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-// pub struct  Tile::<1,16>;// NodeId(u8); //TODO replace with Tile<1,16>
-
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Constraint {
-    //TODO constraint builder
-    Single(NodeId),
-    OneOf(geometrid::tile_set::TileSet16<16, 1, 16>),
-}
-// TODO track whether a node is uniquely constrained
-// If there are two copies of a character, look for places where the go round another character
-
-impl Constraint {
-    pub fn is_to_character(
-        &self,
-        character: &Character,
-        map: &BTreeMap<Character, Vec<Node>>,
-    ) -> bool {
-        let Self::Single(id) = self else {
-            return false;
-        };
-
-        let Some(nodes) = map.get(&character) else {
-            return false;
-        };
-        nodes.iter().map(|x| x.id).contains(id)
+impl Node {
+    pub fn new(
+        id: NodeId,
+        character: Character,
+    ) -> Self {
+        Self {
+            id,
+            character,
+            single_constraints : Default::default(),
+            multiple_constraints: Default::default(),
+            constraint_count : 0,
+        }
     }
 
-    pub fn is_met(&self, tile: Tile, map: &NodeTiles) -> Option<bool> {
-        match self {
-            Constraint::Single(node_id) => match map[*node_id] {
-                Some(other_tile) => Some(tile.is_adjacent_to(&other_tile)),
-                None => None,
-            },
-            Constraint::OneOf(ids) => {
-                let mut any_maybe = false;
+    pub fn are_all_constraints_to_character(
+        &self,
+        character: &Character,
+        nodes_map: &BTreeMap<Character, Vec<Node>>,
+    ) -> bool {
+        let character_nodes = match nodes_map.get(character) {
+            Some(nodes) => NodeIdSet::from_iter(nodes.iter().map(|x| x.id)),
+            None => NodeIdSet::default(),
+        };
 
-                for node_id in ids.iter_true_tiles() {
-                    match map[node_id] {
-                        Some(other_tile) => {
-                            if tile.is_adjacent_to(&other_tile) {
-                                return Some(true);
-                            }
-                        }
-                        None => {
-                            any_maybe = true;
-                        }
-                    }
-                }
+        let other_nodes = character_nodes.negate();
 
-                if any_maybe {
-                    None
-                } else {
-                    Some(false)
+        if self.single_constraints.intersect(&other_nodes) != NodeIdSet::EMPTY {
+            return false;
+        }
+
+        for constraint in self.multiple_constraints.iter() {
+            if constraint.intersect(&other_nodes) != NodeIdSet::EMPTY {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    pub fn add_single_constraint(&mut self, other: NodeId) {
+        self.single_constraints.set_bit(&other, true);
+        self.update_constraint_count()
+    }
+
+    pub fn update_constraint_count(&mut self) {
+        self.constraint_count =
+            self.single_constraints.count() as u8 + self.multiple_constraints.len() as u8;
+    }
+
+    pub fn are_constraints_met(&self, tile: &Tile, grid: &PartialGrid) -> bool {
+
+        let placed_nodes = grid.nodes_to_add.negate();
+        let placed_constraints = placed_nodes.intersect(&self.single_constraints);
+        // single constraints
+        for placed in iter_true(&placed_constraints)
+        {
+            if let Some(placed_tile) = grid.map[placed] {
+                if !placed_tile.is_adjacent_to(tile) {
+                    return false;
                 }
             }
         }
+        // multiple constraints
+        'constraints: for constraint in &self.multiple_constraints {
+            if constraint.intersect(&grid.nodes_to_add.negate()) == *constraint {
+                //are all possible nodes of this constraint placed
+
+                for placed_id in iter_true(constraint) {
+                    if let Some(placed_tile) = grid.map[placed_id] {
+                        if placed_tile.is_adjacent_to(tile) {
+                            continue 'constraints;
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+
+        return true;
     }
 }
 
@@ -311,6 +328,7 @@ mod tests {
 
     //#[test_case("DOG, TOAD, PIGEON, OWL, PIG, ANT, CAT, LION, DEER, COW, GOAT, BEE, TIGER")]
     // #[test_case("SILVER, ORANGE, GREEN, IVORY, CORAL, OLIVE, TEAL, GRAY, CYAN, RED")]
+    #[test_case("CROATIA, ROMANIA, IRELAND, LATVIA, POLAND, FRANCE, MALTA, LIL")]
     #[test_case("CROATIA, ROMANIA, IRELAND, LATVIA, POLAND, FRANCE, MALTA")]
     // #[test_case("PIEPLATE, STRAINER, TEAPOT, GRATER, APRON, SPOON, POT")]
     // #[test_case("THIRTEEN, FOURTEEN, FIFTEEN, SEVENTY, THIRTY, NINETY, THREE, SEVEN, FORTY, FIFTY, FIFTH, FOUR, NINE, ONE, TEN")]
@@ -321,6 +339,7 @@ mod tests {
     // #[test_case("POLITICIAN, OPTICIAN, CASHIER, FLORIST, ARTIST, TAILOR, ACTOR")]
     // #[test_case("ALDGATE, ANGEL, ALDGATEEAST, BANK, LANCASTERGATE")]
     // #[test_case("WELLS, LEEDS, ELY, LISBURN, DERBY, NEWRY, SALISBURY")]
+    #[test_case("Cat, Dog")]
     pub fn test_try_make_grid(input: &'static str) {
         let now = Instant::now();
         let words = crate::finder::helpers::make_words_from_file(input);
