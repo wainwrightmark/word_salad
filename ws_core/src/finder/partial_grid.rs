@@ -44,7 +44,7 @@ impl PartialGrid {
     }
 
     pub fn check_matches(&self, nodes: &NodeMap, words: &Vec<CharsArray>) -> bool {
-        let solution_grid = self.to_grid(&nodes);
+        let solution_grid = self.to_grid(nodes);
 
         //println!("Solution found:\n{solution_grid}");
         for word in words {
@@ -52,7 +52,7 @@ impl PartialGrid {
                 return false;
             }
         }
-        return true;
+        true
     }
 
     pub fn solve_recursive(
@@ -152,7 +152,7 @@ impl PartialGrid {
         {
             self.place_node(node, *tile);
 
-            if let Some(result) = self.solve_recursive(counter, &all_nodes, level + 1, words) {
+            if let Some(result) = self.solve_recursive(counter, all_nodes, level + 1, words) {
                 return Some(result);
             }
 
@@ -193,12 +193,12 @@ impl PartialGrid {
                 return GridSet::EMPTY;
             }
         };
-        let mut new_allowed = allowed.clone();
+        let mut new_allowed = allowed;
 
         //println!("{new_allowed}");
 
         for tile in iter_true(&allowed) {
-            if !node.are_constraints_met(&tile, &self) {
+            if !node.are_constraints_met(&tile, self) {
                 new_allowed.set_bit(&tile, false);
                 // println!("{tile}");
                 // println!("{new_allowed}");

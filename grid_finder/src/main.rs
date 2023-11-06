@@ -15,7 +15,7 @@ use ws_core::{finder::helpers::*, prelude::*};
 struct Options {
     #[arg(short, long, default_value = "data.txt")]
     pub path: String,
-    #[arg(short, long, default_value_t = 1000000)]
+    #[arg(short, long, default_value_t = 10000000)]
     pub tries: usize,
 
     #[arg(short, long, default_value_t = false)]

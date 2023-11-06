@@ -10,7 +10,7 @@ pub type WordMultiMap = HashMap<LetterCounts, Vec<FinderWord>>;
 pub fn make_words_from_file(text: &'static str) -> WordMultiMap {
     text.lines()
         .flat_map(|x| x.split(','))
-        .flat_map(|x| FinderWord::try_new(x))
+        .flat_map(FinderWord::try_new)
         .into_group_map_by(|x| x.counts)
 }
 
@@ -49,7 +49,7 @@ pub fn count_adjacent_indexes(word: &CharsArray, char: Character) -> usize {
             if let Some(checked_index) = index.checked_sub(1) {
                 indexes.insert(checked_index);
             }
-            if let Some(_) = word.get(index + 1) {
+            if word.get(index + 1).is_some() {
                 indexes.insert(index + 1);
             }
         }
@@ -125,7 +125,7 @@ mod tests {
 
         let new_set = GridSet::from_iter(iterator);
 
-        println!("");
+        println!();
         println!("{new_set}");
 
         assert_eq!(set, new_set)

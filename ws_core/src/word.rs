@@ -35,22 +35,20 @@ pub fn find_solution(characters: &CharsArray, grid: &Grid) -> Option<Solution> {
             if let Some(vector) = Vector::UNITS.get(current_index as usize) {
                 current_index += 1;
                 if let Some(adjacent_tile) = current_tile + vector {
-                    if grid[adjacent_tile] == char_to_find {
-                        if used_tiles.get_bit(&adjacent_tile) == false {
-                            //we need to go deeper
-                            path.push(current_tile);
-                            used_tiles.set_bit(&current_tile, true);
-                            indices.push(current_index);
-                            current_index = 0;
-                            current_tile = adjacent_tile;
-                            char_to_find = match characters.get(path.len() + 1) {
-                                Some(c) => *c,
-                                None => {
-                                    path.push(current_tile);
-                                    return Some(path);
-                                }
-                            };
-                        }
+                    if grid[adjacent_tile] == char_to_find && !used_tiles.get_bit(&adjacent_tile) {
+                        //we need to go deeper
+                        path.push(current_tile);
+                        used_tiles.set_bit(&current_tile, true);
+                        indices.push(current_index);
+                        current_index = 0;
+                        current_tile = adjacent_tile;
+                        char_to_find = match characters.get(path.len() + 1) {
+                            Some(c) => *c,
+                            None => {
+                                path.push(current_tile);
+                                return Some(path);
+                            }
+                        };
                     }
                 }
             } else {
@@ -78,13 +76,13 @@ pub fn find_solution(characters: &CharsArray, grid: &Grid) -> Option<Solution> {
 }
 
 impl Word {
-    pub fn from_str(text: &str) -> Result<Self, ()> {
+    pub fn from_str(text: &str) -> Result<Self, &'static str> {
         let mut characters = ArrayVec::<Character, 16>::default();
 
         for c in text.chars() {
             let character = Character::try_from(c)?;
             if !character.is_blank() {
-                characters.try_push(character).map_err(|_| ())?;
+                characters.try_push(character).map_err(|_| "Word is too long")?;
             }
         }
 
@@ -128,29 +126,27 @@ impl Word {
                 if let Some(vector) = Vector::UNITS.get(current_index as usize) {
                     current_index += 1;
                     if let Some(adjacent_tile) = current_tile + vector {
-                        if grid[adjacent_tile] == char_to_find {
-                            if used_tiles.get_bit(&adjacent_tile) == false {
-                                //we need to go deeper
-                                path.push(current_tile);
+                        if grid[adjacent_tile] == char_to_find && !used_tiles.get_bit(&adjacent_tile) {
+                            //we need to go deeper
+                            path.push(current_tile);
 
-                                match self.characters.get(path.len() + 1) {
-                                    Some(c) => {
-                                        used_tiles.set_bit(&current_tile, true);
-                                        indices.push(current_index);
-                                        current_index = 0;
-                                        current_tile = adjacent_tile;
-                                        char_to_find = *c;
-                                    }
-                                    None => {
-                                        //we have found all the characters we need to find
-                                        let mut final_path = path.clone();
-                                        final_path.push(adjacent_tile);
+                            match self.characters.get(path.len() + 1) {
+                                Some(c) => {
+                                    used_tiles.set_bit(&current_tile, true);
+                                    indices.push(current_index);
+                                    current_index = 0;
+                                    current_tile = adjacent_tile;
+                                    char_to_find = *c;
+                                }
+                                None => {
+                                    //we have found all the characters we need to find
+                                    let mut final_path = path.clone();
+                                    final_path.push(adjacent_tile);
 
-                                        solutions.push(final_path);
-                                        path.pop();
-                                    }
-                                };
-                            }
+                                    solutions.push(final_path);
+                                    path.pop();
+                                }
+                            };
                         }
                     }
                 } else {
@@ -203,8 +199,7 @@ mod tests {
                 Tile::new_const::<0, 3>(),
                 Tile::new_const::<1, 3>(),
                 Tile::new_const::<2, 3>(),
-            ]
-            .into_iter(),
+            ],
         );
 
         assert_eq!(expected, path)
@@ -225,8 +220,7 @@ mod tests {
                 Tile::new_const::<1, 0>(),
                 Tile::new_const::<2, 1>(),
                 Tile::new_const::<2, 0>(),
-            ]
-            .into_iter(),
+            ],
         );
 
         let expected_1: ArrayVec<Tile, 16> = arrayvec::ArrayVec::from_iter(
@@ -234,8 +228,7 @@ mod tests {
                 Tile::new_const::<1, 0>(),
                 Tile::new_const::<2, 1>(),
                 Tile::new_const::<3, 1>(),
-            ]
-            .into_iter(),
+            ],
         );
 
         assert_eq!(expected_0, paths[0]);

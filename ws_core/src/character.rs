@@ -1,4 +1,4 @@
-use std::fmt::Display;
+
 
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
@@ -53,9 +53,9 @@ pub enum Character {
     Blank,
 }
 
-impl Into<usize> for Character {
-    fn into(self) -> usize {
-        self as usize
+impl From<Character> for usize {
+    fn from(val: Character) -> Self {
+        val as usize
     }
 }
 
@@ -106,7 +106,7 @@ impl Character {
 }
 
 impl TryFrom<char> for Character {
-    type Error = ();
+    type Error = &'static str;
 
     fn try_from(value: char) -> Result<Self, Self::Error> {
         match value {
@@ -137,7 +137,7 @@ impl TryFrom<char> for Character {
             'x' | 'X' => Ok(Character::X),
             'y' | 'Y' => Ok(Character::Y),
             'z' | 'Z' => Ok(Character::Z),
-            _ => Err(()),
+            _ => Err("Invalid character"),
         }
     }
 }

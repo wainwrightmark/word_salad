@@ -1,7 +1,6 @@
-use crate::{Character, CharsArray, Grid, GridSet};
+use crate::{Character, CharsArray, Grid};
 use itertools::Itertools;
 use std::{
-    borrow::BorrowMut,
     cell::{Cell, RefCell},
     collections::{BTreeMap, BTreeSet},
 };
@@ -30,7 +29,7 @@ impl Counter {
             return false;
         }
         self.current += 1;
-        return true;
+        true
     }
 }
 
@@ -50,7 +49,7 @@ pub fn try_make_grid_with_blank_filling(
     if letters.contains(Character::Blank) {
         let ordered_replacements = words
             .iter()
-            .flat_map(|x| x)
+            .flatten()
             .counts()
             .into_iter()
             .filter(|x| !x.0.is_blank())
@@ -61,7 +60,7 @@ pub fn try_make_grid_with_blank_filling(
             if count <= 1 {
                 continue; //no point having two copies of this letter
             }
-            let new_letters = letters.clone();
+            let new_letters = letters;
             let new_letters = new_letters
                 .try_remove(Character::Blank)
                 .expect("prime bag error");
@@ -85,7 +84,7 @@ pub fn try_make_grid_with_blank_filling(
         }
     }
 
-    return GridResult { tries, grid: None };
+    GridResult { tries, grid: None }
 }
 
 struct WordUniquenessHelper {
@@ -93,7 +92,7 @@ struct WordUniquenessHelper {
 }
 
 impl WordUniquenessHelper {
-    pub fn new(words: &Vec<CharsArray>, nodes_map: &BTreeMap<Character, Vec<NodeBuilder>>) -> Self {
+    pub fn new(words: &[CharsArray], nodes_map: &BTreeMap<Character, Vec<NodeBuilder>>) -> Self {
         let constraining_words: BTreeMap<Character, CharsArray> = nodes_map
             .iter()
             .filter(|(_, nodes)| nodes.len() > 1)
@@ -142,7 +141,7 @@ impl WordUniquenessHelper {
                 let node = vec
                     .get(node_index)
                     .expect("Should be able to get node by index");
-                return WordLetterResult::UniqueLetter(*character, &node);
+                return WordLetterResult::UniqueLetter(*character, node);
             }
         }
 
@@ -163,11 +162,10 @@ pub fn try_make_grid(
     //println!("Try to make grid: {l:?} : {w:?}", l= crate::get_raw_text(&letters), w= crate::write_words(words) );
     let mut nodes_map: BTreeMap<Character, Vec<NodeBuilder>> = Default::default();
 
-    let mut next_node_id: u8 = 0;
-    for character in letters.into_iter() {
-        let id = NodeId::try_from_inner(next_node_id).expect("Should be able to create node id");
+
+    for (node_id, character) in letters.into_iter().enumerate() {
+        let id = NodeId::try_from_inner(node_id as u8).expect("Should be able to create node id");
         let node = NodeBuilder::new(id, character);
-        next_node_id += 1;
         match nodes_map.entry(character) {
             std::collections::btree_map::Entry::Vacant(v) => {
                 v.insert(vec![node]);
@@ -308,7 +306,7 @@ impl NodeBuilder {
     }
 
     pub fn add_single_constraint(&self, other: NodeId) {
-        let mut s = self.single_constraints.get().clone();
+        let mut s = self.single_constraints.get();
         s.set_bit(&other, true);
         self.single_constraints.set(s);
 
@@ -317,13 +315,12 @@ impl NodeBuilder {
             .retain(|mc| mc.intersect(&s) == NodeIdSet::EMPTY);
     }
 
-    pub fn add_multiple_constraint(&self, nodes: &Vec<NodeBuilder>) {
+    pub fn add_multiple_constraint(&self, nodes: &[NodeBuilder]) {
         let mut constraint = NodeIdSet::from_iter(nodes.iter().map(|n| n.id));
         constraint.set_bit(&self.id, false);
 
         match constraint.count() {
             0 => {
-                return;
             }
             1 => self.add_single_constraint(iter_true(&constraint).next().unwrap()),
             _ => {
@@ -335,16 +332,16 @@ impl NodeBuilder {
     }
 }
 
-impl Into<Node> for NodeBuilder {
-    fn into(self) -> Node {
-        let constraint_count = self.single_constraints.get().count() as u8
-            + self.multiple_constraints.borrow().len() as u8;
+impl From<NodeBuilder> for Node {
+    fn from(val: NodeBuilder) -> Self {
+        let constraint_count = val.single_constraints.get().count() as u8
+            + val.multiple_constraints.borrow().len() as u8;
 
         Node {
-            id: self.id,
-            character: self.character,
-            single_constraints: self.single_constraints.get(),
-            multiple_constraints: self.multiple_constraints.into_inner(),
+            id: val.id,
+            character: val.character,
+            single_constraints: val.single_constraints.get(),
+            multiple_constraints: val.multiple_constraints.into_inner(),
             constraint_count,
         }
     }
@@ -382,7 +379,7 @@ impl Node {
             }
         }
 
-        return true;
+        true
     }
 
     pub fn are_constraints_met(&self, tile: &Tile, grid: &PartialGrid) -> bool {
@@ -412,7 +409,7 @@ impl Node {
             }
         }
 
-        return true;
+        true
     }
 }
 
