@@ -1,7 +1,8 @@
-use crate::finder::helpers::iter_true;
 use crate::finder::node::*;
 use crate::finder::*;
-use crate::{find_solution, Character, CharsArray, Grid, GridSet, TileMap};
+use crate::{find_solution, Character, CharsArray, Grid, GridSet};
+
+use super::counter::Counter;
 
 pub type NodeMap = geometrid::tile_map::TileMap<Node, 16, 1, 16>;
 
@@ -20,16 +21,6 @@ impl Default for PartialGrid {
             nodes_to_add: NodeIdSet::EMPTY.negate(),
         }
     }
-}
-
-/// Whether a tile is a corner
-fn is_tile_corner(tile: &Tile) -> bool {
-    matches!(tile.x(), 0 | 3) && matches!(tile.y(), 0 | 3)
-}
-
-/// Whether a tile is an edge or a corner
-fn is_tile_edge(tile: &Tile) -> bool {
-    matches!(tile.x(), 0 | 3) || matches!(tile.y(), 0 | 3)
 }
 
 impl PartialGrid {
@@ -57,7 +48,7 @@ impl PartialGrid {
 
     pub fn solve_recursive(
         &mut self,
-        counter: &mut Counter,
+        counter: &mut impl Counter,
         all_nodes: &NodeMap,
         level: usize,
         words: &Vec<CharsArray>,
@@ -68,7 +59,7 @@ impl PartialGrid {
 
         //println!("{g}\n\n", g = self.to_grid(all_nodes));
 
-        let Some((node, potential_locations)) = iter_true(&self.nodes_to_add)
+        let Some((node, potential_locations)) = self.nodes_to_add.iter_true_tiles()
             .map(|tile| {
                 let node = &all_nodes[tile];
                 let set = self.potential_locations(node);
@@ -171,8 +162,8 @@ impl PartialGrid {
 
         lazy_static::lazy_static! {
             /// This is an example for using doc comment attributes
-            static ref NOT_CORNERS: GridSet = GridSet::from_fn(|t|!is_tile_corner(&t));
-            static ref INNER_TILES: GridSet = GridSet::from_fn(|t|!is_tile_edge(&t));
+            static ref NOT_CORNERS: GridSet = GridSet::from_fn(|t|!t.is_corner());
+            static ref INNER_TILES: GridSet = GridSet::from_fn(|t|!t.is_edge());
         }
 
         match node.constraint_count {
@@ -197,7 +188,7 @@ impl PartialGrid {
 
         //println!("{new_allowed}");
 
-        for tile in iter_true(&allowed) {
+        for tile in allowed.iter_true_tiles() {
             if !node.are_constraints_met(&tile, self) {
                 new_allowed.set_bit(&tile, false);
                 // println!("{tile}");
@@ -219,61 +210,11 @@ impl PartialGrid {
         self.used_grid.set_bit(&tile, true);
         self.nodes_to_add.set_bit(&node.id, false);
     }
-
-    // fn try_place_node(&mut self, node: &Node, tile: Tile) -> bool {
-    //     if self.map[node.id].is_some() {
-    //         return false;
-    //     }
-    //     if self.used_grid.get_bit(&tile) {
-    //         return false;
-    //     }
-
-    //     self.map[node.id] = Some(tile);
-
-    //     for constraint in node.constraints.iter() {
-    //         match constraint.is_met(tile, &self.map) {
-    //             Some(true) => {}
-    //             Some(false) => {
-    //                 self.map[node.id] = None; //reverse this change
-    //                 return false;
-    //             }
-    //             None => {} // todo only push unidirectional constraints
-    //         }
-    //     }
-
-    //     self.used_grid.set_bit(&tile, true);
-
-    //     //check adjacent nodes aren't locked out (e.g. if an adjacent node is on an edge and has five constraints but isn't connected to this, the grid is now invalid)
-
-    //     self.nodes_to_add.set_bit(&node.id, false);
-
-    //     true
-    // }
-}
-
-lazy_static::lazy_static! {
-    /// This is an example for using doc comment attributes
-    static ref ADJACENT_TILES: TileMap<GridSet,4,4,16> = {
-        TileMap::<GridSet,4,4,16>::from_fn(|tile|{
-            GridSet::from_fn(|x|x.is_adjacent_to(&tile))
-        })
-    };
-}
-
-pub fn get_adjacent_tiles(tile: &Tile) -> GridSet {
-    ADJACENT_TILES[*tile]
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    pub fn test_adjacent_tiles() {
-        let tiles = get_adjacent_tiles(&Tile::new_const::<1, 1>());
-
-        assert_eq!("***_\n*_*_\n***_\n____", tiles.to_string())
-    }
 
     #[test]
     pub fn test_potential_locations() {

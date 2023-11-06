@@ -6,45 +6,35 @@ use std::{
 };
 
 use super::{
-    helpers::{iter_true, LetterCounts},
-    partial_grid::{NodeMap, PartialGrid},
+    helpers::LetterCounts,
+    partial_grid::{NodeMap, PartialGrid}, counter::Counter,
 };
 use crate::finder::*;
 
 //todo benchmark more efficient collections, different heuristics
 
 pub struct GridResult {
-    pub tries: usize,
     pub grid: Option<Grid>,
 }
 
-pub struct Counter {
-    pub max: usize,
-    pub current: usize,
-}
 
-impl Counter {
-    pub fn try_increment(&mut self) -> bool {
-        if self.current >= self.max {
-            return false;
-        }
-        self.current += 1;
-        true
-    }
-}
+
+
+
+
 
 pub fn try_make_grid_with_blank_filling(
     letters: LetterCounts,
     words: &Vec<CharsArray>,
     first_blank_replacement: Character,
-    max_tries: usize,
+    counter: &mut impl Counter
 ) -> GridResult {
-    let result = try_make_grid(letters, words, max_tries);
+    let result = try_make_grid(letters, words, counter);
     //println!("{} tries", result.tries);
     if result.grid.is_some() {
         return result;
     }
-    let mut tries = result.tries;
+
 
     if letters.contains(Character::Blank) {
         let ordered_replacements = words
@@ -69,22 +59,20 @@ pub fn try_make_grid_with_blank_filling(
                 .expect("prime bag error");
 
             let result =
-                try_make_grid_with_blank_filling(new_letters, words, *replacement, max_tries);
+                try_make_grid_with_blank_filling(new_letters, words, *replacement, counter);
             match result.grid {
                 Some(grid) => {
                     return GridResult {
-                        tries: tries + result.tries,
                         grid: Some(grid),
                     };
                 }
                 None => {
-                    tries += result.tries;
                 }
             }
         }
     }
 
-    GridResult { tries, grid: None }
+    GridResult {  grid: None }
 }
 
 struct WordUniquenessHelper {
@@ -157,7 +145,7 @@ enum WordLetterResult<'a> {
 pub fn try_make_grid(
     letters: LetterCounts,
     words: &Vec<CharsArray>,
-    max_tries: usize,
+    counter: &mut impl Counter,
 ) -> GridResult {
     //println!("Try to make grid: {l:?} : {w:?}", l= crate::get_raw_text(&letters), w= crate::write_words(words) );
     let mut nodes_map: BTreeMap<Character, Vec<NodeBuilder>> = Default::default();
@@ -268,13 +256,9 @@ pub fn try_make_grid(
             .unwrap_or_else(|| NodeBuilder::new(tile, Character::Blank).into())
     });
 
-    let mut counter = Counter {
-        max: max_tries,
-        current: 0,
-    };
-    let Some(solution) = grid.solve_recursive(&mut counter, &nodes, 0, words) else {
+
+    let Some(solution) = grid.solve_recursive(counter, &nodes, 0, words) else {
         return GridResult {
-            tries: counter.current,
             grid: None,
         };
     };
@@ -282,7 +266,6 @@ pub fn try_make_grid(
     let solution_grid = solution.to_grid(&nodes);
 
     GridResult {
-        tries: counter.current,
         grid: Some(solution_grid),
     }
 }
@@ -322,7 +305,7 @@ impl NodeBuilder {
         match constraint.count() {
             0 => {
             }
-            1 => self.add_single_constraint(iter_true(&constraint).next().unwrap()),
+            1 => self.add_single_constraint(constraint.iter_true_tiles().next().unwrap()),
             _ => {
                 if self.single_constraints.get().intersect(&constraint) == NodeIdSet::EMPTY {
                     self.multiple_constraints.borrow_mut().insert(constraint);
@@ -386,7 +369,7 @@ impl Node {
         let placed_nodes = grid.nodes_to_add.negate();
         let placed_constraints = placed_nodes.intersect(&self.single_constraints);
         // single constraints
-        for placed in iter_true(&placed_constraints) {
+        for placed in placed_constraints.iter_true_tiles() {
             if let Some(placed_tile) = grid.map[placed] {
                 if !placed_tile.is_adjacent_to(tile) {
                     return false;
@@ -398,7 +381,7 @@ impl Node {
             if constraint.intersect(&grid.nodes_to_add.negate()) == *constraint {
                 //are all possible nodes of this constraint placed
 
-                for placed_id in iter_true(constraint) {
+                for placed_id in constraint.iter_true_tiles() {
                     if let Some(placed_tile) = grid.map[placed_id] {
                         if placed_tile.is_adjacent_to(tile) {
                             continue 'constraints;
@@ -416,6 +399,8 @@ impl Node {
 #[cfg(test)]
 mod tests {
     use std::time::Instant;
+
+    use crate::finder::counter::RealCounter;
 
     use super::*;
     use test_case::test_case;
@@ -467,14 +452,19 @@ mod tests {
             blanks_to_add -= 1;
         }
 
-        let solution = try_make_grid_with_blank_filling(letters, &arrays, Character::E, 1000000);
+        let mut counter = RealCounter{
+            max: 10000000,
+            current: 0
+        };
+
+        let solution = try_make_grid_with_blank_filling(letters, &arrays, Character::E, & mut counter);
         println!("{:?}", now.elapsed());
         match solution.grid {
             Some(grid) => {
-                println!("Found after {} tries", solution.tries);
+                println!("Found after {} tries", counter.current);
                 println!("{grid}");
             }
-            None => panic!("No Solution found after {} tries", solution.tries),
+            None => panic!("No Solution found after {} tries", counter.current),
         }
     }
 }

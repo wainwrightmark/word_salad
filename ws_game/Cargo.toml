@@ -16,7 +16,7 @@ bevy_pkv = { version = "0.8"}
 serde = { version = "1", features = ["derive", "rc"] }
 anyhow = "1"
 base64 = "0.21"
-geometrid = { version = "0.4", features = ["glam", "serde"] }
+geometrid = { version = "0.5", features = ["glam", "serde"] }
 serde_with = "3"
 # bevy_embedded_assets = "0.8"
 lazy_static = "1.4"

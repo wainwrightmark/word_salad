@@ -1,4 +1,4 @@
-
+use prime_bag::prime_bag_element::PrimeBagElement;
 
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
@@ -53,14 +53,12 @@ pub enum Character {
     Blank,
 }
 
-impl From<Character> for usize {
-    fn from(val: Character) -> Self {
-        val as usize
+impl PrimeBagElement for Character{
+    fn into_prime_index(&self)-> usize {
+        *self as usize
     }
-}
 
-impl From<usize> for Character{
-    fn from(value: usize) -> Self {
+    fn from_prime_index(value: usize)-> Self {
         FromPrimitive::from_usize(value).expect("Could not cast usize to character")
     }
 }

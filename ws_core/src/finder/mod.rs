@@ -1,6 +1,7 @@
 pub mod node;
 pub mod helpers;
 pub mod partial_grid;
+pub mod counter;
 
 pub type Tile = geometrid::tile::Tile<4, 4>;
 pub type NodeId = geometrid::tile::Tile<16, 1>;

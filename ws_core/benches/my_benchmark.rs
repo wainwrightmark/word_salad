@@ -1,6 +1,6 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 use itertools::Itertools;
-use ws_core::{finder::{node::try_make_grid_with_blank_filling, helpers::LetterCounts}, Character};
+use ws_core::{finder::{node::try_make_grid_with_blank_filling, helpers::LetterCounts, counter::FakeCounter}, Character};
 
 pub fn criterion_benchmark(c: &mut Criterion) {
     let words = ws_core::finder::helpers::make_words_from_file(
@@ -37,7 +37,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
 
     c.bench_function("EU Countries", |b| {
         b.iter(|| {
-            try_make_grid_with_blank_filling(letters, &arrays, Character::E, 1000000)
+            try_make_grid_with_blank_filling(letters, &arrays, Character::E, &mut FakeCounter)
         })
     });
 }

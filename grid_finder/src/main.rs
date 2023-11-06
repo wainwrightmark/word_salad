@@ -8,16 +8,16 @@ use std::{
     io,
     sync::atomic::AtomicUsize,
 };
-use ws_core::{finder::helpers::*, prelude::*};
+use ws_core::{
+    finder::{counter::FakeCounter, helpers::*},
+    prelude::*,
+};
 
 #[derive(Parser, Debug)]
 #[command()]
 struct Options {
     #[arg(short, long, default_value = "data.txt")]
     pub path: String,
-    #[arg(short, long, default_value_t = 10000000)]
-    pub tries: usize,
-
     #[arg(short, long, default_value_t = false)]
     pub verbose: bool,
     #[arg(short, long, default_value_t = false)]
@@ -90,7 +90,7 @@ fn output_saved_data(word_map: WordMultiMap) {
         solutions.insert((words.len(), format!("{value}: {key}")));
     }
 
-    for (_, text) in solutions.into_iter().rev(){
+    for (_, text) in solutions.into_iter().rev() {
         info!("{text}");
     }
 }
@@ -132,7 +132,6 @@ fn create_grid_for_most_words(word_map: WordMultiMap, options: &Options) {
     for (size, group) in ordered_groups {
         let solution_count = AtomicUsize::new(0);
         let impossible_count = AtomicUsize::new(0);
-        let given_up_count = AtomicUsize::new(0);
         let redundant_count = AtomicUsize::new(0);
 
         group.par_iter().for_each(|(letters, _)| {
@@ -144,7 +143,7 @@ fn create_grid_for_most_words(word_map: WordMultiMap, options: &Options) {
                 return;
             }
 
-            //todo if there are blanks, try to fill them with needed characters
+            let mut counter = FakeCounter;
 
             let letter_words: Vec<ArrayVec<Character, 16>> = word_map
                 .iter()
@@ -158,9 +157,9 @@ fn create_grid_for_most_words(word_map: WordMultiMap, options: &Options) {
                 *letters,
                 &letter_words,
                 Character::E,
-                options.tries,
+                &mut counter,
             );
-            let tries = result.tries;
+
             match result.grid {
                 Some(solution) => {
                     solution_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
@@ -171,35 +170,24 @@ fn create_grid_for_most_words(word_map: WordMultiMap, options: &Options) {
                         .expect("Could not insert data");
 
                     sender.send(*letters).expect("Could not send solution");
-                    info!("Solution found after {tries} tries:\n{words_text}\n{solution}")
+                    info!("Solution found:\n{words_text}\n{solution}")
                 }
                 None => {
-                    if tries >= options.tries {
-                        if options.verbose {
-                            info!(
-                "Gave up looking for {raw_text} ({tries} tries): ({count}) ({words_text})",
-                count = letters.into_iter().count()
-            )
-                        }
-                        given_up_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-                    } else {
-                        if options.verbose {
-                            info!(
-                "No solution possible for {raw_text} ({tries} tries): ({count}) ({words_text})",
-                count = letters.into_iter().count()
-            )
-                        }
-                        impossible_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                    if options.verbose {
+                        info!(
+                            "No solution possible for {raw_text}: ({count}) ({words_text})",
+                            count = letters.into_iter().count()
+                        )
                     }
+                    impossible_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
                 }
             }
         });
 
         let solution_count = solution_count.into_inner();
         let impossible_count = impossible_count.into_inner();
-        let given_up_count = given_up_count.into_inner();
         let redundant_count = redundant_count.into_inner();
-        info!("Groups of {size} words: {solution_count} Solutions. {impossible_count} Impossible. {given_up_count} Given Up On. {redundant_count} Redundant.");
+        info!("Groups of {size} words: {solution_count} Solutions. {impossible_count} Impossible. {redundant_count} Redundant.");
 
         previous_solutions.extend(receiver.try_iter());
         db.flush().expect("Could not flush db");
