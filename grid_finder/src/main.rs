@@ -319,7 +319,7 @@ pub mod tests {
     use test_case::test_case;
 
     #[test]
-    pub fn test() {
+    pub fn test_possible_combinations() {
         let input = "monkey\ncow\nant\nantelope";
 
         let now = Instant::now();
@@ -337,7 +337,7 @@ pub mod tests {
 
         info!("{:?}", now.elapsed());
 
-        let expected = "[ant(1)]\n[cow(1)]\n[ant, cow(2)]\n[ant, antelope(2)]\n[monkey(1)]\n[ant, monkey(2)]\n[ant, antelope, cow(3)]\n[cow, monkey(2)]\n[ant, cow, monkey(3)]\n[ant, antelope, monkey(3)]\n[ant, antelope, cow, monkey(4)]";
+        let expected = "[ant]\n[cow]\n[ant, cow]\n[ant, antelope]\n[monkey]\n[ant, monkey]\n[ant, antelope, cow]\n[cow, monkey]\n[ant, cow, monkey]\n[ant, antelope, monkey]\n[ant, antelope, cow, monkey]";
 
         let actual = possible_combinations
             .into_iter()

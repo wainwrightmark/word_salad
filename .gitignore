@@ -1,2 +1,4 @@
 /target
 /ws_game/dist
+grid_finder/grids/*.txt
+grid_finder/data/*.txt
