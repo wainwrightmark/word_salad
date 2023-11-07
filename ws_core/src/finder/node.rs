@@ -1,4 +1,4 @@
-use crate::{Character, CharsArray, Grid};
+use crate::{Character,  Grid};
 use itertools::Itertools;
 use std::{
     cell::{Cell, RefCell},
@@ -6,8 +6,9 @@ use std::{
 };
 
 use super::{
-    helpers::LetterCounts,
-    partial_grid::{NodeMap, PartialGrid}, counter::Counter,
+    counter::Counter,
+    helpers::{FinderWord, LetterCounts},
+    partial_grid::{NodeMap, PartialGrid},
 };
 use crate::finder::*;
 
@@ -17,17 +18,11 @@ pub struct GridResult {
     pub grid: Option<Grid>,
 }
 
-
-
-
-
-
-
 pub fn try_make_grid_with_blank_filling(
     letters: LetterCounts,
-    words: &Vec<CharsArray>,
+    words: &Vec<FinderWord>,
     first_blank_replacement: Character,
-    counter: &mut impl Counter
+    counter: &mut impl Counter,
 ) -> GridResult {
     let result = try_make_grid(letters, words, counter);
     //println!("{} tries", result.tries);
@@ -35,16 +30,15 @@ pub fn try_make_grid_with_blank_filling(
         return result;
     }
 
-
     if letters.contains(Character::Blank) {
         let ordered_replacements = words
             .iter()
-            .flatten()
+            .flat_map(|x| x.array.clone())
             .counts()
             .into_iter()
             .filter(|x| !x.0.is_blank())
-            .filter(|x| *x.0 >= first_blank_replacement)
-            .sorted_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(b.0)));
+            .filter(|x| x.0 >= first_blank_replacement)
+            .sorted_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
 
         for (replacement, count) in ordered_replacements {
             if count <= 1 {
@@ -55,33 +49,29 @@ pub fn try_make_grid_with_blank_filling(
                 .try_remove(Character::Blank)
                 .expect("prime bag error");
             let new_letters = new_letters
-                .try_insert(*replacement)
+                .try_insert(replacement)
                 .expect("prime bag error");
 
-            let result =
-                try_make_grid_with_blank_filling(new_letters, words, *replacement, counter);
+            let result = try_make_grid_with_blank_filling(new_letters, words, replacement, counter);
             match result.grid {
                 Some(grid) => {
-                    return GridResult {
-                        grid: Some(grid),
-                    };
+                    return GridResult { grid: Some(grid) };
                 }
-                None => {
-                }
+                None => {}
             }
         }
     }
 
-    GridResult {  grid: None }
+    GridResult { grid: None }
 }
 
 struct WordUniquenessHelper {
-    constraining_words: BTreeMap<Character, CharsArray>,
+    constraining_words: BTreeMap<Character, FinderWord>,
 }
 
 impl WordUniquenessHelper {
-    pub fn new(words: &[CharsArray], nodes_map: &BTreeMap<Character, Vec<NodeBuilder>>) -> Self {
-        let constraining_words: BTreeMap<Character, CharsArray> = nodes_map
+    pub fn new(words: &[FinderWord], nodes_map: &BTreeMap<Character, Vec<NodeBuilder>>) -> Self {
+        let constraining_words: BTreeMap<Character, FinderWord> = nodes_map
             .iter()
             .filter(|(_, nodes)| nodes.len() > 1)
             .map(|x| x.0)
@@ -103,14 +93,14 @@ impl WordUniquenessHelper {
     pub fn check_letter<'a>(
         &self,
         buffered_index: usize,
-        word: &CharsArray,
+        word: &FinderWord,
         nodes_map: &'a BTreeMap<Character, Vec<NodeBuilder>>,
     ) -> WordLetterResult<'a> {
         let Some(true_index) = buffered_index.checked_sub(1) else {
             return WordLetterResult::Buffer;
         };
 
-        let Some(character) = word.get(true_index) else {
+        let Some(character) = word.array.get(true_index) else {
             return WordLetterResult::Buffer;
         };
 
@@ -122,7 +112,7 @@ impl WordUniquenessHelper {
             return WordLetterResult::UniqueLetter(*character, &vec[0]);
         } else if let Some(constraining_word) = self.constraining_words.get(character) {
             if word == constraining_word {
-                let node_index = word[0..true_index]
+                let node_index = word.array[0..true_index]
                     .iter()
                     .filter(|x| *x == character)
                     .count();
@@ -144,12 +134,11 @@ enum WordLetterResult<'a> {
 
 pub fn try_make_grid(
     letters: LetterCounts,
-    words: &Vec<CharsArray>,
+    words: &Vec<FinderWord>,
     counter: &mut impl Counter,
 ) -> GridResult {
     //println!("Try to make grid: {l:?} : {w:?}", l= crate::get_raw_text(&letters), w= crate::write_words(words) );
     let mut nodes_map: BTreeMap<Character, Vec<NodeBuilder>> = Default::default();
-
 
     for (node_id, character) in letters.into_iter().enumerate() {
         let id = NodeId::try_from_inner(node_id as u8).expect("Should be able to create node id");
@@ -167,7 +156,7 @@ pub fn try_make_grid(
     let helper: WordUniquenessHelper = WordUniquenessHelper::new(words, &nodes_map);
 
     for word in words {
-        let range = 0..(word.len() + 2);
+        let range = 0..(word.array.len() + 2);
         for (a_index, b_index, c_index) in range.tuple_windows() {
             //we are only adding constraints to b here
 
@@ -184,12 +173,11 @@ pub fn try_make_grid(
                             b_node.add_single_constraint(a_node.id);
                         }
                         WordLetterResult::DuplicateLetter(a_char, a_nodes) => {
-
-                            if a_nodes.len() == 2{
+                            if a_nodes.len() == 2 {
                                 if let WordLetterResult::DuplicateLetter(c_char, ..) = c {
-                                    if a_char == c_char{
+                                    if a_char == c_char {
                                         //there are two copies of this character and both must be connected to b
-                                        for a_node in a_nodes{
+                                        for a_node in a_nodes {
                                             b_node.add_single_constraint(a_node.id);
                                             a_node.add_single_constraint(b_node.id);
                                         }
@@ -256,11 +244,8 @@ pub fn try_make_grid(
             .unwrap_or_else(|| NodeBuilder::new(tile, Character::Blank).into())
     });
 
-
     let Some(solution) = grid.solve_recursive(counter, &nodes, 0, words) else {
-        return GridResult {
-            grid: None,
-        };
+        return GridResult { grid: None };
     };
 
     let solution_grid = solution.to_grid(&nodes);
@@ -303,8 +288,7 @@ impl NodeBuilder {
         constraint.set_bit(&self.id, false);
 
         match constraint.count() {
-            0 => {
-            }
+            0 => {}
             1 => self.add_single_constraint(constraint.iter_true_tiles().next().unwrap()),
             _ => {
                 if self.single_constraints.get().intersect(&constraint) == NodeIdSet::EMPTY {
@@ -409,7 +393,7 @@ mod tests {
     #[test_case("SILVER, ORANGE, GREEN, IVORY, CORAL, OLIVE, TEAL, GRAY, CYAN, RED")]
     #[test_case("CROATIA, ROMANIA, IRELAND, LATVIA, POLAND, FRANCE, MALTA, LIL")]
     #[test_case("CROATIA, ROMANIA, IRELAND, LATVIA, POLAND, FRANCE, MALTA")]
-     #[test_case("PIEPLATE, STRAINER, TEAPOT, GRATER, APRON, SPOON, POT")]
+    #[test_case("PIEPLATE, STRAINER, TEAPOT, GRATER, APRON, SPOON, POT")]
     #[test_case("THIRTEEN, FOURTEEN, FIFTEEN, SEVENTY, THIRTY, NINETY, THREE, SEVEN, FORTY, FIFTY, FIFTH, FOUR, NINE, ONE, TEN")]
     #[test_case("POLO, SHOOTING, KENDO, SAILING, LUGE, SKIING")]
     #[test_case("IOWA, OHIO, IDAHO, UTAH, HAWAII, INDIANA, MONTANA")]
@@ -439,7 +423,6 @@ mod tests {
         if letter_count > 16 {
             panic!("Too many letters");
         }
-        let arrays = words.into_iter().map(|x| x.array.clone()).collect();
 
         let mut blanks_to_add = 16usize.saturating_sub(letter_count);
         while blanks_to_add > 0 {
@@ -452,12 +435,13 @@ mod tests {
             blanks_to_add -= 1;
         }
 
-        let mut counter = RealCounter{
+        let mut counter = RealCounter {
             max: 10000000,
-            current: 0
+            current: 0,
         };
 
-        let solution = try_make_grid_with_blank_filling(letters, &arrays, Character::E, & mut counter);
+        let solution =
+            try_make_grid_with_blank_filling(letters, &words, Character::E, &mut counter);
         println!("{:?}", now.elapsed());
         match solution.grid {
             Some(grid) => {

@@ -14,7 +14,7 @@ pub fn make_words_from_file(text: &str) -> WordMultiMap {
         .into_group_map_by(|x| x.counts)
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FinderWord {
     pub text: String,
     pub array: CharsArray,
@@ -28,7 +28,7 @@ impl std::fmt::Display for FinderWord {
 }
 
 impl FinderWord {
-    fn try_new(text: &str) -> Option<Self> {
+    pub fn try_new(text: &str) -> Option<Self> {
         //println!("'{text}'");
         let array = Word::from_str(text).ok().map(|x| x.characters)?;
 
@@ -42,15 +42,15 @@ impl FinderWord {
 }
 
 /// Counts the number of distinct index of of letters adjacent to a letter which is this character
-pub fn count_adjacent_indexes(word: &CharsArray, char: Character) -> usize {
+pub fn count_adjacent_indexes(word: &FinderWord, char: Character) -> usize {
     let mut indexes: BTreeSet<usize> = Default::default();
 
-    for (index, word_char) in word.iter().enumerate() {
+    for (index, word_char) in word.array.iter().enumerate() {
         if *word_char == char {
             if let Some(checked_index) = index.checked_sub(1) {
                 indexes.insert(checked_index);
             }
-            if word.get(index + 1).is_some() {
+            if word.array.get(index + 1).is_some() {
                 indexes.insert(index + 1);
             }
         }

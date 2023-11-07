@@ -1,3 +1,5 @@
+pub mod clustering;
+
 use clap::Parser;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use indicatif_log_bridge::LogWrapper;
@@ -6,22 +8,23 @@ use log::{debug, info};
 use rayon::prelude::*;
 use std::{
     collections::{BTreeMap, BTreeSet},
+    fs::File,
     io::{self, BufWriter, Write},
-    sync::atomic::AtomicUsize, path::Path, fs::File,
+    path::Path,
+    sync::atomic::AtomicUsize,
 };
 use ws_core::{
-    finder::{counter::FakeCounter, helpers::*},
+    finder::{counter::FakeCounter, helpers::*, node::GridResult},
     prelude::*,
 };
 
+use crate::clustering::cluster_words;
 
 #[derive(Parser, Debug)]
 #[command()]
 struct Options {
     #[arg(short, long, default_value = "data")]
     pub folder: String,
-    // #[arg(short, long, default_value_t = false)]
-    // pub output: bool,
 }
 
 fn main() {
@@ -32,40 +35,68 @@ fn main() {
     LogWrapper::new(multi.clone(), logger).try_init().unwrap();
 
     let options = Options::parse();
+    do_finder(options);
 
+    info!("Finished... Press enter");
+    io::stdin().read_line(&mut String::new()).unwrap();
+}
+
+fn do_finder(options: Options) {
     info!("Starting up");
 
     let folder = std::fs::read_dir(options.folder).unwrap();
 
     let paths: Vec<_> = folder.collect();
 
-    let pb = ProgressBar::new(paths.len() as u64).with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:4}/{len:4}").unwrap()) .with_message("Data files");
+    let pb = ProgressBar::new(paths.len() as u64)
+        .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:4}/{len:4}").unwrap())
+        .with_message("Data files");
 
     let _ = std::fs::create_dir("grids");
+    let _ = std::fs::create_dir("clusters");
 
-    for path in paths.iter(){
+    for path in paths.iter() {
         let path = path.as_ref().unwrap().path();
-        let write_path = format!("grids/{}", path.file_name().unwrap().to_string_lossy());
+        let file_name = path.file_name().unwrap().to_string_lossy();
+        let write_path = format!("grids/{file_name}",);
         info!("{}", write_path);
-        let data = std::fs::read_to_string(path).unwrap();
+        let data = std::fs::read_to_string(path.clone()).unwrap();
 
         let word_map = make_words_from_file(data.as_str());
 
-        let write_path = Path::new(write_path.as_str());
-        let file = std::fs::File::create(write_path).expect("Could not find output folder");
-        let writer = BufWriter::new(file);
-        create_grid_for_most_words(word_map, writer);
+        let grids_write_path = Path::new(write_path.as_str());
+        let grids_file =
+            std::fs::File::create(grids_write_path).expect("Could not find output folder");
+        let grids_writer = BufWriter::new(grids_file);
+        let grids = create_grids(&word_map, grids_writer);
 
+        let all_words = grids
+            .iter()
+            .flat_map(|grid| &grid.words)
+            .cloned()
+            .sorted()
+            .dedup()
+            .collect_vec();
+        let grid_words = grids.into_iter().map(|x| x.words).collect_vec();
+
+        let clusters = cluster_words(grid_words, &all_words, 10);
+
+        let clusters_write_path = format!("clusters/{file_name}",);
+        let clusters_write_path = Path::new(clusters_write_path.as_str());
+        let clusters_text = clusters.into_iter().map(|x| x.to_string()).join("\n\n");
+        std::fs::write(clusters_write_path, clusters_text).unwrap();
 
         pb.inc(1);
     }
-
-    info!("Finished... Press enter");
-    io::stdin().read_line(&mut String::new()).unwrap();
 }
 
+struct CreateGridResult {
+    pub grid: Grid,
+    pub letters: LetterCounts,
+    pub words: Vec<FinderWord>,
+}
 
-fn create_grid_for_most_words(word_map: WordMultiMap,mut file:BufWriter<File>) {
+fn create_grids(word_map: &WordMultiMap, mut file: BufWriter<File>) -> Vec<CreateGridResult> {
     let word_letters: Vec<LetterCounts> = word_map.keys().cloned().sorted().collect_vec();
     let possible_combinations: BTreeMap<LetterCounts, usize> = get_combinations(
         Multiplicities::default(),
@@ -83,79 +114,79 @@ fn create_grid_for_most_words(word_map: WordMultiMap,mut file:BufWriter<File>) {
     let groups = possible_combinations.into_iter().into_group_map_by(|x| x.1);
     let ordered_groups = groups.into_iter().sorted_unstable().rev().collect_vec();
 
-    // for (size, group) in ordered_groups.iter() {
-    //     info!(
-    //         "{len} possible combinations of size {size} found",
-    //         len = group.len()
-    //     )
-    // }
-
-    // let db = sled::open(DB_PATH).expect("Could not open database");
     let mut previous_solutions: BTreeSet<LetterCounts> = Default::default();
 
-    let (sender, receiver) = std::sync::mpsc::channel::<LetterCounts>();
+    let mut all_solutions: Vec<CreateGridResult> = Default::default();
+
+    //let (sender, receiver) = std::sync::mpsc::channel::<LetterCounts>();
     for (size, group) in ordered_groups {
         let solution_count = AtomicUsize::new(0);
         let impossible_count = AtomicUsize::new(0);
         let redundant_count = AtomicUsize::new(0);
-        let pb = ProgressBar::new(group.len() as u64).with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:4}/{len:4}").unwrap()) .with_message(format!("Groups of size {size}"));
+        let pb = ProgressBar::new(group.len() as u64)
+            .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:4}/{len:4}").unwrap())
+            .with_message(format!("Groups of size {size}"));
         //let latest_solution = ProgressBar::new_spinner();
-        let solutions: Vec<String> = group.par_iter().map(|(letters, _)| {
-            if previous_solutions
-                .range(letters..)
-                .any(|prev| prev.is_superset(letters))
-            {
-                pb.inc(1);
-                redundant_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-                return None;
-            }
-
-            let mut counter = FakeCounter;
-
-            let letter_words: Vec<ArrayVec<Character, 16>> = word_map
-                .iter()
-                .flat_map(|s| s.1)
-                .filter(|word| letters.is_superset(&word.counts))
-                .map(|z| z.array.clone())
-                .collect();
-            //let raw_text = get_raw_text(&letters);
-            let words_text = get_possible_words_text(&letters, &word_map);
-            let result = ws_core::finder::node::try_make_grid_with_blank_filling(
-                *letters,
-                &letter_words,
-                Character::E,
-                &mut counter,
-            );
-            pb.inc(1);
-            match result.grid {
-                Some(solution) => {
-                    solution_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-                    let solution = solution.iter().join("");
-                    let words = words_text.clone();
-
-                    sender.send(*letters).expect("Could not send solution");
-                    //latest_solution.set_message(format!("Solution found:\n"));
-
-                    return Some(format!("{solution}\t{size}\t{words}"));
-
-                }
-                None => {
-                    // debug!(
-                    //     "No solution possible for {raw_text}: ({count}) ({words_text})",
-                    //     count = letters.into_iter().count()
-                    // );
-                    impossible_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        let solutions: Vec<CreateGridResult> = group
+            .par_iter()
+            .map(|(letters, _)| {
+                if previous_solutions
+                    .range(letters..)
+                    .any(|prev| prev.is_superset(letters))
+                {
+                    pb.inc(1);
+                    redundant_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
                     return None;
                 }
-            }
-        }).flatten().collect();
 
-        let lines = solutions.join("\n");
-        if !lines.is_empty(){
+                let mut counter = FakeCounter;
+
+                let finder_words: Vec<FinderWord> = word_map
+                    .iter()
+                    .flat_map(|s| s.1)
+                    .filter(|word| letters.is_superset(&word.counts))
+                    .map(|z| z)
+                    .cloned()
+                    .collect();
+                //let raw_text = get_raw_text(&letters);
+
+                let result = ws_core::finder::node::try_make_grid_with_blank_filling(
+                    *letters,
+                    &finder_words,
+                    Character::E,
+                    &mut counter,
+                );
+                pb.inc(1);
+                match result.grid {
+                    Some(grid) => {
+                        solution_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                        return Some(CreateGridResult {
+                            grid,
+                            letters: *letters,
+                            words: finder_words,
+                        });
+                    }
+                    None => {
+                        impossible_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                        return None;
+                    }
+                }
+            })
+            .flatten()
+            .collect();
+
+        let lines = solutions
+            .iter()
+            .map(|CreateGridResult { grid, words, .. }| {
+                let words_text = words.iter().map(|x| x.text.as_str()).join(", ");
+                let solution = grid.iter().join("");
+
+                format!("{solution}\t{size}\t{words_text}")
+            })
+            .join("\n");
+        if !lines.is_empty() {
             file.write((lines + "\n").as_bytes()).unwrap();
         }
-
-
 
         let solution_count = solution_count.into_inner();
         let impossible_count = impossible_count.into_inner();
@@ -164,9 +195,11 @@ fn create_grid_for_most_words(word_map: WordMultiMap,mut file:BufWriter<File>) {
         pb.finish_with_message(format!("{size:2} words: {solution_count:4} Solutions {impossible_count:45} Impossible {redundant_count:4} Redundant"));
         //latest_solution.finish();
 
-        previous_solutions.extend(receiver.try_iter());
+        previous_solutions.extend(solutions.iter().map(|x| x.letters).clone());
+        all_solutions.extend(solutions.into_iter());
+    }
 
-    };
+    all_solutions
 }
 
 fn get_combinations(
@@ -175,7 +208,9 @@ fn get_combinations(
     max_size: u8,
     multi_map: &WordMultiMap,
 ) -> BTreeMap<LetterCounts, usize> {
-    let pb = ProgressBar::new(possible_words.len() as u64).with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos}/{len}").unwrap()) .with_message("Getting word combinations");
+    let pb = ProgressBar::new(possible_words.len() as u64)
+        .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos}/{len}").unwrap())
+        .with_message("Getting word combinations");
 
     let upper_bounds = 1..(possible_words.len());
     let result = upper_bounds
@@ -276,15 +311,6 @@ pub fn write_words(word: &Vec<CharsArray>) -> String {
     word.iter().map(|c| c.iter().join("")).join(", ")
 }
 
-fn get_possible_words_text(counts: &LetterCounts, word_map: &WordMultiMap) -> String {
-    let words = word_map.iter().filter(|(c, _w)| counts.is_superset(c));
-
-    words
-        .flat_map(|(_c, words)| words.iter().map(|w| w.text.as_str()))
-        .sorted()
-        .join(", ")
-}
-
 #[derive(Debug, Clone, PartialEq, Default)]
 struct CharacterCounter([u8; 26]);
 
@@ -328,7 +354,6 @@ pub mod tests {
         let word_letters: Vec<LetterCounts> = words.keys().cloned().collect_vec();
 
         let possible_combinations: BTreeMap<LetterCounts, usize> = get_combinations(
-
             Multiplicities::default(),
             word_letters.as_slice(),
             16,
@@ -372,7 +397,6 @@ pub mod tests {
         let word_letters: Vec<LetterCounts> = words.keys().cloned().collect_vec();
 
         let possible_combinations: BTreeMap<LetterCounts, usize> = get_combinations(
-
             Multiplicities::default(),
             word_letters.as_slice(),
             16,
@@ -393,5 +417,14 @@ pub mod tests {
         }
 
         assert!(contains_expected);
+    }
+
+    fn get_possible_words_text(counts: &LetterCounts, word_map: &WordMultiMap) -> String {
+        let words = word_map.iter().filter(|(c, _w)| counts.is_superset(c));
+
+        words
+            .flat_map(|(_c, words)| words.iter().map(|w| w.text.as_str()))
+            .sorted()
+            .join(", ")
     }
 }

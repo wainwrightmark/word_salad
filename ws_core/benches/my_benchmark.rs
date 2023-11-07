@@ -22,7 +22,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     if letter_count > 16 {
         panic!("Too many letters");
     }
-    let arrays = words.into_iter().map(|x| x.array.clone()).collect();
+
 
     let mut blanks_to_add = 16usize.saturating_sub(letter_count);
     while blanks_to_add > 0 {
@@ -37,7 +37,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
 
     c.bench_function("EU Countries", |b| {
         b.iter(|| {
-            try_make_grid_with_blank_filling(letters, &arrays, Character::E, &mut FakeCounter)
+            try_make_grid_with_blank_filling(letters, &words, Character::E, &mut FakeCounter)
         })
     });
 }

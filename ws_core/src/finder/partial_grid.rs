@@ -1,8 +1,9 @@
 use crate::finder::node::*;
 use crate::finder::*;
-use crate::{find_solution, Character, CharsArray, Grid, GridSet};
+use crate::{find_solution, Character, Grid, GridSet};
 
 use super::counter::Counter;
+use super::helpers::FinderWord;
 
 pub type NodeMap = geometrid::tile_map::TileMap<Node, 16, 1, 16>;
 
@@ -34,12 +35,12 @@ impl PartialGrid {
         grid
     }
 
-    pub fn check_matches(&self, nodes: &NodeMap, words: &Vec<CharsArray>) -> bool {
+    pub fn check_matches(&self, nodes: &NodeMap, words: &Vec<FinderWord>) -> bool {
         let solution_grid = self.to_grid(nodes);
 
         //println!("Solution found:\n{solution_grid}");
         for word in words {
-            if find_solution(word, &solution_grid).is_none() {
+            if find_solution(&word.array, &solution_grid).is_none() {
                 return false;
             }
         }
@@ -51,7 +52,7 @@ impl PartialGrid {
         counter: &mut impl Counter,
         all_nodes: &NodeMap,
         level: usize,
-        words: &Vec<CharsArray>,
+        words: &Vec<FinderWord>,
     ) -> Option<Self> {
         if !counter.try_increment() {
             return None;
@@ -59,7 +60,9 @@ impl PartialGrid {
 
         //println!("{g}\n\n", g = self.to_grid(all_nodes));
 
-        let Some((node, potential_locations)) = self.nodes_to_add.iter_true_tiles()
+        let Some((node, potential_locations)) = self
+            .nodes_to_add
+            .iter_true_tiles()
             .map(|tile| {
                 let node = &all_nodes[tile];
                 let set = self.potential_locations(node);
