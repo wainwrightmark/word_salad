@@ -5,22 +5,23 @@ use itertools::Itertools;
 use log::{debug, info};
 use rayon::prelude::*;
 use std::{
-    collections::{BTreeMap, BTreeSet, HashSet},
-    io,
-    sync::atomic::AtomicUsize,
+    collections::{BTreeMap, BTreeSet},
+    io::{self, BufWriter, Write},
+    sync::atomic::AtomicUsize, path::Path, fs::File,
 };
 use ws_core::{
     finder::{counter::FakeCounter, helpers::*},
     prelude::*,
 };
 
+
 #[derive(Parser, Debug)]
 #[command()]
 struct Options {
-    #[arg(short, long, default_value = "data.txt")]
-    pub path: String,
-    #[arg(short, long, default_value_t = false)]
-    pub output: bool,
+    #[arg(short, long, default_value = "data")]
+    pub folder: String,
+    // #[arg(short, long, default_value_t = false)]
+    // pub output: bool,
 }
 
 fn main() {
@@ -34,60 +35,35 @@ fn main() {
 
     info!("Starting up");
 
-    let file = std::fs::read_to_string(options.path.clone())
-        .expect("There should be a file called data.txt");
-    let file = file.leak(); //cheeky
+    let folder = std::fs::read_dir(options.folder).unwrap();
 
-    //let file = include_str!("colors.txt");
-    let word_map = make_words_from_file(file);
+    let paths: Vec<_> = folder.collect();
 
-    if options.output {
-        output_saved_data(word_map);
-    } else {
-        create_grid_for_most_words(word_map);
+    let pb = ProgressBar::new(paths.len() as u64).with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:4}/{len:4}").unwrap()) .with_message("Data files");
+
+    for path in paths.iter(){
+        let path = path.as_ref().unwrap().path();
+        let write_path = format!("output/{}.txt", path.file_name().unwrap().to_string_lossy());
+        info!("{}", write_path);
+        let data = std::fs::read_to_string(path).unwrap();
+
+        let word_map = make_words_from_file(data.as_str());
+
+        let write_path = Path::new(write_path.as_str());
+        let file = std::fs::File::create(write_path).expect("Could not find output folder");
+        let writer = BufWriter::new(file);
+        create_grid_for_most_words(word_map, writer);
+
+
+        pb.inc(1);
     }
 
     info!("Finished... Press enter");
     io::stdin().read_line(&mut String::new()).unwrap();
 }
 
-const DB_PATH: &'static str = "/word_salad_grids";
 
-fn output_saved_data(word_map: WordMultiMap) {
-    let word_set: HashSet<&str> = word_map
-        .into_iter()
-        .flat_map(|x| x.1.into_iter())
-        .map(|w| w.text)
-        .collect();
-    let db = sled::open(DB_PATH).expect("Could not open database");
-
-    let mut solutions: BTreeSet<(usize, String)> = Default::default();
-
-    'results: for result in db.into_iter() {
-        let (key, value) = result.unwrap();
-        let key = String::from_utf8_lossy(&key);
-        let value = String::from_utf8_lossy(&value);
-
-        let trimmed_key = key
-            .trim_end_matches(')')
-            .trim_end_matches(char::is_numeric)
-            .trim_end_matches('(');
-
-        let words: Vec<_> = trimmed_key.split(", ").collect();
-
-        if !words.iter().all(|w| word_set.contains(w)) {
-            continue 'results;
-        }
-
-        solutions.insert((words.len(), format!("{value}: {key}")));
-    }
-
-    for (_, text) in solutions.into_iter().rev() {
-        info!("{text}");
-    }
-}
-
-fn create_grid_for_most_words(word_map: WordMultiMap) {
+fn create_grid_for_most_words(word_map: WordMultiMap,mut file:BufWriter<File>) {
     let word_letters: Vec<LetterCounts> = word_map.keys().cloned().sorted().collect_vec();
     let possible_combinations: BTreeMap<LetterCounts, usize> = get_combinations(
         Multiplicities::default(),
@@ -112,7 +88,7 @@ fn create_grid_for_most_words(word_map: WordMultiMap) {
     //     )
     // }
 
-    let db = sled::open(DB_PATH).expect("Could not open database");
+    // let db = sled::open(DB_PATH).expect("Could not open database");
     let mut previous_solutions: BTreeSet<LetterCounts> = Default::default();
 
     let (sender, receiver) = std::sync::mpsc::channel::<LetterCounts>();
@@ -122,14 +98,14 @@ fn create_grid_for_most_words(word_map: WordMultiMap) {
         let redundant_count = AtomicUsize::new(0);
         let pb = ProgressBar::new(group.len() as u64).with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:4}/{len:4}").unwrap()) .with_message(format!("Groups of size {size}"));
         //let latest_solution = ProgressBar::new_spinner();
-        group.par_iter().for_each(|(letters, _)| {
+        let solutions: Vec<String> = group.par_iter().map(|(letters, _)| {
             if previous_solutions
                 .range(letters..)
                 .any(|prev| prev.is_superset(letters))
             {
                 pb.inc(1);
                 redundant_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-                return;
+                return None;
             }
 
             let mut counter = FakeCounter;
@@ -155,11 +131,10 @@ fn create_grid_for_most_words(word_map: WordMultiMap) {
                     let value = solution.iter().join("");
                     let key = words_text.clone();
 
-                    db.insert(key.as_str(), value.as_str())
-                        .expect("Could not insert data");
-
                     sender.send(*letters).expect("Could not send solution");
-                    //latest_solution.set_message(format!("Solution found:\n{words_text}\n{solution}"));
+                    //latest_solution.set_message(format!("Solution found:\n"));
+
+                    return Some(format!("{value}\t{key}"));
 
                 }
                 None => {
@@ -168,9 +143,17 @@ fn create_grid_for_most_words(word_map: WordMultiMap) {
                     //     count = letters.into_iter().count()
                     // );
                     impossible_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                    return None;
                 }
             }
-        });
+        }).flatten().collect();
+
+        let lines = solutions.join("\n");
+        if !lines.is_empty(){
+            file.write((lines + "\n").as_bytes()).unwrap();
+        }
+
+
 
         let solution_count = solution_count.into_inner();
         let impossible_count = impossible_count.into_inner();
@@ -180,8 +163,8 @@ fn create_grid_for_most_words(word_map: WordMultiMap) {
         //latest_solution.finish();
 
         previous_solutions.extend(receiver.try_iter());
-        db.flush().expect("Could not flush db");
-    }
+
+    };
 }
 
 fn get_combinations(
@@ -295,7 +278,7 @@ fn get_possible_words_text(counts: &LetterCounts, word_map: &WordMultiMap) -> St
     let words = word_map.iter().filter(|(c, _w)| counts.is_superset(c));
     let suffix = format!("({})", words.clone().count());
     words
-        .flat_map(|(_c, words)| words.iter().map(|w| w.text))
+        .flat_map(|(_c, words)| words.iter().map(|w| w.text.as_str()))
         .sorted()
         .join(", ")
         + suffix.as_str()

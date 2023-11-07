@@ -7,7 +7,7 @@ use prime_bag::PrimeBag128;
 pub type LetterCounts = PrimeBag128<Character>;
 pub type WordMultiMap = HashMap<LetterCounts, Vec<FinderWord>>;
 
-pub fn make_words_from_file(text: &'static str) -> WordMultiMap {
+pub fn make_words_from_file(text: &str) -> WordMultiMap {
     text.lines()
         .flat_map(|x| x.split(','))
         .flat_map(FinderWord::try_new)
@@ -16,7 +16,7 @@ pub fn make_words_from_file(text: &'static str) -> WordMultiMap {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct FinderWord {
-    pub text: &'static str,
+    pub text: String,
     pub array: CharsArray,
     pub counts: PrimeBag128<Character>,
 }
@@ -28,7 +28,7 @@ impl std::fmt::Display for FinderWord {
 }
 
 impl FinderWord {
-    fn try_new(text: &'static str) -> Option<Self> {
+    fn try_new(text: &str) -> Option<Self> {
         //println!("'{text}'");
         let array = Word::from_str(text).ok().map(|x| x.characters)?;
 
@@ -36,7 +36,7 @@ impl FinderWord {
         Some(Self {
             array,
             counts,
-            text,
+            text: text.to_string(),
         })
     }
 }
