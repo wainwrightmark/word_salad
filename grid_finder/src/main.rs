@@ -41,9 +41,11 @@ fn main() {
 
     let pb = ProgressBar::new(paths.len() as u64).with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:4}/{len:4}").unwrap()) .with_message("Data files");
 
+    let _ = std::fs::create_dir("grids");
+
     for path in paths.iter(){
         let path = path.as_ref().unwrap().path();
-        let write_path = format!("output/{}.txt", path.file_name().unwrap().to_string_lossy());
+        let write_path = format!("grids/{}", path.file_name().unwrap().to_string_lossy());
         info!("{}", write_path);
         let data = std::fs::read_to_string(path).unwrap();
 
@@ -128,13 +130,13 @@ fn create_grid_for_most_words(word_map: WordMultiMap,mut file:BufWriter<File>) {
             match result.grid {
                 Some(solution) => {
                     solution_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-                    let value = solution.iter().join("");
-                    let key = words_text.clone();
+                    let solution = solution.iter().join("");
+                    let words = words_text.clone();
 
                     sender.send(*letters).expect("Could not send solution");
                     //latest_solution.set_message(format!("Solution found:\n"));
 
-                    return Some(format!("{value}\t{key}"));
+                    return Some(format!("{solution}\t{size}\t{words}"));
 
                 }
                 None => {
@@ -159,7 +161,7 @@ fn create_grid_for_most_words(word_map: WordMultiMap,mut file:BufWriter<File>) {
         let impossible_count = impossible_count.into_inner();
         let redundant_count = redundant_count.into_inner();
 
-        pb.finish_with_message(format!("{size:2} words: {solution_count:4} Solutions. {impossible_count:4} Impossible. {redundant_count:4} Redundant."));
+        pb.finish_with_message(format!("{size:2} words: {solution_count:4} Solutions {impossible_count:45} Impossible {redundant_count:4} Redundant"));
         //latest_solution.finish();
 
         previous_solutions.extend(receiver.try_iter());
@@ -276,12 +278,11 @@ pub fn write_words(word: &Vec<CharsArray>) -> String {
 
 fn get_possible_words_text(counts: &LetterCounts, word_map: &WordMultiMap) -> String {
     let words = word_map.iter().filter(|(c, _w)| counts.is_superset(c));
-    let suffix = format!("({})", words.clone().count());
+
     words
         .flat_map(|(_c, words)| words.iter().map(|w| w.text.as_str()))
         .sorted()
         .join(", ")
-        + suffix.as_str()
 }
 
 #[derive(Debug, Clone, PartialEq, Default)]
