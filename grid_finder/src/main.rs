@@ -54,15 +54,16 @@ fn do_finder(options: Options) {
 
     let _ = std::fs::create_dir("grids");
     let _ = std::fs::create_dir("clusters");
+    let _ = std::fs::create_dir("done");
 
     for path in paths.iter() {
-        let path = path.as_ref().unwrap().path();
-        let file_name = path.file_name().unwrap().to_string_lossy();
+        let data_path = path.as_ref().unwrap().path();
+        let file_name = data_path.file_name().unwrap().to_string_lossy();
         let write_path = format!("grids/{file_name}",);
         info!("{}", write_path);
-        let data = std::fs::read_to_string(path.clone()).unwrap();
+        let data_file_text = std::fs::read_to_string(data_path.clone()).unwrap();
 
-        let word_map = make_words_from_file(data.as_str());
+        let word_map = make_words_from_file(data_file_text.as_str());
 
         let grids_write_path = Path::new(write_path.as_str());
         let grids_file =
@@ -84,6 +85,12 @@ fn do_finder(options: Options) {
         let clusters_write_path = Path::new(clusters_write_path.as_str());
         let clusters_text = clusters.into_iter().map(|x| x.to_string()).join("\n\n");
         std::fs::write(clusters_write_path, clusters_text).unwrap();
+
+        let done_write_path = format!("done/{file_name}",);
+        let done_write_path = Path::new(done_write_path.as_str());
+
+        std::fs::write(done_write_path, data_file_text).unwrap();
+        std::fs::remove_file(data_path).unwrap();
 
         pb.inc(1);
     }
