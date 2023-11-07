@@ -96,12 +96,8 @@ fn output_saved_data(word_map: WordMultiMap) {
 }
 
 fn create_grid_for_most_words(word_map: WordMultiMap, options: &Options) {
-    let mut possible_combinations: BTreeMap<LetterCounts, usize> = Default::default();
-
     let word_letters: Vec<LetterCounts> = word_map.keys().cloned().sorted().collect_vec();
-
-    get_combinations(
-        &mut possible_combinations,
+    let possible_combinations: BTreeMap<LetterCounts, usize> = get_combinations(
         0,
         Multiplicities::default(),
         word_letters.as_slice(),
@@ -195,6 +191,102 @@ fn create_grid_for_most_words(word_map: WordMultiMap, options: &Options) {
 }
 
 fn get_combinations(
+    word_count: usize,
+    multiplicities: Multiplicities,
+    possible_words: &[LetterCounts],
+    max_size: u8,
+    multi_map: &WordMultiMap,
+) -> BTreeMap<LetterCounts, usize> {
+    let upper_bounds = 1..(possible_words.len());
+    let result = upper_bounds
+        .into_iter()
+        .map(|upper| &possible_words[0..=upper])
+        .par_bridge()
+        .map(|words| {
+            let mut possible_combinations: BTreeMap<LetterCounts, usize> = BTreeMap::default();
+            get_combinations_inner(
+                &mut possible_combinations,
+                word_count,
+                multiplicities,
+                words,
+                max_size,
+                multi_map,
+            );
+            possible_combinations
+        })
+        .reduce(
+            || BTreeMap::<LetterCounts, usize>::default(),
+            |a, b| {
+                let (mut big, small) = if a.len() >= b.len() { (a, b) } else { (b, a) };
+                if small.is_empty() {
+                    return big;
+                }
+
+                for (key, value) in small.into_iter() {
+                    match big.entry(key) {
+                        std::collections::btree_map::Entry::Vacant(v) => {
+                            v.insert(value);
+                        }
+                        std::collections::btree_map::Entry::Occupied(mut o) => {
+                            if *o.get() < value {
+                                *o.get_mut() = value;
+                            }
+                        }
+                    }
+                }
+
+                big
+            },
+        );
+    result
+
+    // loop {
+    //     let Some((word, npw)) = possible_words.split_last() else {
+    //         break;
+    //     };
+    //     possible_words = npw;
+
+    //     let Some(new_multiplicities) = multiplicities.try_add_word(&word) else {
+    //         panic!("Could not add word to multiplicities");
+    //     };
+
+    //     let new_word_count = word_count + 1;
+
+    //     if new_multiplicities.count <= max_size {
+    //         match possible_combinations.entry(new_multiplicities.set) {
+    //             std::collections::btree_map::Entry::Vacant(v) => {
+
+    //                 v.insert(new_word_count);
+    //             }
+    //             std::collections::btree_map::Entry::Occupied(mut o) => {
+    //                 if *o.get() < new_word_count {
+    //                     o.insert(new_word_count);
+    //                 }
+    //             }
+    //         };
+
+    //         get_combinations(
+    //             possible_combinations,
+    //             new_word_count,
+    //             new_multiplicities,
+    //             possible_words,
+    //             max_size,
+    //             multi_map,
+    //         );
+    //     }
+
+    //     if new_word_count == 1 {
+    //         info!(
+    //             "'{word_text}' eliminated. {found} options found. {remaining} remain",
+    //             word_text = get_text(&word, multi_map),
+    //             found = possible_combinations.len(),
+    //             remaining = possible_words.len()
+    //         )
+    //     }
+    // }
+}
+
+fn get_combinations_inner(
     possible_combinations: &mut BTreeMap<LetterCounts, usize>,
     word_count: usize,
     multiplicities: Multiplicities,
@@ -202,8 +294,6 @@ fn get_combinations(
     max_size: u8,
     multi_map: &WordMultiMap,
 ) {
-    //let mut new_possible_words = possible_words.clone();
-
     loop {
         let Some((word, npw)) = possible_words.split_last() else {
             break;
@@ -228,7 +318,7 @@ fn get_combinations(
                 }
             };
 
-            get_combinations(
+            get_combinations_inner(
                 possible_combinations,
                 new_word_count,
                 new_multiplicities,
@@ -236,15 +326,6 @@ fn get_combinations(
                 max_size,
                 multi_map,
             );
-        }
-
-        if new_word_count == 1 {
-            info!(
-                "'{word_text}' eliminated. {found} options found. {remaining} remain",
-                word_text = get_text(&word, multi_map),
-                found = possible_combinations.len(),
-                remaining = possible_words.len()
-            )
         }
     }
 }
@@ -257,12 +338,12 @@ pub fn write_words(word: &Vec<CharsArray>) -> String {
     word.iter().map(|c| c.iter().join("")).join(", ")
 }
 
-fn get_text(counts: &LetterCounts, word_map: &WordMultiMap) -> String {
-    word_map
-        .get(counts)
-        .map(|x| x.iter().map(|w| w.text).join(", "))
-        .unwrap_or_else(|| "?????".to_string())
-}
+// fn get_text(counts: &LetterCounts, word_map: &WordMultiMap) -> String {
+//     word_map
+//         .get(counts)
+//         .map(|x| x.iter().map(|w| w.text).join(", "))
+//         .unwrap_or_else(|| "?????".to_string())
+// }
 
 fn get_possible_words_text(counts: &LetterCounts, word_map: &WordMultiMap) -> String {
     let words = word_map.iter().filter(|(c, _w)| counts.is_superset(c));
@@ -321,10 +402,7 @@ pub mod tests {
         let words = make_words_from_file(input);
         let word_letters: Vec<LetterCounts> = words.keys().cloned().collect_vec();
 
-        let mut possible_combinations: BTreeMap<LetterCounts, usize> = Default::default();
-
-        get_combinations(
-            &mut possible_combinations,
+        let possible_combinations: BTreeMap<LetterCounts, usize> = get_combinations(
             0,
             Multiplicities::default(),
             word_letters.as_slice(),
@@ -368,10 +446,7 @@ pub mod tests {
 
         let word_letters: Vec<LetterCounts> = words.keys().cloned().collect_vec();
 
-        let mut possible_combinations: BTreeMap<LetterCounts, usize> = Default::default();
-
-        get_combinations(
-            &mut possible_combinations,
+        let possible_combinations: BTreeMap<LetterCounts, usize> = get_combinations(
             0,
             Multiplicities::default(),
             word_letters.as_slice(),
