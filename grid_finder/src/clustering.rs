@@ -1,16 +1,49 @@
 use std::collections::{BTreeMap, HashSet};
 
 use itertools::Itertools;
-use ws_core::{finder::helpers::FinderWord, CharsArray};
+use ws_core::{
+    finder::{helpers::FinderWord, node::GridResult},
+    CharsArray,
+};
 type WordsSet = geometrid::tile_set::TileSet128<128, 1, 128>;
 
+#[derive(Debug, Clone)]
 pub struct Cluster {
-    pub words: Vec<Vec<FinderWord>>,
+    pub grids: Vec<GridResult>,
     pub score: f32,
 }
 
+impl Cluster {
+    pub fn new(points: &[WordsSet], map: &BTreeMap<WordsSet, GridResult>) -> Self {
+        let distance: u32 = calculate_set_distance(points);
+
+        let score = distance as f32 / (2.0 * (binomial_coefficient(points.len(), 2) as f32));
+
+        let grids = points
+            .iter()
+            .flat_map(|p| map.get(p))
+            .cloned()
+            .collect_vec();
+
+        Self { grids, score }
+    }
+}
+
+impl std::fmt::Display for Cluster {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let grid_words = self.grids.iter().join("\n");
+
+        write!(
+            f,
+            "points: {l:2} dist: {average_distance:2.4} \n{grid_words}",
+            l = self.grids.len(),
+            average_distance = self.score,
+        )
+    }
+}
+
 pub fn cluster_words(
-    groups: Vec<Vec<FinderWord>>,
+    groups: Vec<GridResult>,
     all_words: &Vec<FinderWord>,
     max_clusters: usize,
 ) -> Vec<Cluster> {
@@ -20,10 +53,11 @@ pub fn cluster_words(
         return results;
     }
     let clusters = max_clusters.min(groups.len());
-    let map: BTreeMap<WordsSet, Vec<FinderWord>> = groups
+    let map: BTreeMap<WordsSet, GridResult> = groups
         .into_iter()
-        .map(|list| {
-            let set: HashSet<CharsArray> = HashSet::from_iter(list.iter().map(|x| x.array.clone()));
+        .map(|grid_result| {
+            let set: HashSet<CharsArray> =
+                HashSet::from_iter(grid_result.words.iter().map(|x| x.array.clone()));
 
             let set: WordsSet = WordsSet::from_fn(|word_id| {
                 let Some(word) = all_words.get(word_id.inner() as usize) else {
@@ -31,7 +65,7 @@ pub fn cluster_words(
                 };
                 set.contains(&word.array)
             });
-            (set, list)
+            (set, grid_result)
         })
         .collect();
 
@@ -87,38 +121,6 @@ pub fn cluster_words(
     results
 }
 
-impl Cluster {
-    pub fn new(points: &[WordsSet], map: &BTreeMap<WordsSet, Vec<FinderWord>>) -> Self {
-        let distance: u32 = calculate_set_distance(points);
-
-        let score = distance as f32 / (2.0 * (binomial_coefficient(points.len(), 2) as f32));
-
-        let words = points
-            .iter()
-            .flat_map(|p| map.get(p))
-            .cloned()
-            .collect_vec();
-
-        Self { words, score }
-    }
-}
-
-impl std::fmt::Display for Cluster {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let words = self
-            .words
-            .iter()
-            .map(|x| x.iter().map(|x| x.text.as_str()).join(", "))
-            .join("\n");
-        write!(
-            f,
-            "points: {l:2} dist: {average_distance:2.4} \n{words}\n",
-            l = self.words.len(),
-            average_distance = self.score,
-        )
-    }
-}
-
 fn binomial_coefficient(n: usize, k: usize) -> usize {
     let mut res = 1;
     for i in 0..k {
@@ -157,7 +159,10 @@ fn find_best_point_to_add(chosen_points: &[WordsSet], all_points: &[WordsSet]) -
 #[cfg(test)]
 pub mod test {
     use itertools::Itertools;
-    use ws_core::finder::helpers::FinderWord;
+    use ws_core::{
+        finder::{helpers::FinderWord, node::GridResult},
+        TileMap,
+    };
 
     use super::cluster_words;
 
@@ -173,7 +178,16 @@ pub mod test {
             .dedup()
             .collect_vec();
 
-        let clusters = cluster_words(word_vectors, &all_words, 10);
+        let grs = word_vectors
+            .into_iter()
+            .map(|words| GridResult {
+                words,
+                grid: TileMap::from_fn(|_| ws_core::Character::Blank),
+                letters: Default::default(),
+            })
+            .collect_vec();
+
+        let clusters = cluster_words(grs, &all_words, 10);
 
         assert_eq!(clusters.len(), 9);
 

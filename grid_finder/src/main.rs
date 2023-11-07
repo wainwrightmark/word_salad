@@ -77,9 +77,8 @@ fn do_finder(options: Options) {
             .sorted()
             .dedup()
             .collect_vec();
-        let grid_words = grids.into_iter().map(|x| x.words).collect_vec();
 
-        let clusters = cluster_words(grid_words, &all_words, 10);
+        let clusters = cluster_words(grids, &all_words, 10);
 
         let clusters_write_path = format!("clusters/{file_name}",);
         let clusters_write_path = Path::new(clusters_write_path.as_str());
@@ -90,13 +89,7 @@ fn do_finder(options: Options) {
     }
 }
 
-struct CreateGridResult {
-    pub grid: Grid,
-    pub letters: LetterCounts,
-    pub words: Vec<FinderWord>,
-}
-
-fn create_grids(word_map: &WordMultiMap, mut file: BufWriter<File>) -> Vec<CreateGridResult> {
+fn create_grids(word_map: &WordMultiMap, mut file: BufWriter<File>) -> Vec<GridResult> {
     let word_letters: Vec<LetterCounts> = word_map.keys().cloned().sorted().collect_vec();
     let possible_combinations: BTreeMap<LetterCounts, usize> = get_combinations(
         Multiplicities::default(),
@@ -116,7 +109,7 @@ fn create_grids(word_map: &WordMultiMap, mut file: BufWriter<File>) -> Vec<Creat
 
     let mut previous_solutions: BTreeSet<LetterCounts> = Default::default();
 
-    let mut all_solutions: Vec<CreateGridResult> = Default::default();
+    let mut all_solutions: Vec<GridResult> = Default::default();
 
     //let (sender, receiver) = std::sync::mpsc::channel::<LetterCounts>();
     for (size, group) in ordered_groups {
@@ -127,7 +120,7 @@ fn create_grids(word_map: &WordMultiMap, mut file: BufWriter<File>) -> Vec<Creat
             .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:4}/{len:4}").unwrap())
             .with_message(format!("Groups of size {size}"));
         //let latest_solution = ProgressBar::new_spinner();
-        let solutions: Vec<CreateGridResult> = group
+        let solutions: Vec<GridResult> = group
             .par_iter()
             .map(|(letters, _)| {
                 if previous_solutions
@@ -157,14 +150,10 @@ fn create_grids(word_map: &WordMultiMap, mut file: BufWriter<File>) -> Vec<Creat
                     &mut counter,
                 );
                 pb.inc(1);
-                match result.grid {
-                    Some(grid) => {
+                match result {
+                    Some(grid_result) => {
                         solution_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-                        return Some(CreateGridResult {
-                            grid,
-                            letters: *letters,
-                            words: finder_words,
-                        });
+                        return Some(grid_result);
                     }
                     None => {
                         impossible_count.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
@@ -177,12 +166,7 @@ fn create_grids(word_map: &WordMultiMap, mut file: BufWriter<File>) -> Vec<Creat
 
         let lines = solutions
             .iter()
-            .map(|CreateGridResult { grid, words, .. }| {
-                let words_text = words.iter().map(|x| x.text.as_str()).join(", ");
-                let solution = grid.iter().join("");
 
-                format!("{solution}\t{size}\t{words_text}")
-            })
             .join("\n");
         if !lines.is_empty() {
             file.write((lines + "\n").as_bytes()).unwrap();

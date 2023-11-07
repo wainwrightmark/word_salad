@@ -1,4 +1,4 @@
-use crate::{Character,  Grid};
+use crate::{Character, Grid};
 use itertools::Itertools;
 use std::{
     cell::{Cell, RefCell},
@@ -14,8 +14,21 @@ use crate::finder::*;
 
 //todo benchmark more efficient collections, different heuristics
 
+#[derive(Debug, Clone)]
 pub struct GridResult {
-    pub grid: Option<Grid>,
+    pub grid: Grid,
+    pub letters: LetterCounts,
+    pub words: Vec<FinderWord>,
+}
+
+impl std::fmt::Display for GridResult {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let words_text = self.words.iter().map(|x| x.text.as_str()).join(", ");
+        let solution = self.grid.iter().join("");
+        let size = self.words.len();
+
+        write!(f, "{solution}\t{size}\t{words_text}")
+    }
 }
 
 pub fn try_make_grid_with_blank_filling(
@@ -23,10 +36,10 @@ pub fn try_make_grid_with_blank_filling(
     words: &Vec<FinderWord>,
     first_blank_replacement: Character,
     counter: &mut impl Counter,
-) -> GridResult {
+) -> Option<GridResult> {
     let result = try_make_grid(letters, words, counter);
     //println!("{} tries", result.tries);
-    if result.grid.is_some() {
+    if result.is_some() {
         return result;
     }
 
@@ -53,16 +66,13 @@ pub fn try_make_grid_with_blank_filling(
                 .expect("prime bag error");
 
             let result = try_make_grid_with_blank_filling(new_letters, words, replacement, counter);
-            match result.grid {
-                Some(grid) => {
-                    return GridResult { grid: Some(grid) };
-                }
-                None => {}
+            if result.is_some() {
+                return result;
             }
         }
     }
 
-    GridResult { grid: None }
+    None
 }
 
 struct WordUniquenessHelper {
@@ -136,7 +146,7 @@ pub fn try_make_grid(
     letters: LetterCounts,
     words: &Vec<FinderWord>,
     counter: &mut impl Counter,
-) -> GridResult {
+) -> Option<GridResult> {
     //println!("Try to make grid: {l:?} : {w:?}", l= crate::get_raw_text(&letters), w= crate::write_words(words) );
     let mut nodes_map: BTreeMap<Character, Vec<NodeBuilder>> = Default::default();
 
@@ -245,14 +255,15 @@ pub fn try_make_grid(
     });
 
     let Some(solution) = grid.solve_recursive(counter, &nodes, 0, words) else {
-        return GridResult { grid: None };
+        return None;
     };
 
     let solution_grid = solution.to_grid(&nodes);
-
-    GridResult {
-        grid: Some(solution_grid),
-    }
+    Some(GridResult {
+        grid: solution_grid,
+        letters,
+        words: words.clone(),
+    })
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -443,8 +454,8 @@ mod tests {
         let solution =
             try_make_grid_with_blank_filling(letters, &words, Character::E, &mut counter);
         println!("{:?}", now.elapsed());
-        match solution.grid {
-            Some(grid) => {
+        match solution {
+            Some(GridResult { grid, .. }) => {
                 println!("Found after {} tries", counter.current);
                 println!("{grid}");
             }
