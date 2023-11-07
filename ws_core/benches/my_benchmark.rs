@@ -1,15 +1,10 @@
 use criterion::{criterion_group, criterion_main, Criterion};
-use itertools::Itertools;
 use ws_core::{finder::{node::try_make_grid_with_blank_filling, helpers::LetterCounts, counter::FakeCounter}, Character};
 
 pub fn criterion_benchmark(c: &mut Criterion) {
-    let words = ws_core::finder::helpers::make_words_from_file(
+    let words = ws_core::finder::helpers::make_words_vec_from_file(
         "CROATIA, ROMANIA, IRELAND, LATVIA, POLAND, FRANCE, MALTA",
     );
-    let words = words
-        .into_iter()
-        .flat_map(|x| x.1.into_iter())
-        .collect_vec();
 
     let mut letters = LetterCounts::default();
     for word in words.iter() {

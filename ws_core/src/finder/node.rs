@@ -416,11 +416,7 @@ mod tests {
     #[test_case("Cat, Dog")]
     pub fn test_try_make_grid(input: &'static str) {
         let now = Instant::now();
-        let words = crate::finder::helpers::make_words_from_file(input);
-        let words = words
-            .into_iter()
-            .flat_map(|x| x.1.into_iter())
-            .collect_vec();
+        let words = crate::finder::helpers::make_words_vec_from_file(input);
 
         let mut letters = LetterCounts::default();
         for word in words.iter() {
