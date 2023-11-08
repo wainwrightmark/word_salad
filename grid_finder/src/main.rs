@@ -5,10 +5,10 @@ use clap::Parser;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use indicatif_log_bridge::LogWrapper;
 use itertools::Itertools;
-use log::{ info};
+use log::info;
 use rayon::prelude::*;
 use std::{
-    collections::{HashSet},
+    collections::HashSet,
     fs::File,
     io::{self, BufWriter, Write},
     path::Path,
@@ -20,7 +20,7 @@ use ws_core::{
 
 use crate::{
     clustering::cluster_words,
-    combinations::{get_combinations, WordCombination},
+    combinations::{get_combinations, WordCombination, WordSet},
 };
 
 #[derive(Parser, Debug)]
@@ -28,7 +28,11 @@ use crate::{
 struct Options {
     #[arg(short, long, default_value = "data")]
     pub folder: String,
+
+    #[arg(short, long, default_value = "5")]
+    pub minimum: u32
 }
+
 
 fn main() {
     let logger =
@@ -72,7 +76,7 @@ fn do_finder(options: Options) {
         let grids_file =
             std::fs::File::create(grids_write_path).expect("Could not find output folder");
         let grids_writer = BufWriter::new(grids_file);
-        let grids = create_grids(&word_map, grids_writer);
+        let grids = create_grids(&word_map, grids_writer, options.minimum);
 
         let all_words = grids
             .iter()
@@ -81,6 +85,8 @@ fn do_finder(options: Options) {
             .sorted()
             .dedup()
             .collect_vec();
+
+
 
         let clusters = cluster_words(grids, &all_words, 10);
 
@@ -99,7 +105,7 @@ fn do_finder(options: Options) {
     }
 }
 
-fn create_grids(all_words: &Vec<FinderWord>, mut file: BufWriter<File>) -> Vec<GridResult> {
+fn create_grids(all_words: &Vec<FinderWord>, mut file: BufWriter<File>, min_size: u32) -> Vec<GridResult> {
     let word_letters: Vec<LetterCounts> = all_words.iter().map(|x| x.counts).collect();
     let possible_combinations: Vec<combinations::WordCombination> =
         get_combinations(word_letters.as_slice(), 16);
@@ -108,26 +114,29 @@ fn create_grids(all_words: &Vec<FinderWord>, mut file: BufWriter<File>) -> Vec<G
         "{c} possible combinations found",
         c = possible_combinations.len()
     );
-    // info!("");
 
-    let mut ordered_combinations: Vec<(usize, HashSet<bit_set::BitSet>)> = possible_combinations
+    let mut ordered_combinations: Vec<(u32, HashSet<WordSet>)> = possible_combinations
         .into_iter()
         .map(|x| x.word_indexes)
-        .sorted_by_key(|x| x.len())
-        .group_by(|x| x.len())
+        .sorted_by_key(|x| x.count())
+        .group_by(|x| x.count())
         .into_iter()
         .sorted_unstable_by_key(|(k, _v)| *k)
         .map(|(word_count, v)| (word_count, HashSet::from_iter(v)))
         .collect_vec();
 
     let mut all_solutions: Vec<GridResult> = vec![];
-
-    println!("{}", ordered_combinations.len());
+    let mut solved_sets: Vec<WordSet>  = vec![];
 
     while let Some((size, mut sets)) = ordered_combinations.pop() {
+        if size < min_size{
+            break;
+        }
         let pb = ProgressBar::new(sets.len() as u64)
             .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:4}/{len:4}").unwrap())
             .with_message(format!("Groups of size {size}"));
+
+        sets.retain(|x|!solved_sets.iter().any(|sol| x == &sol.intersect(x)) );
 
         let results: Vec<(WordCombination, Option<GridResult>)> = sets
             .par_drain()
@@ -144,11 +153,13 @@ fn create_grids(all_words: &Vec<FinderWord>, mut file: BufWriter<File>) -> Vec<G
                     Character::E,
                     &mut counter,
                 );
+
                 pb.inc(1);
 
                 (set, result)
             })
             .collect();
+
         let results_count = results.len();
 
         let (_, mut next_set) = ordered_combinations.pop().unwrap_or_default();
@@ -156,15 +167,17 @@ fn create_grids(all_words: &Vec<FinderWord>, mut file: BufWriter<File>) -> Vec<G
 
         for (combination, result) in results.into_iter() {
             if let Some(solution) = result {
+                solved_sets.push(combination.word_indexes);
                 solutions.push(solution);
             } else {
-                for x in combinations::shrink_bit_sets(&combination.word_indexes) {
-                    next_set.insert(x);
+                for new_set in combinations::shrink_bit_sets(&combination.word_indexes) {
+                    next_set.insert(new_set);
+
                 }
             }
         }
 
-        let lines = solutions.iter().join("\n");
+        let lines = solutions.iter().sorted_by_cached_key(|x|x.words.iter().sorted().join("")).join("\n");
         if !lines.is_empty() {
             file.write((lines + "\n").as_bytes()).unwrap();
         }
@@ -182,7 +195,6 @@ fn create_grids(all_words: &Vec<FinderWord>, mut file: BufWriter<File>) -> Vec<G
         }
     }
 
-
     all_solutions
 }
 
@@ -196,8 +208,6 @@ pub fn write_words(word: &Vec<CharsArray>) -> String {
 
 #[derive(Debug, Clone, PartialEq, Default)]
 struct CharacterCounter([u8; 26]);
-
-
 
 #[cfg(test)]
 pub mod tests {}

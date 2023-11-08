@@ -27,15 +27,19 @@ impl Cluster {
 
         Self { grids, score }
     }
+
+    pub fn max_overlap(&self)-> usize{
+        self.grids.iter().tuple_combinations().map(|(a,b)| a.words.iter().filter(|w|b.words.contains(w)).count()).max().unwrap_or_default()
+    }
 }
 
 impl std::fmt::Display for Cluster {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let grid_words = self.grids.iter().join("\n");
-
+        let overlap = self.max_overlap();
         write!(
             f,
-            "points: {l:2} dist: {average_distance:2.4} \n{grid_words}",
+            "items: {l:2} dist: {average_distance:2.4} max overlap: {overlap:2} \n{grid_words}",
             l = self.grids.len(),
             average_distance = self.score,
         )

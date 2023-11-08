@@ -72,7 +72,7 @@ impl std::fmt::Display for Character{
 impl Character {
     pub fn as_char(&self) -> char {
         match self {
-            Character::Blank => ' ',
+            Character::Blank => '_',
             Character::A => 'A',
             Character::B => 'B',
             Character::C => 'C',

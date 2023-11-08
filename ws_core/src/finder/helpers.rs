@@ -1,18 +1,10 @@
-use std::collections::{BTreeSet};
+use std::collections::BTreeSet;
 
 use crate::prelude::*;
 use itertools::Itertools;
 use prime_bag::PrimeBag128;
 
 pub type LetterCounts = PrimeBag128<Character>;
-// pub type WordMultiMap = HashMap<LetterCounts, Vec<FinderWord>>;
-
-// pub fn make_words_from_file(text: &str) -> WordMultiMap {
-//     text.lines()
-//         .flat_map(|x| x.split(','))
-//         .flat_map(FinderWord::try_new)
-//         .into_group_map_by(|x| x.counts)
-// }
 
 pub fn make_words_vec_from_file(text: &str) -> Vec<FinderWord> {
     text.lines()

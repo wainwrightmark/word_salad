@@ -23,7 +23,7 @@ pub struct GridResult {
 
 impl std::fmt::Display for GridResult {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let words_text = self.words.iter().map(|x| x.text.as_str()).join(", ");
+        let words_text = self.words.iter().map(|x| format!("{:16}", x.text)).sorted().join("\t");
         let solution = self.grid.iter().join("");
         let size = self.words.len();
 
@@ -414,6 +414,8 @@ mod tests {
     #[test_case("ALDGATE, ANGEL, ALDGATEEAST, BANK, LANCASTERGATE")]
     #[test_case("WELLS, LEEDS, ELY, LISBURN, DERBY, NEWRY, SALISBURY")]
     #[test_case("Cat, Dog")]
+    #[test_case("Utah, Ohio, Maine, Idaho, Indiana, Montana, Arizona")]
+    #[test_case("Teal, Wheat, White, Green, Cyan, Gray, Coral, Orange, Magenta")]
     pub fn test_try_make_grid(input: &'static str) {
         let now = Instant::now();
         let words = crate::finder::helpers::make_words_vec_from_file(input);
@@ -443,7 +445,7 @@ mod tests {
         }
 
         let mut counter = RealCounter {
-            max: 10000000,
+            max: 1000000000,
             current: 0,
         };
 

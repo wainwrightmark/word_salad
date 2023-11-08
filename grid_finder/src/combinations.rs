@@ -1,10 +1,15 @@
-use bit_set::BitSet;
 use indicatif::{ProgressBar, ProgressStyle};
 use itertools::Itertools;
 use rayon::prelude::*;
 use ws_core::finder::helpers::*;
 
+pub type WordSet = geometrid::tile_set::TileSet128<128, 1, 128>;
+pub type WordId = geometrid::tile::Tile<128, 1>;
+
 pub fn get_combinations(possible_words: &[LetterCounts], max_size: u8) -> Vec<WordCombination> {
+    if possible_words.len() > 128 {
+        panic!("Maximum of 128 words")
+    }
     let pb = ProgressBar::new(possible_words.len() as u64)
         .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos}/{len}").unwrap())
         .with_message("Getting word combinations");
@@ -54,13 +59,14 @@ fn get_combinations_inner(
         };
         possible_words = npw;
 
-        let Some(new_combination) = current_combination.try_add_word(&word, possible_words.len())
+        let Some(new_combination) = current_combination
+            .try_add_word(&word, WordId::try_from_usize(possible_words.len()).unwrap())
         else {
             panic!("Could not add word to multiplicities");
         };
 
         if new_combination.total_letters <= max_size {
-            let current_total = found_combinations.len();
+            let previous_total = found_combinations.len();
 
             get_combinations_inner(
                 found_combinations,
@@ -72,59 +78,77 @@ fn get_combinations_inner(
 
             let new_total = found_combinations.len();
 
-            if new_total == current_total {
-                //no children were added so this might be a maximal set
-
-                let subset = found_combinations
-                    .iter()
-                    .any(|fc| fc.word_indexes.is_superset(&new_combination.word_indexes));
-
-                if !subset {
-                    let any_word_fits = all_possible_words
-                        .iter()
-                        .skip(possible_words.len() + new_combination.total_letters as usize)
-                        .rev()
-                        .any(|w| w.is_subset(&new_combination.letter_counts));
-
-                    if !any_word_fits {
-                        if new_combination.total_letters == max_size
-                            || !all_possible_words
-                                .iter()
-                                .enumerate()
-                                .skip(possible_words.len())
-                                .rev()
-                                .any(|(index, other_word)| {
-                                    new_combination.can_add(other_word, index, max_size)
-                                })
-                        {
-                            found_combinations.push(new_combination);
-                        }
-                    }
-                }
+            if new_total != previous_total {
+                continue;
             }
+
+            // if new_combination
+            //     .letter_counts
+            //     .contains_at_least(ws_core::Character::Blank, BLANK_COUNT)
+            // {
+            //     continue;
+            // }
+
+            // if found_combinations.iter().any(|fc| {
+            //     fc.word_indexes.intersect(&new_combination.word_indexes)
+            //         == new_combination.word_indexes
+            // }) {
+            //     continue;
+            // }
+
+            // if all_possible_words
+            //     .iter()
+            //     .skip(possible_words.len() + new_combination.total_letters as usize)
+            //     .rev()
+            //     .any(|w| w.is_subset(&new_combination.letter_counts))
+            // {
+            //     continue;
+            // }
+
+            // if new_combination.total_letters != max_size
+            //     || all_possible_words
+            //         .iter()
+            //         .enumerate()
+            //         .skip(possible_words.len())
+            //         .rev()
+            //         .any(|(index, other_word)| {
+            //             new_combination.can_add(
+            //                 other_word,
+            //                 WordId::try_from_usize(index).unwrap(),
+            //                 max_size,
+            //             )
+            //         })
+            // {
+            //     continue;
+            // }
+
+            found_combinations.push(new_combination);
         }
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Default, Ord, PartialOrd, Eq)]
 pub struct WordCombination {
-    pub word_indexes: bit_set::BitSet,
+    pub word_indexes: WordSet,
     pub letter_counts: LetterCounts,
     pub total_letters: u8,
 }
 
-pub fn shrink_bit_sets<'a>(set: &'a bit_set::BitSet) -> impl Iterator<Item = bit_set::BitSet> + 'a {
-    set.iter().map(|bit| {
+pub fn shrink_bit_sets<'a>(set: &'a WordSet) -> impl Iterator<Item = WordSet> + 'a {
+    set.iter_true_tiles().map(|tile| {
         let mut s = set.clone();
-        s.remove(bit);
+        s.set_bit(&tile, false);
         s
     })
 }
 
 impl WordCombination {
-    pub fn from_bit_set(word_indexes: BitSet, words: &[LetterCounts]) -> Option<Self> {
+    pub fn from_bit_set(word_indexes: WordSet, words: &[LetterCounts]) -> Option<Self> {
         let mut letter_counts = LetterCounts::default();
-        for word in word_indexes.iter().map(|i| words[i]) {
+        for word in word_indexes
+            .iter_true_tiles()
+            .map(|i| words[i.inner() as usize])
+        {
             letter_counts = letter_counts.try_union(&word)?
         }
 
@@ -136,8 +160,8 @@ impl WordCombination {
     }
     pub fn get_words(&self, words: &[FinderWord]) -> Vec<FinderWord> {
         self.word_indexes
-            .iter()
-            .map(|index| words[index].clone())
+            .iter_true_tiles()
+            .map(|index| words[index.inner() as usize].clone())
             .collect_vec()
     }
 
@@ -145,14 +169,15 @@ impl WordCombination {
         self.get_words(words)
             .iter()
             .map(|x| x.text.as_str())
+            .sorted()
             .join(", ")
     }
 
     #[must_use]
-    fn try_add_word(&self, word: &LetterCounts, word_index: usize) -> Option<Self> {
+    fn try_add_word(&self, word: &LetterCounts, word_index: WordId) -> Option<Self> {
         let letter_counts = self.letter_counts.try_union(&word)?;
         let mut word_indexes = self.word_indexes.clone();
-        word_indexes.insert(word_index);
+        word_indexes.set_bit(&word_index, true);
 
         if letter_counts == self.letter_counts {
             Some(Self {
@@ -171,8 +196,8 @@ impl WordCombination {
         }
     }
 
-    fn can_add(&self, other_word: &LetterCounts, word_index: usize, max_size: u8) -> bool {
-        if self.word_indexes.contains(word_index) {
+    fn can_add(&self, other_word: &LetterCounts, word_index: WordId, max_size: u8) -> bool {
+        if self.word_indexes.get_bit(&word_index) {
             return false;
         }
         let Some(letter_counts) = self.letter_counts.try_union(&other_word) else {
@@ -218,7 +243,7 @@ pub mod tests {
 
         println!("{:?}", now.elapsed());
 
-        let expected = "ant, cow, antelope, monkey";
+        let expected = "ant, antelope, cow, monkey";
 
         let actual = possible_combinations
             .into_iter()
@@ -237,6 +262,8 @@ pub mod tests {
         "SILVER, ORANGE, GREEN, IVORY, CORAL, OLIVE, TEAL, GRAY, CYAN, RED",
         "SILVER, ORANGE, GREEN, IVORY, CORAL, OLIVE, TEAL, GRAY, CYAN, RED"
     )]
+    #[test_case("Teal, Wheat, White, Green, Cyan, Gray, Coral, Orange, Magenta","Teal, Wheat, White, Green, Cyan, Gray, Coral, Orange, Magenta") ]
+    #[test_case("White, Yellow, Blue, Red, Green, Black, Brown, Azure, Ivory, Teal, Silver, Purple, Gray, Orange, Maroon, Charcoal, Aquamarine, Coral, Fuchsia, Wheat, Lime, Crimson, Khaki, pink, Magenta, Gold, Plum, Olive, Cyan","Black, Coral, Cyan, Gray, Green, Ivory, Olive, Orange, Red, Teal") ]
     pub fn test_membership(input: &'static str, expected_member: &'static str) {
         let now = Instant::now();
 
@@ -265,7 +292,9 @@ pub mod tests {
         if !contains_expected {
             let actual = possible_combinations
                 .into_iter()
+                .sorted()
                 .map(|x| x.display_string(words.as_slice()))
+
                 .join("\n");
 
             println!("{actual}");
