@@ -10,6 +10,10 @@ pub struct Word {
 }
 
 pub fn find_solution(characters: &CharsArray, grid: &Grid) -> Option<Solution> {
+    // if characters.iter().all_unique(){
+
+    // }
+
     //TODO more efficient path if word has no duplicate letters
 
     let Some(first_char) = characters.get(0) else {

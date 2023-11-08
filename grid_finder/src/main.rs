@@ -55,8 +55,8 @@ fn do_finder(options: Options) {
 
     let paths: Vec<_> = folder.collect();
 
-    let pb = ProgressBar::new(paths.len() as u64)
-        .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:4}/{len:4}").unwrap())
+    let pb: ProgressBar = ProgressBar::new(paths.len() as u64)
+        .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:2}/{len:2}").unwrap())
         .with_message("Data files");
 
     let _ = std::fs::create_dir("grids");
@@ -133,7 +133,7 @@ fn create_grids(all_words: &Vec<FinderWord>, mut file: BufWriter<File>, min_size
             break;
         }
         let pb = ProgressBar::new(sets.len() as u64)
-            .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:4}/{len:4}").unwrap())
+            .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:7}/{len:7}").unwrap())
             .with_message(format!("Groups of size {size}"));
 
         sets.retain(|x|!solved_sets.iter().any(|sol| x == &sol.intersect(x)) );

@@ -55,7 +55,10 @@ pub fn go() {
     app.add_systems(Update, handle_touch_input);
     //app.add_systems(Update, draw_shape);
     app.add_systems(Update, button_system);
+    app.insert_resource(LazyLevelData::new_empty());
+    app.add_systems(First, update_lazy_level_data);
 
+    app.add_systems(PostStartup, choose_level_on_game_load);
     #[cfg(feature = "steam")]
     {
         app.insert_resource(bevy_pkv::PkvStore::new_in_dir("saves"));
@@ -211,11 +214,44 @@ fn button_system(
                     *chosen_state = ChosenState::default();
                 }
                 ButtonMarker::NextLevel => {
-                    current_level.level_index += 1;
+                    *current_level =match current_level.as_ref() {
+                        CurrentLevel::Fixed { level_index } => CurrentLevel::Fixed { level_index: level_index + 1 },
+                        CurrentLevel::Custom(_) => CurrentLevel::Fixed { level_index: 0 },
+                    };
+
                     *found_words = FoundWordsState::default();
                     *chosen_state = ChosenState::default();
                 }
             }
         }
     }
+}
+
+#[allow(unused_variables, unused_mut)]
+fn choose_level_on_game_load(mut current_level: ResMut<CurrentLevel>) {
+    info!("Choose level 1");
+    #[cfg(target_arch = "wasm32")]
+    {
+        info!("Choose level 2");
+        match get_game_from_location() {
+            Some(level) => {
+                //info!("Loaded level from url");
+                *current_level = CurrentLevel::Custom(level);
+                return;
+            }
+            None => {
+                //info!("No url game to load")
+            }
+        }
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+pub fn get_game_from_location() -> Option<DesignedLevel> {
+    let window = web_sys::window()?;
+    let location = window.location();
+    let path = location.pathname().ok()?;
+
+
+    DesignedLevel::try_from_path(path)
 }

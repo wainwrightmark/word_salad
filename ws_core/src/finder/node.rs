@@ -1,8 +1,9 @@
-use crate::{Character, Grid};
+use crate::{Character, Grid, prelude};
 use itertools::Itertools;
 use std::{
     cell::{Cell, RefCell},
     collections::{BTreeMap, BTreeSet},
+    str::FromStr,
 };
 
 use super::{
@@ -21,9 +22,44 @@ pub struct GridResult {
     pub words: Vec<FinderWord>,
 }
 
+impl FromStr for GridResult {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut iter = s.split('\t');
+
+        let chars: &str = iter.next().expect("Level should have a grid");
+        let _name: &str = iter.next().expect("Level should have name");
+
+        let grid = prelude::try_make_grid(chars).expect("Should be able to make grid");
+
+        let words = iter
+            .map(|x| x.trim().to_string())
+            .flat_map(|x| FinderWord::try_new(x.as_str()))
+            .sorted_by_cached_key(|x| x.text.to_ascii_lowercase())
+            .collect();
+
+        let mut letters = LetterCounts::default();
+        for c in grid.iter(){
+            letters = letters.try_insert(*c).ok_or("Prime bag is too big")?;
+        }
+
+        Ok(Self {
+            grid,
+            letters,
+            words,
+        })
+    }
+}
+
 impl std::fmt::Display for GridResult {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let words_text = self.words.iter().map(|x| format!("{:16}", x.text)).sorted().join("\t");
+        let words_text = self
+            .words
+            .iter()
+            .map(|x| format!("{:8}", x.text))
+            .sorted()
+            .join("\t");
         let solution = self.grid.iter().join("");
         let size = self.words.len();
 

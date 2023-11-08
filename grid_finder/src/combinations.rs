@@ -11,7 +11,7 @@ pub fn get_combinations(possible_words: &[LetterCounts], max_size: u8) -> Vec<Wo
         panic!("Maximum of 128 words")
     }
     let pb = ProgressBar::new(possible_words.len() as u64)
-        .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos}/{len}").unwrap())
+        .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:3}/{len:3}").unwrap())
         .with_message("Getting word combinations");
 
     let upper_bounds = 1..(possible_words.len());
@@ -243,7 +243,7 @@ pub mod tests {
 
         println!("{:?}", now.elapsed());
 
-        let expected = "ant, antelope, cow, monkey";
+        let expected = "ant, antelope, cow, monkey\nant, antelope, monkey\nant, cow, monkey\nant, monkey\nant, antelope, cow\nant, antelope\nant, cow\nant\nant, antelope, cow\nant, antelope\nant, cow\nant\nant, cow\nant";
 
         let actual = possible_combinations
             .into_iter()

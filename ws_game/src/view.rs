@@ -410,7 +410,7 @@ impl MavericNode for WordsNode {
         commands
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
-                for (index, word) in context.1.level().words_map.values().enumerate() {
+                for (index, word) in context.1.level().words.iter().enumerate() {
                     let complete = context.2.found.contains(&word.characters);
                     commands.add_child(
                         index as u32,

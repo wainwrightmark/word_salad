@@ -28,8 +28,13 @@ impl Cluster {
         Self { grids, score }
     }
 
-    pub fn max_overlap(&self)-> usize{
-        self.grids.iter().tuple_combinations().map(|(a,b)| a.words.iter().filter(|w|b.words.contains(w)).count()).max().unwrap_or_default()
+    pub fn max_overlap(&self) -> usize {
+        self.grids
+            .iter()
+            .tuple_combinations()
+            .map(|(a, b)| a.words.iter().filter(|w| b.words.contains(w)).count())
+            .max()
+            .unwrap_or_default()
     }
 }
 
@@ -203,15 +208,12 @@ pub mod test {
     fn get_words_vectors(file: &str, min_words: usize) -> Vec<Vec<FinderWord>> {
         file.lines()
             .map(|line| {
-                let (_grid, _count, words) = line
+                let words = line
                     .split('\t')
-                    .next_tuple()
-                    .expect("Could not split line into tuples");
-
-                words
-                    .split(", ")
+                    .skip(2)
                     .map(|x| FinderWord::try_new(x).unwrap())
-                    .collect_vec()
+                    .collect_vec();
+                words
             })
             .filter(|x| x.len() >= min_words)
             .collect_vec()
