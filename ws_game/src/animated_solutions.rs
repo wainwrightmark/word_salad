@@ -38,7 +38,7 @@ pub fn animate_solution(
         y: WINDOW_HEIGHT
     };
 
-    bevy::log::info!("tile: {last_tile}. location {location}");
+    //bevy::log::info!("tile: {last_tile}. location {location}");
 
     let speed = calculate_speed(
         &location.y,

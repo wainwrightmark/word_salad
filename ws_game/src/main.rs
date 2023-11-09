@@ -2,7 +2,7 @@ pub mod animated_solutions;
 pub mod constants;
 pub mod designed_level;
 pub mod input;
-pub mod paths;
+
 pub mod startup;
 pub mod state;
 pub mod view;

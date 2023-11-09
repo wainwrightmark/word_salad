@@ -254,7 +254,7 @@ impl MavericNode for GridTile {
             let translation =
                 (node.tile.get_north_west_vertex().get_center(SCALE) + GRID_TOP_LEFT).extend(0.0);
 
-            let rotation_y = if args.node.needed {
+            let rotation_y = if node.needed {
                 0.0
             } else {
                 std::f32::consts::PI
@@ -324,26 +324,11 @@ pub const LETTER_FONT: &'static str = "fonts/MartianMono_SemiExpanded-Bold.ttf";
 impl MavericNode for GridLetter {
     type Context = AssetServer;
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
-        commands.ignore_context().ignore_node().insert((TransformBundle::default(), VisibilityBundle::default())) .finish()
-        // commands
-        //     .insert_with_node_and_context(|node, context| {
-
-        //         (
-        //             ShapeBundle {
-        //                 path: Path(get_path(&node.character).0.clone()),
-        //                 transform: Transform::from_xyz(0.0, 0.0, 1.0),
-        //                 ..Default::default()
-        //             },
-        //             Stroke::color(Color::DARK_GRAY),
-        //             Fill::color(Color::GREEN),
-        //             Transition::<FillColorLens>::new(TransitionStep::new_arc(
-        //                 Color::DARK_GRAY,
-        //                 Some(ScalarSpeed::new(1.0)),
-        //                 NextStep::None,
-        //             )),
-        //         )
-        //     })
-        //     .finish()
+        commands
+            .ignore_context()
+            .ignore_node()
+            .insert((TransformBundle::default(), VisibilityBundle::default()))
+            .finish()
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
@@ -351,7 +336,7 @@ impl MavericNode for GridLetter {
             commands.add_child(
                 0,
                 Text2DNode {
-                    transform:  Transform::from_xyz(0.0, 0.0, 1.0),
+                    transform: Transform::from_xyz(0.0, 0.0, 1.0),
                     text: TextNode {
                         text: args.character.to_string(),
                         font: LETTER_FONT,
@@ -374,7 +359,7 @@ pub struct GridBackground {
 impl MavericNode for GridBackground {
     type Context = NoContext;
 
-    fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
+    fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
         const RECTANGLE: shapes::Rectangle = shapes::Rectangle {
             extents: Vec2 {
                 x: TILE_SIZE,
@@ -382,24 +367,39 @@ impl MavericNode for GridBackground {
             },
             origin: RectangleOrigin::Center,
         };
-        commands
-            .insert_with_node(|node| {
-                (
+
+        commands.scope(|commands| {
+            commands
+                .ignore_node()
+                .ignore_context()
+                .insert((
                     ShapeBundle {
                         path: GeometryBuilder::build_as(&RECTANGLE),
                         transform: Transform::from_xyz(0.0, 0.0, 0.0),
 
                         ..Default::default()
                     },
-                    Stroke::color(Color::BLACK),
-                    Fill::color(if node.selected {
-                        Color::BLUE
-                    } else {
-                        Color::GRAY
+                    Stroke::color(Color::DARK_GRAY),
+                    Fill::color(Color::rgb(0.2, 0.2, 0.2)),
+                ))
+                .finish()
+        });
+
+        commands
+            .map_args(|x| &x.selected)
+            .advanced(|args, commands| {
+                if !args.is_hot() {
+                    return;
+                }
+                let color = if *args.node { Color::BLUE } else { Color::GRAY };
+                commands.transition_value::<FillColorLens>(
+                    Color::GRAY,
+                    color,
+                    Some(ScalarSpeed {
+                        amount_per_second: 1.0,
                     }),
-                )
-            })
-            .finish()
+                );
+            });
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
@@ -463,18 +463,18 @@ impl MavericNode for WordLine {
                 }
             }
 
-            let color = choose_line_color(0);
+            let color = Color::rgba(0.9, 0.25, 0.95, 0.9);
 
             (
                 ShapeBundle {
                     path: builder.build(),
-                    transform: Transform::from_translation(Vec3::new(0.0, 0.0, 10.0)),
+                    transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.5)),
                     ..Default::default()
                 },
                 Stroke {
                     color,
                     options: StrokeOptions::default()
-                        .with_line_width(10.0)
+                        .with_line_width(50.0)
                         .with_start_cap(LineCap::Round)
                         .with_end_cap(LineCap::Round)
                         .with_line_join(LineJoin::Round),
