@@ -196,30 +196,30 @@ impl WordCombination {
         }
     }
 
-    fn can_add(&self, other_word: &LetterCounts, word_index: WordId, max_size: u8) -> bool {
-        if self.word_indexes.get_bit(&word_index) {
-            return false;
-        }
-        let Some(letter_counts) = self.letter_counts.try_union(&other_word) else {
-            return false;
-        };
-        if letter_counts == self.letter_counts {
-            return true;
-        } else {
-            if self.total_letters == max_size {
-                return false;
-            }
+    // fn can_add(&self, other_word: &LetterCounts, word_index: WordId, max_size: u8) -> bool {
+    //     if self.word_indexes.get_bit(&word_index) {
+    //         return false;
+    //     }
+    //     let Some(letter_counts) = self.letter_counts.try_union(&other_word) else {
+    //         return false;
+    //     };
+    //     if letter_counts == self.letter_counts {
+    //         return true;
+    //     } else {
+    //         if self.total_letters == max_size {
+    //             return false;
+    //         }
 
-            let diff = letter_counts
-                .try_difference(&self.letter_counts)
-                .unwrap_or_default();
-            let new_elements = diff.into_iter().count() as u8;
+    //         let diff = letter_counts
+    //             .try_difference(&self.letter_counts)
+    //             .unwrap_or_default();
+    //         let new_elements = diff.into_iter().count() as u8;
 
-            let new_count = self.total_letters + new_elements;
+    //         let new_count = self.total_letters + new_elements;
 
-            return new_count <= max_size;
-        }
-    }
+    //         return new_count <= max_size;
+    //     }
+    // }
 }
 
 #[cfg(test)]

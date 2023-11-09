@@ -1,5 +1,6 @@
 pub mod clustering;
 pub mod combinations;
+pub mod orientation;
 
 use clap::Parser;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
@@ -166,8 +167,9 @@ fn create_grids(all_words: &Vec<FinderWord>, mut file: BufWriter<File>, min_size
         let mut solutions: Vec<GridResult> = vec![];
 
         for (combination, result) in results.into_iter() {
-            if let Some(solution) = result {
+            if let Some(mut solution) = result {
                 solved_sets.push(combination.word_indexes);
+                orientation::optimize_orientation(&mut solution);
                 solutions.push(solution);
             } else {
                 for new_set in combinations::shrink_bit_sets(&combination.word_indexes) {

@@ -177,7 +177,7 @@ pub mod tests {
     pub fn test_calculate_needed_tiles() {
         let level = DesignedLevel::from_tsv_line(
             // spellchecker:disable-next-line
-            "GNDTEUIOKILOASHP   Sports  POLO    SHOOTING    KENDO   SAILING LUGE    SKIING",
+            "GNDTEUIOKILOASHP\tSports\tPOLO\tSHOOTING\tKENDO\tSAILING\tLUGE\tSKIING",
         );
 
         let lazy_data = LazyLevelData::new(&level);

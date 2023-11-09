@@ -1706,9 +1706,9 @@ checksum = "1d758ba1b47b00caf47f24925c0074ecb20d6dfcffe7f6d53395c0465674841a"
 
 [[package]]
 name = "geometrid"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "558a2ef84bed1fd1d4abb01db7937aeef117aea79b29df2c544aa03f7dbb1cfc"
+checksum = "dd07210117673391e8e42cbe874adbb326ce810096608f2a4e54f204789d4dfc"
 dependencies = [
  "const_panic",
  "ethnum",
