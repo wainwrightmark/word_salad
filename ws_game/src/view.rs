@@ -24,7 +24,7 @@ impl_maveric_root!(ViewRoot);
 #[derive(Debug, Clone, PartialEq)]
 pub struct UI;
 
-pub const FONT_PATH: &str = "fonts/FiraMono-Medium.ttf";
+pub const FONT_PATH: &str = "fonts/MartianMono_SemiCondensed-Regular.ttf";
 
 pub const BUTTON_FONT_SIZE: f32 = 22.0;
 pub const BUTTON_TEXT_COLOR: Color = Color::rgb(0.1, 0.1, 0.1);
@@ -106,8 +106,6 @@ impl MavericNode for UI {
                     &context.3,
                 );
 
-                commands.add_child("buttons", ButtonsNode, &context.3);
-
                 let title = context.1.level().name.clone();
 
                 commands.add_child(
@@ -124,6 +122,8 @@ impl MavericNode for UI {
                 );
 
                 commands.add_child("words", WordsNode, context);
+
+                commands.add_child("buttons", ButtonsNode, &context.3);
             });
     }
 }
@@ -488,20 +488,20 @@ impl MavericNode for WordLine {
     }
 }
 
-fn choose_line_color(index: usize) -> Color {
-    const SATURATIONS: [f32; 2] = [0.9, 0.28];
-    const LIGHTNESSES: [f32; 2] = [0.28, 0.49];
+// fn choose_line_color(index: usize) -> Color {
+//     const SATURATIONS: [f32; 2] = [0.9, 0.28];
+//     const LIGHTNESSES: [f32; 2] = [0.28, 0.49];
 
-    const PHI_CONJUGATE: f32 = 0.618_034;
+//     const PHI_CONJUGATE: f32 = 0.618_034;
 
-    let hue = 360. * (((index as f32) * PHI_CONJUGATE) % 1.);
-    let lightness: f32 = LIGHTNESSES[index % LIGHTNESSES.len()];
-    let saturation: f32 =
-        SATURATIONS[(index % (LIGHTNESSES.len() * SATURATIONS.len())) / SATURATIONS.len()];
+//     let hue = 360. * (((index as f32) * PHI_CONJUGATE) % 1.);
+//     let lightness: f32 = LIGHTNESSES[index % LIGHTNESSES.len()];
+//     let saturation: f32 =
+//         SATURATIONS[(index % (LIGHTNESSES.len() * SATURATIONS.len())) / SATURATIONS.len()];
 
-    let alpha = 0.5;
-    Color::hsla(hue, saturation, lightness, alpha)
-}
+//     let alpha = 0.5;
+//     Color::hsla(hue, saturation, lightness, alpha)
+// }
 
 #[derive(Debug, PartialEq)]
 pub struct WordNode {
@@ -509,19 +509,37 @@ pub struct WordNode {
     pub complete: bool,
 }
 
+impl WordNode{
+    const INCOMPLETE_COLOR: Color = Color::rgb(0.9,0.9,0.9);
+    const COMPLETE_COLOR: Color = Color::rgb(0.1,0.9,0.1);
+}
+
 impl MavericNode for WordNode {
     type Context = AssetServer;
 
-    fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
-        commands.ignore_node().ignore_context().insert(NodeBundle {
-            style: Style {
-                margin: UiRect::all(Val::Px(5.0)),
-                border: UiRect::all(Val::Px(1.0)),
+    fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
+        commands.scope(|commands| {
+            commands.ignore_node().ignore_context().insert(NodeBundle {
+                style: Style {
+                    margin: UiRect::all(Val::Px(10.0)),
 
+                    //border: UiRect::all(Val::Px(1.0)),
+                    ..Default::default()
+                },
+                background_color: BackgroundColor(Color::rgb(0.9, 0.9, 0.9)),
+                //border_color: BorderColor(Color::DARK_GRAY),
                 ..Default::default()
-            },
-            border_color: BorderColor(Color::DARK_GRAY),
-            ..Default::default()
+            }).finish()
+        });
+
+        commands.map_args(|x|&x.complete).advanced(|a,commands|{
+            if !a.is_hot(){
+                return;
+            }
+
+            let c = if *a.node {Self::COMPLETE_COLOR} else {Self::INCOMPLETE_COLOR};
+
+            commands.transition_value::<BackgroundColorLens> (c, c, Some(ScalarSpeed::new(1.0)));
         });
     }
 
