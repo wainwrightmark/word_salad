@@ -58,6 +58,8 @@ pub fn go() {
     app.insert_resource(LazyLevelData::new_empty());
     app.add_systems(First, update_lazy_level_data);
 
+    //app.add_plugins(bevy_utils::window_size::WindowSizePlugin);
+
     app.add_systems(PostStartup, choose_level_on_game_load);
     #[cfg(feature = "steam")]
     {

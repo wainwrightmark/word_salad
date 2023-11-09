@@ -1,7 +1,7 @@
+use crate::{prelude::*, text_2d_node::Text2DNode};
 use maveric::transition::speed::ScalarSpeed;
 use std::time::Duration;
 use ws_core::Tile;
-use crate::{paths::get_path, prelude::*};
 
 pub struct ViewRoot;
 
@@ -16,7 +16,6 @@ impl MavericRootChildren for ViewRoot {
         commands.add_child("cells", GridTiles, context);
         commands.add_child("ui", UI, context);
         commands.add_child("lines", WordLine, &context.0);
-
     }
 }
 
@@ -224,7 +223,7 @@ impl MavericNode for GridTiles {
                             selected,
                             needed,
                         },
-                        &(),
+                        &context.3,
                     );
                 }
             });
@@ -243,7 +242,7 @@ maveric::define_lens!(StrokeColorLens, Stroke, Color, color);
 maveric::define_lens!(FillColorLens, Fill, Color, color);
 
 impl MavericNode for GridTile {
-    type Context = NoContext;
+    type Context = AssetServer;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands.advanced(|args, commands| {
@@ -287,7 +286,7 @@ impl MavericNode for GridTile {
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
-        commands.unordered_children_with_node(|node, commands| {
+        commands.unordered_children_with_node_and_context(|node, context, commands| {
             commands.add_child(
                 0,
                 GridBackground {
@@ -300,7 +299,7 @@ impl MavericNode for GridTile {
                 GridLetter {
                     character: node.character,
                 },
-                &(),
+                &context,
             );
         })
     }
@@ -320,31 +319,51 @@ pub struct GridLetter {
     pub character: Character,
 }
 
+pub const LETTER_FONT: &'static str = "fonts/MartianMono_SemiExpanded-Bold.ttf";
+
 impl MavericNode for GridLetter {
-    type Context = NoContext;
+    type Context = AssetServer;
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
-        commands
-            .insert_with_node(|node| {
-                (
-                    ShapeBundle {
-                        path: Path(get_path(&node.character).0.clone()),
-                        transform: Transform::from_xyz(0.0, 0.0, 1.0),
-                        ..Default::default()
-                    },
-                    Stroke::color(Color::DARK_GRAY),
-                    Fill::color(Color::GREEN),
-                    Transition::<FillColorLens>::new(TransitionStep::new_arc(
-                        Color::DARK_GRAY,
-                        Some(ScalarSpeed::new(1.0)),
-                        NextStep::None,
-                    )),
-                )
-            })
-            .finish()
+        commands.ignore_context().ignore_node().insert((TransformBundle::default(), VisibilityBundle::default())) .finish()
+        // commands
+        //     .insert_with_node_and_context(|node, context| {
+
+        //         (
+        //             ShapeBundle {
+        //                 path: Path(get_path(&node.character).0.clone()),
+        //                 transform: Transform::from_xyz(0.0, 0.0, 1.0),
+        //                 ..Default::default()
+        //             },
+        //             Stroke::color(Color::DARK_GRAY),
+        //             Fill::color(Color::GREEN),
+        //             Transition::<FillColorLens>::new(TransitionStep::new_arc(
+        //                 Color::DARK_GRAY,
+        //                 Some(ScalarSpeed::new(1.0)),
+        //                 NextStep::None,
+        //             )),
+        //         )
+        //     })
+        //     .finish()
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
-        commands.no_children()
+        commands.unordered_children_with_node_and_context(|args, context, commands| {
+            commands.add_child(
+                0,
+                Text2DNode {
+                    transform:  Transform::from_xyz(0.0, 0.0, 1.0),
+                    text: TextNode {
+                        text: args.character.to_string(),
+                        font: LETTER_FONT,
+                        font_size: 60.0,
+                        color: Color::DARK_GRAY,
+                        alignment: TextAlignment::Center,
+                        linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                    },
+                },
+                context,
+            )
+        });
     }
 }
 #[derive(Debug, PartialEq)]
