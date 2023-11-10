@@ -38,7 +38,7 @@ impl SaladWindowSize for Size {
     }
 
     fn tile_font_size(&self)-> f32 {
-        (self.scale() * 0.75).ceil()
+        (self.scale() * 0.1875).ceil() * 4.0
     }
 
     fn adjust_cursor_position(&self, p: Vec2) -> Vec2 {

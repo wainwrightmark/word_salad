@@ -30,19 +30,11 @@ pub fn animate_solution(
 
     const SECONDS: f32 = 2.0;
 
-    // let mut tile_location = last_tile.get_center(size.scale());
-    // tile_location.y = WINDOW_HEIGHT / 2.0 - tile_location.y;
-    // tile_location.x = tile_location.x   - (size.tile_size() * 0.5);
-
-    // let location = size.grid_top_left() + tile_location ;
-
     let start_position = size.tile_position(&last_tile);
     let destination = Vec2 {
         x: 0.0,
         y: size.scaled_height * -1.0,
     };
-
-    //bevy::log::info!("tile: {last_tile}. location {location}");
 
     let speed = calculate_speed(
         &start_position,
@@ -71,25 +63,10 @@ pub fn animate_solution(
             ..Default::default()
         },
         Transition::<TransformTranslationLens>::new(TransitionStep::new_arc(
-            destination.extend(0.0),
+            destination.extend(100.0),
             Some(speed),
             NextStep::None,
-        )), // Transition::<StyleTopLens>::new(TransitionStep::new_arc(
-            //     Val::Px(destination.y),
-            //     Some(speed),
-            //     NextStep::None,
-            // )),
-            // TextBundle {
-
-            //     text,
-            //     style: Style {
-            //         position_type: PositionType::Absolute,
-            //         top: Val::Px(start_position.y ),
-            //         left: Val::Px(start_position.x + (WINDOW_WIDTH / 2.0)),
-            //         ..default()
-            //     },
-            //     ..Default::default()
-            // },
+        )),
     );
 
     commands.spawn(components);
