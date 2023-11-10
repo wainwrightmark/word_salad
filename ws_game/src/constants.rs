@@ -62,7 +62,7 @@ impl SaladWindowSize for Size {
     }
 
     fn ui_top(&self) -> f32 {
-        self.grid_top_left().y + (self.scale() * 4.0) + 50.0
+        self.grid_top_left().y + (self.scale() * 4.0) + 40.0
     }
 
     fn try_pick_tile(&self, position: Vec2, tolerance: f32) -> Option<DynamicTile> {

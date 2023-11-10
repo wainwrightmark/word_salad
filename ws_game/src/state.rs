@@ -23,6 +23,7 @@ pub struct ChosenState(pub Solution);
 pub struct FoundWordsState {
     pub found: HashSet<CharsArray>,
     pub unneeded_tiles: GridSet,
+    #[serde(skip)] //TODO use a different data structure for serialization
     pub hints: HashMap<CharsArray, Hint>,
 }
 
