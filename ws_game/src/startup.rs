@@ -87,7 +87,7 @@ struct LastSize {
 #[cfg(target_arch = "wasm32")]
 fn resizer( //TODO move to nice bevy utils
     mut windows: Query<(Entity, &mut Window), With<PrimaryWindow>>,
-    mut window_resized_events: EventWriter<WindowResized>,
+    mut window_resized_events: EventWriter<bevy::window::WindowResized>,
     mut last_size: Local<LastSize>,
 ) {
     let window = web_sys::window().expect("no global `window` exists");
@@ -107,7 +107,7 @@ fn resizer( //TODO move to nice bevy utils
             window
                 .resolution
                 .set_physical_resolution(p_width.floor() as u32, p_height.floor() as u32);
-            window_resized_events.send(WindowResized {
+            window_resized_events.send(bevy::window::WindowResized {
                 window: window_entity,
                 height,
                 width,

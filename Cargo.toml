@@ -3,6 +3,7 @@ members = [
 "ws_core",
 "ws_game",
 "grid_finder",
+"sheet_reader"
 ]
 default-members = ["ws_game"]
 resolver = "2" # Important! wgpu/Bevy needs this!
