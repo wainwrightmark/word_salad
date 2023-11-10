@@ -18,6 +18,8 @@ pub trait SaladWindowSize {
     fn tile_size(&self) -> f32;
     fn grid_top_left(&self) -> Vec2;
     fn ui_top_left(&self) -> Vec2;
+    /// tolerance is between 0.0 (always returns none) and 1.0 (always returns a tile)
+    fn try_pick_tile(&self, position: Vec2, tolerance: f32) -> Option<DynamicTile>;
     fn pick_tile(&self, position: Vec2) -> DynamicTile;
 
     /// Get the position of the centre of the given tile
@@ -25,7 +27,7 @@ pub trait SaladWindowSize {
 
     fn adjust_cursor_position(&self, p: Vec2) -> Vec2;
 
-    fn tile_font_size(&self)-> f32;
+    fn tile_font_size(&self) -> f32;
 }
 
 impl SaladWindowSize for Size {
@@ -37,7 +39,7 @@ impl SaladWindowSize for Size {
         self.scale()
     }
 
-    fn tile_font_size(&self)-> f32 {
+    fn tile_font_size(&self) -> f32 {
         (self.scale() * 0.1875).ceil() * 4.0
     }
 
@@ -49,7 +51,6 @@ impl SaladWindowSize for Size {
     }
 
     fn grid_top_left(&self) -> Vec2 {
-
         let spare_width = self.scaled_width - (self.tile_size() * 4.0);
 
         Vec2 {
@@ -65,11 +66,30 @@ impl SaladWindowSize for Size {
         }
     }
 
-    fn pick_tile(&self, position: Vec2) -> DynamicTile {
-        let relative_position = position - self.grid_top_left();// + (self.tile_size() * 0.5);
+    fn try_pick_tile(&self, position: Vec2, tolerance: f32) -> Option<DynamicTile> {
+        let scale = self.scale();
+        let relative_position = position - self.grid_top_left();
+        let dv = DynamicVertex::from_center(&relative_position, scale);
 
-        let dv = DynamicVertex ::from_center(&relative_position, self.scale());
-        //todo return none if too far from the vertex
+        let tile_centre = dv.get_center(scale);
+        let dist = tile_centre.distance_squared(relative_position);
+        let radius_squared = (tolerance * scale).powi(2);
+
+        //info!("dist {dist} rs {radius_squared}");
+
+        if dist < radius_squared {
+            let dt = dv.get_tile(&Corner::SouthEast);
+            Some(dt)
+        } else {
+            None
+        }
+    }
+
+    fn pick_tile(&self, position: Vec2) -> DynamicTile {
+        let relative_position = position - self.grid_top_left();
+
+        let dv = DynamicVertex::from_center(&relative_position, self.scale());
+
         let dt = dv.get_tile(&Corner::SouthEast);
         dt
     }
@@ -78,8 +98,6 @@ impl SaladWindowSize for Size {
         let location = tile.get_north_west_vertex().get_center(self.scale()) + self.grid_top_left();
         location
     }
-
-
 }
 
 pub const DEFAULT_WINDOW_WIDTH: f32 = 400f32;

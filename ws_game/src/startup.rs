@@ -122,6 +122,8 @@ fn resizer( //TODO move to nice bevy utils
     }
 }
 
+const MOVE_TOLERANCE: f32 = 0.3;
+
 fn handle_mouse_input(
     mouse_input: Res<Input<MouseButton>>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
@@ -132,13 +134,13 @@ fn handle_mouse_input(
     size: Res<Size>,
 ) {
     if mouse_input.just_released(MouseButton::Left) {
-        if let Some(tile) = try_get_cursor_tile(q_windows, &size) {
+        if let Some(tile) = try_get_cursor_tile(q_windows, &size, None) {
             input_state.handle_input_end(&mut chosen_state, tile);
         } else {
             input_state.handle_input_end_no_location();
         }
     } else if mouse_input.just_pressed(MouseButton::Left) {
-        let Some(tile) = try_get_cursor_tile(q_windows, &size) else {
+        let Some(tile) = try_get_cursor_tile(q_windows, &size, None) else {
             return;
         };
         input_state.handle_input_start(
@@ -148,7 +150,7 @@ fn handle_mouse_input(
             &found_words,
         )
     } else if mouse_input.pressed(MouseButton::Left) {
-        let Some(tile) = try_get_cursor_tile(q_windows, &size) else {
+        let Some(tile) = try_get_cursor_tile(q_windows, &size, Some(MOVE_TOLERANCE)) else {
             return;
         };
         input_state.handle_input_move(
@@ -163,14 +165,17 @@ fn handle_mouse_input(
 fn try_get_cursor_tile(
     q_windows: Query<&Window, With<PrimaryWindow>>,
     size: &Size,
+    tolerance: Option<f32>
 ) -> Option<Tile> {
     let window = q_windows.iter().next()?;
 
     let cursor_position = window.cursor_position()?;
     let cursor_position =  size.adjust_cursor_position(cursor_position);
-    let tile = size.pick_tile(cursor_position);
+    let tile = match tolerance {
+        Some(tolerance) => size.try_pick_tile(cursor_position, tolerance)?,
+        None => size.pick_tile(cursor_position),
+    };
 
-    //info!("Got tile {tile} from window size {size:?}");
 
     Tile::try_from_dynamic(tile)
 }
@@ -188,7 +193,7 @@ fn handle_touch_input(
     for ev in touch_events.into_iter() {
         match ev.phase {
             bevy::input::touch::TouchPhase::Started => {
-                let Some(tile) = try_get_tile(ev.position, &q_camera, &size) else {
+                let Some(tile) = try_get_tile(ev.position, &q_camera, &size, None) else {
                     continue;
                 };
                 input_state.handle_input_start(
@@ -199,7 +204,7 @@ fn handle_touch_input(
                 );
             }
             bevy::input::touch::TouchPhase::Moved => {
-                let Some(tile) = try_get_tile(ev.position, &q_camera, &size) else {
+                let Some(tile) = try_get_tile(ev.position, &q_camera, &size, Some(MOVE_TOLERANCE)) else {
                     continue;
                 };
                 input_state.handle_input_move(
@@ -210,7 +215,7 @@ fn handle_touch_input(
                 );
             }
             bevy::input::touch::TouchPhase::Ended => {
-                if let Some(tile) = try_get_tile(ev.position, &q_camera, &size) {
+                if let Some(tile) = try_get_tile(ev.position, &q_camera, &size, None) {
                     input_state.handle_input_end(&mut chosen_state, tile);
                 } else {
                     input_state.handle_input_end_no_location();
@@ -227,9 +232,16 @@ fn try_get_tile(
     position: Vec2,
     q_camera: &Query<(&Camera, &GlobalTransform)>,
     size: &Size,
+    tolerance: Option<f32>
 ) -> Option<Tile> {
     let position = convert_screen_to_world_position(position, q_camera)?;
-    let tile = size.pick_tile(position);
+
+
+    let tile = match tolerance {
+        Some(tolerance) => size.try_pick_tile(position, tolerance)?,
+        None => size.pick_tile(position),
+    };
+
     let tile = Tile::try_from_dynamic(tile)?;
 
     //info!("Got tile {tile} from window size {size:?}");
@@ -276,18 +288,15 @@ fn button_system(
 
 #[allow(unused_variables, unused_mut)]
 fn choose_level_on_game_load(mut current_level: ResMut<CurrentLevel>) {
-    info!("Choose level 1");
+
     #[cfg(target_arch = "wasm32")]
     {
-        info!("Choose level 2");
         match get_game_from_location() {
             Some(level) => {
-                //info!("Loaded level from url");
                 *current_level = CurrentLevel::Custom(level);
                 return;
             }
             None => {
-                //info!("No url game to load")
             }
         }
     }

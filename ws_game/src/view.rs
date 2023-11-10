@@ -280,28 +280,6 @@ impl MavericNode for GridTile {
             .ignore_context()
             .ignore_node()
             .insert(VisibilityBundle::default());
-
-        // mapped.advanced(|args, commands| {
-        //     if !args.is_hot() {
-        //         return;
-        //     }
-
-        //     let rotation_y = ;
-
-        //     if commands.get::<GlobalTransform>().is_none() {
-        //         commands.insert(TransformBundle::from_transform(Transform {
-        //             translation,
-        //             rotation: Quat::from_rotation_y(rotation_y),
-        //             scale: Vec3::ONE,
-        //         }));
-        //     }
-
-        //     commands.transition_value::<>(
-        //         rotation_y,
-        //         rotation_y,
-        //         ,
-        //     );
-        // });
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
