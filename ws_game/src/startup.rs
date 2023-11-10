@@ -1,6 +1,6 @@
 use crate::animated_solutions::AnimatedSolutionPlugin;
 pub use crate::prelude::*;
-use bevy::{log::LogPlugin, window::{PrimaryWindow, WindowResized}};
+use bevy::{log::LogPlugin, window::PrimaryWindow};
 use bevy_utils::window_size::WindowSizePlugin;
 
 pub fn go() {
@@ -77,7 +77,8 @@ fn setup_system(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
 
-#[derive(Resource, Default)]
+#[cfg(target_arch = "wasm32")]
+#[derive(Default)]
 struct LastSize {
     pub width: f32,
     pub height: f32,
@@ -281,6 +282,10 @@ fn button_system(
                     *found_words = FoundWordsState::default();
                     *chosen_state = ChosenState::default();
                 }
+                ButtonMarker::Hint => {
+                    found_words.try_hint(current_level.as_ref());
+                },
+
             }
         }
     }

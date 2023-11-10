@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use itertools::Itertools;
 use maveric::{transition::speed::ScalarSpeed, widgets::text2d_node::Text2DNode};
 use std::time::Duration;
 use ws_core::Tile;
@@ -23,8 +24,6 @@ impl_maveric_root!(ViewRoot);
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct UI;
-
-pub const FONT_PATH: &str = "fonts/MartianMono_SemiCondensed-Regular.ttf";
 
 pub const BUTTON_FONT_SIZE: f32 = 22.0;
 pub const BUTTON_TEXT_COLOR: Color = Color::rgb(0.1, 0.1, 0.1);
@@ -61,24 +60,31 @@ impl IntoBundle for TextButtonStyle {
 pub enum ButtonMarker {
     Reset,
     NextLevel,
+    Hint,
 }
 
 impl MavericNode for UI {
     type Context = NC4<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>>;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
-        let mapped: SetComponentCommands<(), Size> = commands.ignore_node().map_context(|x| &x.3.0);
+        let mapped: SetComponentCommands<(), Size> =
+            commands.ignore_node().map_context(|x| &x.3 .0);
 
         mapped.insert_with_context(|size: &Res<Size>| {
-            let Vec2 { x, y } = size.ui_top_left();
+            let y = size.ui_top();
+            let left = (size.scaled_width - (size.scale() * 4.0)) * 0.5;
             NodeBundle {
                 style: Style {
+                    position_type: PositionType::Absolute,
                     top: Val::Px(y),
-                    left: Val::Px(x),
+                    left: Val::Px(left),
+                    width: Val::Px(size.scale() * 4.0),
                     display: Display::Flex,
                     flex_direction: FlexDirection::Column,
+
                     ..Default::default()
                 },
+
                 ..Default::default()
             }
         });
@@ -104,14 +110,14 @@ impl MavericNode for UI {
                         text: current_string,
                         font_size: 32.0,
                         color: BUTTON_TEXT_COLOR,
-                        font: FONT_PATH,
+                        font: CURRENT_STRING_FONT_PATH,
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     },
-                    &context.3.1,
+                    &context.3 .1,
                 );
 
-                let title = context.1.level().name.clone();
+                let title = context.1.level().name.trim().to_string();
 
                 commands.add_child(
                     "title",
@@ -119,16 +125,32 @@ impl MavericNode for UI {
                         text: title,
                         font_size: 32.0,
                         color: BUTTON_TEXT_COLOR,
-                        font: FONT_PATH,
+                        font: TITLE_FONT_PATH,
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     },
-                    &context.3.1,
+                    &context.3 .1,
+                );
+
+                let hints = context.2.hint_count();
+                let hints = format!("Used {hints} hints");
+
+                commands.add_child(
+                    "hints",
+                    TextNode {
+                        text: hints,
+                        font_size: 10.0,
+                        color: BUTTON_TEXT_COLOR,
+                        font: TITLE_FONT_PATH,
+                        alignment: TextAlignment::Center,
+                        linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                    },
+                    &context.3 .1,
                 );
 
                 commands.add_child("words", WordsNode, context);
 
-                commands.add_child("buttons", ButtonsNode, &context.3.1);
+                commands.add_child("buttons", ButtonsNode, &context.3 .1);
             });
     }
 }
@@ -144,6 +166,7 @@ impl MavericNode for ButtonsNode {
             style: Style {
                 display: Display::Flex,
                 flex_direction: FlexDirection::Row,
+                flex_wrap: FlexWrap::Wrap,
                 ..Default::default()
             },
             ..Default::default()
@@ -166,7 +189,7 @@ impl MavericNode for ButtonsNode {
                             text: "Reset",
                             font_size: BUTTON_FONT_SIZE,
                             color: BUTTON_TEXT_COLOR,
-                            font: FONT_PATH,
+                            font: BUTTONS_FONT_PATH,
                             alignment: TextAlignment::Center,
                             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         },),
@@ -186,7 +209,27 @@ impl MavericNode for ButtonsNode {
                             text: "Next Level",
                             font_size: BUTTON_FONT_SIZE,
                             color: BUTTON_TEXT_COLOR,
-                            font: FONT_PATH,
+                            font: BUTTONS_FONT_PATH,
+                            alignment: TextAlignment::Center,
+                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                        },),
+                    },
+                    &context,
+                );
+
+                commands.add_child(
+                    "hint",
+                    ButtonNode {
+                        style: TextButtonStyle::default(),
+                        visibility: Visibility::Visible,
+                        border_color: Color::BLACK,
+                        background_color: Color::NONE,
+                        marker: ButtonMarker::Hint,
+                        children: (TextNode {
+                            text: "Hint",
+                            font_size: BUTTON_FONT_SIZE,
+                            color: BUTTON_TEXT_COLOR,
+                            font: BUTTONS_FONT_PATH,
                             alignment: TextAlignment::Center,
                             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         },),
@@ -215,9 +258,10 @@ impl MavericNode for GridTiles {
         commands
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
+                let hint_set = context.2.hint_set();
                 for (tile, character) in context.1.level().grid.enumerate() {
                     let selected = context.0 .0.last() == Some(&tile);
-
+                    let hinted = hint_set.get_bit(&tile);
                     let needed = !context.2.unneeded_tiles.get_bit(&tile);
 
                     commands.add_child(
@@ -227,8 +271,9 @@ impl MavericNode for GridTiles {
                             character: *character,
                             selected,
                             needed,
+                            hinted
                         },
-                        &context,
+                        &context.3,
                     );
                 }
             });
@@ -240,6 +285,7 @@ pub struct GridTile {
     pub tile: Tile,
     pub character: Character,
     pub selected: bool,
+    pub hinted: bool,
     pub needed: bool,
 }
 
@@ -247,10 +293,10 @@ maveric::define_lens!(StrokeColorLens, Stroke, Color, color);
 maveric::define_lens!(FillColorLens, Fill, Color, color);
 
 impl MavericNode for GridTile {
-    type Context = NC4<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>>;
+    type Context = NC2<Size, AssetServer>;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
-        let mut commands: SetComponentCommands<GridTile, Size> = commands.map_context(|x| &x.3.0);
+        let mut commands: SetComponentCommands<GridTile, Size> = commands.map_context(|x| &x.0);
 
         commands.scope(|x| {
             x.ignore_context()
@@ -261,9 +307,7 @@ impl MavericNode for GridTile {
 
         commands
             .animate::<TransformTranslationLens>(
-                |node, context| {
-                    context.tile_position(&node.tile).extend(0.0)
-                },
+                |node, context| context.tile_position(&node.tile).extend(0.0),
                 None,
             )
             .ignore_context()
@@ -288,15 +332,16 @@ impl MavericNode for GridTile {
                 0,
                 GridBackground {
                     selected: node.selected,
+                    hinted: node.hinted
                 },
-                &context.3.0,
+                &context .0,
             );
             commands.add_child(
                 1,
                 GridLetter {
                     character: node.character,
                 },
-                &context.3,
+                &context,
             );
         })
     }
@@ -315,8 +360,6 @@ impl MavericNode for GridTile {
 pub struct GridLetter {
     pub character: Character,
 }
-
-pub const LETTER_FONT: &'static str = "fonts/MartianMono_SemiExpanded-Bold.ttf";
 
 impl MavericNode for GridLetter {
     type Context = NC2<Size, AssetServer>;
@@ -337,7 +380,7 @@ impl MavericNode for GridLetter {
                     transform: Transform::from_xyz(0.0, 0.0, 1.0),
                     text: TextNode {
                         text: args.character.to_string(),
-                        font: LETTER_FONT,
+                        font: TILE_FONT_PATH,
                         font_size,
                         color: Color::DARK_GRAY,
                         alignment: TextAlignment::Center,
@@ -352,6 +395,7 @@ impl MavericNode for GridLetter {
 #[derive(Debug, PartialEq)]
 pub struct GridBackground {
     pub selected: bool,
+    pub hinted: bool
 }
 
 impl MavericNode for GridBackground {
@@ -387,10 +431,12 @@ impl MavericNode for GridBackground {
 
         commands
             .map_args(|x| {
-                if x.selected {
-                    &Color::BLUE
-                } else {
-                    &Color::GRAY
+
+                match (x.hinted, x.selected){
+                    (true, true) => &Color::GOLD,
+                    (true, false) => &Color::YELLOW,
+                    (false, true) => &Color::ALICE_BLUE,
+                    (false, false) => &Color::GRAY,
                 }
             })
             .ignore_context()
@@ -427,14 +473,17 @@ impl MavericNode for WordsNode {
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
                 for (index, word) in context.1.level().words.iter().enumerate() {
-                    let complete = context.2.found.contains(&word.characters);
+
+                    let completion = context.2.get_completion(&word.characters);
+
+
                     commands.add_child(
                         index as u32,
                         WordNode {
                             word: word.clone(),
-                            complete,
+                            completion,
                         },
-                        &context.3.1,
+                        &context.3 .1,
                     )
                 }
             });
@@ -452,7 +501,7 @@ impl MavericNode for WordLine {
             let mut builder = PathBuilder::new();
 
             for (index, tile) in context.0 .0.iter().enumerate() {
-                let position = context.3.0.tile_position(tile);
+                let position = context.3 .0.tile_position(tile);
                 if index == 0 {
                     builder.move_to(position);
                 } else {
@@ -488,13 +537,10 @@ impl MavericNode for WordLine {
 #[derive(Debug, PartialEq)]
 pub struct WordNode {
     pub word: Word,
-    pub complete: bool,
+    pub completion: Completion,
 }
 
-impl WordNode {
-    const INCOMPLETE_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
-    const COMPLETE_COLOR: Color = Color::rgb(0.1, 0.9, 0.1);
-}
+
 
 impl MavericNode for WordNode {
     type Context = AssetServer;
@@ -518,31 +564,33 @@ impl MavericNode for WordNode {
         });
 
         commands
-            .map_args(|x| {
-                if x.complete {
-                    &Self::COMPLETE_COLOR
-                } else {
-                    &Self::INCOMPLETE_COLOR
-                }
-            })
+            .map_args(|x| x.completion.color())
             .ignore_context()
             .animate_on_node::<BackgroundColorLens>(Some(ScalarSpeed::new(1.0)));
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
-            let text = if node.complete {
-                node.word.text.to_string()
-            } else {
-                str::repeat("?", node.word.characters.len())
+            let text = match node.completion {
+                Completion::Incomplete => str::repeat("?", node.word.characters.len()),
+                Completion::Hinted(hints) => node
+                    .word
+                    .text
+                    .chars()
+                    .take(hints)
+                    .chain(std::iter::repeat('?'))
+                    .take(node.word.characters.len())
+                    .join(""),
+                Completion::Complete => node.word.text.to_string(),
             };
+
             commands.add_child(
-                "score",
+                0,
                 TextNode {
                     text,
                     font_size: BUTTON_FONT_SIZE,
                     color: BUTTON_TEXT_COLOR,
-                    font: FONT_PATH,
+                    font: SOLUTIONS_FONT_PATH,
                     alignment: TextAlignment::Center,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                 },

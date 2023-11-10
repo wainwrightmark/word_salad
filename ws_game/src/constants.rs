@@ -17,7 +17,7 @@ pub trait SaladWindowSize {
     fn scale(&self) -> f32;
     fn tile_size(&self) -> f32;
     fn grid_top_left(&self) -> Vec2;
-    fn ui_top_left(&self) -> Vec2;
+    fn ui_top(&self) -> f32;
     /// tolerance is between 0.0 (always returns none) and 1.0 (always returns a tile)
     fn try_pick_tile(&self, position: Vec2, tolerance: f32) -> Option<DynamicTile>;
     fn pick_tile(&self, position: Vec2) -> DynamicTile;
@@ -61,11 +61,8 @@ impl SaladWindowSize for Size {
         }
     }
 
-    fn ui_top_left(&self) -> Vec2 {
-        Vec2 {
-            x: 0.0,
-            y: self.grid_top_left().y + (self.scale() * 4.0) + 100.0,
-        }
+    fn ui_top(&self) -> f32 {
+        self.grid_top_left().y + (self.scale() * 4.0) + 50.0
     }
 
     fn try_pick_tile(&self, position: Vec2, tolerance: f32) -> Option<DynamicTile> {
@@ -105,6 +102,11 @@ impl SaladWindowSize for Size {
 pub const DEFAULT_WINDOW_WIDTH: f32 = 400f32;
 pub const DEFAULT_WINDOW_HEIGHT: f32 = 800f32;
 
-//pub const SCALE: f32 = WINDOW_SIZE / 5.0;
-//pub const TILE_SIZE: f32 = SCALE * TILE_MULTIPLIER;
 pub const TILE_MULTIPLIER: f32 = 0.9;
+
+
+pub const TILE_FONT_PATH: &str =  "fonts/MartianMono_SemiExpanded-Bold.ttf";
+pub const CURRENT_STRING_FONT_PATH: &str = "fonts/MartianMono_SemiExpanded-Bold.ttf";
+pub const TITLE_FONT_PATH: &str = "fonts/FiraMono-Medium.ttf";
+pub const BUTTONS_FONT_PATH: &str = "fonts/FiraMono-Medium.ttf";
+pub const SOLUTIONS_FONT_PATH: &str = "fonts/MartianMono_SemiCondensed-Regular.ttf";

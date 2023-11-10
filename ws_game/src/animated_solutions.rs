@@ -42,7 +42,7 @@ pub fn animate_solution(
         std::time::Duration::from_secs_f32(SECONDS),
     );
 
-    let font = get_or_load_asset(FONT_PATH, asset_server);
+    let font = get_or_load_asset(SOLUTIONS_FONT_PATH, asset_server);
 
     let text = Text::from_section(
         word.text.clone(),
