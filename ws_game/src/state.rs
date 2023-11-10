@@ -36,6 +36,7 @@ fn track_found_words(
     level_data: Res<LazyLevelData>,
     mut found_words: ResMut<FoundWordsState>,
     asset_server: Res<AssetServer>,
+    size: Res<Size>,
 ) {
     if chosen.is_changed() {
         let grid = level.level().grid;
@@ -51,6 +52,7 @@ fn track_found_words(
                     word,
                     is_first_time,
                     &asset_server,
+                    &size,
                 );
             }
 

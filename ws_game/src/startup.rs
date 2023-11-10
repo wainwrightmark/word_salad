@@ -1,7 +1,7 @@
-use bevy::{log::LogPlugin, window::PrimaryWindow};
 use crate::animated_solutions::AnimatedSolutionPlugin;
 pub use crate::prelude::*;
-
+use bevy::{log::LogPlugin, window::PrimaryWindow};
+use bevy_utils::window_size::WindowSizePlugin;
 
 pub fn go() {
     let mut app = App::new();
@@ -10,13 +10,8 @@ pub fn go() {
         primary_window: Some(Window {
             title: "steks".to_string(),
             canvas: Some("#game".to_string()),
-            resolution: bevy::window::WindowResolution::new(WINDOW_WIDTH, WINDOW_HEIGHT),
-            resize_constraints: WindowResizeConstraints {
-                min_height: WINDOW_HEIGHT,
-                min_width: WINDOW_WIDTH,
-                max_width: WINDOW_WIDTH,
-                max_height: WINDOW_HEIGHT,
-            },
+            resolution: bevy::window::WindowResolution::default(),
+            resize_constraints: WindowResizeConstraints::default(),
             present_mode: bevy::window::PresentMode::default(),
 
             resizable: true,
@@ -51,6 +46,7 @@ pub fn go() {
     app.register_transition::<FillColorLens>();
     app.register_transition::<BackgroundColorLens>();
     app.register_transition::<TransformRotationYLens>();
+    app.register_transition::<TransformTranslationLens>();
 
     app.add_systems(Update, handle_mouse_input);
     app.add_systems(Update, handle_touch_input);
@@ -59,7 +55,7 @@ pub fn go() {
     app.insert_resource(LazyLevelData::new_empty());
     app.add_systems(First, update_lazy_level_data);
 
-    //app.add_plugins(bevy_utils::window_size::WindowSizePlugin);
+    app.add_plugins(WindowSizePlugin::<SaladWindowBreakPoints>::default());
 
     app.add_systems(PostStartup, choose_level_on_game_load);
     #[cfg(feature = "steam")]
@@ -78,12 +74,7 @@ fn setup_system(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
 
-fn adjust_cursor_position(p: Vec2) -> Vec2 {
-    Vec2 {
-        x: p.x - (WINDOW_WIDTH * 0.5),
-        y: (WINDOW_HEIGHT * 0.5) - p.y,
-    }
-}
+
 
 fn handle_mouse_input(
     mouse_input: Res<Input<MouseButton>>,
@@ -92,15 +83,16 @@ fn handle_mouse_input(
     current_level: Res<CurrentLevel>,
     mut input_state: Local<InputState>,
     found_words: Res<FoundWordsState>,
+    size: Res<Size>,
 ) {
     if mouse_input.just_released(MouseButton::Left) {
-        if let Some(tile) = try_get_cursor_tile(q_windows) {
+        if let Some(tile) = try_get_cursor_tile(q_windows, &size) {
             input_state.handle_input_end(&mut chosen_state, tile);
         } else {
             input_state.handle_input_end_no_location();
         }
     } else if mouse_input.just_pressed(MouseButton::Left) {
-        let Some(tile) = try_get_cursor_tile(q_windows) else {
+        let Some(tile) = try_get_cursor_tile(q_windows, &size) else {
             return;
         };
         input_state.handle_input_start(
@@ -110,7 +102,7 @@ fn handle_mouse_input(
             &found_words,
         )
     } else if mouse_input.pressed(MouseButton::Left) {
-        let Some(tile) = try_get_cursor_tile(q_windows) else {
+        let Some(tile) = try_get_cursor_tile(q_windows, &size) else {
             return;
         };
         input_state.handle_input_move(
@@ -122,12 +114,17 @@ fn handle_mouse_input(
     }
 }
 
-fn try_get_cursor_tile(q_windows: Query<&Window, With<PrimaryWindow>>) -> Option<Tile> {
+fn try_get_cursor_tile(
+    q_windows: Query<&Window, With<PrimaryWindow>>,
+    size: &Size,
+) -> Option<Tile> {
     let window = q_windows.iter().next()?;
 
     let cursor_position = window.cursor_position()?;
-    let cursor_position = adjust_cursor_position(cursor_position);
-    let tile = pick_tile(cursor_position);
+    let cursor_position =  size.adjust_cursor_position(cursor_position);
+    let tile = size.pick_tile(cursor_position);
+
+    //info!("Got tile {tile} from window size {size:?}");
 
     Tile::try_from_dynamic(tile)
 }
@@ -140,11 +137,12 @@ fn handle_touch_input(
     current_level: Res<CurrentLevel>,
     mut input_state: Local<InputState>,
     found_words: Res<FoundWordsState>,
+    size: Res<Size>,
 ) {
     for ev in touch_events.into_iter() {
         match ev.phase {
             bevy::input::touch::TouchPhase::Started => {
-                let Some(tile) = try_get_tile(ev.position, &q_camera) else {
+                let Some(tile) = try_get_tile(ev.position, &q_camera, &size) else {
                     continue;
                 };
                 input_state.handle_input_start(
@@ -155,7 +153,7 @@ fn handle_touch_input(
                 );
             }
             bevy::input::touch::TouchPhase::Moved => {
-                let Some(tile) = try_get_tile(ev.position, &q_camera) else {
+                let Some(tile) = try_get_tile(ev.position, &q_camera, &size) else {
                     continue;
                 };
                 input_state.handle_input_move(
@@ -166,7 +164,7 @@ fn handle_touch_input(
                 );
             }
             bevy::input::touch::TouchPhase::Ended => {
-                if let Some(tile) = try_get_tile(ev.position, &q_camera) {
+                if let Some(tile) = try_get_tile(ev.position, &q_camera, &size) {
                     input_state.handle_input_end(&mut chosen_state, tile);
                 } else {
                     input_state.handle_input_end_no_location();
@@ -179,10 +177,16 @@ fn handle_touch_input(
     }
 }
 
-fn try_get_tile(position: Vec2, q_camera: &Query<(&Camera, &GlobalTransform)>) -> Option<Tile> {
+fn try_get_tile(
+    position: Vec2,
+    q_camera: &Query<(&Camera, &GlobalTransform)>,
+    size: &Size,
+) -> Option<Tile> {
     let position = convert_screen_to_world_position(position, q_camera)?;
-    let tile = pick_tile(position);
+    let tile = size.pick_tile(position);
     let tile = Tile::try_from_dynamic(tile)?;
+
+    //info!("Got tile {tile} from window size {size:?}");
     Some(tile)
 }
 
@@ -192,14 +196,6 @@ fn convert_screen_to_world_position(
 ) -> Option<Vec2> {
     let (camera, camera_transform) = q_camera.single();
     camera.viewport_to_world_2d(camera_transform, screen_pos)
-}
-
-pub fn pick_tile(position: Vec2) -> DynamicTile {
-    let position = position - GRID_TOP_LEFT; // - (TILE_SIZE * 0.5);
-
-    let dv = DynamicVertex::from_center(&position, SCALE);
-    let dt = dv.get_tile(&Corner::SouthEast);
-    dt
 }
 
 fn button_system(
@@ -217,8 +213,10 @@ fn button_system(
                     *chosen_state = ChosenState::default();
                 }
                 ButtonMarker::NextLevel => {
-                    *current_level =match current_level.as_ref() {
-                        CurrentLevel::Fixed { level_index } => CurrentLevel::Fixed { level_index: level_index + 1 },
+                    *current_level = match current_level.as_ref() {
+                        CurrentLevel::Fixed { level_index } => CurrentLevel::Fixed {
+                            level_index: level_index + 1,
+                        },
                         CurrentLevel::Custom(_) => CurrentLevel::Fixed { level_index: 0 },
                     };
 
@@ -254,7 +252,6 @@ pub fn get_game_from_location() -> Option<DesignedLevel> {
     let window = web_sys::window()?;
     let location = window.location();
     let path = location.pathname().ok()?;
-
 
     DesignedLevel::try_from_path(path)
 }

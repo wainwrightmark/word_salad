@@ -6,7 +6,6 @@ pub mod input;
 pub mod startup;
 pub mod state;
 pub mod view;
-pub mod text_2d_node;
 
 fn main() {
     crate::startup::go();

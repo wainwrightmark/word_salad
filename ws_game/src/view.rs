@@ -1,12 +1,12 @@
-use crate::{prelude::*, text_2d_node::Text2DNode};
-use maveric::transition::speed::ScalarSpeed;
+use crate::prelude::*;
+use maveric::{transition::speed::ScalarSpeed, widgets::text2d_node::Text2DNode};
 use std::time::Duration;
 use ws_core::Tile;
 
 pub struct ViewRoot;
 
 impl MavericRootChildren for ViewRoot {
-    type Context = NC4<ChosenState, CurrentLevel, FoundWordsState, AssetServer>;
+    type Context = NC4<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>>;
 
     fn set_children(
         context: &<Self::Context as NodeContext>::Wrapper<'_>,
@@ -15,7 +15,7 @@ impl MavericRootChildren for ViewRoot {
         //commands.add_child("lines", GridLines, &());
         commands.add_child("cells", GridTiles, context);
         commands.add_child("ui", UI, context);
-        commands.add_child("lines", WordLine, &context.0);
+        commands.add_child("lines", WordLine, context);
     }
 }
 
@@ -64,18 +64,23 @@ pub enum ButtonMarker {
 }
 
 impl MavericNode for UI {
-    type Context = NC4<ChosenState, CurrentLevel, FoundWordsState, AssetServer>;
+    type Context = NC4<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>>;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
-        commands.ignore_node().ignore_context().insert(NodeBundle {
-            style: Style {
-                top: Val::Px(UI_TOP_LEFT.y),
-                left: Val::Px(UI_TOP_LEFT.x),
-                display: Display::Flex,
-                flex_direction: FlexDirection::Column,
+        let mapped: SetComponentCommands<(), Size> = commands.ignore_node().map_context(|x| &x.3.0);
+
+        mapped.insert_with_context(|size: &Res<Size>| {
+            let Vec2 { x, y } = size.ui_top_left();
+            NodeBundle {
+                style: Style {
+                    top: Val::Px(y),
+                    left: Val::Px(x),
+                    display: Display::Flex,
+                    flex_direction: FlexDirection::Column,
+                    ..Default::default()
+                },
                 ..Default::default()
-            },
-            ..Default::default()
+            }
         });
     }
 
@@ -103,7 +108,7 @@ impl MavericNode for UI {
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     },
-                    &context.3,
+                    &context.3.1,
                 );
 
                 let title = context.1.level().name.clone();
@@ -118,12 +123,12 @@ impl MavericNode for UI {
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     },
-                    &context.3,
+                    &context.3.1,
                 );
 
                 commands.add_child("words", WordsNode, context);
 
-                commands.add_child("buttons", ButtonsNode, &context.3);
+                commands.add_child("buttons", ButtonsNode, &context.3.1);
             });
     }
 }
@@ -196,7 +201,7 @@ impl MavericNode for ButtonsNode {
 pub struct GridTiles;
 
 impl MavericNode for GridTiles {
-    type Context = NC4<ChosenState, CurrentLevel, FoundWordsState, AssetServer>;
+    type Context = NC4<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>>;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
@@ -223,7 +228,7 @@ impl MavericNode for GridTiles {
                             selected,
                             needed,
                         },
-                        &context.3,
+                        &context,
                     );
                 }
             });
@@ -242,47 +247,61 @@ maveric::define_lens!(StrokeColorLens, Stroke, Color, color);
 maveric::define_lens!(FillColorLens, Fill, Color, color);
 
 impl MavericNode for GridTile {
-    type Context = AssetServer;
+    type Context = NC4<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>>;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
-        commands.advanced(|args, commands| {
-            if !args.is_hot() {
-                return;
-            }
-            let node = args.node;
+        let mut commands: SetComponentCommands<GridTile, Size> = commands.map_context(|x| &x.3.0);
 
-            let translation =
-                (node.tile.get_north_west_vertex().get_center(SCALE) + GRID_TOP_LEFT).extend(0.0);
-
-            let rotation_y = if node.needed {
-                0.0
-            } else {
-                std::f32::consts::PI
-            };
-
-            if commands.get::<ComputedVisibility>().is_none() {
-                commands.insert(VisibilityBundle {
-                    visibility: Visibility::Visible,
-                    ..Default::default()
-                });
-            }
-
-            if commands.get::<GlobalTransform>().is_none() {
-                commands.insert(TransformBundle::from_transform(Transform {
-                    translation,
-                    rotation: Quat::from_rotation_y(rotation_y),
-                    scale: Vec3::ONE,
-                }));
-            }
-
-            commands.transition_value::<TransformRotationYLens>(
-                rotation_y,
-                rotation_y,
-                Some(ScalarSpeed {
-                    amount_per_second: std::f32::consts::PI,
-                }),
-            );
+        commands.scope(|x| {
+            x.ignore_context()
+                .ignore_node()
+                .insert(TransformBundle::default())
+                .finish()
         });
+
+        commands
+            .animate::<TransformTranslationLens>(
+                |node, context| {
+                    context.tile_position(&node.tile).extend(0.0)
+                },
+                None,
+            )
+            .ignore_context()
+            .map_args(|node| {
+                if node.needed {
+                    &0.0
+                } else {
+                    &std::f32::consts::PI
+                }
+            })
+            .animate_on_node::<TransformRotationYLens>(Some(ScalarSpeed {
+                amount_per_second: std::f32::consts::PI,
+            }))
+            .ignore_context()
+            .ignore_node()
+            .insert(VisibilityBundle::default());
+
+        // mapped.advanced(|args, commands| {
+        //     if !args.is_hot() {
+        //         return;
+        //     }
+
+        //     let rotation_y = ;
+
+        //     if commands.get::<GlobalTransform>().is_none() {
+        //         commands.insert(TransformBundle::from_transform(Transform {
+        //             translation,
+        //             rotation: Quat::from_rotation_y(rotation_y),
+        //             scale: Vec3::ONE,
+        //         }));
+        //     }
+
+        //     commands.transition_value::<>(
+        //         rotation_y,
+        //         rotation_y,
+        //         ,
+        //     );
+        // });
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
@@ -292,21 +311,21 @@ impl MavericNode for GridTile {
                 GridBackground {
                     selected: node.selected,
                 },
-                &(),
+                &context.3.0,
             );
             commands.add_child(
                 1,
                 GridLetter {
                     character: node.character,
                 },
-                &context,
+                &context.3,
             );
         })
     }
 
     fn on_deleted(&self, commands: &mut ComponentCommands) -> DeletionPolicy {
         commands.insert(Transition::<FillColorLens>::new(TransitionStep::new_arc(
-            Color::GRAY.with_a(0.0),
+            Color::GRAY,
             Some(ScalarSpeed::new(1.0)),
             NextStep::None,
         )));
@@ -322,7 +341,7 @@ pub struct GridLetter {
 pub const LETTER_FONT: &'static str = "fonts/MartianMono_SemiExpanded-Bold.ttf";
 
 impl MavericNode for GridLetter {
-    type Context = AssetServer;
+    type Context = NC2<Size, AssetServer>;
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
             .ignore_context()
@@ -333,6 +352,7 @@ impl MavericNode for GridLetter {
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node_and_context(|args, context, commands| {
+            let font_size = context.0.tile_font_size();
             commands.add_child(
                 0,
                 Text2DNode {
@@ -340,13 +360,13 @@ impl MavericNode for GridLetter {
                     text: TextNode {
                         text: args.character.to_string(),
                         font: LETTER_FONT,
-                        font_size: 60.0,
+                        font_size,
                         color: Color::DARK_GRAY,
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     },
                 },
-                context,
+                &context.1,
             )
         });
     }
@@ -357,49 +377,48 @@ pub struct GridBackground {
 }
 
 impl MavericNode for GridBackground {
-    type Context = NoContext;
+    type Context = Size;
 
     fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
-        const RECTANGLE: shapes::Rectangle = shapes::Rectangle {
-            extents: Vec2 {
-                x: TILE_SIZE,
-                y: TILE_SIZE,
-            },
-            origin: RectangleOrigin::Center,
-        };
-
         commands.scope(|commands| {
             commands
                 .ignore_node()
-                .ignore_context()
-                .insert((
-                    ShapeBundle {
-                        path: GeometryBuilder::build_as(&RECTANGLE),
-                        transform: Transform::from_xyz(0.0, 0.0, 0.0),
+                .insert_with_context(|context| {
+                    let tile_size = context.tile_size();
+                    let rectangle: shapes::Rectangle = shapes::Rectangle {
+                        extents: Vec2 {
+                            x: tile_size,
+                            y: tile_size,
+                        },
+                        origin: RectangleOrigin::Center,
+                    };
 
-                        ..Default::default()
-                    },
-                    Stroke::color(Color::DARK_GRAY),
-                    Fill::color(Color::rgb(0.2, 0.2, 0.2)),
-                ))
+                    (
+                        ShapeBundle {
+                            path: GeometryBuilder::build_as(&rectangle),
+                            transform: Transform::from_xyz(0.0, 0.0, 0.0),
+
+                            ..Default::default()
+                        },
+                        Stroke::color(Color::DARK_GRAY),
+                        Fill::color(Color::GRAY),
+                    )
+                })
                 .finish()
         });
 
         commands
-            .map_args(|x| &x.selected)
-            .advanced(|args, commands| {
-                if !args.is_hot() {
-                    return;
+            .map_args(|x| {
+                if x.selected {
+                    &Color::BLUE
+                } else {
+                    &Color::GRAY
                 }
-                let color = if *args.node { Color::BLUE } else { Color::GRAY };
-                commands.transition_value::<FillColorLens>(
-                    Color::GRAY,
-                    color,
-                    Some(ScalarSpeed {
-                        amount_per_second: 1.0,
-                    }),
-                );
-            });
+            })
+            .ignore_context()
+            .animate_on_node::<FillColorLens>(Some(ScalarSpeed {
+                amount_per_second: 1.0,
+            }));
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
@@ -411,7 +430,7 @@ impl MavericNode for GridBackground {
 pub struct WordsNode;
 
 impl MavericNode for WordsNode {
-    type Context = NC4<ChosenState, CurrentLevel, FoundWordsState, AssetServer>;
+    type Context = NC4<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>>;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands.ignore_context().ignore_node().insert(NodeBundle {
@@ -437,7 +456,7 @@ impl MavericNode for WordsNode {
                             word: word.clone(),
                             complete,
                         },
-                        &context.3,
+                        &context.3.1,
                     )
                 }
             });
@@ -448,18 +467,18 @@ impl MavericNode for WordsNode {
 pub struct WordLine;
 
 impl MavericNode for WordLine {
-    type Context = ChosenState;
+    type Context = NC4<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>>;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands.ignore_node().insert_with_context(|context| {
             let mut builder = PathBuilder::new();
 
-            for (index, tile) in context.0.iter().enumerate() {
-                let location = tile.get_center(SCALE) + GRID_TOP_LEFT - (TILE_SIZE * 0.5);
+            for (index, tile) in context.0 .0.iter().enumerate() {
+                let position = context.3.0.tile_position(tile);
                 if index == 0 {
-                    builder.move_to(location);
+                    builder.move_to(position);
                 } else {
-                    builder.line_to(location);
+                    builder.line_to(position);
                 }
             }
 
@@ -488,30 +507,15 @@ impl MavericNode for WordLine {
     }
 }
 
-// fn choose_line_color(index: usize) -> Color {
-//     const SATURATIONS: [f32; 2] = [0.9, 0.28];
-//     const LIGHTNESSES: [f32; 2] = [0.28, 0.49];
-
-//     const PHI_CONJUGATE: f32 = 0.618_034;
-
-//     let hue = 360. * (((index as f32) * PHI_CONJUGATE) % 1.);
-//     let lightness: f32 = LIGHTNESSES[index % LIGHTNESSES.len()];
-//     let saturation: f32 =
-//         SATURATIONS[(index % (LIGHTNESSES.len() * SATURATIONS.len())) / SATURATIONS.len()];
-
-//     let alpha = 0.5;
-//     Color::hsla(hue, saturation, lightness, alpha)
-// }
-
 #[derive(Debug, PartialEq)]
 pub struct WordNode {
     pub word: Word,
     pub complete: bool,
 }
 
-impl WordNode{
-    const INCOMPLETE_COLOR: Color = Color::rgb(0.9,0.9,0.9);
-    const COMPLETE_COLOR: Color = Color::rgb(0.1,0.9,0.1);
+impl WordNode {
+    const INCOMPLETE_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
+    const COMPLETE_COLOR: Color = Color::rgb(0.1, 0.9, 0.1);
 }
 
 impl MavericNode for WordNode {
@@ -519,28 +523,32 @@ impl MavericNode for WordNode {
 
     fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
         commands.scope(|commands| {
-            commands.ignore_node().ignore_context().insert(NodeBundle {
-                style: Style {
-                    margin: UiRect::all(Val::Px(10.0)),
+            commands
+                .ignore_node()
+                .ignore_context()
+                .insert(NodeBundle {
+                    style: Style {
+                        margin: UiRect::all(Val::Px(10.0)),
 
-                    //border: UiRect::all(Val::Px(1.0)),
+                        //border: UiRect::all(Val::Px(1.0)),
+                        ..Default::default()
+                    },
+                    background_color: BackgroundColor(Color::rgb(0.9, 0.9, 0.9)),
                     ..Default::default()
-                },
-                background_color: BackgroundColor(Color::rgb(0.9, 0.9, 0.9)),
-                //border_color: BorderColor(Color::DARK_GRAY),
-                ..Default::default()
-            }).finish()
+                })
+                .finish()
         });
 
-        commands.map_args(|x|&x.complete).advanced(|a,commands|{
-            if !a.is_hot(){
-                return;
-            }
-
-            let c = if *a.node {Self::COMPLETE_COLOR} else {Self::INCOMPLETE_COLOR};
-
-            commands.transition_value::<BackgroundColorLens> (c, c, Some(ScalarSpeed::new(1.0)));
-        });
+        commands
+            .map_args(|x| {
+                if x.complete {
+                    &Self::COMPLETE_COLOR
+                } else {
+                    &Self::INCOMPLETE_COLOR
+                }
+            })
+            .ignore_context()
+            .animate_on_node::<BackgroundColorLens>(Some(ScalarSpeed::new(1.0)));
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
