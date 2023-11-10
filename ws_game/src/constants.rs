@@ -31,12 +31,14 @@ pub trait SaladWindowSize {
 }
 
 impl SaladWindowSize for Size {
+
+    //scale is the full size a tile takes up
     fn scale(&self) -> f32 {
         (self.scaled_width / 4.0).min(self.scaled_height / 8.0)
     }
-
+    // tile_size is the visible size of a tile
     fn tile_size(&self) -> f32 {
-        self.scale()
+        self.scale() * TILE_MULTIPLIER
     }
 
     fn tile_font_size(&self) -> f32 {
@@ -51,18 +53,18 @@ impl SaladWindowSize for Size {
     }
 
     fn grid_top_left(&self) -> Vec2 {
-        let spare_width = self.scaled_width - (self.tile_size() * 4.0);
+        let spare_width = self.scaled_width - (self.scale() * 4.0);
 
         Vec2 {
-            x: (self.scaled_width * -0.5) + (spare_width * 0.5) + (self.tile_size() * 0.5),
-            y: (self.scaled_height * 0.5) - self.tile_size() * 4.0,
+            x: (self.scaled_width * -0.5) + (spare_width * 0.5) + (self.scale() * 0.5),
+            y: (self.scaled_height * 0.5) - self.scale() * 4.0,
         }
     }
 
     fn ui_top_left(&self) -> Vec2 {
         Vec2 {
             x: 0.0,
-            y: self.grid_top_left().y + (self.tile_size() * 4.0) + 100.0,
+            y: self.grid_top_left().y + (self.scale() * 4.0) + 100.0,
         }
     }
 
