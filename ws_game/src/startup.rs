@@ -282,6 +282,18 @@ fn button_system(
                     *found_words = FoundWordsState::default();
                     *chosen_state = ChosenState::default();
                 }
+
+                ButtonMarker::PreviousLevel => {
+                    *current_level = match current_level.as_ref() {
+                        CurrentLevel::Fixed { level_index } => CurrentLevel::Fixed {
+                            level_index: level_index.saturating_sub(1),
+                        },
+                        CurrentLevel::Custom(_) => CurrentLevel::Fixed { level_index: 0 },
+                    };
+
+                    *found_words = FoundWordsState::default();
+                    *chosen_state = ChosenState::default();
+                }
                 ButtonMarker::Hint => {
                     found_words.try_hint(current_level.as_ref());
                 },

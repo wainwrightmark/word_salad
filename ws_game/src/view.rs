@@ -59,6 +59,7 @@ impl IntoBundle for TextButtonStyle {
 #[derive(Debug, Clone, PartialEq, Component)]
 pub enum ButtonMarker {
     Reset,
+    PreviousLevel,
     NextLevel,
     Hint,
 }
@@ -177,16 +178,18 @@ impl MavericNode for ButtonsNode {
         commands
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
+
+
                 commands.add_child(
-                    "reset",
+                    "prev",
                     ButtonNode {
                         style: TextButtonStyle::default(),
                         visibility: Visibility::Visible,
                         border_color: Color::BLACK,
                         background_color: Color::NONE,
-                        marker: ButtonMarker::Reset,
+                        marker: ButtonMarker::NextLevel,
                         children: (TextNode {
-                            text: "Reset",
+                            text: "Prev",
                             font_size: BUTTON_FONT_SIZE,
                             color: BUTTON_TEXT_COLOR,
                             font: BUTTONS_FONT_PATH,
@@ -206,7 +209,27 @@ impl MavericNode for ButtonsNode {
                         background_color: Color::NONE,
                         marker: ButtonMarker::NextLevel,
                         children: (TextNode {
-                            text: "Next Level",
+                            text: "Next",
+                            font_size: BUTTON_FONT_SIZE,
+                            color: BUTTON_TEXT_COLOR,
+                            font: BUTTONS_FONT_PATH,
+                            alignment: TextAlignment::Center,
+                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                        },),
+                    },
+                    &context,
+                );
+
+                commands.add_child(
+                    "reset",
+                    ButtonNode {
+                        style: TextButtonStyle::default(),
+                        visibility: Visibility::Visible,
+                        border_color: Color::BLACK,
+                        background_color: Color::NONE,
+                        marker: ButtonMarker::Reset,
+                        children: (TextNode {
+                            text: "Reset",
                             font_size: BUTTON_FONT_SIZE,
                             color: BUTTON_TEXT_COLOR,
                             font: BUTTONS_FONT_PATH,
