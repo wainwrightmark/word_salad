@@ -1,3 +1,5 @@
+BEEQSINUHGKWTOPA	Chess Pieces	bishop	king	knight	pawn	queen
+HIUSPTRNEUEAJNMV	Planets	Earth	Jupiter	Mars	Neptune	Uranus	Venus
 CHAEANGMILEUDSJK	Empires 1	Achaemenid	Ghana   	Inca    	Mughal  	Seljuk
 BRIEOMITUSALGHKN	Empires 2	Aksumite	British 	Mali    	Mughal  	Roman
 FRZBEGYAHNNPCAIT	Empires 3	Byzantine	Egyptian	French  	Ghana   	Inca
@@ -5,6 +7,8 @@ SEJGILHUDAMKNAKA	Empires 4	Akkadian	Ghana   	Mali    	Mughal  	Seljuk
 EPLHGYTORTAIOMNC	Empires 5	Egyptian	Holy Roman	Inca    	Ottoman 	Roman
 AKKACNIDHAEREMOF	Empires 6	Achaemenid	Akkadian	French  	Inca    	Roman
 MTNHOATORZLIBYNE	Empires 7	Byzantine	Holy Roman	Mali    	Ottoman 	Roman
+PTEBHTASOSIHURI_	Egyptian Gods 1	Bastet  	Hathor  	Horus   	Isis    	Osiris  	Ptah    	Seth
+_SIBPTAUEHNMHTO_	Egyptian Gods 2	Amon    	Anubis  	Bastet  	Ptah    	Thoth
 CHEVTLINLANSKUUI	EU Capitals 1	Athens  	Chisinau	Nuuk    	Tallinn 	Vienna  	Vilnius
 TRAMICNONOSAWBLI	EU Capitals 2	Lisbon  	Monaco  	Moscow  	Nicosia 	Oslo    	San Marino	Tirana
 WADDMRIFESOGTMAW	EU Capitals 3	Amsterdam	Madrid  	Riga    	Rome    	Sofia   	Warsaw
@@ -31,6 +35,8 @@ HPOLARLSDOEUNITZ	Greek Gods 2	Aphrodite	Apollo  	Ares    	Poseidon	Zeus
 PEMIDRSEAETPNOHA	Greek Gods 3	Ares    	Artemis 	Athena  	Demeter 	Hera    	Hermes  	Persephone
 CPAZARMCILIAOBRS	SA Capitals 1	Brasilia 	Caracas 	La Paz  	Lima    	Paramaribo
 QSABNUONCITGLMAO	SA Capitals 2	Asuncion 	Bogota  	Lima    	Quito   	Santiago
+MSLOOAGNNCHAXIRY	Winter Olypics Cities1	Calgary 	Chamonix	Nagano  	Oslo    	Sochi
+TORGSENILOIJBECH	Winter Olypics Cities2	Beijing 	Grenoble	Oslo    	Sochi   	Torino
 ANKOTOAYMRLTCEAB	Summer Olypics Cities1	Atlanta 	Barcelona	Montreal	Rome    	Tokyo
 MPABURETINLHKSIC	Summer Olypics Cities2	Athens  	Berlin  	Helsinki	Munich  	Paris
 TSELBLOUERISGNAB	Summer Olypics Cities3	Berlin  	Brisbane	Los Angeles	Rio     	Seoul   	St Louis
@@ -45,8 +51,6 @@ TURPHRMIEADSGANO	US Presidents 3	Adams   	Arthur  	Harrison	Madison 	Reagan  	Tr
 BIDLPFENTRATECRG	US Presidents 4	Biden   	Carter  	Garfield	Grant   	Pierce  	Taft
 WJXPAIOHCLNNKSOT	US Presidents 5	Clinton 	Jackson 	Johnson 	Nixon   	Polk    	Wilson
 MNROXOLEICTYLNAR	US Presidents 6	Carter  	Clinton 	Lincoln 	Monroe  	Nixon   	Taylor  	Tyler
-BEEQSINUHGKWTOPA	Chess Pieces	bishop	king	knight	pawn	queen
-HIUSPTRNEUEAJNMV	Planets	Earth	Jupiter	Mars	Neptune	Uranus	Venus
 BOCLRDAFNORIGAME	Fellowship of the Ring	Aragorn	Boromir	Frodo	Gandalf	Meriadoc
 BERCYANFHULDTLOP	Currencies	Baht	Dollar	Franc	Pound	Real	Yen	Yuan
 JSHUMOEAPLBIISAD	Old Testament Books	Hosea	Isaiah	Job	Joel	Joshua	Obadiah	Psalms

@@ -63,10 +63,11 @@ impl LazyLevelData {
 
         let mut tiles_used: HashMap<CharsArray, GridSet> = Default::default();
 
+        //todo change to only retain the minimum needed set of tiles - this wil be complicated!
         for word in words_map.values() {
-            let solutions = word.find_solutions(&level.grid); //todo change to only retain the minimum needed set of tiles
+            let solutions = word.find_solutions(&level.grid);
             let mut set = GridSet::default();
-            for solution in solutions.iter() {
+            for solution in solutions.iter().take(1) {
                 for tile in solution {
                     set.set_bit(tile, true);
                 }

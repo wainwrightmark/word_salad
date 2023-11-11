@@ -402,7 +402,7 @@ impl MavericNode for GridLetter {
                 Text2DNode {
                     transform: Transform::from_xyz(0.0, 0.0, 1.0),
                     text: TextNode {
-                        text: args.character.to_string(),
+                        text: args.character.to_tile_string(),
                         font: TILE_FONT_PATH,
                         font_size,
                         color: Color::DARK_GRAY,
