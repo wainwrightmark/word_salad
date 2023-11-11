@@ -271,7 +271,7 @@ impl MavericNode for GridTiles {
                             character: *character,
                             selected,
                             needed,
-                            hinted
+                            hinted,
                         },
                         &context.3,
                     );
@@ -332,9 +332,9 @@ impl MavericNode for GridTile {
                 0,
                 GridBackground {
                     selected: node.selected,
-                    hinted: node.hinted
+                    hinted: node.hinted,
                 },
-                &context .0,
+                &context.0,
             );
             commands.add_child(
                 1,
@@ -395,7 +395,7 @@ impl MavericNode for GridLetter {
 #[derive(Debug, PartialEq)]
 pub struct GridBackground {
     pub selected: bool,
-    pub hinted: bool
+    pub hinted: bool,
 }
 
 impl MavericNode for GridBackground {
@@ -406,13 +406,27 @@ impl MavericNode for GridBackground {
             commands
                 .ignore_node()
                 .insert_with_context(|context| {
-                    let tile_size = context.tile_size();
-                    let rectangle: shapes::Rectangle = shapes::Rectangle {
-                        extents: Vec2 {
-                            x: tile_size,
-                            y: tile_size,
-                        },
-                        origin: RectangleOrigin::Center,
+                    let tile_size = context.tile_size(); //todo performance
+                    let a = tile_size * 0.5;
+                    let m_a = a * -1.0;
+                    let rectangle = shapes::RoundedPolygon {
+                        points: vec![
+                            Vec2{
+                                x: a,
+                                y: a
+                            },
+                            Vec2 {
+                                x: a,
+                                y: m_a,
+                            },
+                            Vec2 {
+                                x: m_a,
+                                y: m_a,
+                            },
+                            Vec2 { x: m_a, y: a },
+                        ],
+                        radius: tile_size * 0.1,
+                        closed: true,
                     };
 
                     (
@@ -430,14 +444,11 @@ impl MavericNode for GridBackground {
         });
 
         commands
-            .map_args(|x| {
-
-                match (x.hinted, x.selected){
-                    (true, true) => &Color::GOLD,
-                    (true, false) => &Color::YELLOW,
-                    (false, true) => &Color::ALICE_BLUE,
-                    (false, false) => &Color::GRAY,
-                }
+            .map_args(|x| match (x.hinted, x.selected) {
+                (true, true) => &Color::GOLD,
+                (true, false) => &Color::YELLOW,
+                (false, true) => &Color::ALICE_BLUE,
+                (false, false) => &Color::GRAY,
             })
             .ignore_context()
             .animate_on_node::<FillColorLens>(Some(ScalarSpeed {
@@ -473,9 +484,7 @@ impl MavericNode for WordsNode {
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
                 for (index, word) in context.1.level().words.iter().enumerate() {
-
                     let completion = context.2.get_completion(&word.characters);
-
 
                     commands.add_child(
                         index as u32,
@@ -539,8 +548,6 @@ pub struct WordNode {
     pub word: Word,
     pub completion: Completion,
 }
-
-
 
 impl MavericNode for WordNode {
     type Context = AssetServer;
