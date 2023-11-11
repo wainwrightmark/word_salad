@@ -6,3 +6,4 @@ grid_finder/done/*.txt
 grid_finder/clusters/*.txt
 sheet_reader/data/*.txt
 sheet1.txt
+sheet_reader_data/*
