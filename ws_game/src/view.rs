@@ -27,7 +27,7 @@ pub struct UI;
 
 pub const BUTTON_FONT_SIZE: f32 = 22.0;
 pub const BUTTON_TEXT_COLOR: Color = Color::rgb(0.1, 0.1, 0.1);
-pub const TEXT_BUTTON_WIDTH: f32 = 180.;
+pub const TEXT_BUTTON_WIDTH: f32 = 140.;
 pub const TEXT_BUTTON_HEIGHT: f32 = 30.;
 pub const UI_BORDER_WIDTH: Val = Val::Px(3.0);
 
@@ -187,7 +187,7 @@ impl MavericNode for ButtonsNode {
                         visibility: Visibility::Visible,
                         border_color: Color::BLACK,
                         background_color: Color::NONE,
-                        marker: ButtonMarker::NextLevel,
+                        marker: ButtonMarker::PreviousLevel,
                         children: (TextNode {
                             text: "Prev",
                             font_size: BUTTON_FONT_SIZE,

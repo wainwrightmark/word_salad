@@ -1,5 +1,26 @@
 BEEQSINUHGKWTOPA	Chess Pieces	bishop	king	knight	pawn	queen
 HIUSPTRNEUEAJNMV	Planets	Earth	Jupiter	Mars	Neptune	Uranus	Venus
+FINORALTNEPSCDEW	Europe Countries 1	Estonia 	Finland 	France  	Ireland 	Spain   	Sweden
+DNGLHUAOSTRPAIYC	Europe Countries 2	Austria 	Croatia 	Cyprus  	Hungary 	Poland  	Portugal
+BEMYCULAEGITERAV	Europe Countries 3	Belgium 	Bulgaria	Greece  	Italy   	Latvia  	Malta
+SWEDLVNEOMAI_RKA	Europe Countries 4	Denmark 	Romania 	Slovakia	Slovenia	Sweden
+NEEHLRTUAIASINDP	Europe Countries 5	Austria 	Ireland 	Lithuania	Netherlands	Spain
+PLTAOAYIMRNDFCEG	Europe Countries 6	Croatia 	France  	Germany 	Italy   	Malta   	Poland  	Romania
+SANFPLIKOVAN_TED	Europe Countries 7	Finland 	Latvia  	Poland  	Slovakia	Slovenia	Spain
+TSYAIRELANAMQPEJ	Asian Countries 1	Iran    	Iraq    	Israel  	Japan   	Malaysia	Nepal   	Palestine	Syria   	Yemen
+AZCSBHUSERITYKAN	Asian Countries 2	Bahrain 	Bhutan  	China   	Iran    	Russia  	Turkey  	Uzbekistan
+QATAWIRPSUYGKSEC	Asian Countries 3	Cyprus  	Egypt   	Iraq    	Kuwait  	Qatar   	Russia  	Syria
+IVETNSINCDOALAMB	Asian Countries 4	Cambodia	India   	Indonesia	Laos    	Maldives	Oman    	Vietnam
+JORDEMATENAWMYIQ	Asian Countries 5	Armenia 	Jordan  	Myanmar 	Oman    	Qatar   	Taiwan  	Yemen
+DILPOHEIRNATASAK	Asian Capitals 1	Dhaka   	Dili    	Doha    	Hanoi   	Lhasa   	Sanaa   	Taipei  	Tehran
+JATRBKAAUNAMILAM	Asian Capitals 2	Amman   	Ankara  	Baku    	Jakarta 	Kabul   	Manama  	Manila  	Ulaanbaatar
+BOE_MUSAOLCTYKOW	Asian Capitals 3	Colombo 	Moscow  	Muscat  	Seoul   	Tokyo
+RIYDEUDATBSHANAG	Asian Capitals 4	Ashgabat	Baghdad 	Beirut  	Dushanbe	Riyadh
+OHAECGNDOAUILTIS	African Countries 1	Angola  	Chad    	Ghana   	Guinea  	Sudan   	Togo    	Tunisia 	Uganda
+BOSRMETWANAIDLIN	African Countries 2	Benin   	Botswana	Eswatini	Malawi  	Mali    	Rwanda  	Somalia
+ZGIAABENCMOROCOS	African Countries 3	Cameroon	Comoros 	Gabon   	Gambia  	Morocco 	Niger   	Zambia
+LGNKAIERMNBISEYA	African Countries 4	Algeria 	Benin   	Kenya   	Liberia 	Libya   	Mali    	Namibia 	Niger   	Nigeria 	Senegal
+HDNZGAANUMTIRIBA	African Countries 5	Gambia  	Ghana   	Mauritania	Namibia 	Tanzania	Uganda  	Zambia
 CHAEANGMILEUDSJK	Empires 1	Achaemenid	Ghana   	Inca    	Mughal  	Seljuk
 BRIEOMITUSALGHKN	Empires 2	Aksumite	British 	Mali    	Mughal  	Roman
 FRZBEGYAHNNPCAIT	Empires 3	Byzantine	Egyptian	French  	Ghana   	Inca
@@ -61,7 +82,6 @@ MYITARLSPUNUJAGE	Months	April           	August          	January         	July 
 BDANECOTOEGIRWLP	Animals	DOG	TOAD	PIGEON	OWL	PIG	ANT	CAT	LION	DEER	COW	GOAT	BEE	TIGER
 KYNGCARELOVEBIMD	Colors	Black           	Coral           	Cyan            	Gray            	Green           	Ivory           	Lime            	Olive           	Orange          	Red
 ETLSRAPTIEROPNOG	Kitchen	PIEPLATE	STRAINER	TEAPOT	GRATER	APRON	SPOON	POT
-UOEVFRNEHITSNTFY	Numbers	THIRTEEN	FOURTEEN	FIFTEEN	SEVENTY	THIRTY	NINETY	THREE	SEVEN	FORTY	FIFTY	FIFTH	FOUR	NINE	ONE	TEN
 GNDTEUIOKILOASHP	Sports	POLO	SHOOTING	KENDO	SAILING	LUGE	SKIING
 DAHONINAIOWTMANU	States	IOWA	OHIO	IDAHO	UTAH	HAWAII	INDIANA	MONTANA
 PEBDCARUHSNTPILI	Vegetables	basil           	bean            	chard           	chili           	parsnip         	pea             	peanut          	spinach         	tuber           	turnip
