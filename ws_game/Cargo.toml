@@ -68,5 +68,6 @@ features = [
   "bevy_text",          # Text/font rendering
   "bevy_ui",            # UI toolkit
   "webgl2",
-  "bevy_gizmos"
+  "bevy_gizmos",
+  "png"
 ]

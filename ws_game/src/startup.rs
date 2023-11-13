@@ -51,7 +51,7 @@ pub fn go() {
     app.add_systems(Update, handle_mouse_input);
     app.add_systems(Update, handle_touch_input);
     //app.add_systems(Update, draw_shape);
-    app.add_systems(Update, button_system);
+    app.add_plugins(MenuPlugin);
     app.insert_resource(LazyLevelData::new_empty());
     app.add_systems(First, update_lazy_level_data);
 
@@ -126,6 +126,7 @@ fn resizer( //TODO move to nice bevy utils
 const MOVE_TOLERANCE: f32 = 0.3;
 
 fn handle_mouse_input(
+    menu_state: Res<MenuState>,
     mouse_input: Res<Input<MouseButton>>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
     mut chosen_state: ResMut<ChosenState>,
@@ -134,6 +135,10 @@ fn handle_mouse_input(
     found_words: Res<FoundWordsState>,
     size: Res<Size>,
 ) {
+    if !menu_state.is_closed(){
+        return;
+    }
+
     if mouse_input.just_released(MouseButton::Left) {
         if let Some(tile) = try_get_cursor_tile(q_windows, &size, None) {
             input_state.handle_input_end(&mut chosen_state, tile);
@@ -182,6 +187,7 @@ fn try_get_cursor_tile(
 }
 
 fn handle_touch_input(
+    menu_state: Res<MenuState>,
     mut touch_events: EventReader<TouchInput>,
 
     q_camera: Query<(&Camera, &GlobalTransform)>,
@@ -191,6 +197,10 @@ fn handle_touch_input(
     found_words: Res<FoundWordsState>,
     size: Res<Size>,
 ) {
+    if !menu_state.is_closed(){
+        return;
+    }
+
     for ev in touch_events.into_iter() {
         match ev.phase {
             bevy::input::touch::TouchPhase::Started => {
@@ -257,51 +267,51 @@ fn convert_screen_to_world_position(
     camera.viewport_to_world_2d(camera_transform, screen_pos)
 }
 
-fn button_system(
-    mut interaction_query: Query<(&Interaction, &ButtonMarker), Changed<Interaction>>,
-    mut current_level: ResMut<CurrentLevel>,
-    mut found_words: ResMut<FoundWordsState>,
-    mut chosen_state: ResMut<ChosenState>,
-) {
-    for (interaction, button_marker) in &mut interaction_query {
-        if *interaction == Interaction::Pressed {
-            match button_marker {
-                ButtonMarker::Reset => {
-                    current_level.set_changed();
-                    *found_words = FoundWordsState::default();
-                    *chosen_state = ChosenState::default();
-                }
-                ButtonMarker::NextLevel => {
-                    *current_level = match current_level.as_ref() {
-                        CurrentLevel::Fixed { level_index } => CurrentLevel::Fixed {
-                            level_index: level_index + 1,
-                        },
-                        CurrentLevel::Custom(_) => CurrentLevel::Fixed { level_index: 0 },
-                    };
+// fn button_system(
+//     mut interaction_query: Query<(&Interaction, &ButtonMarker), Changed<Interaction>>,
+//     mut current_level: ResMut<CurrentLevel>,
+//     mut found_words: ResMut<FoundWordsState>,
+//     mut chosen_state: ResMut<ChosenState>,
+// ) {
+//     for (interaction, button_marker) in &mut interaction_query {
+//         if *interaction == Interaction::Pressed {
+//             match button_marker {
+//                 ButtonMarker::Reset => {
+//                     current_level.set_changed();
+//                     *found_words = FoundWordsState::default();
+//                     *chosen_state = ChosenState::default();
+//                 }
+//                 ButtonMarker::NextLevel => {
+//                     *current_level = match current_level.as_ref() {
+//                         CurrentLevel::Fixed { level_index } => CurrentLevel::Fixed {
+//                             level_index: level_index + 1,
+//                         },
+//                         CurrentLevel::Custom(_) => CurrentLevel::Fixed { level_index: 0 },
+//                     };
 
-                    *found_words = FoundWordsState::default();
-                    *chosen_state = ChosenState::default();
-                }
+//                     *found_words = FoundWordsState::default();
+//                     *chosen_state = ChosenState::default();
+//                 }
 
-                ButtonMarker::PreviousLevel => {
-                    *current_level = match current_level.as_ref() {
-                        CurrentLevel::Fixed { level_index } => CurrentLevel::Fixed {
-                            level_index: level_index.saturating_sub(1),
-                        },
-                        CurrentLevel::Custom(_) => CurrentLevel::Fixed { level_index: 0 },
-                    };
+//                 ButtonMarker::PreviousLevel => {
+//                     *current_level = match current_level.as_ref() {
+//                         CurrentLevel::Fixed { level_index } => CurrentLevel::Fixed {
+//                             level_index: level_index.saturating_sub(1),
+//                         },
+//                         CurrentLevel::Custom(_) => CurrentLevel::Fixed { level_index: 0 },
+//                     };
 
-                    *found_words = FoundWordsState::default();
-                    *chosen_state = ChosenState::default();
-                }
-                ButtonMarker::Hint => {
-                    found_words.try_hint(current_level.as_ref());
-                },
+//                     *found_words = FoundWordsState::default();
+//                     *chosen_state = ChosenState::default();
+//                 }
+//                 ButtonMarker::Hint => {
+//                     found_words.try_hint(current_level.as_ref());
+//                 },
 
-            }
-        }
-    }
-}
+//             }
+//         }
+//     }
+// }
 
 #[allow(unused_variables, unused_mut)]
 fn choose_level_on_game_load(mut current_level: ResMut<CurrentLevel>) {

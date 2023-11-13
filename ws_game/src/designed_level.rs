@@ -115,6 +115,16 @@ lazy_static! {
     };
 }
 
+pub fn level_name(index: u32)-> String{
+    let index = (index as usize) % LEVELS.len();
+
+    LEVELS[index].name.clone()
+}
+
+pub fn level_count()-> u32{
+    LEVEL_LINES.len() as u32
+}
+
 impl DesignedLevel {
     fn from_tsv_line(line: &str) -> Self {
         let mut iter = line.split('\t');

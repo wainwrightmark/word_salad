@@ -6,6 +6,7 @@ pub mod input;
 pub mod startup;
 pub mod state;
 pub mod view;
+pub mod menu;
 
 fn main() {
     crate::startup::go();
@@ -17,6 +18,7 @@ pub mod prelude {
     pub use crate::designed_level::*;
     pub use crate::input::*;
     pub use crate::state::*;
+    pub use crate::menu::*;
     pub use crate::view::*;
 
     pub use std::array;

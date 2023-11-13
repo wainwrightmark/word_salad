@@ -56,13 +56,13 @@ impl IntoBundle for TextButtonStyle {
         }
     }
 }
-#[derive(Debug, Clone, PartialEq, Component)]
-pub enum ButtonMarker {
-    Reset,
-    PreviousLevel,
-    NextLevel,
-    Hint,
-}
+// #[derive(Debug, Clone, PartialEq, Component)]
+// pub enum ButtonMarker {
+//     Reset,
+//     PreviousLevel,
+//     NextLevel,
+//     Hint,
+// }
 
 impl MavericNode for UI {
     type Context = NC4<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>>;
@@ -181,15 +181,15 @@ impl MavericNode for ButtonsNode {
 
 
                 commands.add_child(
-                    "prev",
+                    "Menu",
                     ButtonNode {
                         style: TextButtonStyle::default(),
                         visibility: Visibility::Visible,
                         border_color: Color::BLACK,
                         background_color: Color::NONE,
-                        marker: ButtonMarker::PreviousLevel,
+                        marker: ButtonAction::OpenMenu,
                         children: (TextNode {
-                            text: "Prev",
+                            text: "Menu",
                             font_size: BUTTON_FONT_SIZE,
                             color: BUTTON_TEXT_COLOR,
                             font: BUTTONS_FONT_PATH,
@@ -200,45 +200,45 @@ impl MavericNode for ButtonsNode {
                     &context,
                 );
 
-                commands.add_child(
-                    "next",
-                    ButtonNode {
-                        style: TextButtonStyle::default(),
-                        visibility: Visibility::Visible,
-                        border_color: Color::BLACK,
-                        background_color: Color::NONE,
-                        marker: ButtonMarker::NextLevel,
-                        children: (TextNode {
-                            text: "Next",
-                            font_size: BUTTON_FONT_SIZE,
-                            color: BUTTON_TEXT_COLOR,
-                            font: BUTTONS_FONT_PATH,
-                            alignment: TextAlignment::Center,
-                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                        },),
-                    },
-                    &context,
-                );
+                // commands.add_child(
+                //     "next",
+                //     ButtonNode {
+                //         style: TextButtonStyle::default(),
+                //         visibility: Visibility::Visible,
+                //         border_color: Color::BLACK,
+                //         background_color: Color::NONE,
+                //         marker: ButtonMarker::NextLevel,
+                //         children: (TextNode {
+                //             text: "Next",
+                //             font_size: BUTTON_FONT_SIZE,
+                //             color: BUTTON_TEXT_COLOR,
+                //             font: BUTTONS_FONT_PATH,
+                //             alignment: TextAlignment::Center,
+                //             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                //         },),
+                //     },
+                //     &context,
+                // );
 
-                commands.add_child(
-                    "reset",
-                    ButtonNode {
-                        style: TextButtonStyle::default(),
-                        visibility: Visibility::Visible,
-                        border_color: Color::BLACK,
-                        background_color: Color::NONE,
-                        marker: ButtonMarker::Reset,
-                        children: (TextNode {
-                            text: "Reset",
-                            font_size: BUTTON_FONT_SIZE,
-                            color: BUTTON_TEXT_COLOR,
-                            font: BUTTONS_FONT_PATH,
-                            alignment: TextAlignment::Center,
-                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                        },),
-                    },
-                    &context,
-                );
+                // commands.add_child(
+                //     "reset",
+                //     ButtonNode {
+                //         style: TextButtonStyle::default(),
+                //         visibility: Visibility::Visible,
+                //         border_color: Color::BLACK,
+                //         background_color: Color::NONE,
+                //         marker: ButtonMarker::Reset,
+                //         children: (TextNode {
+                //             text: "Reset",
+                //             font_size: BUTTON_FONT_SIZE,
+                //             color: BUTTON_TEXT_COLOR,
+                //             font: BUTTONS_FONT_PATH,
+                //             alignment: TextAlignment::Center,
+                //             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                //         },),
+                //     },
+                //     &context,
+                // );
 
                 commands.add_child(
                     "hint",
@@ -247,7 +247,7 @@ impl MavericNode for ButtonsNode {
                         visibility: Visibility::Visible,
                         border_color: Color::BLACK,
                         background_color: Color::NONE,
-                        marker: ButtonMarker::Hint,
+                        marker: ButtonAction::Hint,
                         children: (TextNode {
                             text: "Hint",
                             font_size: BUTTON_FONT_SIZE,
