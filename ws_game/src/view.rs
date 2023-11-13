@@ -280,9 +280,12 @@ impl MavericNode for GridTiles {
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands
             .ignore_node()
-            .unordered_children_with_context(|context, commands| {
+            .ordered_children_with_context(|context, commands| {
                 let hint_set = context.2.hint_set();
                 for (tile, character) in context.1.level().grid.enumerate() {
+                    if character.is_blank(){
+                        continue;
+                    }
                     let selected = context.0 .0.last() == Some(&tile);
                     let hinted = hint_set.get_bit(&tile);
                     let needed = !context.2.unneeded_tiles.get_bit(&tile);
