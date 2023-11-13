@@ -37,6 +37,9 @@ impl InputState {
                     chosen_state.0.push(tile);
                 }
             }
+            else{
+                *chosen_state.as_mut() = ChosenState::default();
+            }
         } else {
             //array is empty
             if allow_tile(tile, grid, found_words) {

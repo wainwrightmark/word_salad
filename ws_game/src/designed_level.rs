@@ -132,7 +132,11 @@ impl DesignedLevel {
         let chars: &str = iter.next().expect("Level should have a grid");
         let name: &str = iter.next().expect("Level should have name");
 
-        let grid = try_make_grid(chars).expect("Should be able to make grid");
+        let grid = try_make_grid(chars)
+        .map(|x|x.with_flip(FlipAxes::Vertical))
+        .expect("Should be able to make grid")
+        ;
+
 
         let words = iter
             .map(|x| x.trim().to_string())

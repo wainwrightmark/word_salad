@@ -131,6 +131,8 @@ fn button_system(
                 current_level.set_changed();
                 *found_words = FoundWordsState::default();
                 *chosen_state = ChosenState::default();
+
+                *state = MenuState::Closed;
             }
             ButtonAction::Hint => {
                 found_words.try_hint(current_level.as_ref());

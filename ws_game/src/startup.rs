@@ -85,7 +85,8 @@ struct LastSize {
 }
 
 #[cfg(target_arch = "wasm32")]
-fn resizer( //TODO move to nice bevy utils
+fn resizer(
+    //TODO move to nice bevy utils
     mut windows: Query<(Entity, &mut Window), With<PrimaryWindow>>,
     mut window_resized_events: EventWriter<bevy::window::WindowResized>,
     mut last_size: Local<LastSize>,
@@ -135,7 +136,7 @@ fn handle_mouse_input(
     found_words: Res<FoundWordsState>,
     size: Res<Size>,
 ) {
-    if !menu_state.is_closed(){
+    if !menu_state.is_closed() {
         return;
     }
 
@@ -171,17 +172,16 @@ fn handle_mouse_input(
 fn try_get_cursor_tile(
     q_windows: Query<&Window, With<PrimaryWindow>>,
     size: &Size,
-    tolerance: Option<f32>
+    tolerance: Option<f32>,
 ) -> Option<Tile> {
     let window = q_windows.iter().next()?;
 
     let cursor_position = window.cursor_position()?;
-    let cursor_position =  size.adjust_cursor_position(cursor_position);
+    let cursor_position = size.adjust_cursor_position(cursor_position);
     let tile = match tolerance {
         Some(tolerance) => size.try_pick_tile(cursor_position, tolerance)?,
         None => size.pick_tile(cursor_position),
     };
-
 
     Tile::try_from_dynamic(tile)
 }
@@ -197,7 +197,7 @@ fn handle_touch_input(
     found_words: Res<FoundWordsState>,
     size: Res<Size>,
 ) {
-    if !menu_state.is_closed(){
+    if !menu_state.is_closed() {
         return;
     }
 
@@ -215,7 +215,8 @@ fn handle_touch_input(
                 );
             }
             bevy::input::touch::TouchPhase::Moved => {
-                let Some(tile) = try_get_tile(ev.position, &q_camera, &size, Some(MOVE_TOLERANCE)) else {
+                let Some(tile) = try_get_tile(ev.position, &q_camera, &size, Some(MOVE_TOLERANCE))
+                else {
                     continue;
                 };
                 input_state.handle_input_move(
@@ -243,10 +244,9 @@ fn try_get_tile(
     position: Vec2,
     q_camera: &Query<(&Camera, &GlobalTransform)>,
     size: &Size,
-    tolerance: Option<f32>
+    tolerance: Option<f32>,
 ) -> Option<Tile> {
     let position = convert_screen_to_world_position(position, q_camera)?;
-
 
     let tile = match tolerance {
         Some(tolerance) => size.try_pick_tile(position, tolerance)?,
@@ -267,64 +267,22 @@ fn convert_screen_to_world_position(
     camera.viewport_to_world_2d(camera_transform, screen_pos)
 }
 
-// fn button_system(
-//     mut interaction_query: Query<(&Interaction, &ButtonMarker), Changed<Interaction>>,
-//     mut current_level: ResMut<CurrentLevel>,
-//     mut found_words: ResMut<FoundWordsState>,
-//     mut chosen_state: ResMut<ChosenState>,
-// ) {
-//     for (interaction, button_marker) in &mut interaction_query {
-//         if *interaction == Interaction::Pressed {
-//             match button_marker {
-//                 ButtonMarker::Reset => {
-//                     current_level.set_changed();
-//                     *found_words = FoundWordsState::default();
-//                     *chosen_state = ChosenState::default();
-//                 }
-//                 ButtonMarker::NextLevel => {
-//                     *current_level = match current_level.as_ref() {
-//                         CurrentLevel::Fixed { level_index } => CurrentLevel::Fixed {
-//                             level_index: level_index + 1,
-//                         },
-//                         CurrentLevel::Custom(_) => CurrentLevel::Fixed { level_index: 0 },
-//                     };
-
-//                     *found_words = FoundWordsState::default();
-//                     *chosen_state = ChosenState::default();
-//                 }
-
-//                 ButtonMarker::PreviousLevel => {
-//                     *current_level = match current_level.as_ref() {
-//                         CurrentLevel::Fixed { level_index } => CurrentLevel::Fixed {
-//                             level_index: level_index.saturating_sub(1),
-//                         },
-//                         CurrentLevel::Custom(_) => CurrentLevel::Fixed { level_index: 0 },
-//                     };
-
-//                     *found_words = FoundWordsState::default();
-//                     *chosen_state = ChosenState::default();
-//                 }
-//                 ButtonMarker::Hint => {
-//                     found_words.try_hint(current_level.as_ref());
-//                 },
-
-//             }
-//         }
-//     }
-// }
-
 #[allow(unused_variables, unused_mut)]
-fn choose_level_on_game_load(mut current_level: ResMut<CurrentLevel>) {
-
+fn choose_level_on_game_load(
+    mut current_level: ResMut<CurrentLevel>,
+    mut found_words: ResMut<FoundWordsState>,
+    mut chosen_state: ResMut<ChosenState>,
+) {
     #[cfg(target_arch = "wasm32")]
     {
         match get_game_from_location() {
             Some(level) => {
                 *current_level = CurrentLevel::Custom(level);
+                *found_words = FoundWordsState::default();
+                *chosen_state = ChosenState::default();
                 return;
             }
-            None => {
-            }
+            None => {}
         }
     }
 }
