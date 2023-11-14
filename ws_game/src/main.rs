@@ -8,9 +8,11 @@ pub mod startup;
 pub mod state;
 pub mod view;
 pub mod menu;
+pub mod ui_view;
 pub mod video;
 #[cfg(target_arch = "wasm32")]
 pub mod wasm;
+pub mod game_grid_view;
 
 fn main() {
     crate::startup::go();
@@ -27,6 +29,8 @@ pub mod prelude {
     pub use crate::menu::*;
     pub use crate::view::*;
     pub use crate::video::*;
+    pub use crate::ui_view::*;
+    pub use crate::game_grid_view::*;
 
     pub use std::array;
 
