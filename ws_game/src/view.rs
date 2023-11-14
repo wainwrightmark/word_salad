@@ -1,6 +1,6 @@
 use crate::prelude::*;
 use itertools::Itertools;
-use maveric::{transition::speed::ScalarSpeed, widgets::text2d_node::Text2DNode};
+use maveric::{transition::speed::{ScalarSpeed, LinearSpeed}, widgets::text2d_node::Text2DNode};
 use std::time::Duration;
 use ws_core::Tile;
 
@@ -56,13 +56,6 @@ impl IntoBundle for TextButtonStyle {
         }
     }
 }
-// #[derive(Debug, Clone, PartialEq, Component)]
-// pub enum ButtonMarker {
-//     Reset,
-//     PreviousLevel,
-//     NextLevel,
-//     Hint,
-// }
 
 impl MavericNode for UI {
     type Context = NC4<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>>;
@@ -339,13 +332,13 @@ impl MavericNode for GridTile {
             .ignore_context()
             .map_args(|node| {
                 if node.needed {
-                    &0.0
+                    &Vec3::ONE
                 } else {
-                    &std::f32::consts::PI
+                    &Vec3::ZERO
                 }
             })
-            .animate_on_node::<TransformRotationYLens>(Some(ScalarSpeed {
-                amount_per_second: std::f32::consts::PI,
+            .animate_on_node::<TransformScaleLens>(Some(LinearSpeed {
+                units_per_second: 1.0,
             }))
             .ignore_context()
             .ignore_node()

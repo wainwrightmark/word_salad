@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_utils::async_event_writer::AsyncEventWriter;
 use maveric::transition::prelude::*;
 use maveric::{impl_maveric_root, prelude::*};
 
@@ -6,7 +7,7 @@ use std::string::ToString;
 use std::time::Duration;
 use strum::{Display, EnumIs};
 
-use crate::constants::{CurrentLevel, level_name, level_count};
+use crate::constants::{level_count, level_name, CurrentLevel, VideoResource, VideoEvent};
 use crate::state::{ChosenState, FoundWordsState};
 
 pub struct MenuPlugin;
@@ -36,13 +37,21 @@ pub enum ButtonAction {
     Hint,
     ResetLevel,
 
+    Video,
+
     None,
 }
 
 impl ButtonAction {
     pub fn main_buttons() -> &'static [Self] {
         use ButtonAction::*;
-        &[Resume, ChooseLevel, ResetLevel]
+        &[Resume,
+        ChooseLevel,
+        ResetLevel,
+        #[cfg(target_arch = "wasm32")]
+        Video
+
+        ]
     }
 
     pub fn icon(&self) -> String {
@@ -58,6 +67,7 @@ impl ButtonAction {
             None => "".to_string(),
             Hint => "H".to_string(),
             ResetLevel => "R".to_string(),
+            Video => "V".to_string(),
         }
     }
 
@@ -67,14 +77,12 @@ impl ButtonAction {
             OpenMenu => "Menu".to_string(),
             Resume => "Resume".to_string(),
             ChooseLevel => "Choose Level".to_string(),
-            GotoLevel { level } => {
-                level_name(*level)
-
-            }
+            GotoLevel { level } => level_name(*level),
             NextLevelsPage => "Next Levels".to_string(),
             PreviousLevelsPage => "Previous Levels".to_string(),
             ResetLevel => "Reset Level".to_string(),
             Hint => "Hint".to_string(),
+            Video => "Video".to_string(),
             None => "".to_string(),
         }
     }
@@ -90,6 +98,8 @@ fn button_system(
     mut current_level: ResMut<CurrentLevel>,
     mut found_words: ResMut<FoundWordsState>,
     mut chosen_state: ResMut<ChosenState>,
+    video_state: Res<VideoResource>,
+    video_events: AsyncEventWriter<VideoEvent>
 ) {
     for (interaction, action) in &mut interaction_query {
         if *interaction != Interaction::Pressed {
@@ -114,6 +124,12 @@ fn button_system(
                 };
             }
             ButtonAction::None => {}
+
+            ButtonAction::Video => {
+                video_state.toggle_video_streaming(video_events.clone());
+                *state = MenuState::Closed;
+            }
+
             ButtonAction::Resume => {
                 *state = MenuState::Closed;
             }
@@ -307,16 +323,6 @@ impl MavericNode for MainOrLevelMenu {
 
                     commands.add_child(key as u32, button, &context.1)
                 }
-
-                // commands.add_child(
-                //     "image",
-                //     ImageNode {
-                //         style: BigImageNodeStyle,
-                //         background_color: Color::WHITE,
-                //         path: r#"images\MedalsGold.png"#,
-                //     },
-                //     &context.1,
-                // )
             }
             MainOrLevelMenu::Level(page) => {
                 let start = page * LEVELS_PER_PAGE;
@@ -387,7 +393,7 @@ impl MavericNode for LevelMenuArrows {
                 )
             }
 
-            let number_of_pages =( level_count() / LEVELS_PER_PAGE) + 1;
+            let number_of_pages = (level_count() / LEVELS_PER_PAGE) + 1;
 
             if args.0 < number_of_pages {
                 commands.add_child(

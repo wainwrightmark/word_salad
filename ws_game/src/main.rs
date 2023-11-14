@@ -1,4 +1,5 @@
 pub mod animated_solutions;
+pub mod asynchronous;
 pub mod constants;
 pub mod designed_level;
 pub mod input;
@@ -7,6 +8,9 @@ pub mod startup;
 pub mod state;
 pub mod view;
 pub mod menu;
+pub mod video;
+#[cfg(target_arch = "wasm32")]
+pub mod wasm;
 
 fn main() {
     crate::startup::go();
@@ -14,12 +18,15 @@ fn main() {
 
 pub mod prelude {
 
+    pub use crate::animated_solutions::*;
+    pub use crate::asynchronous::*;
     pub use crate::constants::*;
     pub use crate::designed_level::*;
     pub use crate::input::*;
     pub use crate::state::*;
     pub use crate::menu::*;
     pub use crate::view::*;
+    pub use crate::video::*;
 
     pub use std::array;
 
