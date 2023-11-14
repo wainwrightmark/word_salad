@@ -4,4 +4,4 @@ dist = "ws_game/dist"
 
 [serve]
 port = 8080
-address = "192.168.68.124"
+#address = "192.168.68.124"
