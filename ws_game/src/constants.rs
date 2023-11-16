@@ -110,3 +110,7 @@ pub const CURRENT_STRING_FONT_PATH: &str = "fonts/MartianMono_SemiExpanded-Bold.
 pub const TITLE_FONT_PATH: &str = "fonts/FiraMono-Medium.ttf";
 pub const BUTTONS_FONT_PATH: &str = "fonts/FiraMono-Medium.ttf";
 pub const SOLUTIONS_FONT_PATH: &str = "fonts/MartianMono_SemiCondensed-Regular.ttf";
+
+
+pub const ICON_BUTTON_SIZE: f32 = 40f32; //40 pixels
+pub const TOOLBAR_SIZE: f32 = 40f32; //40 pixels
