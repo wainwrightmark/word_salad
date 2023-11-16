@@ -32,10 +32,10 @@ impl MavericNode for UI {
                     "Burger",
                     Text2DNode {
                         text: TextNode {
-                            text: "M",
+                            text: "\u{f0c9}",
                             font_size: BUTTON_FONT_SIZE,
                             color: BUTTON_TEXT_COLOR,
-                            font: BUTTONS_FONT_PATH,
+                            font: MENU_BUTTON_FONT_PATH,
                             alignment: TextAlignment::Center,
                             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         },
@@ -43,7 +43,7 @@ impl MavericNode for UI {
                         transform: Transform::from_translation(
                             size.get_rect(LayoutEntity::TopBarItem(TopBarButton::MenuBurgerButton))
                                 .centre()
-                                .extend(0.0),
+                                .extend(crate::z_indices::TOP_BAR_BUTTON),
                         ),
                     },
                     asset_server,
@@ -63,7 +63,7 @@ impl MavericNode for UI {
                         transform: Transform::from_translation(
                             size.get_rect(LayoutEntity::TopBarItem(TopBarButton::HintCounter))
                                 .centre()
-                                .extend(0.0),
+                                .extend(crate::z_indices::TOP_BAR_BUTTON),
                         ),
                     },
                     &context.3 .1,
@@ -85,14 +85,14 @@ impl MavericNode for UI {
                         transform: Transform::from_translation(
                             size.get_rect(LayoutEntity::TextAreaItem(TextItem::PuzzleTitle))
                                 .centre()
-                                .extend(0.0),
+                                .extend(crate::z_indices::TEXT_AREA_TEXT),
                         )
                     },
                     &context.3 .1,
                 );
 
                 commands.add_child(
-                    "them",
+                    "theme",
                     Text2DNode {
                         text: TextNode {
                             text: "Theme",
@@ -105,7 +105,7 @@ impl MavericNode for UI {
                         transform: Transform::from_translation(
                             size.get_rect(LayoutEntity::TextAreaItem(TextItem::PuzzleTheme))
                                 .centre()
-                                .extend(0.0),
+                                .extend(crate::z_indices::TEXT_AREA_TEXT),
                         )
                     },
                     &context.3 .1,
@@ -192,11 +192,11 @@ impl MavericNode for WordNode {
 
                 Completion::Complete => node.word.text.to_string(),
             };
-            let transform = context
+            let text_transform = context
                 .0
                 .get_rect(LayoutEntity::Word(node.tile))
                 .centre()
-                .extend(0.0);
+                .extend(crate::z_indices::WORD_TEXT);
 
             commands.add_child(
                 0,
@@ -209,7 +209,7 @@ impl MavericNode for WordNode {
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     },
-                    transform: Transform::from_translation(transform),
+                    transform: Transform::from_translation(text_transform),
                 },
                 &context.1,
             );

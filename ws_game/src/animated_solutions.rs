@@ -60,11 +60,11 @@ pub fn animate_solution(
         },
         Text2dBundle {
             text,
-            transform: Transform::from_translation(start_position.extend(0.0)),
+            transform: Transform::from_translation(start_position.extend(crate::z_indices::ANIMATED_SOLUTION)),
             ..Default::default()
         },
         Transition::<TransformTranslationLens>::new(TransitionStep::new_arc(
-            destination.extend(100.0),
+            destination.extend(crate::z_indices::ANIMATED_SOLUTION),
             Some(speed),
             NextStep::None,
         )),

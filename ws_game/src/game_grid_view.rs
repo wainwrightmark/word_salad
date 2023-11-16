@@ -79,7 +79,7 @@ impl MavericNode for GridTile {
                 |node, context| {
                     let rect = context.get_rect(LayoutEntity::GridTile(node.tile));
 
-                    rect.centre().extend(0.0)
+                    rect.centre().extend(crate::z_indices::GRID_TILE)
                 },
                 None,
             )

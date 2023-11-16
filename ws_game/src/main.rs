@@ -13,6 +13,7 @@ pub mod video;
 #[cfg(target_arch = "wasm32")]
 pub mod wasm;
 pub mod game_grid_view;
+pub mod z_indices;
 
 fn main() {
     crate::startup::go();
@@ -45,4 +46,5 @@ pub mod prelude {
     pub use ws_core::prelude::*;
 
     pub use ws_core::Tile;
+
 }

@@ -7,7 +7,7 @@ use std::string::ToString;
 use std::time::Duration;
 use strum::{Display, EnumIs};
 
-use crate::constants::{level_count, level_name, CurrentLevel, VideoResource, VideoEvent};
+use crate::constants::{level_count, level_name, CurrentLevel, VideoResource, VideoEvent, MENU_BUTTON_FONT_PATH};
 use crate::state::{ChosenState, FoundWordsState};
 
 pub struct MenuPlugin;
@@ -202,23 +202,7 @@ impl MavericRootChildren for MenuRoot {
     }
 }
 
-// fn menu_button_node() -> impl MavericNode<Context = AssetServer> {
-//     ButtonNode {
-//         style: OpenMenuButtonStyle,
-//         visibility: Visibility::Visible,
-//         border_color: BUTTON_BORDER,
-//         background_color: ICON_BUTTON_BACKGROUND,
-//         marker: ButtonAction::OpenMenu,
-//         children: (TextNode {
-//             text: ButtonAction::OpenMenu.icon(),
-//             font: FONT_PATH,
-//             font_size: ICON_FONT_SIZE,
-//             color: BUTTON_TEXT_COLOR,
-//             alignment: TextAlignment::Center,
-//             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-//         },),
-//     }
-// }
+
 
 fn icon_button_node(button_action: ButtonAction) -> impl MavericNode<Context = AssetServer> {
     ButtonNode {
@@ -229,7 +213,7 @@ fn icon_button_node(button_action: ButtonAction) -> impl MavericNode<Context = A
         marker: button_action,
         children: (TextNode {
             text: button_action.icon(),
-            font: FONT_PATH,
+            font: MENU_BUTTON_FONT_PATH,
             font_size: ICON_FONT_SIZE,
             color: BUTTON_TEXT_COLOR,
             alignment: TextAlignment::Center,
@@ -247,7 +231,7 @@ fn text_button_node(button_action: ButtonAction) -> impl MavericNode<Context = A
         marker: button_action,
         children: (TextNode {
             text: button_action.text(),
-            font: FONT_PATH,
+            font: MENU_BUTTON_FONT_PATH,
             font_size: BUTTON_FONT_SIZE,
             color: BUTTON_TEXT_COLOR,
             alignment: TextAlignment::Center,
@@ -269,7 +253,7 @@ fn text_and_image_button_node(
         children: (
             TextNode {
                 text: button_action.text(),
-                font: FONT_PATH,
+                font: MENU_BUTTON_FONT_PATH,
                 font_size: BUTTON_FONT_SIZE,
                 color: BUTTON_TEXT_COLOR,
                 alignment: TextAlignment::Center,
@@ -418,7 +402,7 @@ pub const MENU_OFFSET: f32 = 10.;
 
 pub const UI_BORDER_WIDTH: Val = Val::Px(3.0);
 
-pub const FONT_PATH: &str = "fonts/merged-font.ttf";
+
 
 pub const ICON_FONT_SIZE: f32 = 30.0;
 pub const BUTTON_FONT_SIZE: f32 = 22.0;
