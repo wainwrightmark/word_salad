@@ -4141,6 +4141,7 @@ dependencies = [
  "criterion",
  "enumset",
  "geometrid",
+ "glam",
  "insta",
  "itertools 0.12.0",
  "lazy_static",

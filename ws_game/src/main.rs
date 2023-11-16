@@ -2,7 +2,7 @@ pub mod animated_solutions;
 pub mod asynchronous;
 pub mod constants;
 pub mod designed_level;
-pub mod input;
+pub mod grid_input;
 
 pub mod startup;
 pub mod state;
@@ -24,7 +24,7 @@ pub mod prelude {
     pub use crate::asynchronous::*;
     pub use crate::constants::*;
     pub use crate::designed_level::*;
-    pub use crate::input::*;
+    pub use crate::grid_input::*;
     pub use crate::state::*;
     pub use crate::menu::*;
     pub use crate::view::*;
@@ -34,11 +34,11 @@ pub mod prelude {
 
     pub use std::array;
 
-    pub use bevy::prelude::*;
+    //pub use bevy::prelude::*;
 
     pub use geometrid::prelude::*;
 
-    pub use bevy_prototype_lyon::prelude::*;
+
     pub use geometrid::prelude::HasCenter;
     pub use maveric::prelude::*;
 

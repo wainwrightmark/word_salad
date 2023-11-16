@@ -194,6 +194,7 @@ fn track_found_words(
                     is_first_time,
                     &asset_server,
                     &size,
+                    &level
                 );
             }
 

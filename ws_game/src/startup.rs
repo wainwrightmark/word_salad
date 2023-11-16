@@ -2,11 +2,10 @@ pub use crate::prelude::*;
 use bevy::{log::LogPlugin, window::PrimaryWindow};
 use bevy_utils::window_size::WindowSizePlugin;
 
-const CLEAR_COLOR : Color ={
-    if cfg!(target_arch = "wasm32"){
+const CLEAR_COLOR: Color = {
+    if cfg!(target_arch = "wasm32") {
         Color::NONE
-    }
-    else{
+    } else {
         Color::ALICE_BLUE
     }
 };
@@ -70,10 +69,7 @@ pub fn go() {
     app.add_plugins(crate::wasm::WasmPlugin);
     app.add_plugins(VideoPlugin);
 
-
-
     app.add_systems(PostStartup, choose_level_on_game_load);
-
 
     #[cfg(feature = "steam")]
     {
@@ -84,6 +80,11 @@ pub fn go() {
         app.insert_resource(bevy_pkv::PkvStore::new("bleppo", "word_salad"));
     }
 
+    // #[cfg(debug_assertions)]
+    // {
+    //     app.add_systems(Update, draw_gizmos);
+    // }
+
     app.run();
 }
 
@@ -91,18 +92,23 @@ fn setup_system(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
 
+// fn draw_gizmos(size: Res<Size>, mut gizmos: Gizmos) {
+//     let grid_rect = size.get_rect(LayoutEntity::Grid);
 
+//     gizmos.rect_2d(grid_rect.centre(), 0.0, grid_rect.extents, Color::RED);
+// }
 
 const MOVE_TOLERANCE: f32 = 0.3;
 
 fn handle_mouse_input(
-    menu_state: Res<MenuState>,
     mouse_input: Res<Input<MouseButton>>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
+
+    mut menu_state: ResMut<MenuState>,
     mut chosen_state: ResMut<ChosenState>,
     current_level: Res<CurrentLevel>,
-    mut input_state: Local<InputState>,
-    found_words: Res<FoundWordsState>,
+    mut input_state: Local<GridInputState>,
+    mut found_words: ResMut<FoundWordsState>,
     size: Res<Size>,
 ) {
     if !menu_state.is_closed() {
@@ -110,23 +116,20 @@ fn handle_mouse_input(
     }
 
     if mouse_input.just_released(MouseButton::Left) {
-        if let Some(tile) = try_get_cursor_tile(q_windows, &size, None) {
+        if let Some(LayoutEntity::GridTile(tile)) = try_get_cursor_entity(q_windows, &size, 1.0) {
             input_state.handle_input_end(&mut chosen_state, tile);
         } else {
             input_state.handle_input_end_no_location();
         }
     } else if mouse_input.just_pressed(MouseButton::Left) {
-        let Some(tile) = try_get_cursor_tile(q_windows, &size, None) else {
-            return;
-        };
-        input_state.handle_input_start(
-            &mut chosen_state,
-            tile,
-            &current_level.level().grid,
-            &found_words,
-        )
+
+        if let Some(entity) = try_get_cursor_entity(q_windows, &size, 1.0){
+            entity_input_start(entity, &mut input_state, &mut chosen_state, &mut menu_state, &mut found_words, &current_level );
+        }
     } else if mouse_input.pressed(MouseButton::Left) {
-        let Some(tile) = try_get_cursor_tile(q_windows, &size, Some(MOVE_TOLERANCE)) else {
+        let Some(LayoutEntity::GridTile(tile)) =
+            try_get_cursor_entity(q_windows, &size, MOVE_TOLERANCE)
+        else {
             return;
         };
         input_state.handle_input_move(
@@ -138,32 +141,56 @@ fn handle_mouse_input(
     }
 }
 
-fn try_get_cursor_tile(
+fn try_get_cursor_entity(
     q_windows: Query<&Window, With<PrimaryWindow>>,
     size: &Size,
-    tolerance: Option<f32>,
-) -> Option<Tile> {
+    tolerance: f32,
+) -> Option<LayoutEntity> {
     let window = q_windows.iter().next()?;
-
     let cursor_position = window.cursor_position()?;
-    let cursor_position = size.adjust_cursor_position(cursor_position);
-    let tile = match tolerance {
-        Some(tolerance) => size.try_pick_tile(cursor_position, tolerance)?,
-        None => size.pick_tile(cursor_position),
-    };
+    size.try_pick(cursor_position, tolerance)
+}
 
-    Tile::try_from_dynamic(tile)
+fn entity_input_start(
+    entity: LayoutEntity,
+    input_state: &mut Local<GridInputState>,
+    chosen_state: &mut ResMut<ChosenState>,
+    menu_state: &mut ResMut<MenuState>,
+    found_words: &mut ResMut<FoundWordsState>,
+    current_level: &CurrentLevel,
+
+) {
+    match entity {
+        LayoutEntity::TopBarItem(item) => {
+            if item == TopBarButton::MenuBurgerButton {
+                *menu_state.as_mut() = MenuState::ShowMainMenu;
+
+            } else if item == TopBarButton::HintCounter {
+                found_words.try_hint(current_level);
+            }
+        }
+        LayoutEntity::GridTile(tile) => {
+            input_state.handle_input_start(
+                chosen_state,
+                tile,
+                &current_level.level().grid,
+                &found_words,
+            );
+        }
+        LayoutEntity::Word(..) => {}//TODO hint this word
+        _ => {}
+    }
 }
 
 fn handle_touch_input(
-    menu_state: Res<MenuState>,
     mut touch_events: EventReader<TouchInput>,
-
     q_camera: Query<(&Camera, &GlobalTransform)>,
+
+    mut menu_state: ResMut<MenuState>,
     mut chosen_state: ResMut<ChosenState>,
     current_level: Res<CurrentLevel>,
-    mut input_state: Local<InputState>,
-    found_words: Res<FoundWordsState>,
+    mut input_state: Local<GridInputState>,
+    mut found_words: ResMut<FoundWordsState>,
     size: Res<Size>,
 ) {
     if !menu_state.is_closed() {
@@ -173,18 +200,13 @@ fn handle_touch_input(
     for ev in touch_events.into_iter() {
         match ev.phase {
             bevy::input::touch::TouchPhase::Started => {
-                let Some(tile) = try_get_tile(ev.position, &q_camera, &size, None) else {
-                    continue;
+                if let Some(entity) = try_get_entity(ev.position, &q_camera, &size, 1.0) {
+                    entity_input_start(entity, &mut input_state, &mut chosen_state, &mut menu_state, &mut found_words, &current_level );
                 };
-                input_state.handle_input_start(
-                    &mut chosen_state,
-                    tile,
-                    &current_level.level().grid,
-                    &found_words,
-                );
             }
             bevy::input::touch::TouchPhase::Moved => {
-                let Some(tile) = try_get_tile(ev.position, &q_camera, &size, Some(MOVE_TOLERANCE))
+                let Some(LayoutEntity::GridTile(tile)) =
+                    try_get_entity(ev.position, &q_camera, &size, MOVE_TOLERANCE)
                 else {
                     continue;
                 };
@@ -196,7 +218,9 @@ fn handle_touch_input(
                 );
             }
             bevy::input::touch::TouchPhase::Ended => {
-                if let Some(tile) = try_get_tile(ev.position, &q_camera, &size, None) {
+                if let Some(LayoutEntity::GridTile(tile)) =
+                    try_get_entity(ev.position, &q_camera, &size, 1.0)
+                {
                     input_state.handle_input_end(&mut chosen_state, tile);
                 } else {
                     input_state.handle_input_end_no_location();
@@ -209,23 +233,20 @@ fn handle_touch_input(
     }
 }
 
-fn try_get_tile(
+fn try_get_entity(
     position: Vec2,
     q_camera: &Query<(&Camera, &GlobalTransform)>,
     size: &Size,
-    tolerance: Option<f32>,
-) -> Option<Tile> {
-    let position = convert_screen_to_world_position(position, q_camera)?;
+    tolerance: f32,
+) -> Option<LayoutEntity> {
+    let p = convert_screen_to_world_position(position, q_camera)?;
 
-    let tile = match tolerance {
-        Some(tolerance) => size.try_pick_tile(position, tolerance)?,
-        None => size.pick_tile(position),
+    let p = Vec2 {
+        x: p.x + (size.scaled_width * 0.5),
+        y: (size.scaled_height * 0.5) - p.y,
     };
 
-    let tile = Tile::try_from_dynamic(tile)?;
-
-    //info!("Got tile {tile} from window size {size:?}");
-    Some(tile)
+    size.try_pick(p, tolerance)
 }
 
 fn convert_screen_to_world_position(
@@ -255,4 +276,3 @@ fn choose_level_on_game_load(
         }
     }
 }
-

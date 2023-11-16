@@ -21,6 +21,7 @@ pub fn animate_solution(
     is_first_time: bool,
     asset_server: &AssetServer,
     size: &Size,
+    level: &CurrentLevel
 ) {
     let color = if is_first_time {
         Color::LIME_GREEN
@@ -30,11 +31,11 @@ pub fn animate_solution(
 
     const SECONDS: f32 = 2.0;
 
-    let start_position = size.tile_position(&last_tile);
-    let destination = Vec2 {
-        x: 0.0,
-        y: size.scaled_height * -1.0,
-    };
+    let Some(word_index) = level.level().words.iter().position(|x|x == word).and_then(|x| WordTile::try_from_usize(x)) else {return;};
+
+    let start_position = size.get_rect(LayoutEntity::GridTile(last_tile)).centre();
+
+    let destination = size.get_rect(LayoutEntity::Word(word_index)).centre();
 
     let speed = calculate_speed(
         &start_position,

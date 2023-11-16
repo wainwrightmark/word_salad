@@ -2,12 +2,12 @@ use crate::prelude::*;
 use ws_core::Tile;
 
 #[derive(Debug, Default)]
-pub struct InputState {
+pub struct GridInputState {
     last_tile: Option<Tile>,
     delete_on_end: bool,
 }
 
-impl InputState {
+impl GridInputState {
     pub fn handle_input_start(
         &mut self,
         chosen_state: &mut ResMut<ChosenState>,

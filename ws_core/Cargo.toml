@@ -14,6 +14,7 @@ serde = { version = "1", features = ["derive", "rc"] }
 anyhow = "1"
 base64 = "0.21"
 geometrid = { version = "0.6", features = ["glam", "serde"] }
+glam = "0.24"
 prime_bag = { git = 'https://github.com/wainwrightmark/prime-bag'}
 serde_with = "3"
 lazy_static = "1.4"

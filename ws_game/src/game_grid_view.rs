@@ -1,8 +1,11 @@
 use crate::prelude::*;
-use maveric::{transition::speed::{ScalarSpeed, LinearSpeed}, widgets::text2d_node::Text2DNode};
+pub use bevy_prototype_lyon::prelude::*;
+use maveric::{
+    transition::speed::{LinearSpeed, ScalarSpeed},
+    widgets::text2d_node::Text2DNode,
+};
 use std::time::Duration;
 use ws_core::Tile;
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct GridTile {
     pub tile: Tile,
@@ -14,7 +17,6 @@ pub struct GridTile {
 
 maveric::define_lens!(StrokeColorLens, Stroke, Color, color);
 maveric::define_lens!(FillColorLens, Fill, Color, color);
-
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct GridTiles;
@@ -36,7 +38,7 @@ impl MavericNode for GridTiles {
             .ordered_children_with_context(|context, commands| {
                 let hint_set = context.2.hint_set();
                 for (tile, character) in context.1.level().grid.enumerate() {
-                    if character.is_blank(){
+                    if character.is_blank() {
                         continue;
                     }
                     let selected = context.0 .0.last() == Some(&tile);
@@ -59,9 +61,6 @@ impl MavericNode for GridTiles {
     }
 }
 
-
-
-
 impl MavericNode for GridTile {
     type Context = NC2<Size, AssetServer>;
 
@@ -77,17 +76,15 @@ impl MavericNode for GridTile {
 
         commands
             .animate::<TransformTranslationLens>(
-                |node, context| context.tile_position(&node.tile).extend(0.0),
+                |node, context| {
+                    let rect = context.get_rect(LayoutEntity::GridTile(node.tile));
+
+                    rect.centre().extend(0.0)
+                },
                 None,
             )
             .ignore_context()
-            .map_args(|node| {
-                if node.needed {
-                    &Vec3::ONE
-                } else {
-                    &Vec3::ZERO
-                }
-            })
+            .map_args(|node| if node.needed { &Vec3::ONE } else { &Vec3::ZERO })
             .animate_on_node::<TransformScaleLens>(Some(LinearSpeed {
                 units_per_second: 1.0,
             }))
@@ -176,23 +173,17 @@ impl MavericNode for GridBackground {
             commands
                 .ignore_node()
                 .insert_with_context(|context| {
-                    let tile_size = context.tile_size(); //todo performance
+                    let tile_size = context
+                        .layout()
+                        .get_size(LayoutEntity::GridTile(Tile::default()))
+                        .x as f32; //todo performance
                     let a = tile_size * 0.5;
-                    let m_a = a * -1.0;
+                    let m_a = tile_size * -0.5;
                     let rectangle = shapes::RoundedPolygon {
                         points: vec![
-                            Vec2{
-                                x: a,
-                                y: a
-                            },
-                            Vec2 {
-                                x: a,
-                                y: m_a,
-                            },
-                            Vec2 {
-                                x: m_a,
-                                y: m_a,
-                            },
+                            Vec2 { x: a, y: a },
+                            Vec2 { x: a, y: m_a },
+                            Vec2 { x: m_a, y: m_a },
                             Vec2 { x: m_a, y: a },
                         ],
                         radius: tile_size * 0.1,
@@ -242,7 +233,7 @@ impl MavericNode for WordLine {
             let mut builder = PathBuilder::new();
 
             for (index, tile) in context.0 .0.iter().enumerate() {
-                let position = context.3 .0.tile_position(tile);
+                let position = context.3 .0.get_rect(LayoutEntity::GridTile(*tile)).centre();
                 if index == 0 {
                     builder.move_to(position);
                 } else {
