@@ -95,6 +95,42 @@ impl FoundWordsState {
         self.hints.values().map(|x| x.number).sum()
     }
 
+    pub fn try_hint_word(&mut self, current_level: &CurrentLevel, word_index: usize)-> bool{
+        let level = current_level.level();
+
+        let Some(word) = level.words.get(word_index) else {return false;};
+
+        if self.found.contains(&word.characters){
+            return false;
+        }
+
+        match self.hints.entry(word.characters.clone()){
+            bevy::utils::hashbrown::hash_map::Entry::Occupied(mut o) => {
+                if o.get().number >= word.characters.len(){
+                    return false; //already fully hinted
+                }
+                o.get_mut().number += 1;
+                return true;
+            }
+            bevy::utils::hashbrown::hash_map::Entry::Vacant(v) => {
+                match word.find_solution(&level.grid) {
+                    Some(solution) => {
+                        v.insert(Hint {
+                            solution,
+                            number: 1,
+                        });
+                    }
+                    None => {
+                        warn!("No Solution found for {w} whilst hinting", w = word.text);
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        }
+    }
+
     pub fn try_hint(&mut self, current_level: &CurrentLevel) -> bool {
         let level = current_level.level();
 

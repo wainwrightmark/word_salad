@@ -177,7 +177,9 @@ fn entity_input_start(
                 &found_words,
             );
         }
-        LayoutEntity::Word(..) => {}//TODO hint this word
+        LayoutEntity::Word(word) => {
+            found_words.try_hint_word(current_level, word.inner() as usize);
+        }
         _ => {}
     }
 }
