@@ -173,12 +173,10 @@ impl MavericNode for GridBackground {
             commands
                 .ignore_node()
                 .insert_with_context(|context| {
-                    let tile_size = context
-                        .layout()
-                        .get_size(LayoutEntity::GridTile(Tile::default()))
-                        .x as f32; //todo performance
+                    let tile_size = context.tile_size();
                     let a = tile_size * 0.5;
                     let m_a = tile_size * -0.5;
+                    //todo performance
                     let rectangle = shapes::RoundedPolygon {
                         points: vec![
                             Vec2 { x: a, y: a },

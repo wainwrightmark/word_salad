@@ -86,7 +86,7 @@ impl MavericNode for UI {
                             size.get_rect(LayoutEntity::TextAreaItem(TextItem::PuzzleTitle))
                                 .centre()
                                 .extend(crate::z_indices::TEXT_AREA_TEXT),
-                        )
+                        ),
                     },
                     &context.3 .1,
                 );
@@ -106,7 +106,7 @@ impl MavericNode for UI {
                             size.get_rect(LayoutEntity::TextAreaItem(TextItem::PuzzleTheme))
                                 .centre()
                                 .extend(crate::z_indices::TEXT_AREA_TEXT),
-                        )
+                        ),
                     },
                     &context.3 .1,
                 );
@@ -192,14 +192,13 @@ impl MavericNode for WordNode {
 
                 Completion::Complete => node.word.text.to_string(),
             };
-            let text_transform = context
-                .0
-                .get_rect(LayoutEntity::Word(node.tile))
-                .centre()
-                .extend(crate::z_indices::WORD_TEXT);
+            let rect = context.0.get_rect(LayoutEntity::Word(node.tile));
+            let centre = rect.centre();
+
+            let text_translation = centre.extend(crate::z_indices::WORD_TEXT);
 
             commands.add_child(
-                0,
+                "text",
                 Text2DNode {
                     text: TextNode {
                         text,
@@ -209,10 +208,74 @@ impl MavericNode for WordNode {
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     },
-                    transform: Transform::from_translation(text_transform),
+                    transform: Transform::from_translation(text_translation),
                 },
                 &context.1,
             );
+
+            let shape_translation = centre.extend(crate::z_indices::WORD_BACKGROUND);
+
+            let e = rect.extents * 0.5;
+
+            let rectangle = shapes::RoundedPolygon {
+                points: vec![
+                    e,
+                    Vec2{x: e.x, y: e.y * -1.0},
+                    e * -1.0,
+                    Vec2{x: e.x * -1.0, y: e.y},
+                ],
+                radius: context.0.tile_size() * 0.15,
+                closed: true,
+            };
+
+            let fill_color = match  node.completion {
+                Completion::Incomplete => Color::ALICE_BLUE,
+                Completion::Hinted(_) => Color::BLUE,
+                Completion::Complete => Color::GOLD,
+            };
+
+            commands.add_child(
+                "shape",
+                LyonShapeNode {
+                    transform: Transform::from_translation(shape_translation),
+                    fill: Fill::color(fill_color),
+                    stroke: Stroke::color(Color::DARK_GRAY),
+                    shape: rectangle
+                },
+                &(),
+            );
         })
+    }
+}
+
+#[derive(PartialEq)]
+pub struct LyonShapeNode<G: Geometry + PartialEq + Send + Sync + 'static> {
+    pub shape: G,
+    pub transform: Transform,
+    pub fill: Fill,
+    pub stroke: Stroke,
+}
+
+impl<G: Geometry + PartialEq + Send + Sync + 'static> MavericNode for LyonShapeNode<G> {
+    type Context = NoContext;
+
+    fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
+        commands.scope(|c| c.map_args(|x| &x.fill).insert_bundle().finish());
+        commands.scope(|c| c.map_args(|x| &x.stroke).insert_bundle().finish());
+        commands.scope(|c| c.map_args(|x| &x.transform).insert_bundle().finish());
+
+        commands.map_args(|x| &x.shape).insert_with_node(|node| {
+            (
+                GeometryBuilder::build_as(node),
+                bevy::sprite::Mesh2dHandle::default(),
+                Handle::<bevy_prototype_lyon::render::ShapeMaterial>::default(),
+                VisibilityBundle::default(),
+                GlobalTransform::default(),
+            )
+        });
+    }
+
+    fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
+        commands.no_children()
     }
 }

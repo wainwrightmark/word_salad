@@ -18,22 +18,23 @@ pub trait SaladWindowSize {
     fn scale(&self) -> f32;
 
     fn tile_font_size(&self) -> f32;
-    fn layout(&self) -> ws_core::layout::Layout; //TODO include Layout on the window_size object
+    fn tile_size(&self)-> f32;
 
     fn get_rect(&self, entity: LayoutEntity) -> layout::Rect;
     fn try_pick(&self, p: Vec2, tolerance: f32) -> Option<LayoutEntity>;
 }
 
-impl SaladWindowSize for Size {
-    fn layout(&self) -> ws_core::layout::Layout {
-        Layout::from_page_size(Vec2 {
-            x: self.scaled_width,
-            y: self.scaled_height,
-        })
-    }
+fn layout(size: &Size) -> ws_core::layout::Layout {
+    //TODO include Layout on the window_size object
+    Layout::from_page_size(Vec2 {
+        x: size.scaled_width,
+        y: size.scaled_height,
+    })
+}
 
+impl SaladWindowSize for Size {
     fn get_rect(&self, entity: LayoutEntity) -> layout::Rect {
-        let mut rect = self.layout().get_rect(entity);
+        let mut rect = layout(self).get_rect(entity);
 
         rect.top_left = Vec2 {
             x: (self.scaled_width * -0.5) + rect.top_left.x,
@@ -46,7 +47,7 @@ impl SaladWindowSize for Size {
     }
 
     fn try_pick(&self, p: Vec2, tolerance: f32) -> Option<LayoutEntity> {
-        let entity = self.layout().try_pick_entity(p, tolerance);
+        let entity = layout(self).try_pick_entity(p, tolerance);
         entity
     }
 
@@ -56,6 +57,10 @@ impl SaladWindowSize for Size {
 
     fn tile_font_size(&self) -> f32 {
         (self.scale() * 0.1875).ceil() * 4.0
+    }
+
+    fn tile_size(&self)-> f32 {
+        layout(self).get_size(LayoutEntity::GridTile(Default::default())).x
     }
 }
 
