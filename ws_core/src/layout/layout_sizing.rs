@@ -33,7 +33,7 @@ impl LayoutSizing {
         }
     }
 
-    pub fn try_pick_entity<T: LayoutStructure>(&self, position: Vec2, tolerance: f32) -> Option<T> {
+    pub fn try_pick_entity<T: LayoutStructure>(&self, position: Vec2, tolerance: f32, context: &T::Context) -> Option<T> {
         let x = position.x - self.left_pad;
         let y = position.y;
 
@@ -42,13 +42,13 @@ impl LayoutSizing {
 
         let location = Vec2 { x, y };
 
-        let entity = T::pick(&location)?;
+        let entity = T::pick(&location, context)?;
 
         if tolerance >= 1.0 {
             return Some(entity);
         }
 
-        let rect: Rect = entity.rect().into();
+        let rect: Rect = entity.rect(context).into();
 
         let dist = rect.centre().distance(location);
         let size_squared = rect.extents.length();
@@ -59,13 +59,13 @@ impl LayoutSizing {
         return None;
     }
 
-    pub fn get_size<T: LayoutStructure>(&self, entity: T) -> Vec2 {
-        let v2: Vec2 = entity.size();
+    pub fn get_size<T: LayoutStructure>(&self, entity: T, context: &T::Context) -> Vec2 {
+        let v2: Vec2 = entity.size(context);
         v2 * self.size_ratio
     }
 
-    pub fn get_location<T: LayoutStructure>(&self, entity: T) -> glam::Vec2 {
-        let Vec2 { x, y } = entity.location();
+    pub fn get_location<T: LayoutStructure>(&self, entity: T, context: &T::Context) -> glam::Vec2 {
+        let Vec2 { x, y } = entity.location(context);
 
         Vec2 {
             x: self.left_pad + (self.size_ratio * x as f32),
@@ -73,10 +73,10 @@ impl LayoutSizing {
         }
     }
 
-    pub fn get_rect<T: LayoutStructure>(&self, entity: T) -> Rect {
+    pub fn get_rect<T: LayoutStructure>(&self, entity: T, context: &T::Context) -> Rect {
         Rect {
-            top_left: self.get_location(entity),
-            extents: self.get_size(entity),
+            top_left: self.get_location(entity, context),
+            extents: self.get_size(entity, context),
         }
     }
 }

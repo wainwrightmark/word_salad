@@ -101,10 +101,10 @@ impl std::fmt::Display for GameLayoutEntity{
 }
 
 impl LayoutStructure for GameLayoutEntity {
-
+    type Context = ();
     const ROOT: Self = GameLayoutEntity::Root;
     ///The size on a 320x568 canvas
-    fn size(&self) -> Vec2 {
+    fn size(&self, _context: &()) -> Vec2 {
         match self {
             GameLayoutEntity::Root => Vec2 {
                 x: IDEAL_WIDTH,
@@ -144,7 +144,7 @@ impl LayoutStructure for GameLayoutEntity {
             },
         }
     }
-    fn location(&self) -> Vec2 {
+    fn location(&self, context: &()) -> Vec2 {
         match self {
             GameLayoutEntity::Root => Vec2::ZERO,
             GameLayoutEntity::TopBar => Vec2::ZERO,
@@ -170,23 +170,23 @@ impl LayoutStructure for GameLayoutEntity {
                 x: 0.,
                 y: TOP_BAR_ICON_SIZE + TEXT_AREA_HEIGHT,
             },
-            GameLayoutEntity::GridTile(tile) => Self::Grid.location().add(tile_offset(
+            GameLayoutEntity::GridTile(tile) => Self::Grid.location(context).add(tile_offset(
                 *tile,
                 Spacing::SpaceAround,
                 Spacing::SpaceAround,
-                Self::Grid.size(),
-                Self::GridTile(*tile).size(),
+                Self::Grid.size(context),
+                Self::GridTile(*tile).size(context),
             )),
             GameLayoutEntity::WordList => Vec2 {
                 x: (IDEAL_WIDTH - WORD_LIST_WIDTH) / 2.,
                 y: TOP_BAR_ICON_SIZE + TEXT_AREA_HEIGHT + GRID_SIZE,
             },
-            GameLayoutEntity::Word(tile) => Self::WordList.location().add(tile_offset(
+            GameLayoutEntity::Word(tile) => Self::WordList.location(context).add(tile_offset(
                 *tile,
                 Spacing::SpaceAround,
                 Spacing::SpaceAround,
-                Self::WordList.size(),
-                Self::Word(*tile).size(),
+                Self::WordList.size(context),
+                Self::Word(*tile).size(context),
             )),
         }
     }
@@ -219,6 +219,10 @@ impl LayoutStructure for GameLayoutEntity {
         };
 
         arr
+    }
+
+    fn is_visible(&self, context: &Self::Context)-> bool {
+        true
     }
 }
 
@@ -303,9 +307,9 @@ mod tests {
         );
 
         for layout_entity in GameLayoutEntity::all() {
-            let layout_size = layout.get_size(layout_entity);
+            let layout_size = layout.get_size(layout_entity, &());
             let (width, height) = (layout_size.x, layout_size.y);
-            let Vec2 { x, y } = layout.get_location(layout_entity);
+            let Vec2 { x, y } = layout.get_location(layout_entity, &());
 
             let color = match layout_entity {
                 GameLayoutEntity::Root => "black",

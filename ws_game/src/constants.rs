@@ -36,7 +36,7 @@ fn layout(size: &Size) -> LayoutSizing {
 
 impl SaladWindowSize for Size {
     fn get_rect(&self, entity: GameLayoutEntity) -> layout::rect::Rect {
-        let mut rect = layout(self).get_rect(entity);
+        let mut rect = layout(self).get_rect(entity, &());
 
         rect.top_left = Vec2 {
             x: (self.scaled_width * -0.5) + rect.top_left.x,
@@ -49,7 +49,7 @@ impl SaladWindowSize for Size {
     }
 
     fn try_pick(&self, p: Vec2, tolerance: f32) -> Option<GameLayoutEntity> {
-        let entity = layout(self).try_pick_entity(p, tolerance);
+        let entity = layout(self).try_pick_entity(p, tolerance, &());
         entity
     }
 
@@ -62,7 +62,7 @@ impl SaladWindowSize for Size {
     }
 
     fn tile_size(&self)-> f32 {
-        layout(self).get_size(GameLayoutEntity::GridTile(Default::default())).x
+        layout(self).get_size(GameLayoutEntity::GridTile(Default::default()), &()).x
     }
 }
 
