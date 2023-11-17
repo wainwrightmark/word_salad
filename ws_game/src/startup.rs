@@ -17,7 +17,7 @@ pub fn go() {
         primary_window: Some(Window {
             title: "steks".to_string(),
             canvas: Some("#game".to_string()),
-            resolution: bevy::window::WindowResolution::default(),
+            resolution: bevy::window::WindowResolution::new(IDEAL_WIDTH, IDEAL_HEIGHT),
             resize_constraints: WindowResizeConstraints::default(),
             present_mode: bevy::window::PresentMode::default(),
 
@@ -117,7 +117,7 @@ fn handle_mouse_input(
     }
 
     if mouse_input.just_released(MouseButton::Left) {
-        if let Some(LayoutEntity::GridTile(tile)) = try_get_cursor_entity(q_windows, &size, 1.0) {
+        if let Some(GameLayoutEntity::GridTile(tile)) = try_get_cursor_entity(q_windows, &size, 1.0) {
             input_state.handle_input_end(&mut chosen_state, tile);
         } else {
             input_state.handle_input_end_no_location();
@@ -128,7 +128,7 @@ fn handle_mouse_input(
             entity_input_start(entity, &mut input_state, &mut chosen_state, &mut menu_state, &mut found_words, &current_level );
         }
     } else if mouse_input.pressed(MouseButton::Left) {
-        let Some(LayoutEntity::GridTile(tile)) =
+        let Some(GameLayoutEntity::GridTile(tile)) =
             try_get_cursor_entity(q_windows, &size, MOVE_TOLERANCE)
         else {
             return;
@@ -146,14 +146,14 @@ fn try_get_cursor_entity(
     q_windows: Query<&Window, With<PrimaryWindow>>,
     size: &Size,
     tolerance: f32,
-) -> Option<LayoutEntity> {
+) -> Option<GameLayoutEntity> {
     let window = q_windows.iter().next()?;
     let cursor_position = window.cursor_position()?;
     size.try_pick(cursor_position, tolerance)
 }
 
 fn entity_input_start(
-    entity: LayoutEntity,
+    entity: GameLayoutEntity,
     input_state: &mut Local<GridInputState>,
     chosen_state: &mut ResMut<ChosenState>,
     menu_state: &mut ResMut<MenuState>,
@@ -162,7 +162,7 @@ fn entity_input_start(
 
 ) {
     match entity {
-        LayoutEntity::TopBarItem(item) => {
+        GameLayoutEntity::TopBarItem(item) => {
             if item == TopBarButton::MenuBurgerButton {
                 *menu_state.as_mut() = MenuState::ShowMainMenu;
 
@@ -170,7 +170,7 @@ fn entity_input_start(
                 found_words.try_hint(current_level);
             }
         }
-        LayoutEntity::GridTile(tile) => {
+        GameLayoutEntity::GridTile(tile) => {
             input_state.handle_input_start(
                 chosen_state,
                 tile,
@@ -178,7 +178,7 @@ fn entity_input_start(
                 &found_words,
             );
         }
-        LayoutEntity::Word(word) => {
+        GameLayoutEntity::Word(word) => {
             found_words.try_hint_word(current_level, word.inner() as usize);
         }
         _ => {}
@@ -208,7 +208,7 @@ fn handle_touch_input(
                 };
             }
             bevy::input::touch::TouchPhase::Moved => {
-                let Some(LayoutEntity::GridTile(tile)) =
+                let Some(GameLayoutEntity::GridTile(tile)) =
                     try_get_entity(ev.position, &q_camera, &size, MOVE_TOLERANCE)
                 else {
                     continue;
@@ -221,7 +221,7 @@ fn handle_touch_input(
                 );
             }
             bevy::input::touch::TouchPhase::Ended => {
-                if let Some(LayoutEntity::GridTile(tile)) =
+                if let Some(GameLayoutEntity::GridTile(tile)) =
                     try_get_entity(ev.position, &q_camera, &size, 1.0)
                 {
                     input_state.handle_input_end(&mut chosen_state, tile);
@@ -241,7 +241,7 @@ fn try_get_entity(
     q_camera: &Query<(&Camera, &GlobalTransform)>,
     size: &Size,
     tolerance: f32,
-) -> Option<LayoutEntity> {
+) -> Option<GameLayoutEntity> {
     let p = convert_screen_to_world_position(position, q_camera)?;
 
     let p = Vec2 {

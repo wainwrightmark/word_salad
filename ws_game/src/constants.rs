@@ -1,5 +1,5 @@
 use bevy_utils::window_size::*;
-use ws_core::layout;
+use ws_core::{layout, layout_sizing::LayoutSizing};
 
 pub use crate::prelude::*;
 
@@ -20,20 +20,22 @@ pub trait SaladWindowSize {
     fn tile_font_size(&self) -> f32;
     fn tile_size(&self)-> f32;
 
-    fn get_rect(&self, entity: LayoutEntity) -> layout::Rect;
-    fn try_pick(&self, p: Vec2, tolerance: f32) -> Option<LayoutEntity>;
+    fn get_rect(&self, entity: GameLayoutEntity) -> layout::rect::Rect;
+    fn try_pick(&self, p: Vec2, tolerance: f32) -> Option<GameLayoutEntity>;
 }
 
-fn layout(size: &Size) -> ws_core::layout::Layout {
+fn layout(size: &Size) -> LayoutSizing {
     //TODO include Layout on the window_size object
-    Layout::from_page_size(Vec2 {
+    LayoutSizing::from_page_size(Vec2 {
         x: size.scaled_width,
         y: size.scaled_height,
-    })
+
+    }, IDEAL_RATIO,
+    IDEAL_WIDTH)
 }
 
 impl SaladWindowSize for Size {
-    fn get_rect(&self, entity: LayoutEntity) -> layout::Rect {
+    fn get_rect(&self, entity: GameLayoutEntity) -> layout::rect::Rect {
         let mut rect = layout(self).get_rect(entity);
 
         rect.top_left = Vec2 {
@@ -46,7 +48,7 @@ impl SaladWindowSize for Size {
         rect
     }
 
-    fn try_pick(&self, p: Vec2, tolerance: f32) -> Option<LayoutEntity> {
+    fn try_pick(&self, p: Vec2, tolerance: f32) -> Option<GameLayoutEntity> {
         let entity = layout(self).try_pick_entity(p, tolerance);
         entity
     }
@@ -60,7 +62,7 @@ impl SaladWindowSize for Size {
     }
 
     fn tile_size(&self)-> f32 {
-        layout(self).get_size(LayoutEntity::GridTile(Default::default())).x
+        layout(self).get_size(GameLayoutEntity::GridTile(Default::default())).x
     }
 }
 
