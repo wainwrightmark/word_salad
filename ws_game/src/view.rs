@@ -12,7 +12,11 @@ impl MavericRootChildren for ViewRoot {
         //commands.add_child("lines", GridLines, &());
         commands.add_child("cells", GridTiles, context);
         commands.add_child("ui", UI, context);
-        commands.add_child("lines", WordLine, context);
+
+        if !context.0.0.is_empty(){
+            commands.add_child("word_line", WordLine, context);
+        }
+
     }
 }
 

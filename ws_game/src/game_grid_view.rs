@@ -262,4 +262,11 @@ impl MavericNode for WordLine {
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.no_children()
     }
+
+    fn on_deleted(&self, commands: &mut ComponentCommands) -> DeletionPolicy {
+
+
+        commands.transition_value::<StrokeColorLens>(Color::rgba(0.9, 0.25, 0.95, 0.9), Color::rgba(0.9, 0.25, 0.95, 0.0), Some(ScalarSpeed { amount_per_second: 1.0 }));
+        DeletionPolicy::Linger(Duration::from_secs_f32(1.0))
+    }
 }

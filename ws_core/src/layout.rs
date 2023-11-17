@@ -111,8 +111,8 @@ const fn tile_offset<const WIDTH: u8, const HEIGHT: u8>(
     IVec2 { x, y }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum LayoutEntity {
     Root,
 
