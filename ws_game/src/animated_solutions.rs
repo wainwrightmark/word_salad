@@ -17,7 +17,7 @@ impl Plugin for AnimatedSolutionPlugin {
 pub fn animate_solution(
     commands: &mut Commands,
     last_tile: Tile,
-    word: &Word,
+    word: &Word ,
     is_first_time: bool,
     asset_server: &AssetServer,
     size: &Size,
@@ -33,9 +33,9 @@ pub fn animate_solution(
 
     let Some(word_index) = level.level().words.iter().position(|x|x == word).and_then(|x| WordTile::try_from_usize(x)) else {return;};
 
-    let start_position = size.get_rect(&LayoutTile(last_tile)).centre();
+    let start_position = size.get_rect(&LayoutGridTile(last_tile)).centre();
 
-    let destination = size.get_rect(&word_index).centre();
+    let destination = size.get_rect(&LayoutWordTile(word_index)).centre();
 
     let speed = calculate_speed(
         &start_position,

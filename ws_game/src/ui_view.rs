@@ -192,7 +192,7 @@ impl MavericNode for WordNode {
 
                 Completion::Complete => node.word.text.to_string(),
             };
-            let rect = context.0.get_rect(&node.tile);
+            let rect = context.0.get_rect(&LayoutWordTile(node.tile));
             let centre = rect.centre();
 
             let text_translation = centre.extend(crate::z_indices::WORD_TEXT);

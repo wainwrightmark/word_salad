@@ -68,7 +68,7 @@ impl SaladWindowSize for Size {
     }
 
     fn tile_size(&self)-> f32 {
-        layout(self).get_size(&LayoutTile::default(), &()).x
+        layout(self).get_size(&LayoutGridTile::default(), &()).x
     }
 }
 

@@ -1,5 +1,5 @@
-use std::ops::Add;
 use glam::Vec2;
+use std::ops::Add;
 use strum::IntoEnumIterator;
 use strum::{Display, EnumIter};
 
@@ -89,6 +89,11 @@ impl std::fmt::Display for GameLayoutEntity {
 
 impl LayoutStructure for GameLayoutEntity {
     type Context = ();
+    type Iterator = <Self as IntoEnumIterator>::Iterator;
+
+    fn iter_all() -> Self::Iterator {
+        Self::iter()
+    }
 
     fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
         for item in Self::iter() {
@@ -144,6 +149,11 @@ impl LayoutStructure for GameLayoutEntity {
 
 impl LayoutStructure for TextItem {
     type Context = ();
+    type Iterator = <Self as IntoEnumIterator>::Iterator;
+
+    fn iter_all() -> Self::Iterator {
+        Self::iter()
+    }
 
     fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
         for x in Self::iter() {
@@ -172,6 +182,11 @@ impl LayoutStructure for TextItem {
 
 impl LayoutStructure for TopBarButton {
     type Context = ();
+    type Iterator = <Self as IntoEnumIterator>::Iterator;
+
+    fn iter_all() -> Self::Iterator {
+        Self::iter()
+    }
 
     fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
         for x in Self::iter() {
@@ -197,11 +212,19 @@ impl LayoutStructure for TopBarButton {
     }
 }
 
-impl LayoutStructure for WordTile {
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub struct LayoutWordTile(pub WordTile);
+
+impl LayoutStructure for LayoutWordTile {
     type Context = ();
+    type Iterator = LayoutWordTileIter;
+
+    fn iter_all() -> Self::Iterator {
+        LayoutWordTileIter::default()
+    }
 
     fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
-        for x in WordTile::iter_by_col() {
+        for x in Self::iter_all() {
             if x.rect(context).contains(point) {
                 return Some(x);
             }
@@ -221,7 +244,7 @@ impl LayoutStructure for WordTile {
         GameLayoutEntity::WordList
             .location(context)
             .add(tile_offset(
-                *self,
+                self.0,
                 Spacing::SpaceAround,
                 Spacing::SpaceAround,
                 GameLayoutEntity::WordList.size(context),
@@ -231,23 +254,23 @@ impl LayoutStructure for WordTile {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
-pub struct LayoutTile(pub Tile);
+pub struct LayoutGridTile(pub Tile);
 
-impl LayoutStructure for LayoutTile {
+impl LayoutStructure for LayoutGridTile {
     type Context = ();
+    type Iterator = LayoutGridTileIter;
 
     fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
-
         let grid_rect = GameLayoutEntity::Grid.rect(context);
 
-        let scaled =  grid_rect.scaled_inside(point)?;
+        let scaled = grid_rect.scaled_inside(point)?;
 
         let x = (scaled.x * 4.0).floor() as u8;
         let y = (scaled.y * 4.0).floor() as u8;
 
         let tile = Self(Tile::try_new(x, y)?);
 
-        if tile.rect(context).contains(point){
+        if tile.rect(context).contains(point) {
             return Some(tile);
         }
         return None;
@@ -269,6 +292,40 @@ impl LayoutStructure for LayoutTile {
             self.size(context),
         ))
     }
+
+    fn iter_all() -> Self::Iterator {
+        LayoutGridTileIter::default()
+    }
+}
+
+#[derive(Copy, Clone, Default, PartialEq, Eq, PartialOrd, Ord, Hash)] //TODO use version in geometrid
+pub struct LayoutWordTileIter {
+    inner: u8,
+}
+
+impl Iterator for LayoutWordTileIter {
+    type Item = LayoutWordTile;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let ret = geometrid::tile::Tile::<2, 5>::try_from_inner(self.inner)?;
+        self.inner = self.inner.saturating_add(1);
+        Some(LayoutWordTile(ret))
+    }
+}
+
+#[derive(Copy, Clone, Default, PartialEq, Eq, PartialOrd, Ord, Hash)] //TODO use version in geometrid
+pub struct LayoutGridTileIter {
+    inner: u8,
+}
+
+impl Iterator for LayoutGridTileIter {
+    type Item = LayoutGridTile;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let ret = geometrid::tile::Tile::<4, 4>::try_from_inner(self.inner)?;
+        self.inner = self.inner.saturating_add(1);
+        Some(LayoutGridTile(ret))
+    }
 }
 
 #[cfg(test)]
@@ -277,26 +334,29 @@ mod tests {
 
     // TODO check that all children are contained within parents
     // TODO check that all siblings do not intersect each other
-    // TODO check that each item can be picked
 
-    // #[test]
-    // fn test_picking(){
-    //     for entity in LayoutEntity::all(){
-    //         let rect = entity.rect();
+    #[test]
+    fn test_picking_all() {
+        test_picking::<GameLayoutEntity>(&());
+        test_picking::<TopBarButton>(&());
+        test_picking::<TextItem>(&());
+        test_picking::<LayoutGridTile>(&());
+        test_picking::<LayoutWordTile>(&());
+    }
 
-    //         let top_left_expected =  LayoutEntity::pick(&rect.top_left);
+    fn test_picking<T: LayoutStructure + Copy>(context: &T::Context) {
+        for entity in T::iter_all() {
+            let rect = entity.rect(context);
 
-    //         assert_eq!(Some(entity), top_left_expected, "Top left");
+            // let top_left_expected = T::pick(rect.top_left, context);
 
-    //         // let bottom_right_expected = LayoutEntity::pick(&(rect.top_left + rect.extents));
+            // assert_eq!(Some(entity), top_left_expected, "Top left");
 
-    //         // assert_eq!(Some(entity), bottom_right_expected, "Bottom right");
+            let centre_expected = T::pick(rect.centre(), context);
 
-    //         let centre_expected = LayoutEntity::pick(&(rect.top_left + (rect.extents / 2)));
-
-    //         assert_eq!(Some(entity), centre_expected, "Centre");
-    //     }
-    // }
+            assert_eq!(Some(entity), centre_expected, "Centre");
+        }
+    }
 
     #[test]
     fn svg() {

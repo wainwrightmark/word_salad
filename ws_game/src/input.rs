@@ -51,23 +51,23 @@ impl InputType {
                     }
                     GameLayoutEntity::TextArea => {}
                     GameLayoutEntity::Grid => {
-                        let Some(tile) = size.try_pick::<LayoutTile>(*position) else {
+                        let Some(tile) = size.try_pick::<LayoutGridTile>(*position) else {
                             return;
                         };
                         let grid = &current_level.level().grid;
                         input_state.handle_input_start(chosen_state, tile.0, grid, found_words);
                     }
                     GameLayoutEntity::WordList => {
-                        let Some(word) = size.try_pick::<WordTile>(*position) else {
+                        let Some(word) = size.try_pick::<LayoutWordTile>(*position) else {
                             return;
                         };
 
-                        found_words.try_hint_word(current_level, word.inner() as usize);
+                        found_words.try_hint_word(current_level, word.0.inner() as usize);
                     }
                 }
             }
             InputType::Move(position) => {
-                let Some(tile) = size.try_pick_with_tolerance::<LayoutTile>(*position, MOVE_TOLERANCE)
+                let Some(tile) = size.try_pick_with_tolerance::<LayoutGridTile>(*position, MOVE_TOLERANCE)
                 else {
                     return;
                 };
@@ -76,7 +76,7 @@ impl InputType {
             }
             InputType::End(position) => match position {
                 Some(position) => {
-                    if let Some(tile) = size.try_pick::<LayoutTile>(*position) {
+                    if let Some(tile) = size.try_pick::<LayoutGridTile>(*position) {
                         input_state.handle_input_end(chosen_state, tile.0);
                     } else {
                         input_state.handle_input_end_no_location();
