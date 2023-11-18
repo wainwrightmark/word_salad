@@ -50,6 +50,7 @@ pub fn go() {
     app.register_maveric::<ViewRoot>();
     app.add_plugins(StatePlugin);
     app.add_plugins(AnimatedSolutionPlugin);
+    app.add_plugins(LevelTimePlugin);
 
     app.register_transition::<FillColorLens>();
     app.register_transition::<StrokeColorLens>();

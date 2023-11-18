@@ -16,6 +16,7 @@ pub mod game_grid_view;
 pub mod z_indices;
 pub mod input;
 pub mod congrats_view;
+pub mod level_time;
 
 fn main() {
     crate::startup::go();
@@ -35,6 +36,7 @@ pub mod prelude {
     pub use crate::ui_view::*;
     pub use crate::game_grid_view::*;
     pub use crate::congrats_view::*;
+    pub use crate::level_time::*;
 
     pub use std::array;
 

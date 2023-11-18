@@ -3,7 +3,7 @@ use crate::prelude::*;
 pub struct ViewRoot;
 
 impl MavericRootChildren for ViewRoot {
-    type Context = NC4<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>>;
+    type Context = NC5<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>, LevelTime>;
 
     fn set_children(
         context: &<Self::Context as NodeContext>::Wrapper<'_>,

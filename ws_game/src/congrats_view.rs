@@ -10,7 +10,7 @@ pub const TEXT_BUTTON_HEIGHT: f32 = 30.;
 pub const UI_BORDER_WIDTH: Val = Val::Px(3.0);
 
 impl MavericNode for CongratsView {
-    type Context = NC4<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>>;
+    type Context = NC5<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>, LevelTime>;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
@@ -26,26 +26,42 @@ impl MavericNode for CongratsView {
             .unordered_children_with_context(|context, commands| {
                 let size = &context.3 .0;
                 let asset_server = &context.3 .1;
+                let level_time = &context.4;
 
-                commands.add_child(
-                    "time",
-                    Text2DNode {
-                        text: TextNode {
-                            text: "06:09",
-                            font_size: BUTTON_FONT_SIZE,
-                            color: BUTTON_TEXT_COLOR,
-                            font: BUTTONS_FONT_PATH,
-                            alignment: TextAlignment::Center,
-                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                        },
-                        transform: Transform::from_translation(
-                            size.get_rect(&CongratsLayoutEntity::Time)
-                                .centre()
-                                .extend(crate::z_indices::CONGRATS_BUTTON),
-                        ),
+                match level_time.as_ref(){
+                    LevelTime::Started(_) => {},
+                    LevelTime::Finished { total_seconds } => {
+
+                        let hh = total_seconds / 3600;
+                        let mm = (total_seconds /60) % 60;
+                        let ss = total_seconds % 60;
+
+                        let time_str = format!("{hh:02}:{mm:02}:{ss:02}");
+
+                        commands.add_child(
+                            "time",
+                            Text2DNode {
+                                text: TextNode {
+                                    text: time_str,
+                                    font_size: BUTTON_FONT_SIZE,
+                                    color: BUTTON_TEXT_COLOR,
+                                    font: BUTTONS_FONT_PATH,
+                                    alignment: TextAlignment::Center,
+                                    linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                                },
+                                transform: Transform::from_translation(
+                                    size.get_rect(&CongratsLayoutEntity::Time)
+                                        .centre()
+                                        .extend(crate::z_indices::CONGRATS_BUTTON),
+                                ),
+                            },
+                            &asset_server,
+                        );
                     },
-                    &asset_server,
-                );
+                }
+
+
+
 
                 #[cfg(target_arch = "wasm32")]{
                     commands.add_child(

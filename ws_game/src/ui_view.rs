@@ -11,7 +11,7 @@ pub const TEXT_BUTTON_HEIGHT: f32 = 30.;
 pub const UI_BORDER_WIDTH: Val = Val::Px(3.0);
 
 impl MavericNode for UI {
-    type Context = NC4<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>>;
+    type Context = NC5<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>, LevelTime>;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
@@ -120,7 +120,7 @@ impl MavericNode for UI {
 pub struct WordsNode;
 
 impl MavericNode for WordsNode {
-    type Context = NC4<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>>;
+    type Context = NC5<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>, LevelTime>;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands

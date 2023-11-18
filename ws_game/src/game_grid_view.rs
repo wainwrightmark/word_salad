@@ -25,7 +25,7 @@ maveric::define_lens!(FillColorLens, Fill, Color, color);
 pub struct GridTiles;
 
 impl MavericNode for GridTiles {
-    type Context = NC4<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>>;
+    type Context = NC5<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>, LevelTime>;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
@@ -199,7 +199,7 @@ impl MavericNode for GridLetter {
 pub struct WordLine;
 
 impl MavericNode for WordLine {
-    type Context = NC4<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>>;
+    type Context = NC5<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>, LevelTime>;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands.ignore_node().insert_with_context(|context| {
