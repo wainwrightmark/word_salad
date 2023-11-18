@@ -19,6 +19,7 @@ pub fn tile_offset<const WIDTH: u8, const HEIGHT: u8>(
 pub enum Spacing {
     SpaceBetween,
     SpaceAround,
+    Centre
 }
 
 impl Spacing {
@@ -53,6 +54,10 @@ impl Spacing {
 
                     (paddings * left_or_right_padding) + (child_index as f32 * child_ideal_length)
                 }
+            }
+            Spacing::Centre => {
+                let top_padding = total_padding / 2.;
+                top_padding + (child_index as f32 * child_ideal_length)
             }
         }
     }

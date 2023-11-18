@@ -22,13 +22,15 @@ pub enum InputType {
 impl InputType {
     pub fn handle(
         &self,
-        current_level: &CurrentLevel,
+
         size: &Size,
+        current_level: &mut ResMut<CurrentLevel> ,
         menu_state: &mut ResMut<MenuState>,
         chosen_state: &mut ResMut<ChosenState>,
         input_state: &mut Local<GridInputState>,
         found_words: &mut ResMut<FoundWordsState>,
     ) {
+        let level_complete = found_words.is_level_complete(&current_level);
         match self {
             InputType::Start(position) => {
                 let Some(layout_entity) = size.try_pick::<GameLayoutEntity>(*position) else {
@@ -51,11 +53,26 @@ impl InputType {
                     }
                     GameLayoutEntity::TextArea => {}
                     GameLayoutEntity::Grid => {
-                        let Some(tile) = size.try_pick::<LayoutGridTile>(*position) else {
-                            return;
-                        };
-                        let grid = &current_level.level().grid;
-                        input_state.handle_input_start(chosen_state, tile.0, grid, found_words);
+
+                        if level_complete{
+                            let Some(entity) = size.try_pick::<CongratsLayoutEntity>(*position) else{return;};
+
+                            match entity{
+                                CongratsLayoutEntity::Time => {},
+                                CongratsLayoutEntity::ShareButton => {
+                                    //todo wasm share
+                                },
+                                CongratsLayoutEntity::NextButton => {
+                                    current_level.to_next_level(found_words.as_mut());
+                                },
+                            }
+
+                        }
+                        else{
+                            let Some(tile) = size.try_pick::<LayoutGridTile>(*position) else {return;};
+                            let grid = &current_level.level().grid;
+                            input_state.handle_input_start(chosen_state, tile.0, grid, found_words);
+                        }
                     }
                     GameLayoutEntity::WordList => {
                         let Some(word) = size.try_pick::<LayoutWordTile>(*position) else {
@@ -67,7 +84,11 @@ impl InputType {
                 }
             }
             InputType::Move(position) => {
-                let Some(tile) = size.try_pick_with_tolerance::<LayoutGridTile>(*position, MOVE_TOLERANCE)
+                if level_complete {
+                    return;
+                };
+                let Some(tile) =
+                    size.try_pick_with_tolerance::<LayoutGridTile>(*position, MOVE_TOLERANCE)
                 else {
                     return;
                 };
@@ -76,6 +97,7 @@ impl InputType {
             }
             InputType::End(position) => match position {
                 Some(position) => {
+                    if level_complete{return;};
                     if let Some(tile) = size.try_pick::<LayoutGridTile>(*position) {
                         input_state.handle_input_end(chosen_state, tile.0);
                     } else {
@@ -92,9 +114,9 @@ fn handle_mouse_input(
     mouse_input: Res<Input<MouseButton>>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
 
-    current_level: Res<CurrentLevel>,
-    size: Res<Size>,
 
+    size: Res<Size>,
+    mut current_level: ResMut<CurrentLevel>,
     mut menu_state: ResMut<MenuState>,
     mut chosen_state: ResMut<ChosenState>,
     mut input_state: Local<GridInputState>,
@@ -122,23 +144,21 @@ fn handle_mouse_input(
     };
 
     input_type.handle(
-        &current_level,
         &size,
+        &mut current_level,
         &mut menu_state,
         &mut chosen_state,
         &mut input_state,
         &mut found_words,
     );
-
 }
 
 fn handle_touch_input(
     mut touch_events: EventReader<TouchInput>,
     q_camera: Query<(&Camera, &GlobalTransform)>,
-
-    current_level: Res<CurrentLevel>,
     size: Res<Size>,
 
+    mut current_level: ResMut<CurrentLevel>,
     mut menu_state: ResMut<MenuState>,
     mut chosen_state: ResMut<ChosenState>,
     mut input_state: Local<GridInputState>,
@@ -170,8 +190,9 @@ fn handle_touch_input(
         };
 
         input_type.handle(
-            &current_level,
             &size,
+            &mut current_level,
+
             &mut menu_state,
             &mut chosen_state,
             &mut input_state,

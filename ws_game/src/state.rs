@@ -80,6 +80,10 @@ impl FoundWordsState {
         false
     }
 
+    pub fn is_level_complete(&self, current_level: &CurrentLevel)-> bool{
+        self.found.len() >= current_level.level().words.len()
+    }
+
     pub fn get_completion(&self, word: &CharsArray) -> Completion {
         if self.found.contains(word) {
             return Completion::Complete;

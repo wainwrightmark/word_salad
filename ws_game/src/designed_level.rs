@@ -34,6 +34,16 @@ impl CurrentLevel {
             CurrentLevel::Custom(level) => level,
         }
     }
+
+    pub fn to_next_level(&mut self, found_words: &mut FoundWordsState){
+        let next_index = match *self {
+            CurrentLevel::Fixed { level_index } => level_index.saturating_add(1),
+            CurrentLevel::Custom(_) => 0,
+        };
+
+        *self = CurrentLevel::Fixed { level_index: next_index };
+        *found_words = FoundWordsState::default();
+    }
 }
 
 pub fn update_lazy_level_data(level: Res<CurrentLevel>, mut data: ResMut<LazyLevelData>){

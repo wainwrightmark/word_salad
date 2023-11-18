@@ -67,6 +67,9 @@ const WORD_WIDTH: f32 = 110.;
 const WORD_LIST_WIDTH: f32 = WORD_BETWEEN_PAD + WORD_WIDTH + WORD_WIDTH;
 const WORD_BETWEEN_PAD: f32 = 20.;
 
+const CONGRATS_ENTITY_HEIGHT: f32 = 40.0;
+const CONGRATS_ENTITY_WIDTH: f32 = 80.0;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter)]
 pub enum GameLayoutEntity {
     TopBar,
@@ -184,10 +187,6 @@ impl LayoutStructure for TopBarButton {
     type Context = ();
     type Iterator = <Self as IntoEnumIterator>::Iterator;
 
-    fn iter_all() -> Self::Iterator {
-        Self::iter()
-    }
-
     fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
         for x in Self::iter() {
             if x.rect(context).contains(point) {
@@ -209,6 +208,61 @@ impl LayoutStructure for TopBarButton {
             x: Spacing::SpaceBetween.apply(IDEAL_WIDTH, TOP_BAR_ICON_SIZE, 3, self.index()),
             y: 0.,
         }
+    }
+
+    fn iter_all() -> Self::Iterator {
+        Self::iter()
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter)]
+pub enum CongratsLayoutEntity {
+    Time,
+    ShareButton,
+    NextButton,
+}
+
+impl CongratsLayoutEntity {
+    pub const fn index(&self) -> usize {
+        match self {
+            CongratsLayoutEntity::Time => 0,
+            CongratsLayoutEntity::ShareButton => 1,
+            CongratsLayoutEntity::NextButton => 2,
+        }
+    }
+}
+
+impl LayoutStructure for CongratsLayoutEntity {
+    type Context = ();
+    type Iterator = <Self as IntoEnumIterator>::Iterator;
+
+    fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
+        for x in Self::iter() {
+            if x.rect(context).contains(point) {
+                return Some(x);
+            }
+        }
+        return None;
+    }
+
+    fn size(&self, _context: &Self::Context) -> Vec2 {
+        Vec2 {
+            x: CONGRATS_ENTITY_WIDTH,
+            y: CONGRATS_ENTITY_HEIGHT,
+        }
+    }
+
+    fn location(&self, _context: &Self::Context) -> Vec2 {
+        Vec2 {
+            x: (IDEAL_WIDTH - CONGRATS_ENTITY_WIDTH) / 2.,
+            y: TOP_BAR_ICON_SIZE
+                + TEXT_AREA_HEIGHT
+                + Spacing::Centre.apply(GRID_SIZE, CONGRATS_ENTITY_HEIGHT, 3, self.index()),
+        }
+    }
+
+    fn iter_all() -> Self::Iterator {
+        Self::iter()
     }
 }
 
