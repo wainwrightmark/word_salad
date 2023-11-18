@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 ws_core = {path= "../ws_core"}
 rand = "0.8.5"
-itertools = "0.11"
+itertools = "0.12"
 bevy_prototype_lyon = { version = "0.9" }
 strum = { version = "0.25", features = ["derive"] }
 chrono = { version = "0.4", features = ["serde", "wasmbind"] }
@@ -39,12 +39,11 @@ wasm-bindgen = "0.2"
 web-sys = { version = "0.3", features = [
   'Url',
   'Window',
-  'Element',
-  'HtmlElement',
-  'HtmlCollection',
   'Location',
   'UrlSearchParams',
-  'CssStyleDeclaration',
+
+  'Navigator',
+  'ShareData'
 ] }
 console_error_panic_hook = "0.1"
 

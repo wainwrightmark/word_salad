@@ -1,6 +1,5 @@
 use crate::prelude::*;
-use itertools::Itertools;
-use maveric::{transition::speed::ScalarSpeed, widgets::text2d_node::Text2DNode};
+use maveric:: widgets::text2d_node::Text2DNode;
 #[derive(Debug, Clone, PartialEq)]
 pub struct CongratsView;
 
@@ -48,25 +47,29 @@ impl MavericNode for CongratsView {
                     &asset_server,
                 );
 
-                commands.add_child(
-                    "share",
-                    Text2DNode {
-                        text: TextNode {
-                            text: "Share",
-                            font_size: BUTTON_FONT_SIZE,
-                            color: BUTTON_TEXT_COLOR,
-                            font: BUTTONS_FONT_PATH,
-                            alignment: TextAlignment::Center,
-                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                #[cfg(target_arch = "wasm32")]{
+                    commands.add_child(
+                        "share",
+                        Text2DNode {
+                            text: TextNode {
+                                text: "Share",
+                                font_size: BUTTON_FONT_SIZE,
+                                color: BUTTON_TEXT_COLOR,
+                                font: BUTTONS_FONT_PATH,
+                                alignment: TextAlignment::Center,
+                                linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                            },
+                            transform: Transform::from_translation(
+                                size.get_rect(&CongratsLayoutEntity::ShareButton)
+                                    .centre()
+                                    .extend(crate::z_indices::CONGRATS_BUTTON),
+                            ),
                         },
-                        transform: Transform::from_translation(
-                            size.get_rect(&CongratsLayoutEntity::ShareButton)
-                                .centre()
-                                .extend(crate::z_indices::CONGRATS_BUTTON),
-                        ),
-                    },
-                    &asset_server,
-                );
+                        &asset_server,
+                    );
+                }
+
+
 
                 commands.add_child(
                     "next level",

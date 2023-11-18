@@ -61,6 +61,10 @@ impl InputType {
                                 CongratsLayoutEntity::Time => {},
                                 CongratsLayoutEntity::ShareButton => {
                                     //todo wasm share
+                                    #[cfg(target_arch = "wasm32")]
+                                    {
+                                        crate::wasm::share();
+                                    }
                                 },
                                 CongratsLayoutEntity::NextButton => {
                                     current_level.to_next_level(found_words.as_mut());
