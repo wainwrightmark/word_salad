@@ -50,7 +50,7 @@ impl MavericNode for GridTiles {
                     let size = context.3 .0.as_ref();
                     let tile_size = size.tile_size();
                     let font_size = size.tile_font_size();
-                    let centre = size.get_rect(GameLayoutEntity::GridTile(tile)).centre();
+                    let centre = size.get_rect(&LayoutTile(tile) ).centre();
 
                     commands.add_child(
                         tile.inner() as u32,
@@ -75,12 +75,6 @@ impl MavericNode for GridTile {
     type Context = AssetServer;
 
     fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
-        // let mut commands: SetComponentCommands<GridTile, Size> = commands.map_context(|x| &x.0);
-
-        // commands.insert_with_node_and_context(|node, context| {
-        //     let rect = context.get_rect(LayoutEntity::GridTile(node.tile));
-        //     let rect.centre().extend(crate::z_indices::GRID_TILE);
-        // });
 
         commands.scope(|x| {
             x.ignore_context()
@@ -215,7 +209,7 @@ impl MavericNode for WordLine {
                 let position = context
                     .3
                      .0
-                    .get_rect(GameLayoutEntity::GridTile(*tile))
+                    .get_rect(&LayoutTile(*tile))
                     .centre();
                 if index == 0 {
                     builder.move_to(position);

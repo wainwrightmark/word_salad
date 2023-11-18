@@ -33,9 +33,9 @@ pub fn animate_solution(
 
     let Some(word_index) = level.level().words.iter().position(|x|x == word).and_then(|x| WordTile::try_from_usize(x)) else {return;};
 
-    let start_position = size.get_rect(GameLayoutEntity::GridTile(last_tile)).centre();
+    let start_position = size.get_rect(&LayoutTile(last_tile)).centre();
 
-    let destination = size.get_rect(GameLayoutEntity::Word(word_index)).centre();
+    let destination = size.get_rect(&word_index).centre();
 
     let speed = calculate_speed(
         &start_position,

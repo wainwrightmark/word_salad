@@ -8,7 +8,7 @@ pub struct Rect {
 }
 
 impl Rect {
-    pub fn contains(&self, point: &Vec2) -> bool {
+    pub fn contains(&self, point: Vec2) -> bool {
         fn contains_1d(min: f32, length: f32, p: f32) -> bool {
             p > min && p < min + length
         }
@@ -22,5 +22,12 @@ impl Rect {
             x: self.top_left.x + (self.extents.x * 0.5),
             y: self.top_left.y + (self.extents.y * 0.5),
         }
+    }
+
+    /// If the point in inside this rect, return another point, scaled to 0.0..1.0
+    pub fn scaled_inside(&self, point: Vec2)-> Option<Vec2>{
+        if !self.contains(point){return None;}
+
+        Some((point - self.top_left) / self.extents)
     }
 }

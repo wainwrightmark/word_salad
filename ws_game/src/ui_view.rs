@@ -41,7 +41,7 @@ impl MavericNode for UI {
                         },
 
                         transform: Transform::from_translation(
-                            size.get_rect(GameLayoutEntity::TopBarItem(TopBarButton::MenuBurgerButton))
+                            size.get_rect(&TopBarButton::MenuBurgerButton)
                                 .centre()
                                 .extend(crate::z_indices::TOP_BAR_BUTTON),
                         ),
@@ -61,7 +61,7 @@ impl MavericNode for UI {
                             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         },
                         transform: Transform::from_translation(
-                            size.get_rect(GameLayoutEntity::TopBarItem(TopBarButton::HintCounter))
+                            size.get_rect(&TopBarButton::HintCounter)
                                 .centre()
                                 .extend(crate::z_indices::TOP_BAR_BUTTON),
                         ),
@@ -83,7 +83,7 @@ impl MavericNode for UI {
                             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         },
                         transform: Transform::from_translation(
-                            size.get_rect(GameLayoutEntity::TextAreaItem(TextItem::PuzzleTitle))
+                            size.get_rect(&TextItem::PuzzleTitle)
                                 .centre()
                                 .extend(crate::z_indices::TEXT_AREA_TEXT),
                         ),
@@ -103,7 +103,7 @@ impl MavericNode for UI {
                             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         },
                         transform: Transform::from_translation(
-                            size.get_rect(GameLayoutEntity::TextAreaItem(TextItem::PuzzleTheme))
+                            size.get_rect(&TextItem::PuzzleTheme)
                                 .centre()
                                 .extend(crate::z_indices::TEXT_AREA_TEXT),
                         ),
@@ -192,7 +192,7 @@ impl MavericNode for WordNode {
 
                 Completion::Complete => node.word.text.to_string(),
             };
-            let rect = context.0.get_rect(GameLayoutEntity::Word(node.tile));
+            let rect = context.0.get_rect(&node.tile);
             let centre = rect.centre();
 
             let text_translation = centre.extend(crate::z_indices::WORD_TEXT);

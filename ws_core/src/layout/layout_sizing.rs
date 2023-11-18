@@ -42,7 +42,7 @@ impl LayoutSizing {
 
         let location = Vec2 { x, y };
 
-        let entity = T::pick(&location, context)?;
+        let entity = T::pick(location, context)?;
 
         if tolerance >= 1.0 {
             return Some(entity);
@@ -59,12 +59,12 @@ impl LayoutSizing {
         return None;
     }
 
-    pub fn get_size<T: LayoutStructure>(&self, entity: T, context: &T::Context) -> Vec2 {
+    pub fn get_size<T: LayoutStructure>(&self, entity: &T, context: &T::Context) -> Vec2 {
         let v2: Vec2 = entity.size(context);
         v2 * self.size_ratio
     }
 
-    pub fn get_location<T: LayoutStructure>(&self, entity: T, context: &T::Context) -> glam::Vec2 {
+    pub fn get_location<T: LayoutStructure>(&self, entity: &T, context: &T::Context) -> glam::Vec2 {
         let Vec2 { x, y } = entity.location(context);
 
         Vec2 {
@@ -73,7 +73,7 @@ impl LayoutSizing {
         }
     }
 
-    pub fn get_rect<T: LayoutStructure>(&self, entity: T, context: &T::Context) -> Rect {
+    pub fn get_rect<T: LayoutStructure>(&self, entity: &T, context: &T::Context) -> Rect {
         Rect {
             top_left: self.get_location(entity, context),
             extents: self.get_size(entity, context),

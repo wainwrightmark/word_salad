@@ -1,9 +1,12 @@
 use std::ops::Add;
-
 use glam::Vec2;
+use strum::IntoEnumIterator;
 use strum::{Display, EnumIter};
 
-use self::{layout_structure::LayoutStructure, spacing::{Spacing, tile_offset}};
+use self::{
+    layout_structure::LayoutStructure,
+    spacing::{tile_offset, Spacing},
+};
 
 pub type Tile = geometrid::tile::Tile<4, 4>;
 pub type WordTile = geometrid::tile::Tile<2, 5>;
@@ -64,52 +67,42 @@ const WORD_WIDTH: f32 = 110.;
 const WORD_LIST_WIDTH: f32 = WORD_BETWEEN_PAD + WORD_WIDTH + WORD_WIDTH;
 const WORD_BETWEEN_PAD: f32 = 20.;
 
-
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter)]
 pub enum GameLayoutEntity {
-    Root,
-
     TopBar,
-    TopBarItem(TopBarButton),
     TextArea,
-    TextAreaItem(TextItem),
-
     Grid,
-    GridTile(Tile),
-
     WordList,
-    Word(WordTile),
 }
 
-impl std::fmt::Display for GameLayoutEntity{
+impl std::fmt::Display for GameLayoutEntity {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use GameLayoutEntity::*;
-            match self {
-                Root => write!(f, "Root"),
-                TopBar =>  write!(f,"TopBar"),
-                TextArea =>  write!(f,"TextArea"),
-                Grid =>  write!(f,"Grid"),
-
-                GridTile(tile) => write!(f,"GridTile_{}_{}", tile.x(), tile.y()),
-                WordList => write!(f,"WordList"),
-                Word(tile) => write!(f,"Word_{}_{}", tile.x(), tile.y()),
-                TopBarItem(item) => item.fmt(f),
-                TextAreaItem(item) => item.fmt(f),
-            }
+        match self {
+            TopBar => write!(f, "TopBar"),
+            TextArea => write!(f, "TextArea"),
+            Grid => write!(f, "Grid"),
+            WordList => write!(f, "WordList"),
+        }
     }
 }
 
 impl LayoutStructure for GameLayoutEntity {
     type Context = ();
-    const ROOT: Self = GameLayoutEntity::Root;
+
+    fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
+        for item in Self::iter() {
+            if item.rect(context).contains(point) {
+                return Some(item);
+            }
+        }
+        return None;
+    }
+
+    //const ROOT: Self = GameLayoutEntity::Root;
     ///The size on a 320x568 canvas
     fn size(&self, _context: &()) -> Vec2 {
         match self {
-            GameLayoutEntity::Root => Vec2 {
-                x: IDEAL_WIDTH,
-                y: IDEAL_HEIGHT,
-            },
             GameLayoutEntity::TopBar => Vec2 {
                 x: IDEAL_WIDTH,
                 y: TOP_BAR_ICON_SIZE,
@@ -122,145 +115,161 @@ impl LayoutStructure for GameLayoutEntity {
                 x: IDEAL_WIDTH,
                 y: IDEAL_WIDTH,
             },
-            GameLayoutEntity::TopBarItem(_) => Vec2 {
-                x: TOP_BAR_ICON_SIZE,
-                y: TOP_BAR_ICON_SIZE,
-            },
-            GameLayoutEntity::TextAreaItem(_) => Vec2 {
-                x: TEXT_ITEM_WIDTH,
-                y: TEXT_ITEM_HEIGHT,
-            },
-            GameLayoutEntity::GridTile(_) => Vec2 {
-                x: GRID_TILE_SIZE,
-                y: GRID_TILE_SIZE,
-            },
+
             GameLayoutEntity::WordList => Vec2 {
                 x: WORD_LIST_WIDTH,
                 y: WORD_LIST_HEIGHT,
             },
-            GameLayoutEntity::Word(_) => Vec2 {
-                x: WORD_WIDTH,
-                y: WORD_HEIGHT,
-            },
         }
     }
-    fn location(&self, context: &()) -> Vec2 {
+    fn location(&self, _context: &()) -> Vec2 {
         match self {
-            GameLayoutEntity::Root => Vec2::ZERO,
             GameLayoutEntity::TopBar => Vec2::ZERO,
-            GameLayoutEntity::TopBarItem(item) => Vec2 {
-                x: Spacing::SpaceBetween.apply(IDEAL_WIDTH, TOP_BAR_ICON_SIZE, 3, item.index()),
-                y: 0.,
-            },
+
             GameLayoutEntity::TextArea => Vec2 {
                 x: 0.,
                 y: TOP_BAR_ICON_SIZE,
-            },
-            GameLayoutEntity::TextAreaItem(item) => Vec2 {
-                x: (IDEAL_WIDTH - TEXT_ITEM_WIDTH) / 2.,
-                y: TOP_BAR_ICON_SIZE
-                    + Spacing::SpaceAround.apply(
-                        TEXT_AREA_HEIGHT,
-                        TEXT_ITEM_HEIGHT,
-                        2,
-                        item.index(),
-                    ),
             },
             GameLayoutEntity::Grid => Vec2 {
                 x: 0.,
                 y: TOP_BAR_ICON_SIZE + TEXT_AREA_HEIGHT,
             },
-            GameLayoutEntity::GridTile(tile) => Self::Grid.location(context).add(tile_offset(
-                *tile,
-                Spacing::SpaceAround,
-                Spacing::SpaceAround,
-                Self::Grid.size(context),
-                Self::GridTile(*tile).size(context),
-            )),
             GameLayoutEntity::WordList => Vec2 {
                 x: (IDEAL_WIDTH - WORD_LIST_WIDTH) / 2.,
                 y: TOP_BAR_ICON_SIZE + TEXT_AREA_HEIGHT + GRID_SIZE,
             },
-            GameLayoutEntity::Word(tile) => Self::WordList.location(context).add(tile_offset(
-                *tile,
-                Spacing::SpaceAround,
-                Spacing::SpaceAround,
-                Self::WordList.size(context),
-                Self::Word(*tile).size(context),
-            )),
         }
-    }
-
-
-
-    fn children(self) -> &'static [Self] {
-        use GameLayoutEntity::*;
-
-        let arr: &'static [Self] = match self {
-            Root => &[TopBar, TextArea, Grid, WordList],
-
-            TopBar => &[
-                TopBarItem(TopBarButton::MenuBurgerButton),
-                TopBarItem(TopBarButton::TimeCounter),
-                TopBarItem(TopBarButton::HintCounter),
-            ],
-            TextArea => &[
-                TextAreaItem(TextItem::PuzzleTitle),
-                TextAreaItem(TextItem::PuzzleTheme),
-            ],
-
-            Grid => &ALL_GRID_TILES,
-            WordList => &ALL_WORD_TILES,
-
-            GridTile { .. } => &[],
-            Word { .. } => &[],
-            TopBarItem(_) => &[],
-            TextAreaItem(_) => &[],
-        };
-
-        arr
-    }
-
-    fn is_visible(&self, context: &Self::Context)-> bool {
-        true
     }
 }
 
-const ALL_WORD_TILES: [GameLayoutEntity; 10] = [
-    GameLayoutEntity::Word(WordTile::new_const::<0, 0>()),
-    GameLayoutEntity::Word(WordTile::new_const::<0, 1>()),
-    GameLayoutEntity::Word(WordTile::new_const::<0, 2>()),
-    GameLayoutEntity::Word(WordTile::new_const::<0, 3>()),
-    GameLayoutEntity::Word(WordTile::new_const::<0, 4>()),
-    GameLayoutEntity::Word(WordTile::new_const::<1, 0>()),
-    GameLayoutEntity::Word(WordTile::new_const::<1, 1>()),
-    GameLayoutEntity::Word(WordTile::new_const::<1, 2>()),
-    GameLayoutEntity::Word(WordTile::new_const::<1, 3>()),
-    GameLayoutEntity::Word(WordTile::new_const::<1, 4>()),
-];
+impl LayoutStructure for TextItem {
+    type Context = ();
 
-const ALL_GRID_TILES: [GameLayoutEntity; 16] = [
-    GameLayoutEntity::GridTile(Tile::new_const::<0, 0>()),
-    GameLayoutEntity::GridTile(Tile::new_const::<0, 1>()),
-    GameLayoutEntity::GridTile(Tile::new_const::<0, 2>()),
-    GameLayoutEntity::GridTile(Tile::new_const::<0, 3>()),
-    GameLayoutEntity::GridTile(Tile::new_const::<1, 0>()),
-    GameLayoutEntity::GridTile(Tile::new_const::<1, 1>()),
-    GameLayoutEntity::GridTile(Tile::new_const::<1, 2>()),
-    GameLayoutEntity::GridTile(Tile::new_const::<1, 3>()),
-    GameLayoutEntity::GridTile(Tile::new_const::<2, 0>()),
-    GameLayoutEntity::GridTile(Tile::new_const::<2, 1>()),
-    GameLayoutEntity::GridTile(Tile::new_const::<2, 2>()),
-    GameLayoutEntity::GridTile(Tile::new_const::<2, 3>()),
-    GameLayoutEntity::GridTile(Tile::new_const::<3, 0>()),
-    GameLayoutEntity::GridTile(Tile::new_const::<3, 1>()),
-    GameLayoutEntity::GridTile(Tile::new_const::<3, 2>()),
-    GameLayoutEntity::GridTile(Tile::new_const::<3, 3>()),
-];
+    fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
+        for x in Self::iter() {
+            if x.rect(context).contains(point) {
+                return Some(x);
+            }
+        }
+        return None;
+    }
 
+    fn size(&self, _context: &Self::Context) -> Vec2 {
+        Vec2 {
+            x: TEXT_ITEM_WIDTH,
+            y: TEXT_ITEM_HEIGHT,
+        }
+    }
 
+    fn location(&self, _context: &Self::Context) -> Vec2 {
+        Vec2 {
+            x: (IDEAL_WIDTH - TEXT_ITEM_WIDTH) / 2.,
+            y: TOP_BAR_ICON_SIZE
+                + Spacing::SpaceAround.apply(TEXT_AREA_HEIGHT, TEXT_ITEM_HEIGHT, 2, self.index()),
+        }
+    }
+}
 
+impl LayoutStructure for TopBarButton {
+    type Context = ();
 
+    fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
+        for x in Self::iter() {
+            if x.rect(context).contains(point) {
+                return Some(x);
+            }
+        }
+        return None;
+    }
+
+    fn size(&self, _context: &Self::Context) -> Vec2 {
+        Vec2 {
+            x: TOP_BAR_ICON_SIZE,
+            y: TOP_BAR_ICON_SIZE,
+        }
+    }
+
+    fn location(&self, _context: &Self::Context) -> Vec2 {
+        Vec2 {
+            x: Spacing::SpaceBetween.apply(IDEAL_WIDTH, TOP_BAR_ICON_SIZE, 3, self.index()),
+            y: 0.,
+        }
+    }
+}
+
+impl LayoutStructure for WordTile {
+    type Context = ();
+
+    fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
+        for x in WordTile::iter_by_col() {
+            if x.rect(context).contains(point) {
+                return Some(x);
+            }
+        }
+        return None;
+    }
+
+    fn size(&self, _context: &Self::Context) -> Vec2 {
+        Vec2 {
+            x: WORD_WIDTH,
+            y: WORD_HEIGHT,
+        }
+    }
+
+    fn location(&self, context: &Self::Context) -> Vec2 {
+        //todo use flex
+        GameLayoutEntity::WordList
+            .location(context)
+            .add(tile_offset(
+                *self,
+                Spacing::SpaceAround,
+                Spacing::SpaceAround,
+                GameLayoutEntity::WordList.size(context),
+                self.size(context),
+            ))
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub struct LayoutTile(pub Tile);
+
+impl LayoutStructure for LayoutTile {
+    type Context = ();
+
+    fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
+
+        let grid_rect = GameLayoutEntity::Grid.rect(context);
+
+        let scaled =  grid_rect.scaled_inside(point)?;
+
+        let x = (scaled.x * 4.0).floor() as u8;
+        let y = (scaled.y * 4.0).floor() as u8;
+
+        let tile = Self(Tile::try_new(x, y)?);
+
+        if tile.rect(context).contains(point){
+            return Some(tile);
+        }
+        return None;
+    }
+
+    fn size(&self, _context: &Self::Context) -> Vec2 {
+        Vec2 {
+            x: GRID_TILE_SIZE,
+            y: GRID_TILE_SIZE,
+        }
+    }
+
+    fn location(&self, context: &Self::Context) -> Vec2 {
+        GameLayoutEntity::Grid.location(context).add(tile_offset(
+            self.0,
+            Spacing::SpaceAround,
+            Spacing::SpaceAround,
+            GameLayoutEntity::Grid.size(context),
+            self.size(context),
+        ))
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -296,7 +305,7 @@ mod tests {
             y: (IDEAL_HEIGHT) as f32,
         };
 
-        let layout = LayoutSizing::from_page_size(size, IDEAL_RATIO, IDEAL_WIDTH );
+        let layout = LayoutSizing::from_page_size(size, IDEAL_RATIO, IDEAL_WIDTH);
 
         let mut svg = format!(
             r#"
@@ -306,22 +315,19 @@ mod tests {
             size.x, size.y
         );
 
-        for layout_entity in GameLayoutEntity::all() {
-            let layout_size = layout.get_size(layout_entity, &());
+        for layout_entity in GameLayoutEntity::iter() {
+            let layout_size = layout.get_size(&layout_entity, &());
             let (width, height) = (layout_size.x, layout_size.y);
-            let Vec2 { x, y } = layout.get_location(layout_entity, &());
+            let Vec2 { x, y } = layout.get_location(&layout_entity, &());
 
             let color = match layout_entity {
-                GameLayoutEntity::Root => "black",
                 GameLayoutEntity::TopBar => "blue",
-                GameLayoutEntity::TopBarItem(_) => "beige",
 
                 GameLayoutEntity::TextArea => "coral",
-                GameLayoutEntity::TextAreaItem(_) => "deeppink",
+
                 GameLayoutEntity::Grid => "indigo",
-                GameLayoutEntity::GridTile { .. } => "lightpink",
+
                 GameLayoutEntity::WordList => "mediumblue",
-                GameLayoutEntity::Word { .. } => "mediumspringgreen",
             };
 
             let id = layout_entity.to_string();

@@ -14,6 +14,7 @@ pub mod video;
 pub mod wasm;
 pub mod game_grid_view;
 pub mod z_indices;
+pub mod input;
 
 fn main() {
     crate::startup::go();

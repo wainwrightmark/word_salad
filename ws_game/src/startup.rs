@@ -1,5 +1,6 @@
+use crate::input::InputPlugin;
 pub use crate::prelude::*;
-use bevy::{log::LogPlugin, window::PrimaryWindow};
+use bevy::log::LogPlugin;
 use bevy_utils::window_size::WindowSizePlugin;
 
 const CLEAR_COLOR: Color = {
@@ -57,8 +58,7 @@ pub fn go() {
     app.register_transition::<TransformTranslationLens>();
     app.register_transition::<TransformScaleLens>();
 
-    app.add_systems(Update, handle_mouse_input);
-    app.add_systems(Update, handle_touch_input);
+    app.add_plugins(InputPlugin);
     //app.add_systems(Update, draw_shape);
     app.add_plugins(MenuPlugin);
     app.insert_resource(LazyLevelData::new_empty());
@@ -99,166 +99,6 @@ fn setup_system(mut commands: Commands) {
 //     gizmos.rect_2d(grid_rect.centre(), 0.0, grid_rect.extents, Color::RED);
 // }
 
-const MOVE_TOLERANCE: f32 = 0.3;
-
-fn handle_mouse_input(
-    mouse_input: Res<Input<MouseButton>>,
-    q_windows: Query<&Window, With<PrimaryWindow>>,
-
-    mut menu_state: ResMut<MenuState>,
-    mut chosen_state: ResMut<ChosenState>,
-    current_level: Res<CurrentLevel>,
-    mut input_state: Local<GridInputState>,
-    mut found_words: ResMut<FoundWordsState>,
-    size: Res<Size>,
-) {
-    if !menu_state.is_closed() {
-        return;
-    }
-
-    if mouse_input.just_released(MouseButton::Left) {
-        if let Some(GameLayoutEntity::GridTile(tile)) = try_get_cursor_entity(q_windows, &size, 1.0) {
-            input_state.handle_input_end(&mut chosen_state, tile);
-        } else {
-            input_state.handle_input_end_no_location();
-        }
-    } else if mouse_input.just_pressed(MouseButton::Left) {
-
-        if let Some(entity) = try_get_cursor_entity(q_windows, &size, 1.0){
-            entity_input_start(entity, &mut input_state, &mut chosen_state, &mut menu_state, &mut found_words, &current_level );
-        }
-    } else if mouse_input.pressed(MouseButton::Left) {
-        let Some(GameLayoutEntity::GridTile(tile)) =
-            try_get_cursor_entity(q_windows, &size, MOVE_TOLERANCE)
-        else {
-            return;
-        };
-        input_state.handle_input_move(
-            &mut chosen_state,
-            tile,
-            &current_level.level().grid,
-            &found_words,
-        )
-    }
-}
-
-fn try_get_cursor_entity(
-    q_windows: Query<&Window, With<PrimaryWindow>>,
-    size: &Size,
-    tolerance: f32,
-) -> Option<GameLayoutEntity> {
-    let window = q_windows.iter().next()?;
-    let cursor_position = window.cursor_position()?;
-    size.try_pick(cursor_position, tolerance)
-}
-
-fn entity_input_start(
-    entity: GameLayoutEntity,
-    input_state: &mut Local<GridInputState>,
-    chosen_state: &mut ResMut<ChosenState>,
-    menu_state: &mut ResMut<MenuState>,
-    found_words: &mut ResMut<FoundWordsState>,
-    current_level: &CurrentLevel,
-
-) {
-    match entity {
-        GameLayoutEntity::TopBarItem(item) => {
-            if item == TopBarButton::MenuBurgerButton {
-                *menu_state.as_mut() = MenuState::ShowMainMenu;
-
-            } else if item == TopBarButton::HintCounter {
-                found_words.try_hint(current_level);
-            }
-        }
-        GameLayoutEntity::GridTile(tile) => {
-            input_state.handle_input_start(
-                chosen_state,
-                tile,
-                &current_level.level().grid,
-                &found_words,
-            );
-        }
-        GameLayoutEntity::Word(word) => {
-            found_words.try_hint_word(current_level, word.inner() as usize);
-        }
-        _ => {}
-    }
-}
-
-fn handle_touch_input(
-    mut touch_events: EventReader<TouchInput>,
-    q_camera: Query<(&Camera, &GlobalTransform)>,
-
-    mut menu_state: ResMut<MenuState>,
-    mut chosen_state: ResMut<ChosenState>,
-    current_level: Res<CurrentLevel>,
-    mut input_state: Local<GridInputState>,
-    mut found_words: ResMut<FoundWordsState>,
-    size: Res<Size>,
-) {
-    if !menu_state.is_closed() {
-        return;
-    }
-
-    for ev in touch_events.into_iter() {
-        match ev.phase {
-            bevy::input::touch::TouchPhase::Started => {
-                if let Some(entity) = try_get_entity(ev.position, &q_camera, &size, 1.0) {
-                    entity_input_start(entity, &mut input_state, &mut chosen_state, &mut menu_state, &mut found_words, &current_level );
-                };
-            }
-            bevy::input::touch::TouchPhase::Moved => {
-                let Some(GameLayoutEntity::GridTile(tile)) =
-                    try_get_entity(ev.position, &q_camera, &size, MOVE_TOLERANCE)
-                else {
-                    continue;
-                };
-                input_state.handle_input_move(
-                    &mut chosen_state,
-                    tile,
-                    &current_level.level().grid,
-                    &found_words,
-                );
-            }
-            bevy::input::touch::TouchPhase::Ended => {
-                if let Some(GameLayoutEntity::GridTile(tile)) =
-                    try_get_entity(ev.position, &q_camera, &size, 1.0)
-                {
-                    input_state.handle_input_end(&mut chosen_state, tile);
-                } else {
-                    input_state.handle_input_end_no_location();
-                }
-            }
-            bevy::input::touch::TouchPhase::Canceled => {
-                input_state.handle_input_end_no_location();
-            }
-        }
-    }
-}
-
-fn try_get_entity(
-    position: Vec2,
-    q_camera: &Query<(&Camera, &GlobalTransform)>,
-    size: &Size,
-    tolerance: f32,
-) -> Option<GameLayoutEntity> {
-    let p = convert_screen_to_world_position(position, q_camera)?;
-
-    let p = Vec2 {
-        x: p.x + (size.scaled_width * 0.5),
-        y: (size.scaled_height * 0.5) - p.y,
-    };
-
-    size.try_pick(p, tolerance)
-}
-
-fn convert_screen_to_world_position(
-    screen_pos: Vec2,
-    q_camera: &Query<(&Camera, &GlobalTransform)>,
-) -> Option<Vec2> {
-    let (camera, camera_transform) = q_camera.single();
-    camera.viewport_to_world_2d(camera_transform, screen_pos)
-}
 
 #[allow(unused_variables, unused_mut)]
 fn choose_level_on_game_load(
