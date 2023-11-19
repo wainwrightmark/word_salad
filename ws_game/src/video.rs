@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_utils::{async_event_writer::AsyncEventWriter, CanRegisterAsyncEvent};
+use nice_bevy_utils::{async_event_writer::AsyncEventWriter, CanRegisterAsyncEvent};
 
 //use crate::{asynchronous, wasm::JsException};
 
@@ -31,7 +31,7 @@ pub struct VideoResource {
 #[allow(unused_variables)]
 #[allow(dead_code)]
 fn handle_video_event(mut res: ResMut<VideoResource>, mut events: EventReader<VideoEvent>) {
-    for ev in events.into_iter() {
+    for ev in events.read() {
         match ev {
             VideoEvent::VideoStarted => res.is_streaming = true,
             VideoEvent::VideoStopped => res.is_streaming = false,

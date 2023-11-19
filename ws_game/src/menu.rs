@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_utils::async_event_writer::AsyncEventWriter;
+use nice_bevy_utils::async_event_writer::AsyncEventWriter;
 use maveric::transition::prelude::*;
 use maveric::{impl_maveric_root, prelude::*};
 

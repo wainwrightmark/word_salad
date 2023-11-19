@@ -1,4 +1,4 @@
-use bevy_utils::window_size::*;
+use nice_bevy_utils::window_size::*;
 use ws_core::{layout, layout_sizing::LayoutSizing, layout_structure::LayoutStructure};
 
 pub use crate::prelude::*;

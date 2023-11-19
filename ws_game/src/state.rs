@@ -1,6 +1,6 @@
 use crate::prelude::*;
 use bevy::utils::{HashMap, HashSet};
-use bevy_utils::{CanInitTrackedResource, TrackableResource};
+use nice_bevy_utils::{CanInitTrackedResource, TrackableResource};
 use serde::{Deserialize, Serialize};
 
 pub struct StatePlugin;

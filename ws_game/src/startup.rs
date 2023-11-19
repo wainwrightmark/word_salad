@@ -1,7 +1,7 @@
 use crate::input::InputPlugin;
 pub use crate::prelude::*;
 use bevy::log::LogPlugin;
-use bevy_utils::window_size::WindowSizePlugin;
+use nice_bevy_utils::window_size::WindowSizePlugin;
 
 const CLEAR_COLOR: Color = {
     if cfg!(target_arch = "wasm32") {
@@ -41,7 +41,9 @@ pub fn go() {
                 .set(log_plugin)
                 .build()
                 .add_before::<bevy::asset::AssetPlugin, _>(
-                    bevy_embedded_assets::EmbeddedAssetPlugin,
+                    bevy_embedded_assets::EmbeddedAssetPlugin {
+                        mode: bevy_embedded_assets::PluginMode::ReplaceDefault,
+                    },
                 ),
         )
         .add_plugins(ShapePlugin)
@@ -99,7 +101,6 @@ fn setup_system(mut commands: Commands) {
 
 //     gizmos.rect_2d(grid_rect.centre(), 0.0, grid_rect.extents, Color::RED);
 // }
-
 
 #[allow(unused_variables, unused_mut)]
 fn choose_level_on_game_load(

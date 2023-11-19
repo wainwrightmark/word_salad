@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_utils::{TrackableResource, CanInitTrackedResource};
+use nice_bevy_utils::{TrackableResource, CanInitTrackedResource};
 use chrono::{DateTime, Utc};
 use strum::EnumIs;
 use crate::prelude::*;
@@ -38,7 +38,7 @@ fn manage_timer(mut timer: ResMut<LevelTime>, current_level: Res<CurrentLevel>, 
     if current_level.is_changed(){
         *timer.as_mut() = LevelTime::default();
 
-        info!("{timer:?}");
+        //debug!("{timer:?}");
     }
 
     match timer.as_ref(){
@@ -46,13 +46,13 @@ fn manage_timer(mut timer: ResMut<LevelTime>, current_level: Res<CurrentLevel>, 
             if  found_words.is_changed() && found_words.is_level_complete(&current_level){
                 let now =  chrono::Utc::now();
 
-                info!("{now:?}");
+                //info!("{now:?}");
                 let diff = now.signed_duration_since(started);
                 let total_seconds = diff.num_seconds().max(0) as u64;
 
                 *timer.as_mut() = LevelTime::Finished { total_seconds };
 
-                info!("{timer:?}");
+                //info!("{timer:?}");
 
             }
         },

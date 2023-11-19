@@ -170,7 +170,7 @@ impl MavericNode for GridLetter {
         commands
             .ignore_context()
             .ignore_node()
-            .insert((TransformBundle::default(), VisibilityBundle::default()))
+            .insert(SpatialBundle::default())
             .finish()
     }
 
@@ -223,7 +223,7 @@ impl MavericNode for WordLine {
             (
                 ShapeBundle {
                     path: builder.build(),
-                    transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.5)),
+                    spatial: SpatialBundle::from_transform(Transform::from_translation(Vec3::new(0.0, 0.0, 0.5))),
                     ..Default::default()
                 },
                 Stroke {

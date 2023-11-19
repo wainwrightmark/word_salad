@@ -16,7 +16,7 @@ impl MavericNode for CongratsView {
         commands
             .ignore_context()
             .ignore_node()
-            .insert((TransformBundle::default(), VisibilityBundle::default()))
+            .insert(SpatialBundle::default() )
             .finish()
     }
 

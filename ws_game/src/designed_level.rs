@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use bevy::utils::{HashMap, HashSet};
-use bevy_utils::TrackableResource;
+use nice_bevy_utils::TrackableResource;
 use itertools::Itertools;
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};

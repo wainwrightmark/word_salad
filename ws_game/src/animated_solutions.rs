@@ -43,7 +43,7 @@ pub fn animate_solution(
         std::time::Duration::from_secs_f32(SECONDS),
     );
 
-    let font = get_or_load_asset(SOLUTIONS_FONT_PATH, asset_server);
+    let font = asset_server.load(SOLUTIONS_FONT_PATH);
 
     let text = Text::from_section(
         word.text.clone(),
@@ -73,16 +73,7 @@ pub fn animate_solution(
     commands.spawn(components);
 }
 
-pub(crate) fn get_or_load_asset<T: bevy::asset::Asset>(
-    path: &str,
-    server: &AssetServer,
-) -> Handle<T> {
-    let asset: Handle<T> = match server.get_load_state(path) {
-        bevy::asset::LoadState::Loaded => server.get_handle(path),
-        _ => server.load(path),
-    };
-    asset
-}
+
 
 #[derive(Debug, Component)]
 pub(crate) struct ScheduledForDeletion {

@@ -172,7 +172,7 @@ fn handle_touch_input(
         return;
     }
 
-    for ev in touch_events.into_iter() {
+    for ev in touch_events.read() {
         let input_type = match ev.phase {
             bevy::input::touch::TouchPhase::Started => {
                 let Some(position) = get_touch_position(ev.position, &q_camera, &size) else {

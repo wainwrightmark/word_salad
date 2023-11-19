@@ -11,13 +11,14 @@ pub const TEXT_BUTTON_HEIGHT: f32 = 30.;
 pub const UI_BORDER_WIDTH: Val = Val::Px(3.0);
 
 impl MavericNode for UI {
-    type Context = NC5<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>, LevelTime>;
+    type Context =
+        NC5<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>, LevelTime>;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
             .ignore_context()
             .ignore_node()
-            .insert((TransformBundle::default(), VisibilityBundle::default()))
+            .insert(SpatialBundle::default())
             .finish()
     }
 
@@ -120,13 +121,14 @@ impl MavericNode for UI {
 pub struct WordsNode;
 
 impl MavericNode for WordsNode {
-    type Context = NC5<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>, LevelTime>;
+    type Context =
+        NC5<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>, LevelTime>;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
             .ignore_context()
             .ignore_node()
-            .insert((TransformBundle::default(), VisibilityBundle::default()));
+            .insert(SpatialBundle::default());
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
@@ -167,7 +169,7 @@ impl MavericNode for WordNode {
             commands
                 .ignore_node()
                 .ignore_context()
-                .insert((TransformBundle::default(), VisibilityBundle::default()))
+                .insert(SpatialBundle::default())
                 .finish()
         });
 
@@ -220,15 +222,21 @@ impl MavericNode for WordNode {
             let rectangle = shapes::RoundedPolygon {
                 points: vec![
                     e,
-                    Vec2{x: e.x, y: e.y * -1.0},
+                    Vec2 {
+                        x: e.x,
+                        y: e.y * -1.0,
+                    },
                     e * -1.0,
-                    Vec2{x: e.x * -1.0, y: e.y},
+                    Vec2 {
+                        x: e.x * -1.0,
+                        y: e.y,
+                    },
                 ],
                 radius: context.0.tile_size() * 0.15,
                 closed: true,
             };
 
-            let fill_color = match  node.completion {
+            let fill_color = match node.completion {
                 Completion::Incomplete => Color::ALICE_BLUE,
                 Completion::Hinted(_) => Color::BLUE,
                 Completion::Complete => Color::GOLD,
@@ -240,7 +248,7 @@ impl MavericNode for WordNode {
                     transform: Transform::from_translation(shape_translation),
                     fill: Fill::color(fill_color),
                     stroke: Stroke::color(Color::DARK_GRAY),
-                    shape: rectangle
+                    shape: rectangle,
                 },
                 &(),
             );
@@ -260,19 +268,21 @@ impl<G: Geometry + PartialEq + Send + Sync + 'static> MavericNode for LyonShapeN
     type Context = NoContext;
 
     fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
+        commands.scope(|commands| {
+            commands.map_args(|x| &x.shape).insert_with_node(|node| {
+                (
+                    GeometryBuilder::build_as(node),
+                    bevy::sprite::Mesh2dHandle::default(),
+                    ShapeBundle::default().material,
+                    VisibilityBundle::default(),
+                    GlobalTransform::default(),
+                )
+            }).finish()
+        });
+
         commands.scope(|c| c.map_args(|x| &x.fill).insert_bundle().finish());
         commands.scope(|c| c.map_args(|x| &x.stroke).insert_bundle().finish());
         commands.scope(|c| c.map_args(|x| &x.transform).insert_bundle().finish());
-
-        commands.map_args(|x| &x.shape).insert_with_node(|node| {
-            (
-                GeometryBuilder::build_as(node),
-                bevy::sprite::Mesh2dHandle::default(),
-                Handle::<bevy_prototype_lyon::render::ShapeMaterial>::default(),
-                VisibilityBundle::default(),
-                GlobalTransform::default(),
-            )
-        });
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
