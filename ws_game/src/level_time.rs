@@ -45,7 +45,7 @@ fn manage_timer(
 
     match timer.as_ref() {
         LevelTime::Started(started) => {
-            if found_words.is_changed() && found_words.is_level_complete(&current_level) {
+            if found_words.is_changed() && found_words.is_level_complete() {
                 let now = chrono::Utc::now();
 
                 //info!("{now:?}");

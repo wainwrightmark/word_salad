@@ -1,7 +1,7 @@
 use crate::prelude::*;
-use bevy::utils::{HashMap, HashSet};
 use nice_bevy_utils::{CanInitTrackedResource, TrackableResource};
 use serde::{Deserialize, Serialize};
+use strum::EnumIs;
 
 pub struct StatePlugin;
 
@@ -19,23 +19,16 @@ impl Plugin for StatePlugin {
 #[derive(Debug, Clone, Resource, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct ChosenState(pub Solution);
 
-#[derive(Debug, Clone, Resource, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Resource, Serialize, Deserialize)]
 pub struct FoundWordsState {
-    pub found: HashSet<CharsArray>,
     pub unneeded_tiles: GridSet,
-    #[serde(skip)] //TODO use a different data structure for serialization
-    pub hints: HashMap<CharsArray, Hint>,
+    pub words: Vec<Completion>,
+    pub hints_used: usize,
 }
 
-#[derive(Debug, Clone, Resource, Default, Serialize, Deserialize)]
-pub struct Hint {
-    pub solution: Solution,
-    pub number: usize,
-}
-
-impl Hint {
-    pub fn is_solve(&self) -> bool {
-        self.solution.len() <= self.number
+impl Default for FoundWordsState{
+    fn default() -> Self {
+        Self::new_from_level(&CurrentLevel::default())
     }
 }
 
@@ -44,152 +37,131 @@ impl TrackableResource for FoundWordsState {
 }
 
 impl FoundWordsState {
-    pub fn hint_set(&self) -> GridSet {
-        let mut set = GridSet::default();
-        for (word, hint) in self.hints.iter() {
-            if self.found.contains(word) {
-                continue;
-            }
 
-            for tile in hint.solution.iter().take(hint.number) {
-                set.set_bit(tile, true);
+    pub fn new_from_level(current_level: &CurrentLevel)-> Self{
+        let level = current_level.level();
+        Self { unneeded_tiles: GridSet::EMPTY, words: vec![Completion::Incomplete; level.words.len()], hints_used: 0 }
+    }
+
+    /// Grid with unneeded characters blanked
+    fn adjusted_grid(&self, level: &CurrentLevel)-> Grid{
+        let mut grid = level.level().grid;
+
+        for tile in self.unneeded_tiles.iter_true_tiles(){
+            grid[tile] = Character::Blank;
+        }
+
+        grid
+    }
+
+    pub fn hint_set(&self, level: &CurrentLevel, chosen_state: &ChosenState) -> GridSet {
+        let mut set = GridSet::default();
+        let adjusted_grid = self.adjusted_grid(level);
+
+        if chosen_state.0.is_empty(){
+            //hint all known first letters
+            for (word, completion) in level.level().words.iter().zip(self.words.iter()){
+                let Completion::Hinted(..) = completion else {continue;};
+
+                if let Some(solution) = word.find_solution(&adjusted_grid){
+                    if let Some(first) = solution.first(){
+                        set.set_bit(first, true)
+                    }
+                }
+            }
+        }
+        else{
+            // hint all solutions starting with this
+            for (word, completion) in level.level().words.iter().zip(self.words.iter()){
+                let Completion::Hinted(hints) = completion else {continue;};
+
+                if hints <= &chosen_state.0.len(){continue;};
+
+                if let Some(solution) = word.find_solution(&adjusted_grid){
+                    if solution.starts_with(chosen_state.0.as_slice()){
+                        if let Some(tile)  = solution.get(chosen_state.0.len()){
+                            set.set_bit(tile, true)
+                        }
+                    }
+                }
             }
         }
         set
     }
 
-    pub fn is_next_hinted(&self, tile: &Tile, current_chosen: &Solution) -> bool {
-        for (word, hint) in self.hints.iter() {
-            if self.found.contains(word) {
-                continue;
-            }
-
-            if hint.number == current_chosen.len() + 1
-                && hint
-                    .solution
-                    .iter()
-                    .take(hint.number)
-                    .eq(current_chosen.iter().chain(std::iter::once(tile)))
-            {
-                return true;
-            }
-        }
-
-        false
+    pub fn is_level_complete(&self) -> bool {
+        self.words.iter().all(|x| x.is_complete())
     }
 
-    pub fn is_level_complete(&self, current_level: &CurrentLevel) -> bool {
-        self.found.len() >= current_level.level().words.len()
-    }
-
-    pub fn get_completion(&self, word: &CharsArray) -> Completion {
-        if self.found.contains(word) {
-            return Completion::Complete;
-        }
-
-        if let Some(hints) = self.hints.get(word) {
-            return Completion::Hinted(hints.number);
-        }
-        Completion::Incomplete
-    }
-
-    pub fn hint_count(&self) -> usize {
-        self.hints.values().map(|x| x.number).sum()
+    pub fn get_completion(&self, word_index: usize) -> Completion {
+        self.words
+            .get(word_index)
+            .unwrap_or(&Completion::Complete)
+            .clone()
     }
 
     pub fn try_hint_word(&mut self, current_level: &CurrentLevel, word_index: usize) -> bool {
         let level = current_level.level();
 
+        let Some(completion) = self.words.get_mut(word_index) else {
+            return false;
+        };
         let Some(word) = level.words.get(word_index) else {
             return false;
         };
 
-        if self.found.contains(&word.characters) {
-            return false;
-        }
-
-        match self.hints.entry(word.characters.clone()) {
-            bevy::utils::hashbrown::hash_map::Entry::Occupied(mut o) => {
-                if o.get().number >= word.characters.len() {
-                    return false; //already fully hinted
-                }
-                o.get_mut().number += 1;
-                true
+        match completion {
+            Completion::Incomplete => {
+                *completion = Completion::Hinted(1);
+                self.hints_used += 1;
             }
-            bevy::utils::hashbrown::hash_map::Entry::Vacant(v) => {
-                match word.find_solution(&level.grid) {
-                    Some(solution) => {
-                        v.insert(Hint {
-                            solution,
-                            number: 1,
-                        });
-                    }
-                    None => {
-                        warn!("No Solution found for {w} whilst hinting", w = word.text);
-                        return false;
-                    }
+            Completion::Hinted(hints) => {
+                if *hints >= word.characters.len() {
+                    return false;
                 }
-
-                true
+                *hints = *hints + 1;
+                self.hints_used += 1;
             }
+            Completion::Complete => return false,
         }
+        return true;
     }
 
     pub fn try_hint(&mut self, current_level: &CurrentLevel) -> bool {
         let level = current_level.level();
 
         let mut min_hints = usize::MAX;
+        let mut min_hint_index: Option<usize> = None;
 
-        'check: for word in level
-            .words
-            .iter()
-            .filter(|w| !self.found.contains(&w.characters))
+        'check: for (index, (word, completion)) in
+            level.words.iter().zip(self.words.iter()).enumerate()
         {
-            if let Some(h) = self.hints.get(&word.characters) {
-                if !h.is_solve() {
-                    min_hints = min_hints.min(h.number);
+            match completion {
+                Completion::Incomplete => {
+                    min_hints = 0;
+                    min_hint_index = Some(index);
+                    break 'check;
                 }
-            } else {
-                min_hints = 0;
-                break 'check;
+                Completion::Hinted(hints) => {
+                    if *hints < word.characters.len() && *hints < min_hints {
+                        min_hints = *hints;
+                        min_hint_index = Some(index)
+                    }
+                }
+                Completion::Complete => {}
             }
         }
 
-        for word in level
-            .words
-            .iter()
-            .filter(|x| !self.found.contains(&x.characters))
-        {
-            match self.hints.entry(word.characters.clone()) {
-                bevy::utils::hashbrown::hash_map::Entry::Occupied(mut o) => {
-                    if o.get().number == min_hints {
-                        o.get_mut().number = min_hints + 1;
-                        return true;
-                    }
-                }
-                bevy::utils::hashbrown::hash_map::Entry::Vacant(v) => {
-                    match word.find_solution(&level.grid) {
-                        Some(solution) => {
-                            v.insert(Hint {
-                                solution,
-                                number: 1,
-                            });
-                        }
-                        None => {
-                            warn!("No Solution found for {w} whilst hinting", w = word.text)
-                        }
-                    }
+        let Some(index) = min_hint_index else {
+            return false;
+        };
+        self.words[index] = Completion::Hinted(min_hints + 1);
 
-                    return true;
-                }
-            }
-        }
-
-        false
+        true
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Copy, Eq)]
+#[derive(Debug, PartialEq, Clone, Copy, Eq, Serialize, Deserialize, EnumIs)]
 pub enum Completion {
     Incomplete,
     Hinted(usize),
@@ -213,45 +185,55 @@ impl Completion {
 fn track_found_words(
     mut commands: Commands,
     mut chosen: ResMut<ChosenState>,
-    level: Res<CurrentLevel>,
-    level_data: Res<LazyLevelData>,
+    current_level: Res<CurrentLevel>,
     mut found_words: ResMut<FoundWordsState>,
     asset_server: Res<AssetServer>,
     size: Res<Size>,
 ) {
-    if chosen.is_changed() {
-        let grid = level.level().grid;
-        let chars: CharsArray = chosen.0.iter().map(|t| grid[*t]).collect();
-
-        if let Some(word) = level_data.words_map.get(&chars) {
-            let is_first_time = !found_words.found.contains(&chars);
-
-            if let Some(last_tile) = chosen.0.last() {
-                crate::animated_solutions::animate_solution(
-                    &mut commands,
-                    *last_tile,
-                    word,
-                    is_first_time,
-                    &asset_server,
-                    &size,
-                    &level,
-                );
-            }
-
-            if is_first_time {
-                found_words.found.insert(chars);
-
-                found_words.unneeded_tiles =
-                    level_data.calculate_unneeded_tiles(&found_words.found);
-
-                if chosen
-                    .0
-                    .iter()
-                    .any(|x| found_words.unneeded_tiles.get_bit(x))
-                {
-                    *chosen = ChosenState::default();
-                }
-            }
-        }
+    if !chosen.is_changed() {
+        return;
     }
+    let grid = current_level.level().grid;
+    let chars: CharsArray = chosen.0.iter().map(|t| grid[*t]).collect();
+
+    let level = current_level.level();
+    let Some((word_index, word)) = level
+        .words
+        .iter()
+        .enumerate()
+        .find(|(_, word)| word.characters == chars)
+    else {
+        return;
+    };
+
+    let Some(completion) = found_words.words.get(word_index) else {
+        return;
+    };
+
+    let is_first_time = !completion.is_complete();
+    if is_first_time {
+        found_words.words[word_index] = Completion::Complete;
+        *chosen = ChosenState::default();
+        found_words.unneeded_tiles =
+            level.calculate_unneeded_tiles(found_words.unneeded_tiles, |index| {
+                found_words
+                    .words
+                    .get(index)
+                    .map(|x| x.is_complete())
+                    .unwrap_or(true)
+            });
+    }
+
+    let Some(last_tile) = chosen.0.last() else {
+        return;
+    };
+    crate::animated_solutions::animate_solution(
+        &mut commands,
+        *last_tile,
+        word,
+        is_first_time,
+        &asset_server,
+        &size,
+        &current_level,
+    );
 }

@@ -60,7 +60,7 @@ impl MavericNode for UI {
                     LevelTime::Finished { total_seconds } => format_seconds(*total_seconds),
                 };
 
-                let time_translation = if context.2.is_level_complete(context.1.as_ref()) {
+                let time_translation = if context.2.is_level_complete() {
                     size.get_rect(&CongratsLayoutEntity::LevelTime, &())
                         .centre()
                         .extend(crate::z_indices::TOP_BAR_BUTTON)
@@ -105,7 +105,7 @@ impl MavericNode for UI {
                     "hints",
                     Text2DNode {
                         text: TextNode {
-                            text: context.2.hint_count().to_string(),
+                            text: context.2.hints_used.to_string(),
                             font_size: top_bar_font_size,
                             color: BUTTON_TEXT_COLOR,
                             font: BUTTONS_FONT_PATH,
@@ -188,7 +188,7 @@ impl MavericNode for WordsNode {
                 let words = &context.1.level().words;
 
                 for (index, word) in words.iter().enumerate() {
-                    let completion = context.2.get_completion(&word.characters);
+                    let completion = context.2.get_completion(index);
                     let tile = LayoutWordTile(index);
                     let rect = context.3.get_rect(&tile, words);
                     commands.add_child(

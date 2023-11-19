@@ -13,7 +13,7 @@ impl MavericRootChildren for ViewRoot {
 
         commands.add_child("ui", UI, context);
 
-        if context.2.is_level_complete(&context.1) {
+        if context.2.is_level_complete() {
             commands.add_child("congrats", CongratsView, context);
         } else {
             commands.add_child("cells", GridTiles, context);

@@ -1,7 +1,7 @@
 use arrayvec::ArrayVec;
 use serde::{Deserialize, Serialize};
 
-use crate::prelude::*;
+use crate::{prelude::*, finder::helpers::LetterCounts};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Word {
@@ -185,6 +185,10 @@ impl Word {
         //TODO more efficient path if word has no duplicate letters
 
         find_solutions(&self.characters, grid)
+    }
+
+    pub fn letter_counts(&self)-> Option<LetterCounts>{
+        LetterCounts::try_from_iter(self.characters.iter().cloned())
     }
 }
 

@@ -206,7 +206,7 @@ impl MavericNode for HintGlows{
         commands
         .ignore_node()
         .unordered_children_with_context(|context,commands|{
-            for tile in context.2.hint_set().iter_true_tiles(){
+            for tile in context.2.hint_set(&context.1, &context.0).iter_true_tiles(){
                 let rect = context.3.get_rect(&LayoutGridTile(tile), &());
 
                 commands.add_child(tile.inner() as u32, {

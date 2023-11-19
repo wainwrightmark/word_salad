@@ -65,8 +65,7 @@ pub fn go() {
     app.add_plugins(InputPlugin);
     //app.add_systems(Update, draw_shape);
     app.add_plugins(MenuPlugin);
-    app.insert_resource(LazyLevelData::new_empty());
-    app.add_systems(First, update_lazy_level_data);
+
 
     app.add_plugins(WindowSizePlugin::<SaladWindowBreakPoints>::default());
 
@@ -114,7 +113,7 @@ fn choose_level_on_game_load(
         match crate::wasm::get_game_from_location() {
             Some(level) => {
                 *current_level = CurrentLevel::Custom(level);
-                *found_words = FoundWordsState::default();
+                *found_words = FoundWordsState::new_from_level(current_level);
                 *chosen_state = ChosenState::default();
                 return;
             }

@@ -30,7 +30,7 @@ impl InputType {
         input_state: &mut Local<GridInputState>,
         found_words: &mut ResMut<FoundWordsState>,
     ) {
-        let level_complete = found_words.is_level_complete(current_level);
+        let level_complete = found_words.is_level_complete();
         match self {
             InputType::Start(position) => {
                 let Some(layout_entity) = size.try_pick::<GameLayoutEntity>(*position, &()) else {

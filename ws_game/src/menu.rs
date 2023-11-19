@@ -137,14 +137,14 @@ fn button_system(
                     level_index: *level as usize,
                 };
 
-                *found_words = FoundWordsState::default();
+                *found_words = FoundWordsState::new_from_level(&current_level);
                 *chosen_state = ChosenState::default();
 
                 *state = MenuState::Closed;
             }
             ButtonAction::ResetLevel => {
                 current_level.set_changed();
-                *found_words = FoundWordsState::default();
+                *found_words = FoundWordsState::new_from_level(&current_level);
                 *chosen_state = ChosenState::default();
 
                 *state = MenuState::Closed;
