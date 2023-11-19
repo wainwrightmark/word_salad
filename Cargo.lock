@@ -2495,7 +2495,7 @@ dependencies = [
 [[package]]
 name = "maveric"
 version = "0.1.0"
-source = "git+https://github.com/wainwrightmark/maveric#4f5de6a31c267a93ed27f8274643c870264978a4"
+source = "git+https://github.com/wainwrightmark/maveric#91d0eaa3f125443d24455bfc6c9731825dd74fde"
 dependencies = [
  "bevy",
 ]

@@ -10,7 +10,7 @@ pub const TEXT_BUTTON_HEIGHT: f32 = 30.;
 pub const UI_BORDER_WIDTH: Val = Val::Px(3.0);
 
 impl MavericNode for CongratsView {
-    type Context = NC5<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>, LevelTime>;
+    type Context = NC5<ChosenState, CurrentLevel, FoundWordsState,  Size, LevelTime>;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
@@ -24,8 +24,7 @@ impl MavericNode for CongratsView {
         commands
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
-                let size = &context.3 .0;
-                let asset_server = &context.3 .1;
+                let size = &context.3;
                 let level_time = &context.4;
 
                 match level_time.as_ref(){
@@ -55,7 +54,7 @@ impl MavericNode for CongratsView {
                                         .extend(crate::z_indices::CONGRATS_BUTTON),
                                 ),
                             },
-                            &asset_server,
+                            &(),
                         );
                     },
                 }
@@ -81,7 +80,7 @@ impl MavericNode for CongratsView {
                                     .extend(crate::z_indices::CONGRATS_BUTTON),
                             ),
                         },
-                        &asset_server,
+                        &(),
                     );
                 }
 
@@ -104,7 +103,7 @@ impl MavericNode for CongratsView {
                                 .extend(crate::z_indices::CONGRATS_BUTTON),
                         ),
                     },
-                    &asset_server,
+                    &(),
                 );
             });
     }

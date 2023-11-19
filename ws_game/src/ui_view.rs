@@ -12,7 +12,7 @@ pub const UI_BORDER_WIDTH: Val = Val::Px(3.0);
 
 impl MavericNode for UI {
     type Context =
-        NC5<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>, LevelTime>;
+        NC5<ChosenState, CurrentLevel, FoundWordsState, Size, LevelTime>;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
@@ -26,8 +26,7 @@ impl MavericNode for UI {
         commands
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
-                let size = &context.3 .0;
-                let asset_server = &context.3 .1;
+                let size = &context.3;
 
                 commands.add_child(
                     "Burger",
@@ -47,7 +46,7 @@ impl MavericNode for UI {
                                 .extend(crate::z_indices::TOP_BAR_BUTTON),
                         ),
                     },
-                    asset_server,
+                    &(),
                 );
 
                 commands.add_child(
@@ -67,7 +66,7 @@ impl MavericNode for UI {
                                 .extend(crate::z_indices::TOP_BAR_BUTTON),
                         ),
                     },
-                    &context.3 .1,
+                    &(),
                 );
 
                 let title = context.1.level().name.trim().to_string();
@@ -89,7 +88,7 @@ impl MavericNode for UI {
                                 .extend(crate::z_indices::TEXT_AREA_TEXT),
                         ),
                     },
-                    &context.3 .1,
+                    &(),
                 );
 
                 commands.add_child(
@@ -109,7 +108,7 @@ impl MavericNode for UI {
                                 .extend(crate::z_indices::TEXT_AREA_TEXT),
                         ),
                     },
-                    &context.3 .1,
+                    &(),
                 );
 
                 commands.add_child("words", WordsNode, context);
@@ -122,7 +121,7 @@ pub struct WordsNode;
 
 impl MavericNode for WordsNode {
     type Context =
-        NC5<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>, LevelTime>;
+        NC5<ChosenState, CurrentLevel, FoundWordsState, Size, LevelTime>;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
@@ -162,7 +161,7 @@ pub struct WordNode {
 }
 
 impl MavericNode for WordNode {
-    type Context = NC2<Size, AssetServer>;
+    type Context = Size;
 
     fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
         commands.scope(|commands| {
@@ -194,7 +193,7 @@ impl MavericNode for WordNode {
 
                 Completion::Complete => node.word.text.to_string(),
             };
-            let rect = context.0.get_rect(&LayoutWordTile(node.tile));
+            let rect = context.get_rect(&LayoutWordTile(node.tile));
             let centre = rect.centre();
 
             let text_translation = centre.extend(crate::z_indices::WORD_TEXT);
@@ -212,7 +211,7 @@ impl MavericNode for WordNode {
                     },
                     transform: Transform::from_translation(text_translation),
                 },
-                &context.1,
+                &(),
             );
 
             let shape_translation = centre.extend(crate::z_indices::WORD_BACKGROUND);
@@ -232,7 +231,7 @@ impl MavericNode for WordNode {
                         y: e.y,
                     },
                 ],
-                radius: context.0.tile_size() * 0.15,
+                radius: context.tile_size() * 0.15,
                 closed: true,
             };
 

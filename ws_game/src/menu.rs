@@ -204,7 +204,7 @@ impl MavericRootChildren for MenuRoot {
 
 
 
-fn icon_button_node(button_action: ButtonAction) -> impl MavericNode<Context = AssetServer> {
+fn icon_button_node(button_action: ButtonAction) -> impl MavericNode<Context = NoContext> {
     ButtonNode {
         style: IconNodeStyle,
         visibility: Visibility::Visible,
@@ -222,7 +222,7 @@ fn icon_button_node(button_action: ButtonAction) -> impl MavericNode<Context = A
     }
 }
 
-fn text_button_node(button_action: ButtonAction) -> impl MavericNode<Context = AssetServer> {
+fn text_button_node(button_action: ButtonAction) -> impl MavericNode<Context = NoContext> {
     ButtonNode {
         style: TextButtonStyle,
         visibility: Visibility::Visible,
@@ -243,7 +243,7 @@ fn text_button_node(button_action: ButtonAction) -> impl MavericNode<Context = A
 fn text_and_image_button_node(
     button_action: ButtonAction,
     image_path: &'static str,
-) -> impl MavericNode<Context = AssetServer> {
+) -> impl MavericNode<Context = NoContext> {
     ButtonNode {
         style: TextButtonStyle,
         visibility: Visibility::Visible,
@@ -295,7 +295,7 @@ impl MavericNode for MainOrLevelMenu {
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
-        commands.unordered_children_with_node_and_context(|args, context, commands| match args {
+        commands.ignore_context().unordered_children_with_node(|args,  commands| match args {
             MainOrLevelMenu::Main => {
                 for (key, action) in ButtonAction::main_buttons().iter().enumerate() {
                     let button = text_button_node(*action);
@@ -305,7 +305,7 @@ impl MavericNode for MainOrLevelMenu {
                         Duration::from_secs_f32(1.0),
                     );
 
-                    commands.add_child(key as u32, button, &context.1)
+                    commands.add_child(key as u32, button, &())
                 }
             }
             MainOrLevelMenu::Level(page) => {
@@ -319,11 +319,11 @@ impl MavericNode for MainOrLevelMenu {
                             ButtonAction::GotoLevel { level },
                             r#"images/MedalsBlack.png"#,
                         ),
-                        &context.1,
+                        &(),
                     )
                 }
 
-                commands.add_child("buttons", LevelMenuArrows(*page), &context.1);
+                commands.add_child("buttons", LevelMenuArrows(*page), &());
             }
         });
     }
@@ -333,7 +333,7 @@ impl MavericNode for MainOrLevelMenu {
 pub struct LevelMenuArrows(u32);
 
 impl MavericNode for LevelMenuArrows {
-    type Context = AssetServer;
+    type Context = NoContext;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands.ignore_node().ignore_context().insert(NodeBundle {

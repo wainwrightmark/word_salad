@@ -25,7 +25,7 @@ maveric::define_lens!(FillColorLens, Fill, Color, color);
 pub struct GridTiles;
 
 impl MavericNode for GridTiles {
-    type Context = NC5<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>, LevelTime>;
+    type Context = NC5<ChosenState, CurrentLevel, FoundWordsState, Size, LevelTime>;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
@@ -47,7 +47,7 @@ impl MavericNode for GridTiles {
                     let selected = context.0 .0.last() == Some(&tile);
                     let hinted = hint_set.get_bit(&tile);
                     let needed = !context.2.unneeded_tiles.get_bit(&tile);
-                    let size = context.3 .0.as_ref();
+                    let size = context.3.as_ref();
                     let tile_size = size.tile_size();
                     let font_size = size.tile_font_size();
                     let centre = size.get_rect(&LayoutGridTile(tile) ).centre();
@@ -64,7 +64,7 @@ impl MavericNode for GridTiles {
                             font_size,
                             centre,
                         },
-                        &context.3 .1,
+                        &(),
                     );
                 }
             });
@@ -72,7 +72,7 @@ impl MavericNode for GridTiles {
 }
 
 impl MavericNode for GridTile {
-    type Context = AssetServer;
+    type Context = NoContext;
 
     fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
 
@@ -165,7 +165,7 @@ pub struct GridLetter {
 }
 
 impl MavericNode for GridLetter {
-    type Context = AssetServer;
+    type Context = NoContext;
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
             .ignore_context()
@@ -175,7 +175,7 @@ impl MavericNode for GridLetter {
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
-        commands.unordered_children_with_node_and_context(|args, context, commands| {
+        commands.unordered_children_with_node(|args,  commands| {
             commands.add_child(
                 0,
                 Text2DNode {
@@ -189,7 +189,7 @@ impl MavericNode for GridLetter {
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     },
                 },
-                &context,
+                &(),
             )
         });
     }
@@ -199,7 +199,7 @@ impl MavericNode for GridLetter {
 pub struct WordLine;
 
 impl MavericNode for WordLine {
-    type Context = NC5<ChosenState, CurrentLevel, FoundWordsState, NC2<Size, AssetServer>, LevelTime>;
+    type Context = NC5<ChosenState, CurrentLevel, FoundWordsState, Size, LevelTime>;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands.ignore_node().insert_with_context(|context| {
@@ -208,7 +208,6 @@ impl MavericNode for WordLine {
             for (index, tile) in context.0 .0.iter().enumerate() {
                 let position = context
                     .3
-                     .0
                     .get_rect(&LayoutGridTile(*tile))
                     .centre();
                 if index == 0 {
