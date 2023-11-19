@@ -38,15 +38,15 @@ impl InputType {
                 };
                 match layout_entity {
                     GameLayoutEntity::TopBar => {
-                        let Some(button) = size.try_pick::<TopBarButton>(*position) else {
+                        let Some(button) = size.try_pick::<LayoutTopBarButton>(*position) else {
                             return;
                         };
                         match button {
-                            TopBarButton::MenuBurgerButton => {
+                            LayoutTopBarButton::MenuBurgerButton => {
                                 *menu_state.as_mut() = MenuState::ShowMainMenu;
                             }
-                            TopBarButton::TimeCounter => {}
-                            TopBarButton::HintCounter => {
+                            LayoutTopBarButton::TimeCounter => {}
+                            LayoutTopBarButton::HintCounter => {
                                 found_words.try_hint(current_level);
                             }
                         }

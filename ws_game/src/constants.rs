@@ -1,5 +1,5 @@
 use nice_bevy_utils::window_size::*;
-use ws_core::{layout, layout_sizing::LayoutSizing, layout_structure::LayoutStructure};
+use ws_core::{layout, layout_sizing::LayoutSizing, layout_structure::{LayoutStructure, LayoutStructureWithText}};
 
 pub use crate::prelude::*;
 
@@ -17,7 +17,7 @@ impl Breakpoints for SaladWindowBreakPoints {
 pub trait SaladWindowSize {
     fn scale(&self) -> f32;
 
-    fn tile_font_size(&self) -> f32;
+    fn font_size<T: LayoutStructureWithText>(&self) -> f32;
     fn tile_size(&self)-> f32;
 
     fn get_rect<T : LayoutStructure<Context = ()>>(&self, entity: &T) -> layout::rect::Rect;
@@ -63,9 +63,10 @@ impl SaladWindowSize for Size {
         (self.scaled_width / 4.0).min(self.scaled_height / 8.0)
     }
 
-    fn tile_font_size(&self) -> f32 {
-        (self.scale() * 0.1875).ceil() * 4.0
+    fn font_size<T: LayoutStructureWithText> (&self)-> f32{
+        layout(self).font_size::<T>()
     }
+
 
     fn tile_size(&self)-> f32 {
         layout(self).get_size(&LayoutGridTile::default(), &()).x

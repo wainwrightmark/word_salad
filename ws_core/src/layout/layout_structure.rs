@@ -19,7 +19,14 @@ pub trait LayoutStructure: Sized + PartialEq + Debug {
 
     ///The size on a 320x568 canvas
     fn size(&self, context: &Self::Context) -> Vec2;
+
+
+
     fn location(&self, context: &Self::Context) -> Vec2;
 
     fn iter_all()-> Self::Iterator;
+}
+
+pub trait LayoutStructureWithText{
+    fn font_size()-> f32;
 }

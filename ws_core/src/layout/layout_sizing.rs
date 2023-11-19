@@ -1,6 +1,6 @@
 use glam::Vec2;
 
-use crate::{layout_structure::LayoutStructure, rect::Rect};
+use crate::{layout_structure::{LayoutStructure, LayoutStructureWithText}, rect::Rect};
 
 pub struct LayoutSizing {
     pub size_ratio: f32,
@@ -78,5 +78,12 @@ impl LayoutSizing {
             top_left: self.get_location(entity, context),
             extents: self.get_size(entity, context),
         }
+    }
+
+    pub fn font_size<T: LayoutStructureWithText>(&self)-> f32{
+        const FONT_INTERVAL: f32 = 4.0;
+        let base_size = T::font_size();
+
+        (self.size_ratio * base_size / FONT_INTERVAL).floor() * FONT_INTERVAL
     }
 }

@@ -4,7 +4,7 @@ use maveric::{transition::speed::ScalarSpeed, widgets::text2d_node::Text2DNode, 
 #[derive(Debug, Clone, PartialEq)]
 pub struct UI;
 
-pub const BUTTON_FONT_SIZE: f32 = 22.0;
+//pub const BUTTON_FONT_SIZE: f32 = 22.0;
 pub const BUTTON_TEXT_COLOR: Color = Color::rgb(0.1, 0.1, 0.1);
 pub const TEXT_BUTTON_WIDTH: f32 = 140.;
 pub const TEXT_BUTTON_HEIGHT: f32 = 30.;
@@ -27,13 +27,14 @@ impl MavericNode for UI {
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
                 let size = &context.3;
-
+                let top_bar_font_size = size.font_size::<LayoutTopBarButton>();
+                let text_font_size = size.font_size::<LayoutTextItem>();
                 commands.add_child(
                     "Burger",
                     Text2DNode {
                         text: TextNode {
                             text: "\u{f0c9}",
-                            font_size: BUTTON_FONT_SIZE,
+                            font_size: top_bar_font_size,
                             color: BUTTON_TEXT_COLOR,
                             font: MENU_BUTTON_FONT_PATH,
                             alignment: TextAlignment::Center,
@@ -41,7 +42,7 @@ impl MavericNode for UI {
                         },
 
                         transform: Transform::from_translation(
-                            size.get_rect(&TopBarButton::MenuBurgerButton)
+                            size.get_rect(&LayoutTopBarButton::MenuBurgerButton)
                                 .centre()
                                 .extend(crate::z_indices::TOP_BAR_BUTTON),
                         ),
@@ -60,7 +61,7 @@ impl MavericNode for UI {
                         node:Text2DNode {
                             text: TextNode {
                                 text: time_text,
-                                font_size: BUTTON_FONT_SIZE,
+                                font_size: top_bar_font_size,
                                 color: BUTTON_TEXT_COLOR,
                                 font: MENU_BUTTON_FONT_PATH,
                                 alignment: TextAlignment::Center,
@@ -68,7 +69,7 @@ impl MavericNode for UI {
                             },
 
                             transform: Transform::from_translation(
-                                size.get_rect(&TopBarButton::TimeCounter)
+                                size.get_rect(&LayoutTopBarButton::TimeCounter)
                                     .centre()
                                     .extend(crate::z_indices::TOP_BAR_BUTTON),
                             ),
@@ -85,14 +86,14 @@ impl MavericNode for UI {
                     Text2DNode {
                         text: TextNode {
                             text: context.2.hint_count().to_string(),
-                            font_size: BUTTON_FONT_SIZE,
+                            font_size: top_bar_font_size,
                             color: BUTTON_TEXT_COLOR,
                             font: BUTTONS_FONT_PATH,
                             alignment: TextAlignment::Center,
                             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         },
                         transform: Transform::from_translation(
-                            size.get_rect(&TopBarButton::HintCounter)
+                            size.get_rect(&LayoutTopBarButton::HintCounter)
                                 .centre()
                                 .extend(crate::z_indices::TOP_BAR_BUTTON),
                         ),
@@ -107,14 +108,14 @@ impl MavericNode for UI {
                     Text2DNode {
                         text: TextNode {
                             text: title,
-                            font_size: 32.0,
+                            font_size: text_font_size,
                             color: BUTTON_TEXT_COLOR,
                             font: TITLE_FONT_PATH,
                             alignment: TextAlignment::Center,
                             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         },
                         transform: Transform::from_translation(
-                            size.get_rect(&TextItem::PuzzleTitle)
+                            size.get_rect(&LayoutTextItem::PuzzleTitle)
                                 .centre()
                                 .extend(crate::z_indices::TEXT_AREA_TEXT),
                         ),
@@ -127,14 +128,14 @@ impl MavericNode for UI {
                     Text2DNode {
                         text: TextNode {
                             text: "Theme",
-                            font_size: 32.0,
+                            font_size: text_font_size,
                             color: BUTTON_TEXT_COLOR,
                             font: TITLE_FONT_PATH,
                             alignment: TextAlignment::Center,
                             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         },
                         transform: Transform::from_translation(
-                            size.get_rect(&TextItem::PuzzleTheme)
+                            size.get_rect(&LayoutTextItem::PuzzleTheme)
                                 .centre()
                                 .extend(crate::z_indices::TEXT_AREA_TEXT),
                         ),
@@ -210,7 +211,7 @@ impl MavericNode for WordNode {
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
-        commands.unordered_children_with_node_and_context(|node, context, commands| {
+        commands.unordered_children_with_node_and_context(|node, size, commands| {
             let text = match node.completion {
                 Completion::Incomplete => node.word.characters.len().to_string(),
                 Completion::Hinted(hints) => {
@@ -224,17 +225,18 @@ impl MavericNode for WordNode {
 
                 Completion::Complete => node.word.text.to_string(),
             };
-            let rect = context.get_rect(&LayoutWordTile(node.tile));
+            let rect = size.get_rect(&LayoutWordTile(node.tile));
             let centre = rect.centre();
 
             let text_translation = centre.extend(crate::z_indices::WORD_TEXT);
+            let font_size = size.font_size::<LayoutWordTile>();
 
             commands.add_child(
                 "text",
                 Text2DNode {
                     text: TextNode {
                         text,
-                        font_size: BUTTON_FONT_SIZE,
+                        font_size,
                         color: BUTTON_TEXT_COLOR,
                         font: SOLUTIONS_FONT_PATH,
                         alignment: TextAlignment::Center,
@@ -262,7 +264,7 @@ impl MavericNode for WordNode {
                         y: e.y,
                     },
                 ],
-                radius: context.tile_size() * 0.15,
+                radius: size.tile_size() * 0.15,
                 closed: true,
             };
 

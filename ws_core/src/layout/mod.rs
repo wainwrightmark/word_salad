@@ -3,6 +3,7 @@ use std::ops::Add;
 use strum::{IntoEnumIterator, EnumCount};
 use strum::{Display, EnumIter};
 
+use self::layout_structure::LayoutStructureWithText;
 use self::{
     layout_structure::LayoutStructure,
     spacing::{tile_offset, Spacing},
@@ -17,33 +18,33 @@ pub mod rect;
 pub mod spacing;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Display, EnumIter)]
-pub enum TopBarButton {
+pub enum LayoutTopBarButton {
     MenuBurgerButton,
     TimeCounter,
     HintCounter,
 }
 
-impl TopBarButton {
+impl LayoutTopBarButton {
     pub const fn index(&self) -> usize {
         match self {
-            TopBarButton::MenuBurgerButton => 0,
-            TopBarButton::TimeCounter => 1,
-            TopBarButton::HintCounter => 2,
+            LayoutTopBarButton::MenuBurgerButton => 0,
+            LayoutTopBarButton::TimeCounter => 1,
+            LayoutTopBarButton::HintCounter => 2,
         }
     }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Display, EnumIter)]
-pub enum TextItem {
+pub enum LayoutTextItem {
     PuzzleTitle,
     PuzzleTheme,
 }
 
-impl TextItem {
+impl LayoutTextItem {
     pub const fn index(&self) -> usize {
         match self {
-            TextItem::PuzzleTitle => 0,
-            TextItem::PuzzleTheme => 1,
+            LayoutTextItem::PuzzleTitle => 0,
+            LayoutTextItem::PuzzleTheme => 1,
         }
     }
 }
@@ -148,9 +149,10 @@ impl LayoutStructure for GameLayoutEntity {
             },
         }
     }
+
 }
 
-impl LayoutStructure for TextItem {
+impl LayoutStructure for LayoutTextItem {
     type Context = ();
     type Iterator = <Self as IntoEnumIterator>::Iterator;
 
@@ -183,7 +185,14 @@ impl LayoutStructure for TextItem {
     }
 }
 
-impl LayoutStructure for TopBarButton {
+impl LayoutStructureWithText for LayoutTextItem{
+    fn font_size()-> f32 {
+        32.0
+    }
+}
+
+
+impl LayoutStructure for LayoutTopBarButton {
     type Context = ();
     type Iterator = <Self as IntoEnumIterator>::Iterator;
 
@@ -212,6 +221,12 @@ impl LayoutStructure for TopBarButton {
 
     fn iter_all() -> Self::Iterator {
         Self::iter()
+    }
+}
+
+impl LayoutStructureWithText for LayoutTopBarButton{
+    fn font_size()-> f32 {
+        22.0
     }
 }
 
@@ -265,6 +280,12 @@ impl LayoutStructure for CongratsLayoutEntity {
     }
 }
 
+impl LayoutStructureWithText for CongratsLayoutEntity{
+    fn font_size()-> f32 {
+        22.0
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct LayoutWordTile(pub WordTile);
 
@@ -303,6 +324,12 @@ impl LayoutStructure for LayoutWordTile {
                 GameLayoutEntity::WordList.size(context),
                 self.size(context),
             ))
+    }
+}
+
+impl LayoutStructureWithText for LayoutWordTile{
+    fn font_size()-> f32 {
+        22.0
     }
 }
 
@@ -351,6 +378,12 @@ impl LayoutStructure for LayoutGridTile {
     }
 }
 
+impl LayoutStructureWithText for LayoutGridTile{
+    fn font_size()-> f32 {
+        60.0
+    }
+}
+
 #[derive(Copy, Clone, Default, PartialEq, Eq, PartialOrd, Ord, Hash)] //TODO use version in geometrid
 pub struct LayoutWordTileIter {
     inner: u8,
@@ -391,8 +424,8 @@ mod tests {
     #[test]
     fn test_picking_all() {
         test_picking::<GameLayoutEntity>(&());
-        test_picking::<TopBarButton>(&());
-        test_picking::<TextItem>(&());
+        test_picking::<LayoutTopBarButton>(&());
+        test_picking::<LayoutTextItem>(&());
         test_picking::<LayoutGridTile>(&());
         test_picking::<LayoutWordTile>(&());
     }

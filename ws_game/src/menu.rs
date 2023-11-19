@@ -404,8 +404,8 @@ pub const UI_BORDER_WIDTH: Val = Val::Px(3.0);
 
 
 
-pub const ICON_FONT_SIZE: f32 = 30.0;
-pub const BUTTON_FONT_SIZE: f32 = 22.0;
+const ICON_FONT_SIZE: f32 = 30.0;
+const BUTTON_FONT_SIZE: f32 = 22.0;
 
 const LEVELS_PER_PAGE: u32 = 8;
 
