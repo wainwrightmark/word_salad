@@ -39,7 +39,7 @@ impl MavericNode for CongratsView {
                                 linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                             },
                             transform: Transform::from_translation(
-                                size.get_rect(&CongratsLayoutEntity::ShareButton)
+                                size.get_rect(&CongratsLayoutEntity::ShareButton, &())
                                     .centre()
                                     .extend(crate::z_indices::CONGRATS_BUTTON),
                             ),

@@ -8,17 +8,14 @@ use super::consts::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter, EnumCount, Display)]
 pub enum CongratsLayoutEntity {
-    ShareButton,
-    NextButton,
+    LevelTime = 0,
+    ShareButton = 1,
+    NextButton = 2,
 }
 
 impl CongratsLayoutEntity {
     pub const fn index(&self) -> usize {
-        match self {
-
-            CongratsLayoutEntity::ShareButton => 0,
-            CongratsLayoutEntity::NextButton => 1,
-        }
+        *self as usize
     }
 }
 

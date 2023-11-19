@@ -1,8 +1,11 @@
 use crate::prelude::*;
 use itertools::Itertools;
-use maveric::{transition::speed::ScalarSpeed, widgets::text2d_node::Text2DNode, with_bundle::WithBundle};
-use ws_core::prelude::*;
+use maveric::transition::speed::LinearSpeed;
+use maveric::{
+    transition::speed::ScalarSpeed, widgets::text2d_node::Text2DNode, with_bundle::WithBundle,
+};
 use ws_core::layout::entities::*;
+use ws_core::prelude::*;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct UI;
@@ -14,8 +17,7 @@ pub const TEXT_BUTTON_HEIGHT: f32 = 30.;
 pub const UI_BORDER_WIDTH: Val = Val::Px(3.0);
 
 impl MavericNode for UI {
-    type Context =
-        NC5<ChosenState, CurrentLevel, FoundWordsState, Size, LevelTime>;
+    type Context = NC5<ChosenState, CurrentLevel, FoundWordsState, Size, LevelTime>;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
@@ -53,36 +55,52 @@ impl MavericNode for UI {
                     &(),
                 );
 
-                let time_text = match context.4.as_ref(){
+                let time_text = match context.4.as_ref() {
                     LevelTime::Started(..) => "00:00".to_string(),
                     LevelTime::Finished { total_seconds } => format_seconds(*total_seconds),
                 };
 
-                commands.add_child(
-                    "TimeCounter",
-                    WithBundle{
-                        node:Text2DNode {
-                            text: TextNode {
-                                text: time_text,
-                                font_size: top_bar_font_size,
-                                color: BUTTON_TEXT_COLOR,
-                                font: MENU_BUTTON_FONT_PATH,
-                                alignment: TextAlignment::Center,
-                                linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+
+                let time_translation = if context.2.is_level_complete(context.1.as_ref()) {
+                    size.get_rect(&CongratsLayoutEntity::LevelTime, &())
+                        .centre()
+                        .extend(crate::z_indices::TOP_BAR_BUTTON)
+                } else {
+                    size.get_rect(&LayoutTopBarButton::TimeCounter, &())
+                        .centre()
+                        .extend(crate::z_indices::TOP_BAR_BUTTON)
+                };
+
+                commands
+                    .add_child(
+                        "TimeCounter",
+                        WithBundle {
+                            node: Text2DNode {
+                                text: TextNode {
+                                    text: time_text,
+                                    font_size: top_bar_font_size,
+                                    color: BUTTON_TEXT_COLOR,
+                                    font: MENU_BUTTON_FONT_PATH,
+                                    alignment: TextAlignment::Center,
+                                    linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                                },
+
+                                transform: Transform::from_translation(size.get_rect(&LayoutTopBarButton::TimeCounter, &())
+                                .centre()
+                                .extend(crate::z_indices::TOP_BAR_BUTTON)),
                             },
-
-                            transform: Transform::from_translation(
-                                size.get_rect(&LayoutTopBarButton::TimeCounter, &())
-                                    .centre()
-                                    .extend(crate::z_indices::TOP_BAR_BUTTON),
-                            ),
-                        },
-                        bundle: TimeCounterMarker
-                    }
-
-                    ,
-                    &(),
-                );
+                            bundle: TimeCounterMarker,
+                        }
+                        .with_transition_to::<TransformTranslationLens>( //TODO improve this animation
+                            time_translation,
+                            LinearSpeed {
+                                units_per_second: 100.0,
+                            },
+                        )
+                        ,
+                        &(),
+                    )
+                   ;
 
                 commands.add_child(
                     "hints",
@@ -155,8 +173,7 @@ impl MavericNode for UI {
 pub struct WordsNode;
 
 impl MavericNode for WordsNode {
-    type Context =
-        NC5<ChosenState, CurrentLevel, FoundWordsState, Size, LevelTime>;
+    type Context = NC5<ChosenState, CurrentLevel, FoundWordsState, Size, LevelTime>;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
@@ -171,18 +188,17 @@ impl MavericNode for WordsNode {
             .unordered_children_with_context(|context, commands| {
                 let words = &context.1.level().words;
 
-
                 for (index, word) in words.iter().enumerate() {
                     let completion = context.2.get_completion(&word.characters);
                     let tile = LayoutWordTile(index);
-                    let rect = context.3.get_rect(&tile,  &words);
+                    let rect = context.3.get_rect(&tile, &words);
                     commands.add_child(
                         index as u32,
                         WordNode {
                             word: word.clone(),
                             tile,
                             completion,
-                            rect
+                            rect,
                         },
                         &context.3,
                     );
@@ -196,7 +212,7 @@ pub struct WordNode {
     pub tile: LayoutWordTile,
     pub word: Word,
     pub completion: Completion,
-    pub rect: LayoutRectangle
+    pub rect: LayoutRectangle,
 }
 
 impl MavericNode for WordNode {
@@ -308,15 +324,18 @@ impl<G: Geometry + PartialEq + Send + Sync + 'static> MavericNode for LyonShapeN
 
     fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
         commands.scope(|commands| {
-            commands.map_args(|x| &x.shape).insert_with_node(|node| {
-                (
-                    GeometryBuilder::build_as(node),
-                    bevy::sprite::Mesh2dHandle::default(),
-                    ShapeBundle::default().material,
-                    VisibilityBundle::default(),
-                    GlobalTransform::default(),
-                )
-            }).finish()
+            commands
+                .map_args(|x| &x.shape)
+                .insert_with_node(|node| {
+                    (
+                        GeometryBuilder::build_as(node),
+                        bevy::sprite::Mesh2dHandle::default(),
+                        ShapeBundle::default().material,
+                        VisibilityBundle::default(),
+                        GlobalTransform::default(),
+                    )
+                })
+                .finish()
         });
 
         commands.scope(|c| c.map_args(|x| &x.fill).insert_bundle().finish());

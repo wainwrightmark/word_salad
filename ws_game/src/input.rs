@@ -68,6 +68,7 @@ impl InputType {
                                 CongratsLayoutEntity::NextButton => {
                                     current_level.to_next_level(found_words.as_mut());
                                 },
+                                CongratsLayoutEntity::LevelTime => {},
                             }
 
                         }

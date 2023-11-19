@@ -19,6 +19,7 @@ impl Plugin for MenuPlugin {
 
         app.register_transition::<StyleLeftLens>();
         app.register_transition::<TransformScaleLens>();
+        app.register_transition::<TransformTranslationLens>();
         app.register_transition::<BackgroundColorLens>();
 
         app.register_maveric::<MenuRoot>();
