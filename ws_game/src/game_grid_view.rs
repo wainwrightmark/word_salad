@@ -14,7 +14,7 @@ pub struct GridTile {
     pub tile: Tile,
     pub character: Character,
     pub selected: bool,
-    pub hinted: bool,
+    // pub hinted: bool,
     pub needed: bool,
     pub tile_size: f32,
     pub font_size: f32,
@@ -42,13 +42,13 @@ impl MavericNode for GridTiles {
         commands
             .ignore_node()
             .ordered_children_with_context(|context, commands| {
-                let hint_set = context.2.hint_set();
+                // let hint_set = context.2.hint_set();
                 for (tile, character) in context.1.level().grid.enumerate() {
                     if character.is_blank() {
                         continue;
                     }
                     let selected = context.0 .0.last() == Some(&tile);
-                    let hinted = hint_set.get_bit(&tile);
+                    // let hinted = hint_set.get_bit(&tile);
                     let needed = !context.2.unneeded_tiles.get_bit(&tile);
                     let size = context.3.as_ref();
                     let tile_size = size.tile_size();
@@ -62,7 +62,7 @@ impl MavericNode for GridTiles {
                             character: *character,
                             selected,
                             needed,
-                            hinted,
+                            // hinted,
                             tile_size,
                             font_size,
                             centre,
@@ -115,12 +115,7 @@ impl MavericNode for GridTile {
                 closed: true,
             };
 
-            let fill = match (node.hinted, node.selected) {
-                (true, true) => Color::GOLD,
-                (true, false) => Color::YELLOW,
-                (false, true) => Color::ALICE_BLUE,
-                (false, false) => Color::GRAY,
-            };
+            let fill = if  node.selected {Color::ALICE_BLUE } else{ Color::GRAY };
 
             commands.add_child(
                 0,
@@ -181,7 +176,7 @@ impl MavericNode for GridLetter {
             commands.add_child(
                 0,
                 Text2DNode {
-                    transform: Transform::from_xyz(0.0, 0.0, 1.0),
+                    transform: Transform::from_xyz(0.0, 0.0, crate::z_indices::TILE_TEXT),
                     text: TextNode {
                         text: args.character.to_tile_string(),
                         font: TILE_FONT_PATH,
@@ -193,6 +188,36 @@ impl MavericNode for GridLetter {
                 },
                 &(),
             )
+        });
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub struct HintGlows;
+
+impl MavericNode for HintGlows{
+    type Context = NC5<ChosenState, CurrentLevel, FoundWordsState, Size, LevelTime>;
+
+    fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
+        commands.ignore_context().ignore_node().insert(SpatialBundle::default());
+    }
+
+    fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
+        commands
+        .ignore_node()
+        .unordered_children_with_context(|context,commands|{
+            for tile in context.2.hint_set().iter_true_tiles(){
+                let rect = context.3.get_rect(&LayoutGridTile(tile), &());
+
+                commands.add_child(tile.inner() as u32, {
+                    LyonShapeNode{
+                        transform: Transform::from_translation(rect.centre().extend(crate::z_indices::HINT)),
+                        fill: Fill::color(Color::GOLD.with_a(0.7)),
+                        stroke: Stroke::color(Color::NONE),
+                        shape: shapes::Circle{center: Vec2::ZERO, radius: rect.extents.length() * std::f32::consts::PI / 12.0}
+                    }
+                }, &());
+            }
         });
     }
 }
@@ -215,6 +240,7 @@ impl MavericNode for WordLine {
                     builder.line_to(position);
                 }
             }
+            let width = context.3.get_rect(&GameLayoutEntity::Grid, &()).extents.x *50. / 320.;
 
             let color = Color::rgba(0.9, 0.25, 0.95, 0.9);
 
@@ -222,14 +248,14 @@ impl MavericNode for WordLine {
                 ShapeBundle {
                     path: builder.build(),
                     spatial: SpatialBundle::from_transform(Transform::from_translation(Vec3::new(
-                        0.0, 0.0, 0.5,
+                        0.0, 0.0, crate::z_indices::WORD_LINE,
                     ))),
                     ..Default::default()
                 },
                 Stroke {
                     color,
                     options: StrokeOptions::default()
-                        .with_line_width(50.0)
+                        .with_line_width(width)
                         .with_start_cap(LineCap::Round)
                         .with_end_cap(LineCap::Round)
                         .with_line_join(LineJoin::Round),
