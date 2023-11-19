@@ -1,5 +1,7 @@
 use crate::prelude::*;
 use maveric:: widgets::text2d_node::Text2DNode;
+use ws_core::prelude::*;
+use ws_core::layout::entities::*;
 #[derive(Debug, Clone, PartialEq)]
 pub struct CongratsView;
 

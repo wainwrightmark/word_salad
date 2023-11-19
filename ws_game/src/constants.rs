@@ -1,5 +1,6 @@
 use nice_bevy_utils::window_size::*;
-use ws_core::{layout, layout_sizing::LayoutSizing, layout_structure::{LayoutStructure, LayoutStructureWithText}};
+use ws_core::prelude::*;
+use ws_core::layout::entities::*;
 
 pub use crate::prelude::*;
 
@@ -20,7 +21,7 @@ pub trait SaladWindowSize {
     fn font_size<T: LayoutStructureWithText>(&self) -> f32;
     fn tile_size(&self)-> f32;
 
-    fn get_rect<T : LayoutStructure<Context = ()>>(&self, entity: &T) -> layout::rect::Rect;
+    fn get_rect<T : LayoutStructure<Context = ()>>(&self, entity: &T) -> LayoutRectangle;
     fn try_pick_with_tolerance<T : LayoutStructure<Context = ()>>(&self, p: Vec2, tolerance: f32) -> Option<T>;
     fn try_pick<T : LayoutStructure<Context = ()>>(&self, p: Vec2) -> Option<T>;
 }
@@ -36,7 +37,7 @@ fn layout(size: &Size) -> LayoutSizing {
 }
 
 impl SaladWindowSize for Size {
-    fn get_rect<T : LayoutStructure<Context = ()>> (&self, entity: &T) -> layout::rect::Rect {
+    fn get_rect<T : LayoutStructure<Context = ()>> (&self, entity: &T) -> LayoutRectangle {
         let mut rect = layout(self).get_rect(entity, &());
 
         rect.top_left = Vec2 {

@@ -1,6 +1,5 @@
 use glam::Vec2;
-
-use crate::{layout_structure::{LayoutStructure, LayoutStructureWithText}, rect::Rect};
+use crate::layout::prelude::*;
 
 pub struct LayoutSizing {
     pub size_ratio: f32,
@@ -48,7 +47,7 @@ impl LayoutSizing {
             return Some(entity);
         }
 
-        let rect: Rect = entity.rect(context).into();
+        let rect: LayoutRectangle = entity.rect(context).into();
 
         let dist = rect.centre().distance(location);
         let size_squared = rect.extents.length();
@@ -73,8 +72,8 @@ impl LayoutSizing {
         }
     }
 
-    pub fn get_rect<T: LayoutStructure>(&self, entity: &T, context: &T::Context) -> Rect {
-        Rect {
+    pub fn get_rect<T: LayoutStructure>(&self, entity: &T, context: &T::Context) -> LayoutRectangle {
+        LayoutRectangle {
             top_left: self.get_location(entity, context),
             extents: self.get_size(entity, context),
         }

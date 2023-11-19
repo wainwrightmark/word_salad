@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use bevy::{prelude::*, window::PrimaryWindow};
 use strum::EnumIs;
-
+use ws_core::layout::entities::*;
 pub struct InputPlugin;
 
 impl Plugin for InputPlugin {

@@ -1,6 +1,9 @@
 use crate::prelude::*;
 use itertools::Itertools;
 use maveric::{transition::speed::ScalarSpeed, widgets::text2d_node::Text2DNode, with_bundle::WithBundle};
+use ws_core::prelude::*;
+use ws_core::layout::entities::*;
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct UI;
 

@@ -2,6 +2,7 @@ use crate::input::InputPlugin;
 pub use crate::prelude::*;
 use bevy::log::LogPlugin;
 use nice_bevy_utils::window_size::WindowSizePlugin;
+use ws_core::layout::entities::*;
 
 const CLEAR_COLOR: Color = {
     if cfg!(target_arch = "wasm32") {

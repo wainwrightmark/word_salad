@@ -1,7 +1,8 @@
 use std::fmt::Debug;
 
 use glam::Vec2;
-use crate::rect::Rect;
+
+use crate::LayoutRectangle;
 
 pub trait LayoutStructure: Sized + PartialEq + Debug {
     type Context;
@@ -9,9 +10,8 @@ pub trait LayoutStructure: Sized + PartialEq + Debug {
 
     fn pick(point: Vec2, context: &Self::Context) -> Option<Self>;
 
-
-    fn rect(&self, context: &Self::Context) -> Rect {
-        Rect {
+    fn rect(&self, context: &Self::Context) -> LayoutRectangle {
+        LayoutRectangle {
             top_left: self.location(context),
             extents: self.size(context),
         }
@@ -20,13 +20,11 @@ pub trait LayoutStructure: Sized + PartialEq + Debug {
     ///The size on a 320x568 canvas
     fn size(&self, context: &Self::Context) -> Vec2;
 
-
-
     fn location(&self, context: &Self::Context) -> Vec2;
 
-    fn iter_all()-> Self::Iterator;
+    fn iter_all() -> Self::Iterator;
 }
 
-pub trait LayoutStructureWithText{
-    fn font_size()-> f32;
+pub trait LayoutStructureWithText {
+    fn font_size() -> f32;
 }

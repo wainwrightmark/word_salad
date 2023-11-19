@@ -2,7 +2,8 @@ use crate::constants::SaladWindowSize;
 use crate::prelude::*;
 use bevy::prelude::*;
 use maveric::transition::speed::calculate_speed;
-use ws_core::Tile;
+use ws_core::prelude::*;
+use ws_core::layout::entities::*;
 
 pub struct AnimatedSolutionPlugin;
 
@@ -17,11 +18,11 @@ impl Plugin for AnimatedSolutionPlugin {
 pub fn animate_solution(
     commands: &mut Commands,
     last_tile: Tile,
-    word: &Word ,
+    word: &Word,
     is_first_time: bool,
     asset_server: &AssetServer,
     size: &Size,
-    level: &CurrentLevel
+    level: &CurrentLevel,
 ) {
     let color = if is_first_time {
         Color::LIME_GREEN
@@ -31,7 +32,15 @@ pub fn animate_solution(
 
     const SECONDS: f32 = 2.0;
 
-    let Some(word_index) = level.level().words.iter().position(|x|x == word).and_then(|x| WordTile::try_from_usize(x)) else {return;};
+    let Some(word_index) = level
+        .level()
+        .words
+        .iter()
+        .position(|x| x == word)
+        .and_then(|x| WordTile::try_from_usize(x))
+    else {
+        return;
+    };
 
     let start_position = size.get_rect(&LayoutGridTile(last_tile)).centre();
 
@@ -60,7 +69,9 @@ pub fn animate_solution(
         },
         Text2dBundle {
             text,
-            transform: Transform::from_translation(start_position.extend(crate::z_indices::ANIMATED_SOLUTION)),
+            transform: Transform::from_translation(
+                start_position.extend(crate::z_indices::ANIMATED_SOLUTION),
+            ),
             ..Default::default()
         },
         Transition::<TransformTranslationLens>::new(TransitionStep::new_arc(
@@ -72,8 +83,6 @@ pub fn animate_solution(
 
     commands.spawn(components);
 }
-
-
 
 #[derive(Debug, Component)]
 pub(crate) struct ScheduledForDeletion {
