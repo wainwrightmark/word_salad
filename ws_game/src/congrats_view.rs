@@ -31,11 +31,7 @@ impl MavericNode for CongratsView {
                     LevelTime::Started(_) => {},
                     LevelTime::Finished { total_seconds } => {
 
-                        let hh = total_seconds / 3600;
-                        let mm = (total_seconds /60) % 60;
-                        let ss = total_seconds % 60;
-
-                        let time_str = format!("{hh:02}:{mm:02}:{ss:02}");
+                        let time_str = format_seconds(*total_seconds);
 
                         commands.add_child(
                             "time",

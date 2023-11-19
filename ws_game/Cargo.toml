@@ -73,3 +73,6 @@ features = [
   "bevy_gizmos",
   "png"
 ]
+
+[features]
+steam = []

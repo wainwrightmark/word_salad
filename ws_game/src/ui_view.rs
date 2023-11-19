@@ -1,6 +1,6 @@
 use crate::prelude::*;
 use itertools::Itertools;
-use maveric::{transition::speed::ScalarSpeed, widgets::text2d_node::Text2DNode};
+use maveric::{transition::speed::ScalarSpeed, widgets::text2d_node::Text2DNode, with_bundle::WithBundle};
 #[derive(Debug, Clone, PartialEq)]
 pub struct UI;
 
@@ -46,6 +46,37 @@ impl MavericNode for UI {
                                 .extend(crate::z_indices::TOP_BAR_BUTTON),
                         ),
                     },
+                    &(),
+                );
+
+                let time_text = match context.4.as_ref(){
+                    LevelTime::Started(..) => "00:00".to_string(),
+                    LevelTime::Finished { total_seconds } => format_seconds(*total_seconds),
+                };
+
+                commands.add_child(
+                    "TimeCounter",
+                    WithBundle{
+                        node:Text2DNode {
+                            text: TextNode {
+                                text: time_text,
+                                font_size: BUTTON_FONT_SIZE,
+                                color: BUTTON_TEXT_COLOR,
+                                font: MENU_BUTTON_FONT_PATH,
+                                alignment: TextAlignment::Center,
+                                linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                            },
+
+                            transform: Transform::from_translation(
+                                size.get_rect(&TopBarButton::TimeCounter)
+                                    .centre()
+                                    .extend(crate::z_indices::TOP_BAR_BUTTON),
+                            ),
+                        },
+                        bundle: TimeCounterMarker
+                    }
+
+                    ,
                     &(),
                 );
 
