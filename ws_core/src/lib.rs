@@ -1,7 +1,7 @@
 pub mod character;
-pub mod word;
 pub mod finder;
 pub mod layout;
+pub mod word;
 pub use crate::prelude::*;
 
 pub mod prelude {

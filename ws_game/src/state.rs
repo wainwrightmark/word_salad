@@ -44,15 +44,14 @@ impl TrackableResource for FoundWordsState {
 }
 
 impl FoundWordsState {
-
-    pub fn hint_set(&self)-> GridSet{
+    pub fn hint_set(&self) -> GridSet {
         let mut set = GridSet::default();
         for (word, hint) in self.hints.iter() {
             if self.found.contains(word) {
                 continue;
             }
 
-            for tile in hint.solution.iter().take(hint.number){
+            for tile in hint.solution.iter().take(hint.number) {
                 set.set_bit(tile, true);
             }
         }
@@ -65,22 +64,21 @@ impl FoundWordsState {
                 continue;
             }
 
-            if hint.number == current_chosen.len() + 1 {
-                if hint
+            if hint.number == current_chosen.len() + 1
+                && hint
                     .solution
                     .iter()
                     .take(hint.number)
                     .eq(current_chosen.iter().chain(std::iter::once(tile)))
-                {
-                    return true;
-                }
+            {
+                return true;
             }
         }
 
         false
     }
 
-    pub fn is_level_complete(&self, current_level: &CurrentLevel)-> bool{
+    pub fn is_level_complete(&self, current_level: &CurrentLevel) -> bool {
         self.found.len() >= current_level.level().words.len()
     }
 
@@ -92,29 +90,31 @@ impl FoundWordsState {
         if let Some(hints) = self.hints.get(word) {
             return Completion::Hinted(hints.number);
         }
-        return Completion::Incomplete;
+        Completion::Incomplete
     }
 
     pub fn hint_count(&self) -> usize {
         self.hints.values().map(|x| x.number).sum()
     }
 
-    pub fn try_hint_word(&mut self, current_level: &CurrentLevel, word_index: usize)-> bool{
+    pub fn try_hint_word(&mut self, current_level: &CurrentLevel, word_index: usize) -> bool {
         let level = current_level.level();
 
-        let Some(word) = level.words.get(word_index) else {return false;};
+        let Some(word) = level.words.get(word_index) else {
+            return false;
+        };
 
-        if self.found.contains(&word.characters){
+        if self.found.contains(&word.characters) {
             return false;
         }
 
-        match self.hints.entry(word.characters.clone()){
+        match self.hints.entry(word.characters.clone()) {
             bevy::utils::hashbrown::hash_map::Entry::Occupied(mut o) => {
-                if o.get().number >= word.characters.len(){
+                if o.get().number >= word.characters.len() {
                     return false; //already fully hinted
                 }
                 o.get_mut().number += 1;
-                return true;
+                true
             }
             bevy::utils::hashbrown::hash_map::Entry::Vacant(v) => {
                 match word.find_solution(&level.grid) {
@@ -130,7 +130,7 @@ impl FoundWordsState {
                     }
                 }
 
-                return true;
+                true
             }
         }
     }
@@ -185,7 +185,7 @@ impl FoundWordsState {
             }
         }
 
-        return false;
+        false
     }
 }
 
@@ -234,7 +234,7 @@ fn track_found_words(
                     is_first_time,
                     &asset_server,
                     &size,
-                    &level
+                    &level,
                 );
             }
 

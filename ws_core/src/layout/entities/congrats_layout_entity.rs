@@ -5,8 +5,9 @@ use crate::prelude::*;
 
 use super::consts::*;
 
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter, EnumCount, Display)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter, EnumCount, Display,
+)]
 pub enum CongratsLayoutEntity {
     LevelTime = 0,
     ShareButton = 1,
@@ -44,7 +45,12 @@ impl LayoutStructure for CongratsLayoutEntity {
             x: (IDEAL_WIDTH - CONGRATS_ENTITY_WIDTH) / 2.,
             y: TOP_BAR_ICON_SIZE
                 + TEXT_AREA_HEIGHT
-                + Spacing::Centre.apply(GRID_SIZE, CONGRATS_ENTITY_HEIGHT, Self::COUNT, self.index()),
+                + Spacing::Centre.apply(
+                    GRID_SIZE,
+                    CONGRATS_ENTITY_HEIGHT,
+                    Self::COUNT,
+                    self.index(),
+                ),
         }
     }
 
@@ -53,8 +59,8 @@ impl LayoutStructure for CongratsLayoutEntity {
     }
 }
 
-impl LayoutStructureWithText for CongratsLayoutEntity{
-    fn font_size()-> f32 {
+impl LayoutStructureWithText for CongratsLayoutEntity {
+    fn font_size() -> f32 {
         22.0
     }
 }

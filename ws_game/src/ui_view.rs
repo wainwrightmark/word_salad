@@ -60,7 +60,6 @@ impl MavericNode for UI {
                     LevelTime::Finished { total_seconds } => format_seconds(*total_seconds),
                 };
 
-
                 let time_translation = if context.2.is_level_complete(context.1.as_ref()) {
                     size.get_rect(&CongratsLayoutEntity::LevelTime, &())
                         .centre()
@@ -71,36 +70,36 @@ impl MavericNode for UI {
                         .extend(crate::z_indices::TOP_BAR_BUTTON)
                 };
 
-                commands
-                    .add_child(
-                        "TimeCounter",
-                        WithBundle {
-                            node: Text2DNode {
-                                text: TextNode {
-                                    text: time_text,
-                                    font_size: top_bar_font_size,
-                                    color: BUTTON_TEXT_COLOR,
-                                    font: MENU_BUTTON_FONT_PATH,
-                                    alignment: TextAlignment::Center,
-                                    linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                                },
+                commands.add_child(
+                    "TimeCounter",
+                    WithBundle {
+                        node: Text2DNode {
+                            text: TextNode {
+                                text: time_text,
+                                font_size: top_bar_font_size,
+                                color: BUTTON_TEXT_COLOR,
+                                font: MENU_BUTTON_FONT_PATH,
+                                alignment: TextAlignment::Center,
+                                linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                            },
 
-                                transform: Transform::from_translation(size.get_rect(&LayoutTopBarButton::TimeCounter, &())
-                                .centre()
-                                .extend(crate::z_indices::TOP_BAR_BUTTON)),
-                            },
-                            bundle: TimeCounterMarker,
-                        }
-                        .with_transition_to::<TransformTranslationLens>( //TODO improve this animation
-                            time_translation,
-                            LinearSpeed {
-                                units_per_second: 100.0,
-                            },
-                        )
-                        ,
-                        &(),
-                    )
-                   ;
+                            transform: Transform::from_translation(
+                                size.get_rect(&LayoutTopBarButton::TimeCounter, &())
+                                    .centre()
+                                    .extend(crate::z_indices::TOP_BAR_BUTTON),
+                            ),
+                        },
+                        bundle: TimeCounterMarker,
+                    }
+                    .with_transition_to::<TransformTranslationLens>(
+                        //TODO improve this animation
+                        time_translation,
+                        LinearSpeed {
+                            units_per_second: 100.0,
+                        },
+                    ),
+                    &(),
+                );
 
                 commands.add_child(
                     "hints",
@@ -191,7 +190,7 @@ impl MavericNode for WordsNode {
                 for (index, word) in words.iter().enumerate() {
                     let completion = context.2.get_completion(&word.characters);
                     let tile = LayoutWordTile(index);
-                    let rect = context.3.get_rect(&tile, &words);
+                    let rect = context.3.get_rect(&tile, words);
                     commands.add_child(
                         index as u32,
                         WordNode {

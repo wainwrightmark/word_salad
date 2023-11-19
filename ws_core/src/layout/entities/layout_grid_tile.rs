@@ -1,8 +1,7 @@
+use super::*;
+use crate::prelude::*;
 use glam::Vec2;
 use std::ops::Add;
-use crate::prelude::*;
-use super::*;
-
 
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct LayoutGridTile(pub Tile);

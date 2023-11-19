@@ -24,13 +24,13 @@ impl InputType {
         &self,
 
         size: &Size,
-        current_level: &mut ResMut<CurrentLevel> ,
+        current_level: &mut ResMut<CurrentLevel>,
         menu_state: &mut ResMut<MenuState>,
         chosen_state: &mut ResMut<ChosenState>,
         input_state: &mut Local<GridInputState>,
         found_words: &mut ResMut<FoundWordsState>,
     ) {
-        let level_complete = found_words.is_level_complete(&current_level);
+        let level_complete = found_words.is_level_complete(current_level);
         match self {
             InputType::Start(position) => {
                 let Some(layout_entity) = size.try_pick::<GameLayoutEntity>(*position, &()) else {
@@ -38,7 +38,8 @@ impl InputType {
                 };
                 match layout_entity {
                     GameLayoutEntity::TopBar => {
-                        let Some(button) = size.try_pick::<LayoutTopBarButton>(*position, &()) else {
+                        let Some(button) = size.try_pick::<LayoutTopBarButton>(*position, &())
+                        else {
                             return;
                         };
                         match button {
@@ -53,34 +54,37 @@ impl InputType {
                     }
                     GameLayoutEntity::TextArea => {}
                     GameLayoutEntity::Grid => {
+                        if level_complete {
+                            let Some(entity) =
+                                size.try_pick::<CongratsLayoutEntity>(*position, &())
+                            else {
+                                return;
+                            };
 
-                        if level_complete{
-                            let Some(entity) = size.try_pick::<CongratsLayoutEntity>(*position, &()) else{return;};
-
-                            match entity{
+                            match entity {
                                 CongratsLayoutEntity::ShareButton => {
                                     //todo wasm share
                                     #[cfg(target_arch = "wasm32")]
                                     {
                                         crate::wasm::share();
                                     }
-                                },
+                                }
                                 CongratsLayoutEntity::NextButton => {
                                     current_level.to_next_level(found_words.as_mut());
-                                },
-                                CongratsLayoutEntity::LevelTime => {},
+                                }
+                                CongratsLayoutEntity::LevelTime => {}
                             }
-
-                        }
-                        else{
-                            let Some(tile) = size.try_pick::<LayoutGridTile>(*position, &()) else {return;};
+                        } else {
+                            let Some(tile) = size.try_pick::<LayoutGridTile>(*position, &()) else {
+                                return;
+                            };
                             let grid = &current_level.level().grid;
                             input_state.handle_input_start(chosen_state, tile.0, grid, found_words);
                         }
                     }
                     GameLayoutEntity::WordList => {
                         let words = &current_level.level().words;
-                        let Some(word) = size.try_pick::<LayoutWordTile>(*position, &words) else {
+                        let Some(word) = size.try_pick::<LayoutWordTile>(*position, words) else {
                             return;
                         };
 
@@ -102,7 +106,9 @@ impl InputType {
             }
             InputType::End(position) => match position {
                 Some(position) => {
-                    if level_complete{return;};
+                    if level_complete {
+                        return;
+                    };
                     if let Some(tile) = size.try_pick::<LayoutGridTile>(*position, &()) {
                         input_state.handle_input_end(chosen_state, tile.0);
                     } else {
@@ -118,7 +124,6 @@ impl InputType {
 fn handle_mouse_input(
     mouse_input: Res<Input<MouseButton>>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
-
 
     size: Res<Size>,
     mut current_level: ResMut<CurrentLevel>,
@@ -197,7 +202,6 @@ fn handle_touch_input(
         input_type.handle(
             &size,
             &mut current_level,
-
             &mut menu_state,
             &mut chosen_state,
             &mut input_state,

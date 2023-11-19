@@ -1,17 +1,17 @@
 pub mod entities;
+pub mod flex;
 pub mod layout_sizing;
 pub mod layout_structure;
 pub mod rect;
 pub mod spacing;
-pub mod flex;
 
-pub mod prelude{
+pub mod prelude {
 
+    pub use crate::layout::flex::*;
     pub use crate::layout::layout_sizing::*;
     pub use crate::layout::layout_structure::*;
     pub use crate::layout::rect::*;
     pub use crate::layout::spacing::*;
-    pub use crate::layout::flex::*;
 }
 
 #[cfg(test)]
@@ -19,8 +19,8 @@ mod tests {
     use glam::Vec2;
     use strum::IntoEnumIterator;
 
-    use crate::prelude::*;
     use crate::layout::entities::*;
+    use crate::prelude::*;
 
     // TODO check that all children are contained within parents
     // TODO check that all siblings do not intersect each other

@@ -2,8 +2,8 @@ use crate::constants::SaladWindowSize;
 use crate::prelude::*;
 use bevy::prelude::*;
 use maveric::transition::speed::calculate_speed;
-use ws_core::prelude::*;
 use ws_core::layout::entities::*;
+use ws_core::prelude::*;
 
 pub struct AnimatedSolutionPlugin;
 
@@ -33,18 +33,13 @@ pub fn animate_solution(
     const SECONDS: f32 = 2.0;
     let words = &level.level().words;
 
-    let Some(layout_word_tile) =
-        words
-        .iter()
-        .position(|x| x == word)
-        .map(|x| LayoutWordTile(x))
-    else {
+    let Some(layout_word_tile) = words.iter().position(|x| x == word).map(LayoutWordTile) else {
         return;
     };
 
     let start_position = size.get_rect(&LayoutGridTile(last_tile), &()).centre();
 
-    let destination = size.get_rect(&layout_word_tile, &words).centre();
+    let destination = size.get_rect(&layout_word_tile, words).centre();
 
     let speed = calculate_speed(
         &start_position,

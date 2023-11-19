@@ -5,9 +5,9 @@ use maveric::{
     widgets::text2d_node::Text2DNode,
 };
 use std::time::Duration;
-use ws_core::Tile;
-use ws_core::prelude::*;
 use ws_core::layout::entities::*;
+use ws_core::prelude::*;
+use ws_core::Tile;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct GridTile {
@@ -53,7 +53,7 @@ impl MavericNode for GridTiles {
                     let size = context.3.as_ref();
                     let tile_size = size.tile_size();
                     let font_size = size.font_size::<LayoutGridTile>();
-                    let centre = size.get_rect(&LayoutGridTile(tile), &() ).centre();
+                    let centre = size.get_rect(&LayoutGridTile(tile), &()).centre();
 
                     commands.add_child(
                         tile.inner() as u32,
@@ -78,7 +78,6 @@ impl MavericNode for GridTile {
     type Context = NoContext;
 
     fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
-
         commands.scope(|x| {
             x.ignore_context()
                 .map_args(|x| &x.centre)
@@ -146,7 +145,7 @@ impl MavericNode for GridTile {
                     character: node.character,
                     font_size: node.font_size,
                 },
-                &context,
+                context,
             );
         })
     }
@@ -178,7 +177,7 @@ impl MavericNode for GridLetter {
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
-        commands.unordered_children_with_node(|args,  commands| {
+        commands.unordered_children_with_node(|args, commands| {
             commands.add_child(
                 0,
                 Text2DNode {
@@ -209,10 +208,7 @@ impl MavericNode for WordLine {
             let mut builder = PathBuilder::new();
 
             for (index, tile) in context.0 .0.iter().enumerate() {
-                let position = context
-                    .3
-                    .get_rect(&LayoutGridTile(*tile), &())
-                    .centre();
+                let position = context.3.get_rect(&LayoutGridTile(*tile), &()).centre();
                 if index == 0 {
                     builder.move_to(position);
                 } else {
@@ -225,7 +221,9 @@ impl MavericNode for WordLine {
             (
                 ShapeBundle {
                     path: builder.build(),
-                    spatial: SpatialBundle::from_transform(Transform::from_translation(Vec3::new(0.0, 0.0, 0.5))),
+                    spatial: SpatialBundle::from_transform(Transform::from_translation(Vec3::new(
+                        0.0, 0.0, 0.5,
+                    ))),
                     ..Default::default()
                 },
                 Stroke {

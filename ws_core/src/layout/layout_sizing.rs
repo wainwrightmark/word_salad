@@ -1,5 +1,5 @@
-use glam::Vec2;
 use crate::layout::prelude::*;
+use glam::Vec2;
 
 pub struct LayoutSizing {
     pub size_ratio: f32,
@@ -32,7 +32,12 @@ impl LayoutSizing {
         }
     }
 
-    pub fn try_pick_entity<T: LayoutStructure>(&self, position: Vec2, tolerance: f32, context: &T::Context) -> Option<T> {
+    pub fn try_pick_entity<T: LayoutStructure>(
+        &self,
+        position: Vec2,
+        tolerance: f32,
+        context: &T::Context,
+    ) -> Option<T> {
         let x = position.x - self.left_pad;
         let y = position.y;
 
@@ -72,14 +77,18 @@ impl LayoutSizing {
         }
     }
 
-    pub fn get_rect<T: LayoutStructure>(&self, entity: &T, context: &T::Context) -> LayoutRectangle {
+    pub fn get_rect<T: LayoutStructure>(
+        &self,
+        entity: &T,
+        context: &T::Context,
+    ) -> LayoutRectangle {
         LayoutRectangle {
             top_left: self.get_location(entity, context),
             extents: self.get_size(entity, context),
         }
     }
 
-    pub fn font_size<T: LayoutStructureWithText>(&self)-> f32{
+    pub fn font_size<T: LayoutStructureWithText>(&self) -> f32 {
         const FONT_INTERVAL: f32 = 4.0;
         let base_size = T::font_size();
 

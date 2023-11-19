@@ -1,10 +1,12 @@
+use crate::prelude::*;
 use glam::Vec2;
 use strum::{Display, EnumCount, EnumIter, IntoEnumIterator};
-use crate::prelude::*;
 
 use super::consts::*;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter, Display, EnumCount)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter, Display, EnumCount,
+)]
 pub enum GameLayoutEntity {
     TopBar,
     TextArea,

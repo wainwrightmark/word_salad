@@ -1,13 +1,15 @@
 use bevy::prelude::*;
-use nice_bevy_utils::async_event_writer::AsyncEventWriter;
 use maveric::transition::prelude::*;
 use maveric::{impl_maveric_root, prelude::*};
+use nice_bevy_utils::async_event_writer::AsyncEventWriter;
 
 use std::string::ToString;
 use std::time::Duration;
 use strum::{Display, EnumIs};
 
-use crate::constants::{level_count, level_name, CurrentLevel, VideoResource, VideoEvent, MENU_BUTTON_FONT_PATH};
+use crate::constants::{
+    level_count, level_name, CurrentLevel, VideoEvent, VideoResource, MENU_BUTTON_FONT_PATH,
+};
 use crate::state::{ChosenState, FoundWordsState};
 
 pub struct MenuPlugin;
@@ -46,12 +48,12 @@ pub enum ButtonAction {
 impl ButtonAction {
     pub fn main_buttons() -> &'static [Self] {
         use ButtonAction::*;
-        &[Resume,
-        ChooseLevel,
-        ResetLevel,
-        #[cfg(target_arch = "wasm32")]
-        Video
-
+        &[
+            Resume,
+            ChooseLevel,
+            ResetLevel,
+            #[cfg(target_arch = "wasm32")]
+            Video,
         ]
     }
 
@@ -100,7 +102,7 @@ fn button_system(
     mut found_words: ResMut<FoundWordsState>,
     mut chosen_state: ResMut<ChosenState>,
     video_state: Res<VideoResource>,
-    video_events: AsyncEventWriter<VideoEvent>
+    video_events: AsyncEventWriter<VideoEvent>,
 ) {
     for (interaction, action) in &mut interaction_query {
         if *interaction != Interaction::Pressed {
@@ -111,17 +113,13 @@ fn button_system(
             ButtonAction::OpenMenu => *state = MenuState::ShowMainMenu,
             ButtonAction::ChooseLevel => *state = MenuState::ShowLevelsPage(0),
             ButtonAction::NextLevelsPage => {
-                match state.as_ref() {
-                    MenuState::ShowLevelsPage(x) => *state = MenuState::ShowLevelsPage(x + 1),
-                    _ => {}
+                if let MenuState::ShowLevelsPage(x) = state.as_ref() {
+                    *state = MenuState::ShowLevelsPage(x + 1)
                 };
             }
             ButtonAction::PreviousLevelsPage => {
-                match state.as_ref() {
-                    MenuState::ShowLevelsPage(x) => {
-                        *state = MenuState::ShowLevelsPage(x.saturating_sub(1))
-                    }
-                    _ => {}
+                if let MenuState::ShowLevelsPage(x) = state.as_ref() {
+                    *state = MenuState::ShowLevelsPage(x.saturating_sub(1))
                 };
             }
             ButtonAction::None => {}
@@ -202,8 +200,6 @@ impl MavericRootChildren for MenuRoot {
         commands.add_child("carousel", carousel, context);
     }
 }
-
-
 
 fn icon_button_node(button_action: ButtonAction) -> impl MavericNode<Context = NoContext> {
     ButtonNode {
@@ -296,37 +292,39 @@ impl MavericNode for MainOrLevelMenu {
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
-        commands.ignore_context().unordered_children_with_node(|args,  commands| match args {
-            MainOrLevelMenu::Main => {
-                for (key, action) in ButtonAction::main_buttons().iter().enumerate() {
-                    let button = text_button_node(*action);
-                    let button = button.with_transition_in::<BackgroundColorLens>(
-                        Color::WHITE.with_a(0.0),
-                        Color::WHITE,
-                        Duration::from_secs_f32(1.0),
-                    );
+        commands
+            .ignore_context()
+            .unordered_children_with_node(|args, commands| match args {
+                MainOrLevelMenu::Main => {
+                    for (key, action) in ButtonAction::main_buttons().iter().enumerate() {
+                        let button = text_button_node(*action);
+                        let button = button.with_transition_in::<BackgroundColorLens>(
+                            Color::WHITE.with_a(0.0),
+                            Color::WHITE,
+                            Duration::from_secs_f32(1.0),
+                        );
 
-                    commands.add_child(key as u32, button, &())
+                        commands.add_child(key as u32, button, &())
+                    }
                 }
-            }
-            MainOrLevelMenu::Level(page) => {
-                let start = page * LEVELS_PER_PAGE;
-                let end = start + LEVELS_PER_PAGE;
+                MainOrLevelMenu::Level(page) => {
+                    let start = page * LEVELS_PER_PAGE;
+                    let end = start + LEVELS_PER_PAGE;
 
-                for (key, level) in (start..end).enumerate() {
-                    commands.add_child(
-                        key as u32,
-                        text_and_image_button_node(
-                            ButtonAction::GotoLevel { level },
-                            r#"images/MedalsBlack.png"#,
-                        ),
-                        &(),
-                    )
+                    for (key, level) in (start..end).enumerate() {
+                        commands.add_child(
+                            key as u32,
+                            text_and_image_button_node(
+                                ButtonAction::GotoLevel { level },
+                                r#"images/MedalsBlack.png"#,
+                            ),
+                            &(),
+                        )
+                    }
+
+                    commands.add_child("buttons", LevelMenuArrows(*page), &());
                 }
-
-                commands.add_child("buttons", LevelMenuArrows(*page), &());
-            }
-        });
+            });
     }
 }
 
@@ -402,8 +400,6 @@ pub const TEXT_BUTTON_HEIGHT: f32 = 60.;
 pub const MENU_OFFSET: f32 = 10.;
 
 pub const UI_BORDER_WIDTH: Val = Val::Px(3.0);
-
-
 
 const ICON_FONT_SIZE: f32 = 30.0;
 const BUTTON_FONT_SIZE: f32 = 22.0;

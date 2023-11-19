@@ -61,32 +61,28 @@ fn manage_timer(
     }
 }
 
-fn count_up(mut query: Query<&mut Text, With<TimeCounterMarker>>, timer: Res<LevelTime>){
+fn count_up(mut query: Query<&mut Text, With<TimeCounterMarker>>, timer: Res<LevelTime>) {
+    let LevelTime::Started(started) = timer.as_ref() else {
+        return;
+    };
 
-    let LevelTime::Started(started) = timer.as_ref() else {return;};
+    for mut t in query.iter_mut() {
+        if let Some(section) = t.sections.first_mut() {
+            let now = chrono::Utc::now();
+            let diff = now.signed_duration_since(started);
+            let total_seconds = diff.num_seconds().max(0) as u64;
 
-    for mut t in query.iter_mut(){
-
-        match t.sections.first_mut(){
-            Some(section) => {
-                let now = chrono::Utc::now();
-                let diff = now.signed_duration_since(started);
-                let total_seconds = diff.num_seconds().max(0) as u64;
-
-                section.value = format_seconds(total_seconds);
-            },
-            None => {},
+            section.value = format_seconds(total_seconds);
         }
     }
-
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Component)]
 pub struct TimeCounterMarker;
 
-pub fn format_seconds(total_seconds: u64)-> String{
+pub fn format_seconds(total_seconds: u64) -> String {
     let hh = total_seconds / 3600;
-    let mm = (total_seconds /60) % 60;
+    let mm = (total_seconds / 60) % 60;
     let ss = total_seconds % 60;
 
     let time_str = format!("{hh:02}:{mm:02}:{ss:02}");

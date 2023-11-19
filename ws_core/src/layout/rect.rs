@@ -1,6 +1,5 @@
 use glam::Vec2;
 
-
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct LayoutRectangle {
     pub top_left: Vec2,
@@ -25,8 +24,10 @@ impl LayoutRectangle {
     }
 
     /// If the point in inside this rect, return another point, scaled to 0.0..1.0
-    pub fn scaled_inside(&self, point: Vec2)-> Option<Vec2>{
-        if !self.contains(point){return None;}
+    pub fn scaled_inside(&self, point: Vec2) -> Option<Vec2> {
+        if !self.contains(point) {
+            return None;
+        }
 
         Some((point - self.top_left) / self.extents)
     }

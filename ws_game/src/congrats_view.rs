@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use maveric:: widgets::text2d_node::Text2DNode;
+use maveric::widgets::text2d_node::Text2DNode;
 use ws_core::layout::entities::*;
 #[derive(Debug, Clone, PartialEq)]
 pub struct CongratsView;
@@ -7,15 +7,14 @@ pub struct CongratsView;
 //pub const BUTTON_FONT_SIZE: f32 = 22.0;
 pub const BUTTON_TEXT_COLOR: Color = Color::rgb(0.1, 0.1, 0.1);
 
-
 impl MavericNode for CongratsView {
-    type Context = NC5<ChosenState, CurrentLevel, FoundWordsState,  Size, LevelTime>;
+    type Context = NC5<ChosenState, CurrentLevel, FoundWordsState, Size, LevelTime>;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
             .ignore_context()
             .ignore_node()
-            .insert(SpatialBundle::default() )
+            .insert(SpatialBundle::default())
             .finish()
     }
 
@@ -26,7 +25,8 @@ impl MavericNode for CongratsView {
                 let size = &context.3;
                 let font_size = size.font_size::<CongratsLayoutEntity>();
 
-                #[cfg(target_arch = "wasm32")]{
+                #[cfg(target_arch = "wasm32")]
+                {
                     commands.add_child(
                         "share",
                         Text2DNode {
@@ -47,8 +47,6 @@ impl MavericNode for CongratsView {
                         &(),
                     );
                 }
-
-
 
                 commands.add_child(
                     "next level",

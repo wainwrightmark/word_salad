@@ -17,15 +17,14 @@ fn main() {
 
         values.zip(categories.iter_mut()).for_each(|(v, c)| {
             let v = v.trim();
-            if !v.is_empty(){
+            if !v.is_empty() {
                 c.data.push(v.to_string());
             }
-
         });
     }
     std::fs::create_dir_all("sheet_reader_data").unwrap();
 
-    for category in categories.into_iter(){
+    for category in categories.into_iter() {
         let path = format!("sheet_reader_data/{}.txt", category.name);
 
         let contents = category.data.join("\n");

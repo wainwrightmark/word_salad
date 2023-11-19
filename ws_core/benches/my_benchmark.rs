@@ -1,5 +1,8 @@
 use criterion::{criterion_group, criterion_main, Criterion};
-use ws_core::{finder::{node::try_make_grid_with_blank_filling, helpers::LetterCounts, counter::FakeCounter}, Character};
+use ws_core::{
+    finder::{counter::FakeCounter, helpers::LetterCounts, node::try_make_grid_with_blank_filling},
+    Character,
+};
 
 pub fn criterion_benchmark(c: &mut Criterion) {
     let words = ws_core::finder::helpers::make_words_vec_from_file(
@@ -18,7 +21,6 @@ pub fn criterion_benchmark(c: &mut Criterion) {
         panic!("Too many letters");
     }
 
-
     let mut blanks_to_add = 16usize.saturating_sub(letter_count);
     while blanks_to_add > 0 {
         match letters.try_insert(Character::Blank) {
@@ -31,9 +33,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     }
 
     c.bench_function("EU Countries", |b| {
-        b.iter(|| {
-            try_make_grid_with_blank_filling(letters, &words, Character::E, &mut FakeCounter)
-        })
+        b.iter(|| try_make_grid_with_blank_filling(letters, &words, Character::E, &mut FakeCounter))
     });
 }
 

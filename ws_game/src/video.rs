@@ -11,7 +11,6 @@ impl Plugin for VideoPlugin {
         app.register_async_event::<VideoEvent>();
         #[cfg(target_arch = "wasm32")]
         {
-
             app.add_systems(Update, handle_video_event);
         }
     }

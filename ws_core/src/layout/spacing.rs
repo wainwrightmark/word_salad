@@ -1,6 +1,5 @@
 use glam::Vec2;
 
-
 pub fn tile_offset<const WIDTH: u8, const HEIGHT: u8>(
     tile: geometrid::tile::Tile<WIDTH, HEIGHT>,
     h_spacing: Spacing,
@@ -14,12 +13,11 @@ pub fn tile_offset<const WIDTH: u8, const HEIGHT: u8>(
     Vec2 { x, y }
 }
 
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Spacing {
     SpaceBetween,
     SpaceAround,
-    Centre
+    Centre,
 }
 
 impl Spacing {

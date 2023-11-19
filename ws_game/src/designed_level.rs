@@ -1,9 +1,9 @@
 use std::collections::BTreeMap;
 
 use bevy::utils::{HashMap, HashSet};
-use nice_bevy_utils::TrackableResource;
 use itertools::Itertools;
 use lazy_static::lazy_static;
+use nice_bevy_utils::TrackableResource;
 use serde::{Deserialize, Serialize};
 
 use crate::prelude::*;
@@ -35,19 +35,21 @@ impl CurrentLevel {
         }
     }
 
-    pub fn to_next_level(&mut self, found_words: &mut FoundWordsState){
+    pub fn to_next_level(&mut self, found_words: &mut FoundWordsState) {
         let next_index = match *self {
             CurrentLevel::Fixed { level_index } => level_index.saturating_add(1),
             CurrentLevel::Custom(_) => 0,
         };
 
-        *self = CurrentLevel::Fixed { level_index: next_index };
+        *self = CurrentLevel::Fixed {
+            level_index: next_index,
+        };
         *found_words = FoundWordsState::default();
     }
 }
 
-pub fn update_lazy_level_data(level: Res<CurrentLevel>, mut data: ResMut<LazyLevelData>){
-    if level.is_changed(){
+pub fn update_lazy_level_data(level: Res<CurrentLevel>, mut data: ResMut<LazyLevelData>) {
+    if level.is_changed() {
         *data = LazyLevelData::new(level.level());
     }
 }
@@ -59,9 +61,11 @@ pub struct LazyLevelData {
 }
 
 impl LazyLevelData {
-
-    pub fn new_empty()->Self{
-        Self { words_map: Default::default(), tiles_used: Default::default() }
+    pub fn new_empty() -> Self {
+        Self {
+            words_map: Default::default(),
+            tiles_used: Default::default(),
+        }
     }
 
     pub fn new(level: &DesignedLevel) -> Self {
@@ -113,25 +117,23 @@ pub struct DesignedLevel {
     pub words: Vec<Word>,
 }
 
-const LEVEL_LINES: &'static str = include_str!("levels.tsv");
+const LEVEL_LINES: &str = include_str!("levels.tsv");
 lazy_static! {
     static ref LEVELS: Vec<DesignedLevel> = {
         let lines = LEVEL_LINES.lines();
 
-        let r: Vec<DesignedLevel> = lines
-            .map(|line| DesignedLevel::from_tsv_line(line))
-            .collect();
+        let r: Vec<DesignedLevel> = lines.map(DesignedLevel::from_tsv_line).collect();
         r
     };
 }
 
-pub fn level_name(index: u32)-> String{
+pub fn level_name(index: u32) -> String {
     let index = (index as usize) % LEVELS.len();
 
     LEVELS[index].name.clone()
 }
 
-pub fn level_count()-> u32{
+pub fn level_count() -> u32 {
     LEVEL_LINES.len() as u32
 }
 
@@ -143,10 +145,8 @@ impl DesignedLevel {
         let name: &str = iter.next().expect("Level should have name");
 
         let grid = try_make_grid(chars)
-        .map(|x|x.with_flip(FlipAxes::Vertical))
-        .expect("Should be able to make grid")
-        ;
-
+            .map(|x| x.with_flip(FlipAxes::Vertical))
+            .expect("Should be able to make grid");
 
         let words = iter
             .map(|x| x.trim().to_string())

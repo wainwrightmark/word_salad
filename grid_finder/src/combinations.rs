@@ -262,7 +262,10 @@ pub mod tests {
         "SILVER, ORANGE, GREEN, IVORY, CORAL, OLIVE, TEAL, GRAY, CYAN, RED",
         "SILVER, ORANGE, GREEN, IVORY, CORAL, OLIVE, TEAL, GRAY, CYAN, RED"
     )]
-    #[test_case("Teal, Wheat, White, Green, Cyan, Gray, Coral, Orange, Magenta","Teal, Wheat, White, Green, Cyan, Gray, Coral, Orange, Magenta") ]
+    #[test_case(
+        "Teal, Wheat, White, Green, Cyan, Gray, Coral, Orange, Magenta",
+        "Teal, Wheat, White, Green, Cyan, Gray, Coral, Orange, Magenta"
+    )]
     #[test_case("White, Yellow, Blue, Red, Green, Black, Brown, Azure, Ivory, Teal, Silver, Purple, Gray, Orange, Maroon, Charcoal, Aquamarine, Coral, Fuchsia, Wheat, Lime, Crimson, Khaki, pink, Magenta, Gold, Plum, Olive, Cyan","Black, Coral, Cyan, Gray, Green, Ivory, Olive, Orange, Red, Teal") ]
     pub fn test_membership(input: &'static str, expected_member: &'static str) {
         let now = Instant::now();
@@ -294,7 +297,6 @@ pub mod tests {
                 .into_iter()
                 .sorted()
                 .map(|x| x.display_string(words.as_slice()))
-
                 .join("\n");
 
             println!("{actual}");

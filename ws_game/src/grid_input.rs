@@ -36,8 +36,7 @@ impl GridInputState {
                 if allow_tile(tile, grid, found_words) {
                     chosen_state.0.push(tile);
                 }
-            }
-            else{
+            } else {
                 *chosen_state.as_mut() = ChosenState::default();
             }
         } else {

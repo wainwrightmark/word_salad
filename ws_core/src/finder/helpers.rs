@@ -10,7 +10,7 @@ pub fn make_words_vec_from_file(text: &str) -> Vec<FinderWord> {
     text.lines()
         .flat_map(|x| x.split(','))
         .flat_map(FinderWord::try_new)
-        .sorted_by_key(|x|x.counts)
+        .sorted_by_key(|x| x.counts)
         .dedup()
         .collect_vec()
 }
@@ -61,8 +61,4 @@ pub fn count_adjacent_indexes(word: &FinderWord, char: Character) -> usize {
 }
 
 #[cfg(test)]
-mod tests {
-
-
-
-}
+mod tests {}

@@ -1,4 +1,4 @@
-pub trait Counter{
+pub trait Counter {
     fn try_increment(&mut self) -> bool;
 }
 
@@ -19,7 +19,7 @@ impl Counter for RealCounter {
 
 pub struct FakeCounter;
 
-impl Counter for FakeCounter{
+impl Counter for FakeCounter {
     fn try_increment(&mut self) -> bool {
         true
     }

@@ -1,4 +1,4 @@
-use crate::{Character, Grid, prelude};
+use crate::{prelude, Character, Grid};
 use itertools::Itertools;
 use std::{
     cell::{Cell, RefCell},
@@ -40,7 +40,7 @@ impl FromStr for GridResult {
             .collect();
 
         let mut letters = LetterCounts::default();
-        for c in grid.iter(){
+        for c in grid.iter() {
             letters = letters.try_insert(*c).ok_or("Prime bag is too big")?;
         }
 

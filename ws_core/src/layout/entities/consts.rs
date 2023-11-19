@@ -16,7 +16,6 @@ pub const WORD_HEIGHT: f32 = 22.;
 pub const WORD_WIDTH_PER_CHARACTER: f32 = 10.;
 pub const WORD_WIDTH_FIXED: f32 = 20.;
 
-
 pub const WORD_LIST_WIDTH: f32 = IDEAL_WIDTH;
 pub const WORD_MAIN_PAD: f32 = 10.;
 pub const WORD_CROSS_PAD: f32 = 10.;

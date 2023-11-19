@@ -1,11 +1,12 @@
+use crate::prelude::*;
 use glam::Vec2;
 use strum::{Display, EnumCount, EnumIter, IntoEnumIterator};
-use crate::prelude::*;
-
 
 use super::consts::*;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Display, EnumIter, EnumCount)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Display, EnumIter, EnumCount,
+)]
 pub enum LayoutTextItem {
     PuzzleTitle,
     PuzzleTheme,
@@ -53,8 +54,8 @@ impl LayoutStructure for LayoutTextItem {
     }
 }
 
-impl LayoutStructureWithText for LayoutTextItem{
-    fn font_size()-> f32 {
+impl LayoutStructureWithText for LayoutTextItem {
+    fn font_size() -> f32 {
         32.0
     }
 }

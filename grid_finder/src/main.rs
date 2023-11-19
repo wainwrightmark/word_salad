@@ -31,9 +31,8 @@ struct Options {
     pub folder: String,
 
     #[arg(short, long, default_value = "5")]
-    pub minimum: u32
+    pub minimum: u32,
 }
-
 
 fn main() {
     let logger =
@@ -87,8 +86,6 @@ fn do_finder(options: Options) {
             .dedup()
             .collect_vec();
 
-
-
         let clusters = cluster_words(grids, &all_words, 10);
 
         let clusters_write_path = format!("clusters/{file_name}",);
@@ -106,7 +103,11 @@ fn do_finder(options: Options) {
     }
 }
 
-fn create_grids(all_words: &Vec<FinderWord>, mut file: BufWriter<File>, min_size: u32) -> Vec<GridResult> {
+fn create_grids(
+    all_words: &Vec<FinderWord>,
+    mut file: BufWriter<File>,
+    min_size: u32,
+) -> Vec<GridResult> {
     let word_letters: Vec<LetterCounts> = all_words.iter().map(|x| x.counts).collect();
     let possible_combinations: Vec<combinations::WordCombination> =
         get_combinations(word_letters.as_slice(), 16);
@@ -127,17 +128,17 @@ fn create_grids(all_words: &Vec<FinderWord>, mut file: BufWriter<File>, min_size
         .collect_vec();
 
     let mut all_solutions: Vec<GridResult> = vec![];
-    let mut solved_sets: Vec<WordSet>  = vec![];
+    let mut solved_sets: Vec<WordSet> = vec![];
 
     while let Some((size, mut sets)) = ordered_combinations.pop() {
-        if size < min_size{
+        if size < min_size {
             break;
         }
         let pb = ProgressBar::new(sets.len() as u64)
             .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:7}/{len:7}").unwrap())
             .with_message(format!("Groups of size {size}"));
 
-        sets.retain(|x|!solved_sets.iter().any(|sol| x == &sol.intersect(x)) );
+        sets.retain(|x| !solved_sets.iter().any(|sol| x == &sol.intersect(x)));
 
         let results: Vec<(WordCombination, Option<GridResult>)> = sets
             .par_drain()
@@ -174,12 +175,14 @@ fn create_grids(all_words: &Vec<FinderWord>, mut file: BufWriter<File>, min_size
             } else {
                 for new_set in combinations::shrink_bit_sets(&combination.word_indexes) {
                     next_set.insert(new_set);
-
                 }
             }
         }
 
-        let lines = solutions.iter().sorted_by_cached_key(|x|x.words.iter().sorted().join("")).join("\n");
+        let lines = solutions
+            .iter()
+            .sorted_by_cached_key(|x| x.words.iter().sorted().join(""))
+            .join("\n");
         if !lines.is_empty() {
             file.write((lines + "\n").as_bytes()).unwrap();
         }

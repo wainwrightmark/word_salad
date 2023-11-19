@@ -1,38 +1,44 @@
 use glam::Vec2;
 
-use crate::{LayoutStructure, LayoutRectangle};
+use crate::{LayoutRectangle, LayoutStructure};
 
-pub enum FlexLayout{
-    Row //todo column, row reverse etc
+pub enum FlexLayout {
+    Row, //todo column, row reverse etc
 }
 
-impl FlexLayout{
-
-    pub fn try_pick<T: LayoutStructure>(&self, full_size: Vec2, point: Vec2, context: &T::Context, main_axis_padding: f32, cross_axis_padding: f32 )-> Option<T>{
+impl FlexLayout {
+    pub fn try_pick<T: LayoutStructure>(
+        &self,
+        full_size: Vec2,
+        point: Vec2,
+        context: &T::Context,
+        main_axis_padding: f32,
+        cross_axis_padding: f32,
+    ) -> Option<T> {
         let mut prev_rows_total_height: f32 = 0.0;
         let mut current_row_total_width: f32 = 0.0;
         let mut current_row_max_height: f32 = 0.0;
 
-        for entity in T::iter_all(context){
-
+        for entity in T::iter_all(context) {
             let size = entity.size(context);
 
-            if current_row_total_width + size.x  > full_size.x{
+            if current_row_total_width + size.x > full_size.x {
                 //new row
                 prev_rows_total_height += current_row_max_height + cross_axis_padding;
                 current_row_max_height = size.y;
-                current_row_total_width= 0.0;
-
-            }
-            else{
+                current_row_total_width = 0.0;
+            } else {
                 //continue current row
                 current_row_max_height = current_row_max_height.max(size.y);
             }
-            let rect = LayoutRectangle{
-                top_left: Vec2 { x: current_row_total_width, y: prev_rows_total_height },
-                extents: size
+            let rect = LayoutRectangle {
+                top_left: Vec2 {
+                    x: current_row_total_width,
+                    y: prev_rows_total_height,
+                },
+                extents: size,
             };
-            if rect.contains(point){
+            if rect.contains(point) {
                 return Some(entity);
             }
 
@@ -40,32 +46,33 @@ impl FlexLayout{
             current_row_total_width += size.x + main_axis_padding;
         }
         None
-
     }
 
-    pub fn get_location<T: LayoutStructure>(&self, full_size: Vec2, to_find: &T, context: &T::Context, main_axis_padding: f32, cross_axis_padding: f32)
-
-    -> Vec2{
+    pub fn get_location<T: LayoutStructure>(
+        &self,
+        full_size: Vec2,
+        to_find: &T,
+        context: &T::Context,
+        main_axis_padding: f32,
+        cross_axis_padding: f32,
+    ) -> Vec2 {
         let mut prev_rows_total_height: f32 = 0.0;
         let mut current_row_total_width: f32 = 0.0;
         let mut current_row_max_height: f32 = 0.0;
 
-        for entity in T::iter_all(context){
-
+        for entity in T::iter_all(context) {
             let size = entity.size(context);
 
-            if current_row_total_width + size.x  > full_size.x{
+            if current_row_total_width + size.x > full_size.x {
                 //new row
                 prev_rows_total_height += current_row_max_height + cross_axis_padding;
                 current_row_max_height = size.y;
-                current_row_total_width= 0.0;
-
-            }
-            else{
+                current_row_total_width = 0.0;
+            } else {
                 //continue current row
                 current_row_max_height = current_row_max_height.max(size.y);
             }
-            if entity.eq(to_find){
+            if entity.eq(to_find) {
                 break;
             }
 
@@ -73,7 +80,9 @@ impl FlexLayout{
             current_row_total_width += size.x + main_axis_padding;
         }
 
-        Vec2 { x: current_row_total_width, y: prev_rows_total_height }
-
+        Vec2 {
+            x: current_row_total_width,
+            y: prev_rows_total_height,
+        }
     }
 }

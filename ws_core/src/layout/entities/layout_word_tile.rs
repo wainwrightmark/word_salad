@@ -33,14 +33,16 @@ impl LayoutStructure for LayoutWordTile {
             point,
             context,
             WORD_MAIN_PAD,
-            WORD_CROSS_PAD
-
+            WORD_CROSS_PAD,
         )
     }
 
     fn size(&self, context: &Self::Context) -> Vec2 {
         // TODO count characters not string length
-        let num_letters = context.get(self.0).map(|x|x.text.len()).unwrap_or_default();
+        let num_letters = context
+            .get(self.0)
+            .map(|x| x.text.len())
+            .unwrap_or_default();
 
         let width = WORD_WIDTH_FIXED + (num_letters as f32 * WORD_WIDTH_PER_CHARACTER);
 
@@ -58,7 +60,7 @@ impl LayoutStructure for LayoutWordTile {
             self,
             context,
             WORD_MAIN_PAD,
-            WORD_CROSS_PAD
+            WORD_CROSS_PAD,
         );
 
         parent_loc + offset

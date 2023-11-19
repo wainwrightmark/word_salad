@@ -19,7 +19,7 @@ use strum::{EnumCount, EnumIs, EnumIter};
     EnumCount,
     EnumIter,
     EnumIs,
-    FromPrimitive
+    FromPrimitive,
 )]
 #[repr(u8)]
 
@@ -53,25 +53,24 @@ pub enum Character {
     Blank,
 }
 
-impl PrimeBagElement for Character{
-    fn into_prime_index(&self)-> usize {
+impl PrimeBagElement for Character {
+    fn into_prime_index(&self) -> usize {
         *self as usize
     }
 
-    fn from_prime_index(value: usize)-> Self {
+    fn from_prime_index(value: usize) -> Self {
         FromPrimitive::from_usize(value).expect("Could not cast usize to character")
     }
 }
 
-impl std::fmt::Display for Character{
+impl std::fmt::Display for Character {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.as_char())
     }
 }
 
 impl Character {
-
-    pub fn to_tile_string(&self)-> String{
+    pub fn to_tile_string(&self) -> String {
         match self {
             Character::Blank => ' ',
             Character::A => 'A',
@@ -100,7 +99,8 @@ impl Character {
             Character::X => 'X',
             Character::Y => 'Y',
             Character::Z => 'Z',
-        }.to_string()
+        }
+        .to_string()
     }
 
     pub fn as_char(&self) -> char {

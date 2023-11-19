@@ -59,8 +59,6 @@ fn resizer(
 }
 
 pub fn share() {
-
-
     asynchronous::spawn_and_run(async {
         let Some(window) = web_sys::window() else {
             return;
@@ -69,17 +67,13 @@ pub fn share() {
         let mut share_data = ShareData::new();
         share_data.title("Word Salad");
         share_data.url("wordsalad.online"); //TODO pipe in time
-        let result = wasm_bindgen_futures::JsFuture::from(navigator.share_with_data(&share_data)).await;
+        let result =
+            wasm_bindgen_futures::JsFuture::from(navigator.share_with_data(&share_data)).await;
         match result {
-            Ok(_) => {
-
-            },
-            Err(err) => {
-                match JsException::try_from(err){
-                    Ok(e) => error!("{}", e.message),
-                    Err(_) => error!("Error whilst sharing"),
-                }
-
+            Ok(_) => {}
+            Err(err) => match JsException::try_from(err) {
+                Ok(e) => error!("{}", e.message),
+                Err(_) => error!("Error whilst sharing"),
             },
         }
     });
