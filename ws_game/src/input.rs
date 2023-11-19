@@ -58,7 +58,6 @@ impl InputType {
                             let Some(entity) = size.try_pick::<CongratsLayoutEntity>(*position) else{return;};
 
                             match entity{
-                                CongratsLayoutEntity::Time => {},
                                 CongratsLayoutEntity::ShareButton => {
                                     //todo wasm share
                                     #[cfg(target_arch = "wasm32")]

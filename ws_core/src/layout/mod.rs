@@ -1,6 +1,6 @@
 use glam::Vec2;
 use std::ops::Add;
-use strum::IntoEnumIterator;
+use strum::{IntoEnumIterator, EnumCount};
 use strum::{Display, EnumIter};
 
 use self::{
@@ -215,9 +215,8 @@ impl LayoutStructure for TopBarButton {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter, EnumCount)]
 pub enum CongratsLayoutEntity {
-    Time,
     ShareButton,
     NextButton,
 }
@@ -225,9 +224,9 @@ pub enum CongratsLayoutEntity {
 impl CongratsLayoutEntity {
     pub const fn index(&self) -> usize {
         match self {
-            CongratsLayoutEntity::Time => 0,
-            CongratsLayoutEntity::ShareButton => 1,
-            CongratsLayoutEntity::NextButton => 2,
+
+            CongratsLayoutEntity::ShareButton => 0,
+            CongratsLayoutEntity::NextButton => 1,
         }
     }
 }
@@ -257,7 +256,7 @@ impl LayoutStructure for CongratsLayoutEntity {
             x: (IDEAL_WIDTH - CONGRATS_ENTITY_WIDTH) / 2.,
             y: TOP_BAR_ICON_SIZE
                 + TEXT_AREA_HEIGHT
-                + Spacing::Centre.apply(GRID_SIZE, CONGRATS_ENTITY_HEIGHT, 3, self.index()),
+                + Spacing::Centre.apply(GRID_SIZE, CONGRATS_ENTITY_HEIGHT, Self::COUNT, self.index()),
         }
     }
 

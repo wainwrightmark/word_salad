@@ -25,35 +25,35 @@ impl MavericNode for CongratsView {
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
                 let size = &context.3;
-                let level_time = &context.4;
+                // let level_time = &context.4;
 
-                match level_time.as_ref(){
-                    LevelTime::Started(_) => {},
-                    LevelTime::Finished { total_seconds } => {
+                // match level_time.as_ref(){
+                //     LevelTime::Started(_) => {},
+                //     LevelTime::Finished { total_seconds } => {
 
-                        let time_str = format_seconds(*total_seconds);
+                //         let time_str = format_seconds(*total_seconds);
 
-                        commands.add_child(
-                            "time",
-                            Text2DNode {
-                                text: TextNode {
-                                    text: time_str,
-                                    font_size: BUTTON_FONT_SIZE,
-                                    color: BUTTON_TEXT_COLOR,
-                                    font: BUTTONS_FONT_PATH,
-                                    alignment: TextAlignment::Center,
-                                    linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                                },
-                                transform: Transform::from_translation(
-                                    size.get_rect(&CongratsLayoutEntity::Time)
-                                        .centre()
-                                        .extend(crate::z_indices::CONGRATS_BUTTON),
-                                ),
-                            },
-                            &(),
-                        );
-                    },
-                }
+                //         commands.add_child(
+                //             "time",
+                //             Text2DNode {
+                //                 text: TextNode {
+                //                     text: time_str,
+                //                     font_size: BUTTON_FONT_SIZE,
+                //                     color: BUTTON_TEXT_COLOR,
+                //                     font: BUTTONS_FONT_PATH,
+                //                     alignment: TextAlignment::Center,
+                //                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                //                 },
+                //                 transform: Transform::from_translation(
+                //                     size.get_rect(&CongratsLayoutEntity::Time)
+                //                         .centre()
+                //                         .extend(crate::z_indices::CONGRATS_BUTTON),
+                //                 ),
+                //             },
+                //             &(),
+                //         );
+                //     },
+                // }
 
 
 
