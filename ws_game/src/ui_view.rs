@@ -45,7 +45,7 @@ impl MavericNode for UI {
                         },
 
                         transform: Transform::from_translation(
-                            size.get_rect(&LayoutTopBarButton::MenuBurgerButton)
+                            size.get_rect(&LayoutTopBarButton::MenuBurgerButton, &())
                                 .centre()
                                 .extend(crate::z_indices::TOP_BAR_BUTTON),
                         ),
@@ -72,7 +72,7 @@ impl MavericNode for UI {
                             },
 
                             transform: Transform::from_translation(
-                                size.get_rect(&LayoutTopBarButton::TimeCounter)
+                                size.get_rect(&LayoutTopBarButton::TimeCounter, &())
                                     .centre()
                                     .extend(crate::z_indices::TOP_BAR_BUTTON),
                             ),
@@ -96,7 +96,7 @@ impl MavericNode for UI {
                             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         },
                         transform: Transform::from_translation(
-                            size.get_rect(&LayoutTopBarButton::HintCounter)
+                            size.get_rect(&LayoutTopBarButton::HintCounter, &())
                                 .centre()
                                 .extend(crate::z_indices::TOP_BAR_BUTTON),
                         ),
@@ -118,7 +118,7 @@ impl MavericNode for UI {
                             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         },
                         transform: Transform::from_translation(
-                            size.get_rect(&LayoutTextItem::PuzzleTitle)
+                            size.get_rect(&LayoutTextItem::PuzzleTitle, &())
                                 .centre()
                                 .extend(crate::z_indices::TEXT_AREA_TEXT),
                         ),
@@ -138,7 +138,7 @@ impl MavericNode for UI {
                             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         },
                         transform: Transform::from_translation(
-                            size.get_rect(&LayoutTextItem::PuzzleTheme)
+                            size.get_rect(&LayoutTextItem::PuzzleTheme, &())
                                 .centre()
                                 .extend(crate::z_indices::TEXT_AREA_TEXT),
                         ),
@@ -169,20 +169,23 @@ impl MavericNode for WordsNode {
         commands
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
-                for (index, word) in context.1.level().words.iter().enumerate() {
-                    let completion = context.2.get_completion(&word.characters);
+                let words = &context.1.level().words;
 
-                    if let Some(tile) = WordTile::try_from_usize(index) {
-                        commands.add_child(
-                            index as u32,
-                            WordNode {
-                                word: word.clone(),
-                                tile,
-                                completion,
-                            },
-                            &context.3,
-                        )
-                    }
+
+                for (index, word) in words.iter().enumerate() {
+                    let completion = context.2.get_completion(&word.characters);
+                    let tile = LayoutWordTile(index);
+                    let rect = context.3.get_rect(&tile,  &words);
+                    commands.add_child(
+                        index as u32,
+                        WordNode {
+                            word: word.clone(),
+                            tile,
+                            completion,
+                            rect
+                        },
+                        &context.3,
+                    );
                 }
             });
     }
@@ -190,9 +193,10 @@ impl MavericNode for WordsNode {
 
 #[derive(Debug, PartialEq)]
 pub struct WordNode {
-    pub tile: WordTile,
+    pub tile: LayoutWordTile,
     pub word: Word,
     pub completion: Completion,
+    pub rect: LayoutRectangle
 }
 
 impl MavericNode for WordNode {
@@ -228,8 +232,8 @@ impl MavericNode for WordNode {
 
                 Completion::Complete => node.word.text.to_string(),
             };
-            let rect = size.get_rect(&LayoutWordTile(node.tile));
-            let centre = rect.centre();
+
+            let centre = node.rect.centre();
 
             let text_translation = centre.extend(crate::z_indices::WORD_TEXT);
             let font_size = size.font_size::<LayoutWordTile>();
@@ -252,7 +256,7 @@ impl MavericNode for WordNode {
 
             let shape_translation = centre.extend(crate::z_indices::WORD_BACKGROUND);
 
-            let e = rect.extents * 0.5;
+            let e = node.rect.extents * 0.5;
 
             let rectangle = shapes::RoundedPolygon {
                 points: vec![

@@ -22,7 +22,7 @@ pub trait LayoutStructure: Sized + PartialEq + Debug {
 
     fn location(&self, context: &Self::Context) -> Vec2;
 
-    fn iter_all() -> Self::Iterator;
+    fn iter_all(context: &Self::Context) -> Self::Iterator;
 }
 
 pub trait LayoutStructureWithText {

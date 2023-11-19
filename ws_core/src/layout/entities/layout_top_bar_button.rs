@@ -49,7 +49,7 @@ impl LayoutStructure for LayoutTopBarButton {
         }
     }
 
-    fn iter_all() -> Self::Iterator {
+    fn iter_all(context: &Self::Context) -> Self::Iterator {
         Self::iter()
     }
 }

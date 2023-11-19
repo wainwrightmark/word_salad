@@ -53,7 +53,7 @@ impl MavericNode for GridTiles {
                     let size = context.3.as_ref();
                     let tile_size = size.tile_size();
                     let font_size = size.font_size::<LayoutGridTile>();
-                    let centre = size.get_rect(&LayoutGridTile(tile) ).centre();
+                    let centre = size.get_rect(&LayoutGridTile(tile), &() ).centre();
 
                     commands.add_child(
                         tile.inner() as u32,
@@ -211,7 +211,7 @@ impl MavericNode for WordLine {
             for (index, tile) in context.0 .0.iter().enumerate() {
                 let position = context
                     .3
-                    .get_rect(&LayoutGridTile(*tile))
+                    .get_rect(&LayoutGridTile(*tile), &())
                     .centre();
                 if index == 0 {
                     builder.move_to(position);

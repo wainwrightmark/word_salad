@@ -1,6 +1,5 @@
 use crate::prelude::*;
 use maveric:: widgets::text2d_node::Text2DNode;
-use ws_core::prelude::*;
 use ws_core::layout::entities::*;
 #[derive(Debug, Clone, PartialEq)]
 pub struct CongratsView;
@@ -63,7 +62,7 @@ impl MavericNode for CongratsView {
                             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         },
                         transform: Transform::from_translation(
-                            size.get_rect(&CongratsLayoutEntity::NextButton)
+                            size.get_rect(&CongratsLayoutEntity::NextButton, &())
                                 .centre()
                                 .extend(crate::z_indices::CONGRATS_BUTTON),
                         ),

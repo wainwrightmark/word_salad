@@ -1,70 +1,92 @@
-use std::ops::Add;
+use std::pin;
 
-use glam::Vec2;
 use crate::prelude::*;
+use glam::Vec2;
 
 use super::consts::*;
 
-
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
-pub struct LayoutWordTile(pub WordTile);
+pub struct LayoutWordTile(pub usize);
+
+impl From<usize> for LayoutWordTile {
+    fn from(value: usize) -> Self {
+        Self(value)
+    }
+}
 
 impl LayoutStructure for LayoutWordTile {
-    type Context = ();
+    type Context = Vec<Word>;
     type Iterator = LayoutWordTileIter;
 
-    fn iter_all() -> Self::Iterator {
-        LayoutWordTileIter::default()
+    fn iter_all(context: &Self::Context) -> Self::Iterator {
+        LayoutWordTileIter {
+            inner: 0,
+            total_count: context.len(),
+        }
     }
 
     fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
-        for x in Self::iter_all() {
-            if x.rect(context).contains(point) {
-                return Some(x);
-            }
-        }
-        return None;
+        let parent_loc = super::GameLayoutEntity::WordList.location(&());
+        let point = point - parent_loc;
+        FlexLayout::Row.try_pick(
+            super::GameLayoutEntity::WordList.size(&()),
+            point,
+            context,
+            WORD_MAIN_PAD,
+            WORD_CROSS_PAD
+
+        )
     }
 
-    fn size(&self, _context: &Self::Context) -> Vec2 {
+    fn size(&self, context: &Self::Context) -> Vec2 {
+        // TODO count characters not string length
+        let num_letters = context.get(self.0).map(|x|x.text.len()).unwrap_or_default();
+
+        let width = WORD_WIDTH_FIXED + (num_letters as f32 * WORD_WIDTH_PER_CHARACTER);
+
         Vec2 {
-            x: WORD_WIDTH,
+            x: width,
             y: WORD_HEIGHT,
         }
     }
 
     fn location(&self, context: &Self::Context) -> Vec2 {
-        //todo use flex
-        super::GameLayoutEntity::WordList
-            .location(context)
-            .add(tile_offset(
-                self.0,
-                Spacing::SpaceAround,
-                Spacing::SpaceAround,
-                super::GameLayoutEntity::WordList.size(context),
-                self.size(context),
-            ))
+        let parent_loc = super::GameLayoutEntity::WordList.location(&());
+
+        let offset = FlexLayout::Row.get_location(
+            super::GameLayoutEntity::WordList.size(&()),
+            self,
+            context,
+            WORD_MAIN_PAD,
+            WORD_CROSS_PAD
+        );
+
+        parent_loc + offset
     }
 }
 
-impl LayoutStructureWithText for LayoutWordTile{
-    fn font_size()-> f32 {
+impl LayoutStructureWithText for LayoutWordTile {
+    fn font_size() -> f32 {
         22.0
     }
 }
 
-
-#[derive(Copy, Clone, Default, PartialEq, Eq, PartialOrd, Ord, Hash)] //TODO use version in geometrid
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)] //TODO use version in geometrid
 pub struct LayoutWordTileIter {
-    inner: u8,
+    inner: usize,
+    total_count: usize,
 }
 
 impl Iterator for LayoutWordTileIter {
     type Item = LayoutWordTile;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let ret = geometrid::tile::Tile::<2, 5>::try_from_inner(self.inner)?;
-        self.inner = self.inner.saturating_add(1);
-        Some(LayoutWordTile(ret))
+        if self.inner >= self.total_count {
+            return None;
+        }
+
+        let ret = LayoutWordTile(self.inner);
+        self.inner += 1;
+        Some(ret)
     }
 }

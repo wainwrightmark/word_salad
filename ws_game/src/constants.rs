@@ -1,5 +1,4 @@
 use nice_bevy_utils::window_size::*;
-use ws_core::prelude::*;
 use ws_core::layout::entities::*;
 
 pub use crate::prelude::*;
@@ -21,9 +20,9 @@ pub trait SaladWindowSize {
     fn font_size<T: LayoutStructureWithText>(&self) -> f32;
     fn tile_size(&self)-> f32;
 
-    fn get_rect<T : LayoutStructure<Context = ()>>(&self, entity: &T) -> LayoutRectangle;
-    fn try_pick_with_tolerance<T : LayoutStructure<Context = ()>>(&self, p: Vec2, tolerance: f32) -> Option<T>;
-    fn try_pick<T : LayoutStructure<Context = ()>>(&self, p: Vec2) -> Option<T>;
+    fn get_rect<T : LayoutStructure>(&self, entity: &T, context: &T::Context) -> LayoutRectangle;
+    fn try_pick_with_tolerance<T : LayoutStructure>(&self, p: Vec2, tolerance: f32, context: &T::Context) -> Option<T>;
+    fn try_pick<T : LayoutStructure>(&self, p: Vec2, context: &T::Context) -> Option<T>;
 }
 
 fn layout(size: &Size) -> LayoutSizing {
@@ -37,8 +36,8 @@ fn layout(size: &Size) -> LayoutSizing {
 }
 
 impl SaladWindowSize for Size {
-    fn get_rect<T : LayoutStructure<Context = ()>> (&self, entity: &T) -> LayoutRectangle {
-        let mut rect = layout(self).get_rect(entity, &());
+    fn get_rect<T : LayoutStructure> (&self, entity: &T, context: &T::Context) -> LayoutRectangle {
+        let mut rect = layout(self).get_rect(entity, context);
 
         rect.top_left = Vec2 {
             x: (self.scaled_width * -0.5) + rect.top_left.x,
@@ -50,13 +49,13 @@ impl SaladWindowSize for Size {
         rect
     }
 
-    fn try_pick<T : LayoutStructure<Context = ()>>(&self, p: Vec2) -> Option<T> {
-        let entity = layout(self).try_pick_entity(p, 1.0, &());
+    fn try_pick<T : LayoutStructure>(&self, p: Vec2, context: &T::Context) -> Option<T> {
+        let entity = layout(self).try_pick_entity(p, 1.0, context);
         entity
     }
 
-    fn try_pick_with_tolerance<T : LayoutStructure<Context = ()>>(&self, p: Vec2, tolerance: f32) -> Option<T> {
-        let entity = layout(self).try_pick_entity(p, tolerance, &());
+    fn try_pick_with_tolerance<T : LayoutStructure>(&self, p: Vec2, tolerance: f32, context: &T::Context) -> Option<T> {
+        let entity = layout(self).try_pick_entity(p, tolerance, context);
         entity
     }
 

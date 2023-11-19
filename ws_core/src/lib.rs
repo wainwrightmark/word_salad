@@ -17,11 +17,11 @@ pub mod prelude {
     pub use crate::layout::prelude::*;
 
     pub type Tile = geometrid::tile::Tile<4, 4>;
-    pub type WordTile = geometrid::tile::Tile<2, 5>;
+
     pub type CharsArray = ArrayVec<Character, 16>;
     pub type Grid = geometrid::tile_map::TileMap<Character, 4, 4, 16>;
     pub type GridSet = geometrid::tile_set::TileSet16<4, 4, 16>;
-    pub type Vertex = geometrid::vertex::Vertex<4, 4>;
+    // pub type Vertex = geometrid::vertex::Vertex<4, 4>;
     pub type Solution = ArrayVec<Tile, 16>;
 
     pub fn try_make_grid(text: &str) -> Option<Grid> {

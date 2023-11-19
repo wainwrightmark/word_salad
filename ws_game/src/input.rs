@@ -33,12 +33,12 @@ impl InputType {
         let level_complete = found_words.is_level_complete(&current_level);
         match self {
             InputType::Start(position) => {
-                let Some(layout_entity) = size.try_pick::<GameLayoutEntity>(*position) else {
+                let Some(layout_entity) = size.try_pick::<GameLayoutEntity>(*position, &()) else {
                     return;
                 };
                 match layout_entity {
                     GameLayoutEntity::TopBar => {
-                        let Some(button) = size.try_pick::<LayoutTopBarButton>(*position) else {
+                        let Some(button) = size.try_pick::<LayoutTopBarButton>(*position, &()) else {
                             return;
                         };
                         match button {
@@ -55,7 +55,7 @@ impl InputType {
                     GameLayoutEntity::Grid => {
 
                         if level_complete{
-                            let Some(entity) = size.try_pick::<CongratsLayoutEntity>(*position) else{return;};
+                            let Some(entity) = size.try_pick::<CongratsLayoutEntity>(*position, &()) else{return;};
 
                             match entity{
                                 CongratsLayoutEntity::ShareButton => {
@@ -72,17 +72,18 @@ impl InputType {
 
                         }
                         else{
-                            let Some(tile) = size.try_pick::<LayoutGridTile>(*position) else {return;};
+                            let Some(tile) = size.try_pick::<LayoutGridTile>(*position, &()) else {return;};
                             let grid = &current_level.level().grid;
                             input_state.handle_input_start(chosen_state, tile.0, grid, found_words);
                         }
                     }
                     GameLayoutEntity::WordList => {
-                        let Some(word) = size.try_pick::<LayoutWordTile>(*position) else {
+                        let words = &current_level.level().words;
+                        let Some(word) = size.try_pick::<LayoutWordTile>(*position, &words) else {
                             return;
                         };
 
-                        found_words.try_hint_word(current_level, word.0.inner() as usize);
+                        found_words.try_hint_word(current_level, word.0);
                     }
                 }
             }
@@ -91,7 +92,7 @@ impl InputType {
                     return;
                 };
                 let Some(tile) =
-                    size.try_pick_with_tolerance::<LayoutGridTile>(*position, MOVE_TOLERANCE)
+                    size.try_pick_with_tolerance::<LayoutGridTile>(*position, MOVE_TOLERANCE, &())
                 else {
                     return;
                 };
@@ -101,7 +102,7 @@ impl InputType {
             InputType::End(position) => match position {
                 Some(position) => {
                     if level_complete{return;};
-                    if let Some(tile) = size.try_pick::<LayoutGridTile>(*position) {
+                    if let Some(tile) = size.try_pick::<LayoutGridTile>(*position, &()) {
                         input_state.handle_input_end(chosen_state, tile.0);
                     } else {
                         input_state.handle_input_end_no_location();

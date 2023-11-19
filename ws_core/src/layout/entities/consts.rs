@@ -13,9 +13,14 @@ pub const GRID_SIZE: f32 = 320.;
 
 pub const WORD_LIST_HEIGHT: f32 = 138.;
 pub const WORD_HEIGHT: f32 = 22.;
-pub const WORD_WIDTH: f32 = 110.;
-pub const WORD_LIST_WIDTH: f32 = WORD_BETWEEN_PAD + WORD_WIDTH + WORD_WIDTH;
-pub const WORD_BETWEEN_PAD: f32 = 20.;
+pub const WORD_WIDTH_PER_CHARACTER: f32 = 10.;
+pub const WORD_WIDTH_FIXED: f32 = 20.;
+
+
+pub const WORD_LIST_WIDTH: f32 = IDEAL_WIDTH;
+pub const WORD_MAIN_PAD: f32 = 10.;
+pub const WORD_CROSS_PAD: f32 = 10.;
+pub const WORD_ROW_PAD: f32 = 20.;
 
 pub const CONGRATS_ENTITY_HEIGHT: f32 = 40.0;
 pub const CONGRATS_ENTITY_WIDTH: f32 = 80.0;

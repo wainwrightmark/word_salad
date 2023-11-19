@@ -31,20 +31,20 @@ pub fn animate_solution(
     };
 
     const SECONDS: f32 = 2.0;
+    let words = &level.level().words;
 
-    let Some(word_index) = level
-        .level()
-        .words
+    let Some(layout_word_tile) =
+        words
         .iter()
         .position(|x| x == word)
-        .and_then(|x| WordTile::try_from_usize(x))
+        .map(|x| LayoutWordTile(x))
     else {
         return;
     };
 
-    let start_position = size.get_rect(&LayoutGridTile(last_tile)).centre();
+    let start_position = size.get_rect(&LayoutGridTile(last_tile), &()).centre();
 
-    let destination = size.get_rect(&LayoutWordTile(word_index)).centre();
+    let destination = size.get_rect(&layout_word_tile, &words).centre();
 
     let speed = calculate_speed(
         &start_position,
