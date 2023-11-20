@@ -62,6 +62,7 @@ pub fn go() {
     app.register_transition::<TransformRotationYLens>();
     app.register_transition::<TransformTranslationLens>();
     app.register_transition::<TransformScaleLens>();
+    app.register_transition::<(TransformTranslationLens, TransformScaleLens)>();
 
     app.add_plugins(InputPlugin);
     //app.add_systems(Update, draw_shape);

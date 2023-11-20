@@ -213,7 +213,7 @@ fn track_found_words(
     let is_first_time = !completion.is_complete();
     if is_first_time {
         found_words.words[word_index] = Completion::Complete;
-        *chosen = ChosenState::default();
+
         found_words.unneeded_tiles =
             level.calculate_unneeded_tiles(found_words.unneeded_tiles, |index| {
                 found_words
@@ -226,16 +226,17 @@ fn track_found_words(
         //todo auto hint system
     }
 
-    let Some(last_tile) = chosen.0.last() else {
-        return;
-    };
     crate::animated_solutions::animate_solution(
         &mut commands,
-        *last_tile,
+        &chosen.0,
         word,
         is_first_time,
         &asset_server,
         &size,
         &current_level,
     );
+
+    if is_first_time{
+        *chosen = ChosenState::default();
+    }
 }
