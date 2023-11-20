@@ -222,6 +222,8 @@ fn track_found_words(
                     .map(|x| x.is_complete())
                     .unwrap_or(true)
             });
+
+        //todo auto hint system
     }
 
     let Some(last_tile) = chosen.0.last() else {

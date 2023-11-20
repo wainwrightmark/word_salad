@@ -1,5 +1,6 @@
 use crate::prelude::*;
 pub use bevy_prototype_lyon::prelude::*;
+use bevy_prototype_lyon::shapes::RoundedPolygon;
 use maveric::{
     transition::speed::{LinearSpeed, ScalarSpeed},
     widgets::text2d_node::Text2DNode,
@@ -74,6 +75,24 @@ impl MavericNode for GridTiles {
     }
 }
 
+fn make_rounded_square(size: f32, radius: f32)-> RoundedPolygon{
+    let a = size * 0.5;
+    let m_a = size * -0.5;
+
+    let rectangle = shapes::RoundedPolygon {
+        points: vec![
+            Vec2 { x: a, y: a },
+            Vec2 { x: a, y: m_a },
+            Vec2 { x: m_a, y: m_a },
+            Vec2 { x: m_a, y: a },
+        ],
+        radius,
+        closed: true,
+    };
+
+    rectangle
+}
+
 impl MavericNode for GridTile {
     type Context = NoContext;
 
@@ -101,26 +120,12 @@ impl MavericNode for GridTile {
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
             let tile_size = node.tile_size;
-            let a = tile_size * 0.5;
-            let m_a = tile_size * -0.5;
-
-            let rectangle = shapes::RoundedPolygon {
-                points: vec![
-                    Vec2 { x: a, y: a },
-                    Vec2 { x: a, y: m_a },
-                    Vec2 { x: m_a, y: m_a },
-                    Vec2 { x: m_a, y: a },
-                ],
-                radius: tile_size * 0.1,
-                closed: true,
-            };
-
             let fill = if  node.selected {Color::ALICE_BLUE } else{ Color::GRAY };
 
             commands.add_child(
                 0,
                 LyonShapeNode {
-                    shape: rectangle,
+                    shape: make_rounded_square(tile_size, tile_size * 0.1),
                     transform: Transform::from_xyz(0.0, 0.0, crate::z_indices::GRID_TILE),
                     fill: Fill::color(Color::GRAY),
                     stroke: Stroke::color(Color::DARK_GRAY),
@@ -209,13 +214,18 @@ impl MavericNode for HintGlows{
             for tile in context.2.hint_set(&context.1, &context.0).iter_true_tiles(){
                 let rect = context.3.get_rect(&LayoutGridTile(tile), &());
 
+                let translation = rect.centre().extend(crate::z_indices::HINT);
+                let tile_size = rect.extents.x;
+
+                let shape = make_rounded_square(tile_size * 0.8, tile_size * 0.1);
+
                 commands.add_child(tile.inner() as u32, {
                     LyonShapeNode{
-                        transform: Transform::from_translation(rect.centre().extend(crate::z_indices::HINT)),
-                        fill: Fill::color(Color::GOLD.with_a(0.7)),
-                        stroke: Stroke::color(Color::NONE),
-                        shape: shapes::Circle{center: Vec2::ZERO, radius: rect.extents.length() * std::f32::consts::PI / 12.0}
-                    }
+                        transform: Transform::from_translation(translation),
+                        fill: Fill::color(Color::NONE),
+                        stroke: Stroke::new(Color::GOLD.with_a(0.7),tile_size * 0.1 ),
+                        shape,//: shapes::Circle{center: Vec2::ZERO, radius: rect.extents.length() * std::f32::consts::PI / 12.0}
+                    }.with_transition_in::<StrokeColorLens>(Color::GOLD.with_a(0.0), Color::GOLD.with_a(0.7), Duration::from_secs(1))
                 }, &());
             }
         });
@@ -236,6 +246,7 @@ impl MavericNode for WordLine {
                 let position = context.3.get_rect(&LayoutGridTile(*tile), &()).centre();
                 if index == 0 {
                     builder.move_to(position);
+                    builder.line_to(position);
                 } else {
                     builder.line_to(position);
                 }
@@ -259,7 +270,7 @@ impl MavericNode for WordLine {
                         .with_start_cap(LineCap::Round)
                         .with_end_cap(LineCap::Round)
                         .with_line_join(LineJoin::Round),
-                },
+                },//todo transition stroke width
             )
         });
     }
