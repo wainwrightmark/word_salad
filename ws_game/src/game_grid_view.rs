@@ -23,8 +23,10 @@ pub struct GridTile {
 }
 
 maveric::define_lens!(StrokeColorLens, Stroke, Color, color);
+maveric::define_lens!(StrokeOptionsLens, Stroke, StrokeOptions, options);
+maveric::define_lens!(StrokeOptionsWidthLens, StrokeOptions, f32, line_width);
 maveric::define_lens!(FillColorLens, Fill, Color, color);
-
+pub type StrokeWidthLens = Prism2<StrokeOptionsLens, StrokeOptionsWidthLens>;
 #[derive(Debug, Clone, PartialEq)]
 pub struct GridTiles;
 
@@ -233,17 +235,23 @@ impl MavericNode for HintGlows{
 }
 
 #[derive(Debug, PartialEq)]
-pub struct WordLine;
+pub struct WordLine(pub Solution);
 
 impl MavericNode for WordLine {
-    type Context = NC5<ChosenState, CurrentLevel, FoundWordsState, Size, LevelTime>;
+    type Context = Size;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
-        commands.ignore_node().insert_with_context(|context| {
+        commands.advanced(|args, commands|{
+            if !args.is_hot(){
+                return;
+            }
+            let size = args.context;
+            let solution = args.node;
+
             let mut builder = PathBuilder::new();
 
-            for (index, tile) in context.0 .0.iter().enumerate() {
-                let position = context.3.get_rect(&LayoutGridTile(*tile), &()).centre();
+            for (index, tile) in solution.0.iter().enumerate() {
+                let position = size.get_rect(&LayoutGridTile(*tile), &()).centre();
                 if index == 0 {
                     builder.move_to(position);
                     builder.line_to(position);
@@ -251,18 +259,32 @@ impl MavericNode for WordLine {
                     builder.line_to(position);
                 }
             }
-            let width = context.3.get_rect(&GameLayoutEntity::Grid, &()).extents.x *50. / 320.;
+
+            let mut width = size.get_rect(&GameLayoutEntity::Grid, &()).extents.x *50. / 320.;
 
             let color = Color::rgba(0.9, 0.25, 0.95, 0.9);
 
-            (
+            if args.previous.is_none(){
+                commands.insert(Transition::<StrokeWidthLens>::new(TransitionStep::new_arc(
+                    width,
+                    Some(ScalarSpeed{amount_per_second: width}),
+                    NextStep::None,
+                )));
+
+                width = 0.0;
+            }
+
+            commands.insert(
                 ShapeBundle {
                     path: builder.build(),
                     spatial: SpatialBundle::from_transform(Transform::from_translation(Vec3::new(
                         0.0, 0.0, crate::z_indices::WORD_LINE,
                     ))),
                     ..Default::default()
-                },
+                }
+
+            );
+            commands.insert(
                 Stroke {
                     color,
                     options: StrokeOptions::default()
@@ -270,8 +292,10 @@ impl MavericNode for WordLine {
                         .with_start_cap(LineCap::Round)
                         .with_end_cap(LineCap::Round)
                         .with_line_join(LineJoin::Round),
-                },//todo transition stroke width
-            )
+                }
+            );
+
+
         });
     }
 
@@ -280,11 +304,11 @@ impl MavericNode for WordLine {
     }
 
     fn on_deleted(&self, commands: &mut ComponentCommands) -> DeletionPolicy {
-        commands.transition_value::<StrokeColorLens>(
-            Color::rgba(0.9, 0.25, 0.95, 0.9),
-            Color::rgba(0.9, 0.25, 0.95, 0.0),
+        commands.transition_value::<StrokeWidthLens>(
+            50.0,
+            0.0,
             Some(ScalarSpeed {
-                amount_per_second: 1.0,
+                amount_per_second: 50.0,
             }),
         );
         DeletionPolicy::Linger(Duration::from_secs_f32(1.0))

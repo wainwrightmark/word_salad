@@ -19,7 +19,7 @@ impl MavericRootChildren for ViewRoot {
             commands.add_child("cells", GridTiles, context);
             commands.add_child("hints", HintGlows, context);
             if !context.0 .0.is_empty() {
-                commands.add_child("word_line", WordLine, context);
+                commands.add_child("word_line", WordLine(context.0.0.clone()), &context.3);
             }
         }
     }

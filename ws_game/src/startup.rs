@@ -57,6 +57,7 @@ pub fn go() {
 
     app.register_transition::<FillColorLens>();
     app.register_transition::<StrokeColorLens>();
+    app.register_transition::<StrokeWidthLens>();
     app.register_transition::<BackgroundColorLens>();
     app.register_transition::<TransformRotationYLens>();
     app.register_transition::<TransformTranslationLens>();
