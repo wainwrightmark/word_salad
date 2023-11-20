@@ -29,22 +29,26 @@ impl GridInputState {
             if let Some(index) = chosen_state.0.iter().position(|x| *x == tile) {
                 // element is already present
                 if index + 1 == chosen_state.0.len() {
+                    //info!("His1");
                     self.delete_on_end = true;
-                    //chosen_state.0.clear(); do nothing
                 } else {
+                    //info!("His2");
                     chosen_state.0.truncate(index + 1);
                 }
             } else if last.is_adjacent_to(&tile) {
                 //element is not already present
                 if allow_tile(tile, grid, found_words) {
+                    //info!("His3");
                     chosen_state.0.push(tile);
                 }
             } else {
+                //info!("His4");
                 *chosen_state.as_mut() = ChosenState::default();
             }
         } else {
             //array is empty
             if allow_tile(tile, grid, found_words) {
+                //info!("His5");
                 chosen_state.0.push(tile);
             }
         }
@@ -67,13 +71,14 @@ impl GridInputState {
             if let Some(index) = chosen_state.0.iter().position(|x| *x == tile) {
                 // element is already present
                 if index + 1 == chosen_state.0.len() {
-                    //chosen_state.0.clear(); do nothing
                 } else {
+                    //info!("Him1");
                     chosen_state.0.truncate(index + 1);
                 }
             } else if last.is_adjacent_to(&tile) {
                 //element is not already present
                 if allow_tile(tile, grid, found_words) {
+                    //info!("Him2");
                     chosen_state.0.push(tile);
                 }
             }
@@ -82,7 +87,8 @@ impl GridInputState {
 
     pub fn handle_input_end(&mut self, chosen_state: &mut ResMut<ChosenState>, location: Tile) {
         if self.delete_on_end && self.last_tile == Some(location) {
-            chosen_state.0.clear();
+            //info!("Hie1");
+            chosen_state.0.pop();
         }
         self.last_tile = None;
         self.delete_on_end = false;

@@ -273,6 +273,9 @@ impl MavericNode for WordLine {
 
                 width = 0.0;
             }
+            else{
+                commands.remove::<Transition::<StrokeWidthLens>>();
+            }
 
             commands.insert(
                 ShapeBundle {
