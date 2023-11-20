@@ -15,6 +15,9 @@ impl GridInputState {
         grid: &Grid,
         found_words: &FoundWordsState,
     ) {
+        //todo clicking on the last one should only go back one character
+        // todo bug when if you do a path, then cancel, then do that path again that path goes way
+
         if self.last_tile == Some(tile) {
             self.delete_on_end = true;
             return;

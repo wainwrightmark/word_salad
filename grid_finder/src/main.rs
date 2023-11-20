@@ -6,7 +6,7 @@ use clap::Parser;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use indicatif_log_bridge::LogWrapper;
 use itertools::Itertools;
-use log::info;
+use log::{info, warn};
 use rayon::prelude::*;
 use std::{
     collections::HashSet,
@@ -75,6 +75,12 @@ fn do_finder(options: Options) {
         info!("{} Words", word_map.len());
         for word in word_map.iter().map(|x|x.text.clone()).sorted(){
             info!("{word}", )
+        }
+
+        for (a,b) in word_map.iter().sorted_by_key(|x|&x.array).tuple_windows(){
+            if b.array.starts_with(&a.array){
+                warn!("'{}' is a prefix of '{}'", a.text, b.text)
+            }
         }
 
         let grids_write_path = Path::new(write_path.as_str());

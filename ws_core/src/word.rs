@@ -157,16 +157,8 @@ pub fn find_solution(characters: &CharsArray, grid: &Grid) -> Option<Solution> {
 
 impl Word {
     pub fn from_str(text: &str) -> Result<Self, &'static str> {
-        let mut characters = ArrayVec::<Character, 16>::default();
 
-        for c in text.chars() {
-            let character = Character::try_from(c)?;
-            if !character.is_blank() {
-                characters
-                    .try_push(character)
-                    .map_err(|_| "Word is too long")?;
-            }
-        }
+        let characters = normalize_characters_array(text)?;
 
         Ok(Self {
             characters,

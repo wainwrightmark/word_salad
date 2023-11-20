@@ -8,7 +8,7 @@ pub type LetterCounts = PrimeBag128<Character>;
 
 pub fn make_words_vec_from_file(text: &str) -> Vec<FinderWord> {
     text.lines()
-        .flat_map(|x| x.split(','))
+        //.flat_map(|x| x.split(','))
         .flat_map(FinderWord::try_new)
         .sorted_by_key(|x| x.counts)
         .dedup()
