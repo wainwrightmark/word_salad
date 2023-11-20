@@ -36,7 +36,7 @@ impl LayoutStructure for LayoutWordTile {
     }
 
     fn size(&self, context: &Self::Context) -> Vec2 {
-        // TODO count characters not string length
+        // TODO count runes not string length
         let num_letters = context
             .get(self.0)
             .map(|x| x.text.len())

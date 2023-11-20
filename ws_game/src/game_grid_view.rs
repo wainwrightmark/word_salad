@@ -16,7 +16,7 @@ pub struct GridTile {
     pub character: Character,
     pub selected: bool,
     // pub hinted: bool,
-    pub needed: bool,
+    //pub needed: bool,
     pub tile_size: f32,
     pub font_size: f32,
     pub centre: Vec2,
@@ -28,7 +28,9 @@ maveric::define_lens!(StrokeOptionsWidthLens, StrokeOptions, f32, line_width);
 maveric::define_lens!(FillColorLens, Fill, Color, color);
 pub type StrokeWidthLens = Prism2<StrokeOptionsLens, StrokeOptionsWidthLens>;
 #[derive(Debug, Clone, PartialEq)]
-pub struct GridTiles;
+pub struct GridTiles {
+    pub level_complete: bool,
+}
 
 impl MavericNode for GridTiles {
     type Context = NC5<ChosenState, CurrentLevel, FoundWordsState, Size, LevelTime>;
@@ -42,42 +44,49 @@ impl MavericNode for GridTiles {
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
-        commands
-            .ignore_node()
-            .ordered_children_with_context(|context, commands| {
-                // let hint_set = context.2.hint_set();
-                for (tile, character) in context.1.level().grid.enumerate() {
-                    if character.is_blank() {
-                        continue;
-                    }
-                    let selected = context.0 .0.last() == Some(&tile);
-                    // let hinted = hint_set.get_bit(&tile);
-                    let needed = !context.2.unneeded_tiles.get_bit(&tile);
-                    let size = context.3.as_ref();
-                    let tile_size = size.tile_size();
-                    let font_size = size.font_size::<LayoutGridTile>();
-                    let centre = size.get_rect(&LayoutGridTile(tile), &()).centre();
-
-                    commands.add_child(
-                        tile.inner() as u32,
-                        GridTile {
-                            tile,
-                            character: *character,
-                            selected,
-                            needed,
-                            // hinted,
-                            tile_size,
-                            font_size,
-                            centre,
-                        },
-                        &(),
-                    );
+        commands.ordered_children_with_node_and_context(|node, context, commands| {
+            if node.level_complete {
+                return;
+            }
+            // let hint_set = context.2.hint_set();
+            for (tile, character) in context.1.level().grid.enumerate() {
+                if character.is_blank() {
+                    continue;
                 }
-            });
+
+                let needed = !context.2.unneeded_tiles.get_bit(&tile);
+                if !needed {
+                    continue;
+                }
+
+                let selected = context.0 .0.last() == Some(&tile);
+                // let hinted = hint_set.get_bit(&tile);
+
+                let size = context.3.as_ref();
+                let tile_size = size.tile_size();
+                let font_size = size.font_size::<LayoutGridTile>();
+                let centre = size.get_rect(&LayoutGridTile(tile), &()).centre();
+
+                commands.add_child(
+                    tile.inner() as u32,
+                    GridTile {
+                        tile,
+                        character: *character,
+                        selected,
+                        //needed,
+                        // hinted,
+                        tile_size,
+                        font_size,
+                        centre,
+                    },
+                    &(),
+                );
+            }
+        });
     }
 }
 
-fn make_rounded_square(size: f32, radius: f32)-> RoundedPolygon{
+fn make_rounded_square(size: f32, radius: f32) -> RoundedPolygon {
     let a = size * 0.5;
     let m_a = size * -0.5;
 
@@ -98,31 +107,30 @@ fn make_rounded_square(size: f32, radius: f32)-> RoundedPolygon{
 impl MavericNode for GridTile {
     type Context = NoContext;
 
-    fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
-        commands.scope(|x| {
-            x.ignore_context()
-                .map_args(|x| &x.centre)
-                .insert_with_node(|n| {
-                    TransformBundle::from_transform(Transform::from_translation(n.extend(0.0)))
-                })
-                .finish()
-        });
-
+    fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
             .ignore_context()
-            .map_args(|node| if node.needed { &Vec3::ONE } else { &Vec3::ZERO })
-            .animate_on_node::<TransformScaleLens>(Some(LinearSpeed {
-                units_per_second: 1.0,
-            }))
-            .ignore_context()
+            .map_args(|x| &x.centre)
+            .insert_with_node(|n| {
+                TransformBundle::from_transform(Transform::from_translation(n.extend(0.0)))
+            })
             .ignore_node()
+            .advanced(|args, commands| {
+                if args.event == SetEvent::Undeleted {
+                    commands.remove::<Transition<TransformScaleLens>>();
+                }
+            })
             .insert(VisibilityBundle::default());
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
             let tile_size = node.tile_size;
-            let fill = if  node.selected {Color::ALICE_BLUE } else{ Color::GRAY };
+            let fill = if node.selected {
+                Color::ALICE_BLUE
+            } else {
+                Color::GRAY
+            };
 
             commands.add_child(
                 0,
@@ -153,11 +161,9 @@ impl MavericNode for GridTile {
     }
 
     fn on_deleted(&self, commands: &mut ComponentCommands) -> DeletionPolicy {
-        commands.insert(Transition::<FillColorLens>::new(TransitionStep::new_arc(
-            Color::GRAY,
-            Some(ScalarSpeed::new(1.0)),
-            NextStep::None,
-        )));
+        commands.insert(Transition::<TransformScaleLens>::new(
+            TransitionStep::new_arc(Vec3::ZERO, Some(LinearSpeed::new(1.0)), NextStep::None),
+        ));
         DeletionPolicy::Linger(Duration::from_secs(1))
     }
 }
@@ -202,35 +208,47 @@ impl MavericNode for GridLetter {
 #[derive(Debug, PartialEq)]
 pub struct HintGlows;
 
-impl MavericNode for HintGlows{
+impl MavericNode for HintGlows {
     type Context = NC5<ChosenState, CurrentLevel, FoundWordsState, Size, LevelTime>;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
-        commands.ignore_context().ignore_node().insert(SpatialBundle::default());
+        commands
+            .ignore_context()
+            .ignore_node()
+            .insert(SpatialBundle::default());
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands
-        .ignore_node()
-        .unordered_children_with_context(|context,commands|{
-            for tile in context.2.hint_set(&context.1, &context.0).iter_true_tiles(){
-                let rect = context.3.get_rect(&LayoutGridTile(tile), &());
+            .ignore_node()
+            .unordered_children_with_context(|context, commands| {
+                for tile in context.2.hint_set(&context.1, &context.0).iter_true_tiles() {
+                    let rect = context.3.get_rect(&LayoutGridTile(tile), &());
 
-                let translation = rect.centre().extend(crate::z_indices::HINT);
-                let tile_size = rect.extents.x;
+                    let translation = rect.centre().extend(crate::z_indices::HINT);
+                    let tile_size = rect.extents.x;
 
-                let shape = make_rounded_square(tile_size * 0.8, tile_size * 0.1);
+                    let shape = make_rounded_square(tile_size * 0.8, tile_size * 0.1);
 
-                commands.add_child(tile.inner() as u32, {
-                    LyonShapeNode{
-                        transform: Transform::from_translation(translation),
-                        fill: Fill::color(Color::NONE),
-                        stroke: Stroke::new(Color::GOLD.with_a(0.7),tile_size * 0.1 ),
-                        shape,//: shapes::Circle{center: Vec2::ZERO, radius: rect.extents.length() * std::f32::consts::PI / 12.0}
-                    }.with_transition_in::<StrokeColorLens>(Color::GOLD.with_a(0.0), Color::GOLD.with_a(0.7), Duration::from_secs(1))
-                }, &());
-            }
-        });
+                    commands.add_child(
+                        tile.inner() as u32,
+                        {
+                            LyonShapeNode {
+                                transform: Transform::from_translation(translation),
+                                fill: Fill::color(Color::NONE),
+                                stroke: Stroke::new(Color::GOLD.with_a(0.7), tile_size * 0.1),
+                                shape, //: shapes::Circle{center: Vec2::ZERO, radius: rect.extents.length() * std::f32::consts::PI / 12.0}
+                            }
+                            .with_transition_in::<StrokeColorLens>(
+                                Color::GOLD.with_a(0.0),
+                                Color::GOLD.with_a(0.7),
+                                Duration::from_secs(1),
+                            )
+                        },
+                        &(),
+                    );
+                }
+            });
     }
 }
 
@@ -241,8 +259,8 @@ impl MavericNode for WordLine {
     type Context = Size;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
-        commands.advanced(|args, commands|{
-            if !args.is_hot(){
+        commands.advanced(|args, commands| {
+            if !args.is_hot() {
                 return;
             }
             let size = args.context;
@@ -260,45 +278,41 @@ impl MavericNode for WordLine {
                 }
             }
 
-            let mut width = size.get_rect(&GameLayoutEntity::Grid, &()).extents.x *50. / 320.;
+            let mut width = size.get_rect(&GameLayoutEntity::Grid, &()).extents.x * 50. / 320.;
 
             let color = Color::rgba(0.9, 0.25, 0.95, 0.9);
 
-            if args.previous.is_none(){
+            if args.previous.is_none() {
                 commands.insert(Transition::<StrokeWidthLens>::new(TransitionStep::new_arc(
                     width,
-                    Some(ScalarSpeed{amount_per_second: width}),
+                    Some(ScalarSpeed {
+                        amount_per_second: width,
+                    }),
                     NextStep::None,
                 )));
 
                 width = 0.0;
+            } else {
+                commands.remove::<Transition<StrokeWidthLens>>();
             }
-            else{
-                commands.remove::<Transition::<StrokeWidthLens>>();
-            }
 
-            commands.insert(
-                ShapeBundle {
-                    path: builder.build(),
-                    spatial: SpatialBundle::from_transform(Transform::from_translation(Vec3::new(
-                        0.0, 0.0, crate::z_indices::WORD_LINE,
-                    ))),
-                    ..Default::default()
-                }
-
-            );
-            commands.insert(
-                Stroke {
-                    color,
-                    options: StrokeOptions::default()
-                        .with_line_width(width)
-                        .with_start_cap(LineCap::Round)
-                        .with_end_cap(LineCap::Round)
-                        .with_line_join(LineJoin::Round),
-                }
-            );
-
-
+            commands.insert(ShapeBundle {
+                path: builder.build(),
+                spatial: SpatialBundle::from_transform(Transform::from_translation(Vec3::new(
+                    0.0,
+                    0.0,
+                    crate::z_indices::WORD_LINE,
+                ))),
+                ..Default::default()
+            });
+            commands.insert(Stroke {
+                color,
+                options: StrokeOptions::default()
+                    .with_line_width(width)
+                    .with_start_cap(LineCap::Round)
+                    .with_end_cap(LineCap::Round)
+                    .with_line_join(LineJoin::Round),
+            });
         });
     }
 
