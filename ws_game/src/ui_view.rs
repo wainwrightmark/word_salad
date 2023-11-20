@@ -235,10 +235,10 @@ impl MavericNode for WordNode {
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node_and_context(|node, size, commands| {
             let text = match node.completion {
-                Completion::Incomplete => node.word.characters.len().to_string(),
-                Completion::Hinted(hints) => {
+                Completion::Unstarted => node.word.characters.len().to_string(), //todo show word structure
+                Completion::Hinted(hints) | Completion::AutoHinted(hints) => {
                     let hinted_characters = node.word.text.chars().take(hints);
-                    let question_marks = std::iter::repeat('?');
+                    let question_marks = std::iter::repeat('?'); //todo show word structure
 
                     std::iter::Iterator::chain(hinted_characters, question_marks)
                         .take(node.word.characters.len())
@@ -290,17 +290,13 @@ impl MavericNode for WordNode {
                 closed: true,
             };
 
-            let fill_color = match node.completion {
-                Completion::Incomplete => Color::ALICE_BLUE,
-                Completion::Hinted(_) => Color::BLUE,
-                Completion::Complete => Color::GOLD,
-            };
+            let fill_color = node.completion.color();
 
             commands.add_child(
                 "shape",
                 LyonShapeNode {
                     transform: Transform::from_translation(shape_translation),
-                    fill: Fill::color(fill_color),
+                    fill: Fill::color(*fill_color),
                     stroke: Stroke::color(Color::DARK_GRAY),
                     shape: rectangle,
                 },

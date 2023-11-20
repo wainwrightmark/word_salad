@@ -25,8 +25,6 @@ pub fn animate_solution(
     level: &CurrentLevel,
 ) {
 
-    //todo animate all letters form their tiles to one spot. Then move those letters to the bottom
-
     //info!("Animate solution");
     let color = if is_first_time {
         Color::LIME_GREEN

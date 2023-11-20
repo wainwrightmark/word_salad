@@ -71,7 +71,7 @@ impl LayoutStructureWithText for LayoutWordTile {
     }
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)] //TODO use version in geometrid
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct LayoutWordTileIter {
     inner: usize,
     total_count: usize,

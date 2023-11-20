@@ -54,7 +54,7 @@ impl LayoutStructureWithText for LayoutGridTile {
     }
 }
 
-#[derive(Copy, Clone, Default, PartialEq, Eq, PartialOrd, Ord, Hash)] //TODO use version in geometrid
+#[derive(Copy, Clone, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct LayoutGridTileIter {
     inner: u8,
 }

@@ -72,6 +72,11 @@ fn do_finder(options: Options) {
 
         let word_map = make_words_vec_from_file(data_file_text.as_str());
 
+        info!("{} Words", word_map.len());
+        for word in word_map.iter().map(|x|x.text.clone()).sorted(){
+            info!("{word}", )
+        }
+
         let grids_write_path = Path::new(write_path.as_str());
         let grids_file =
             std::fs::File::create(grids_write_path).expect("Could not find output folder");

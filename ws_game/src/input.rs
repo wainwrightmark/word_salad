@@ -63,7 +63,6 @@ impl InputType {
 
                             match entity {
                                 CongratsLayoutEntity::ShareButton => {
-                                    //todo wasm share
                                     #[cfg(target_arch = "wasm32")]
                                     {
                                         crate::wasm::share();

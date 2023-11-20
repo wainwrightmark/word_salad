@@ -109,14 +109,16 @@ fn choose_level_on_game_load(
     mut current_level: ResMut<CurrentLevel>,
     mut found_words: ResMut<FoundWordsState>,
     mut chosen_state: ResMut<ChosenState>,
+    mut timer: ResMut<crate::level_time::LevelTime>
 ) {
     #[cfg(target_arch = "wasm32")]
     {
         match crate::wasm::get_game_from_location() {
             Some(level) => {
                 *current_level = CurrentLevel::Custom(level);
-                *found_words = FoundWordsState::new_from_level(current_level);
+                *found_words = FoundWordsState::new_from_level(current_level.as_ref());
                 *chosen_state = ChosenState::default();
+                *timer = LevelTime::default();
                 return;
             }
             None => {}

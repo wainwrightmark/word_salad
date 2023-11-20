@@ -9,7 +9,7 @@ use crate::prelude::*;
 #[derive(Debug, Clone, Resource, PartialEq, Eq, Serialize, Deserialize)]
 pub enum CurrentLevel {
     Fixed { level_index: usize },
-    Custom(DesignedLevel), //pub level_index: usize, //todo more sophisticated pointer
+    Custom(DesignedLevel), //todo more sophisticated pointer
 }
 
 impl TrackableResource for CurrentLevel {
@@ -81,7 +81,7 @@ impl DesignedLevel {
         let name: &str = iter.next().expect("Level should have name");
 
         let grid = try_make_grid(chars)
-            .map(|x| x.with_flip(FlipAxes::Vertical))
+            //.map(|x| x.with_flip(FlipAxes::Vertical))
             .expect("Should be able to make grid");
 
         let words = iter
