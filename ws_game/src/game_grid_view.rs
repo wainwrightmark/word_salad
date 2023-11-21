@@ -222,7 +222,11 @@ impl MavericNode for HintGlows {
         commands
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
-                for tile in context.2.hint_set(&context.1, &context.0).iter_true_tiles() {
+
+                let manual_hints = context.2.manual_hint_set(&context.1, &context.0);
+                let auto_hints = context.2.auto_hint_set(&context.1, &context.0);
+
+                for tile in (manual_hints.union(&auto_hints)).iter_true_tiles() {
                     let rect = context.3.get_rect(&LayoutGridTile(tile), &());
 
                     let translation = rect.centre().extend(crate::z_indices::HINT);
@@ -230,18 +234,24 @@ impl MavericNode for HintGlows {
 
                     let shape = make_rounded_square(tile_size * 0.8, tile_size * 0.1);
 
+                    let color = if manual_hints.get_bit(&tile){
+                        Color::GOLD
+                    }else{
+                        Color::BLUE
+                    };
+
                     commands.add_child(
                         tile.inner() as u32,
                         {
                             LyonShapeNode {
                                 transform: Transform::from_translation(translation),
                                 fill: Fill::color(Color::NONE),
-                                stroke: Stroke::new(Color::GOLD.with_a(0.7), tile_size * 0.1),
-                                shape, //: shapes::Circle{center: Vec2::ZERO, radius: rect.extents.length() * std::f32::consts::PI / 12.0}
+                                stroke: Stroke::new(color.with_a(0.7), tile_size * 0.1),
+                                shape,
                             }
                             .with_transition_in::<StrokeColorLens>(
-                                Color::GOLD.with_a(0.0),
-                                Color::GOLD.with_a(0.7),
+                                color.with_a(0.0),
+                                color.with_a(0.7),
                                 Duration::from_secs(1),
                             )
                         },

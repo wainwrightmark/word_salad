@@ -60,7 +60,15 @@ impl FoundWordsState {
         grid
     }
 
-    pub fn hint_set(&self, level: &CurrentLevel, chosen_state: &ChosenState) -> GridSet {
+    pub fn manual_hint_set(&self, level: &CurrentLevel, chosen_state: &ChosenState) -> GridSet {
+        self.hint_set::<true>(level, chosen_state)
+    }
+
+    pub fn auto_hint_set(&self, level: &CurrentLevel, chosen_state: &ChosenState) -> GridSet {
+        self.hint_set::<false>(level, chosen_state)
+    }
+
+    fn hint_set<const MANUAL: bool>(&self, level: &CurrentLevel, chosen_state: &ChosenState) -> GridSet{
         let mut set = GridSet::default();
         let adjusted_grid = self.adjusted_grid(level);
 
@@ -68,9 +76,9 @@ impl FoundWordsState {
             //hint all known first letters
             for (word, completion) in level.level().words.iter().zip(self.word_completions.iter()) {
 
-                let Completion::Hinted(..) = completion else {
+                if !(MANUAL && completion.is_manual_hinted() || (!MANUAL && completion.is_auto_hinted())) {
                     continue;
-                };
+                }
 
                 if let Some(solution) = word.find_solution(&adjusted_grid) {
                     if let Some(first) = solution.first() {
@@ -81,8 +89,12 @@ impl FoundWordsState {
         } else {
             // hint all solutions starting with this
             for (word, completion) in level.level().words.iter().zip(self.word_completions.iter()) {
-                let Completion::Hinted(hints)  = completion else {
-                    continue;
+
+                let hints = match (completion, MANUAL){
+
+                    (Completion::AutoHinted(hints), false) => hints,
+                    (Completion::ManualHinted(hints), true) => hints,
+                    _=> {continue;}
                 };
 
                 if hints.get() <= chosen_state.0.len() {
@@ -124,10 +136,10 @@ impl FoundWordsState {
 
         match completion {
             Completion::Unstarted => {
-                *completion = Completion::Hinted(NonZeroUsize::MIN);
+                *completion = Completion::ManualHinted(NonZeroUsize::MIN);
                 self.hints_used += 1;
             }
-            Completion::Hinted(hints) => {
+            Completion::ManualHinted(hints) => {
                 if hints.get() >= word.characters.len() {
                     return false;
                 }
@@ -141,7 +153,7 @@ impl FoundWordsState {
                 }
                 let new_hints = hints.saturating_add(1);
                 *hints = new_hints;
-                *completion = Completion::Hinted(new_hints);
+                *completion = Completion::ManualHinted(new_hints);
             }
         }
         return true;
@@ -165,7 +177,7 @@ impl FoundWordsState {
                     min_hint_index = Some(index);
                     break 'check;
                 }
-                Completion::Hinted(hints) | Completion::AutoHinted(hints) => {
+                Completion::ManualHinted(hints) | Completion::AutoHinted(hints) => {
                     if hints.get() < word.characters.len() && hints.get() < min_hints {
                         min_hints = hints.get();
                         min_hint_index = Some(index)
@@ -178,7 +190,7 @@ impl FoundWordsState {
         let Some(index) = min_hint_index else {
             return false;
         };
-        self.word_completions[index] = Completion::Hinted(NonZeroUsize::MIN.saturating_add(min_hints));
+        self.word_completions[index] = Completion::ManualHinted(NonZeroUsize::MIN.saturating_add(min_hints));
 
         true
     }
@@ -188,7 +200,7 @@ impl FoundWordsState {
 pub enum Completion {
     Unstarted,
     AutoHinted(NonZeroUsize),
-    Hinted(NonZeroUsize),
+    ManualHinted(NonZeroUsize),
     Complete,
 }
 
@@ -201,7 +213,7 @@ impl Completion {
 
         match self {
             Completion::Unstarted => &INCOMPLETE_COLOR,
-            Completion::Hinted(_) => &HINT_COLOR,
+            Completion::ManualHinted(_) => &HINT_COLOR,
             Completion::Complete => &COMPLETE_COLOR,
             Completion::AutoHinted(_) => &AUTO_HINT_COLOR,
         }
@@ -211,7 +223,7 @@ impl Completion {
         match self {
             Completion::Unstarted => None,
             Completion::Complete => Some(&word.characters),
-            Completion::AutoHinted(hints) | Completion::Hinted(hints) => Some(
+            Completion::AutoHinted(hints) | Completion::ManualHinted(hints) => Some(
                 &word
                     .characters
                     .split_at(hints.get().min(word.characters.len()))
@@ -289,7 +301,7 @@ impl FoundWordsState {
         let mut word_index = 0;
 
         while let Some(completion) = self.word_completions.get(word_index) {
-            if completion.is_hinted() || completion.is_complete() {
+            if completion.is_manual_hinted() || completion.is_complete() {
                 word_index += 1;
                 continue;
             }
