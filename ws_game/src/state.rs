@@ -67,6 +67,7 @@ impl FoundWordsState {
         if chosen_state.0.is_empty() {
             //hint all known first letters
             for (word, completion) in level.level().words.iter().zip(self.word_completions.iter()) {
+
                 let Completion::Hinted(..) = completion else {
                     continue;
                 };
@@ -80,11 +81,11 @@ impl FoundWordsState {
         } else {
             // hint all solutions starting with this
             for (word, completion) in level.level().words.iter().zip(self.word_completions.iter()) {
-                let Completion::Hinted(hints) = completion else {
+                let Completion::Hinted(hints)  = completion else {
                     continue;
                 };
 
-                if hints <= &chosen_state.0.len() {
+                if hints.get() <= chosen_state.0.len() {
                     continue;
                 };
 
@@ -123,23 +124,24 @@ impl FoundWordsState {
 
         match completion {
             Completion::Unstarted => {
-                *completion = Completion::Hinted(1);
+                *completion = Completion::Hinted(NonZeroUsize::MIN);
                 self.hints_used += 1;
             }
             Completion::Hinted(hints) => {
-                if *hints >= word.characters.len() {
+                if hints.get() >= word.characters.len() {
                     return false;
                 }
-                *hints = *hints + 1;
+                *hints = hints.saturating_add(1);
                 self.hints_used += 1;
             }
             Completion::Complete => return false,
             Completion::AutoHinted(hints) => {
-                if *hints >= word.characters.len() {
+                if hints.get() >= word.characters.len() {
                     return false;
                 }
-                *hints = *hints + 1;
-                *completion = Completion::Hinted(*hints + 1);
+                let new_hints = hints.saturating_add(1);
+                *hints = new_hints;
+                *completion = Completion::Hinted(new_hints);
             }
         }
         return true;
@@ -164,8 +166,8 @@ impl FoundWordsState {
                     break 'check;
                 }
                 Completion::Hinted(hints) | Completion::AutoHinted(hints) => {
-                    if *hints < word.characters.len() && *hints < min_hints {
-                        min_hints = *hints;
+                    if hints.get() < word.characters.len() && hints.get() < min_hints {
+                        min_hints = hints.get();
                         min_hint_index = Some(index)
                     }
                 }
@@ -176,7 +178,7 @@ impl FoundWordsState {
         let Some(index) = min_hint_index else {
             return false;
         };
-        self.word_completions[index] = Completion::Hinted(min_hints + 1);
+        self.word_completions[index] = Completion::Hinted(NonZeroUsize::MIN.saturating_add(min_hints));
 
         true
     }
@@ -185,8 +187,8 @@ impl FoundWordsState {
 #[derive(Debug, PartialEq, Clone, Copy, Eq, Serialize, Deserialize, EnumIs)]
 pub enum Completion {
     Unstarted,
-    AutoHinted(usize),
-    Hinted(usize),
+    AutoHinted(NonZeroUsize),
+    Hinted(NonZeroUsize),
     Complete,
 }
 
@@ -212,7 +214,7 @@ impl Completion {
             Completion::AutoHinted(hints) | Completion::Hinted(hints) => Some(
                 &word
                     .characters
-                    .split_at(*hints.min(&word.characters.len()))
+                    .split_at(hints.get().min(word.characters.len()))
                     .0,
             ),
         }
@@ -335,7 +337,7 @@ impl FoundWordsState {
 
                     match hints {
                         Ok(hints) => {
-                            self.word_completions[word_index] = Completion::AutoHinted(hints.get());
+                            self.word_completions[word_index] = Completion::AutoHinted(hints);
                         }
                         Err(_) => {}
                     }
@@ -422,6 +424,8 @@ fn count_hints(
 #[cfg(test)]
 pub mod tests {
 
+    use std::num::NonZeroUsize;
+
     use crate::prelude::{Completion, CurrentLevel, DesignedLevel, FoundWordsState};
 
     #[test]
@@ -453,6 +457,6 @@ pub mod tests {
 
         let croatia_completion = found_words.word_completions[1];
 
-        assert_eq!(croatia_completion, Completion::AutoHinted(2));
+        assert_eq!(croatia_completion, Completion::AutoHinted(NonZeroUsize::new(2).unwrap()));
     }
 }

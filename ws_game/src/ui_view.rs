@@ -237,7 +237,7 @@ impl MavericNode for WordNode {
             let text = match node.completion {
                 Completion::Unstarted => node.word.characters.len().to_string(), //todo show word structure
                 Completion::Hinted(hints) | Completion::AutoHinted(hints) => {
-                    let hinted_characters = node.word.text.chars().take(hints);
+                    let hinted_characters = node.word.text.chars().take(hints.get());
                     let question_marks = std::iter::repeat('?'); //todo show word structure
 
                     std::iter::Iterator::chain(hinted_characters, question_marks)
