@@ -74,7 +74,7 @@ pub fn level_count() -> u32 {
 }
 
 impl DesignedLevel {
-    fn from_tsv_line(line: &str) -> Self {
+    pub fn from_tsv_line(line: &str) -> Self {
         let mut iter = line.split('\t');
 
         let chars: &str = iter.next().expect("Level should have a grid");
