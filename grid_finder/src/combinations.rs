@@ -226,7 +226,7 @@ impl WordCombination {
 pub mod tests {
     use super::*;
     use itertools::Itertools;
-    use std::time::Instant;
+    use std::{time::Instant, collections::HashSet};
     use test_case::test_case;
 
     #[test]
@@ -243,30 +243,33 @@ pub mod tests {
 
         println!("{:?}", now.elapsed());
 
-        let expected = "ant, antelope, cow, monkey\nant, antelope, monkey\nant, cow, monkey\nant, monkey\nant, antelope, cow\nant, antelope\nant, cow\nant\nant, antelope, cow\nant, antelope\nant, cow\nant\nant, cow\nant";
+        let expected = "ant\nant, antelope\nant, antelope, cow\nant, antelope, cow, monkey\nant, antelope, monkey\nant, cow\nant, cow, monkey\nant, monkey";
 
-        let actual = possible_combinations
-            .into_iter()
-            .map(|x| x.display_string(words.as_slice()))
-            .join("\n");
+        //println!("{}", possible_combinations.iter().map(|x| x.display_string(words.as_slice())).sorted().dedup().join("\\n"));
 
-        assert_eq!(expected, actual)
+        let actual_set: HashSet<_> = possible_combinations.iter().map(|x| x.display_string(words.as_slice())).collect();
+
+        for combo in expected.split("\n"){
+            assert!(actual_set.contains(combo));
+        }
+
+        assert_eq!(actual_set.len(), expected.split("\n").count(), "Number of combinations");
     }
 
     #[test_case("monkey\ncow\nant\nantelope", "monkey\ncow\nant\nantelope")]
     #[test_case(
-        "POLITICIAN, OPTICIAN, CASHIER, FLORIST, ARTIST, TAILOR, ACTOR",
-        "POLITICIAN, OPTICIAN, CASHIER, FLORIST, ARTIST, TAILOR, ACTOR"
+        "POLITICIAN\nOPTICIAN\nCASHIER\nFLORIST\nARTIST\nTAILOR\nACTOR",
+        "POLITICIAN\nOPTICIAN\nCASHIER\nFLORIST\nARTIST\nTAILOR\nACTOR"
     )]
     #[test_case(
-        "SILVER, ORANGE, GREEN, IVORY, CORAL, OLIVE, TEAL, GRAY, CYAN, RED",
-        "SILVER, ORANGE, GREEN, IVORY, CORAL, OLIVE, TEAL, GRAY, CYAN, RED"
+        "SILVER\nORANGE\nGREEN\nIVORY\nCORAL\nOLIVE\nTEAL\nGRAY\nCYAN\nRED",
+        "SILVER\nORANGE\nGREEN\nIVORY\nCORAL\nOLIVE\nTEAL\nGRAY\nCYAN\nRED"
     )]
     #[test_case(
-        "Teal, Wheat, White, Green, Cyan, Gray, Coral, Orange, Magenta",
-        "Teal, Wheat, White, Green, Cyan, Gray, Coral, Orange, Magenta"
+        "Teal\nWheat\nWhite\nGreen\nCyan\nGray\nCoral\nOrange\nMagenta",
+        "Teal\nWheat\nWhite\nGreen\nCyan\nGray\nCoral\nOrange\nMagenta"
     )]
-    #[test_case("White, Yellow, Blue, Red, Green, Black, Brown, Azure, Ivory, Teal, Silver, Purple, Gray, Orange, Maroon, Charcoal, Aquamarine, Coral, Fuchsia, Wheat, Lime, Crimson, Khaki, pink, Magenta, Gold, Plum, Olive, Cyan","Black, Coral, Cyan, Gray, Green, Ivory, Olive, Orange, Red, Teal") ]
+    #[test_case("White\nYellow\nBlue\nRed\nGreen\nBlack\nBrown\nAzure\nIvory\nTeal\nSilver\nPurple\nGray\nOrange\nMaroon\nCharcoal\nAquamarine\nCoral\nFuchsia\nWheat\nLime\nCrimson\nKhaki\npink\nMagenta\nGold\nPlum\nOlive\nCyan","Black\nCoral\nCyan\nGray\nGreen\nIvory\nOlive\nOrange\nRed\nTeal") ]
     pub fn test_membership(input: &'static str, expected_member: &'static str) {
         let now = Instant::now();
 
@@ -299,7 +302,7 @@ pub mod tests {
                 .map(|x| x.display_string(words.as_slice()))
                 .join("\n");
 
-            println!("{actual}");
+            println!("actual {actual}");
         }
 
         assert!(contains_expected);

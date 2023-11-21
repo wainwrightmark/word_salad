@@ -436,25 +436,25 @@ mod tests {
     use super::*;
     use test_case::test_case;
 
-    #[test_case("DOG, TOAD, PIGEON, OWL, PIG, ANT, CAT, LION, DEER, COW, GOAT, BEE, TIGER")]
-    #[test_case("SILVER, ORANGE, GREEN, IVORY, CORAL, OLIVE, TEAL, GRAY, CYAN, RED")]
-    #[test_case("CROATIA, ROMANIA, IRELAND, LATVIA, POLAND, FRANCE, MALTA, LIL")]
-    #[test_case("CROATIA, ROMANIA, IRELAND, LATVIA, POLAND, FRANCE, MALTA")]
+    #[test_case("DOG\nTOAD\nPIGEON\nOWL\nPIG\nANT\nCAT\nLION\nDEER\nCOW\nGOAT\nBEE\nTIGER")]
+    #[test_case("SILVER\nORANGE\nGREEN\nIVORY\nCORAL\nOLIVE\nTEAL\nGRAY\nCYAN\nRED")]
+    #[test_case("CROATIA\nROMANIA\nIRELAND\nLATVIA\nPOLAND\nFRANCE\nMALTA\nLIL")]
+    #[test_case("CROATIA\nROMANIA\nIRELAND\nLATVIA\nPOLAND\nFRANCE\nMALTA")]
     // spellchecker:disable-next-line
-    #[test_case("PIEPLATE, STRAINER, TEAPOT, GRATER, APRON, SPOON, POT")]
-    #[test_case("THIRTEEN, FOURTEEN, FIFTEEN, SEVENTY, THIRTY, NINETY, THREE, SEVEN, FORTY, FIFTY, FIFTH, FOUR, NINE, ONE, TEN")]
-    #[test_case("POLO, SHOOTING, KENDO, SAILING, LUGE, SKIING")]
-    #[test_case("IOWA, OHIO, IDAHO, UTAH, HAWAII, INDIANA, MONTANA")]
-    #[test_case("ROSEMARY, CARROT, PARSLEY, SOY, PEANUT, YAM, PEA, BEAN")]
+    #[test_case("PIEPLATE\nSTRAINER\nTEAPOT\nGRATER\nAPRON\nSPOON\nPOT")]
+    #[test_case("THIRTEEN\nFOURTEEN\nFIFTEEN\nSEVENTY\nTHIRTY\nNINETY\nTHREE\nSEVEN\nFORTY\nFIFTY\nFIFTH\nFOUR\nNINE\nONE\nTEN")]
+    #[test_case("POLO\nSHOOTING\nKENDO\nSAILING\nLUGE\nSKIING")]
+    #[test_case("IOWA\nOHIO\nIDAHO\nUTAH\nHAWAII\nINDIANA\nMONTANA")]
+    #[test_case("ROSEMARY\nCARROT\nPARSLEY\nSOY\nPEANUT\nYAM\nPEA\nBEAN")]
     // spellchecker:disable-next-line
-    #[test_case("WEEDLE, MUK, SLOWPOKE, GOLEM, SEEL, MEW, EEVEE, GLOOM")]
-    #[test_case("POLITICIAN, OPTICIAN, CASHIER, FLORIST, ARTIST, TAILOR, ACTOR")]
+    #[test_case("WEEDLE\nMUK\nSLOWPOKE\nGOLEM\nSEEL\nMEW\nEEVEE\nGLOOM")]
+    #[test_case("POLITICIAN\nOPTICIAN\nCASHIER\nFLORIST\nARTIST\nTAILOR\nACTOR")]
     // spellchecker:disable-next-line
-    #[test_case("ALDGATE, ANGEL, ALDGATEEAST, BANK, LANCASTERGATE")]
-    #[test_case("WELLS, LEEDS, ELY, LISBURN, DERBY, NEWRY, SALISBURY")]
-    #[test_case("Cat, Dog")]
-    //#[test_case("Utah, Ohio, Maine, Idaho, Indiana, Montana, Arizona")] //TODO make this case fast
-    #[test_case("Teal, Wheat, White, Green, Cyan, Gray, Coral, Orange, Magenta")]
+    #[test_case("ALDGATE\nANGEL\nALDGATEEAST\nBANK\nLANCASTERGATE")]
+    #[test_case("WELLS\nLEEDS\nELY\nLISBURN\nDERBY\nNEWRY\nSALISBURY")]
+    #[test_case("Cat\nDog")]
+    //#[test_case("Utah\nOhio\nMaine\nIdaho\nIndiana\nMontana\nArizona")] //TODO make this case fast
+    #[test_case("Teal\nWheat\nWhite\nGreen\nCyan\nGray\nCoral\nOrange\nMagenta")]
     pub fn test_try_make_grid(input: &'static str) {
         let now = Instant::now();
         let words = crate::finder::helpers::make_words_vec_from_file(input);

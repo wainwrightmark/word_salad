@@ -188,7 +188,7 @@ pub mod tests {
     pub fn test_calculate_needed_tiles() {
         let level = DesignedLevel::from_tsv_line(
             // spellchecker:disable-next-line
-            "GNDTEUIOKILOASHP\tSports\tPOLO\tSHOOTING\tKENDO\tSAILING\tLUGE\tSKIING",
+            "ASHPKILOEUIOGNDT\tSports\tPOLO\tSHOOTING\tKENDO\tSAILING\tLUGE\tSKIING",
         );
 
         // A|S|H|P
