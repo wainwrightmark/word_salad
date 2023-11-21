@@ -72,6 +72,7 @@ impl InputType {
                                     current_level.to_next_level(found_words.as_mut());
                                 }
                                 CongratsLayoutEntity::LevelTime => {}
+                                CongratsLayoutEntity::HintsUsed => {},
                             }
                         } else {
                             let Some(tile) = size.try_pick::<LayoutGridTile>(*position, &()) else {

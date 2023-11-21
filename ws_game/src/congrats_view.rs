@@ -25,6 +25,53 @@ impl MavericNode for CongratsView {
                 let size = &context.3;
                 let font_size = size.font_size::<CongratsLayoutEntity>();
 
+                let hints_used_text = match context.2.hints_used{
+                    0 => "No hints used".to_string(),
+                    1 => "1 hint used".to_string(),
+                    n => format!("{n} hints used")
+
+                };
+
+                commands.add_child(
+                    "hints used",
+                    Text2DNode {
+                        text: TextNode {
+                            text: hints_used_text,
+                            font_size,
+                            color: BUTTON_TEXT_COLOR,
+                            font: BUTTONS_FONT_PATH,
+                            alignment: TextAlignment::Center,
+                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                        },
+                        transform: Transform::from_translation(
+                            size.get_rect(&CongratsLayoutEntity::HintsUsed, &())
+                                .centre()
+                                .extend(crate::z_indices::CONGRATS_BUTTON),
+                        ),
+                    },
+                    &(),
+                );
+
+                commands.add_child(
+                    "next level",
+                    Text2DNode {
+                        text: TextNode {
+                            text: "Next",
+                            font_size,
+                            color: BUTTON_TEXT_COLOR,
+                            font: BUTTONS_FONT_PATH,
+                            alignment: TextAlignment::Center,
+                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                        },
+                        transform: Transform::from_translation(
+                            size.get_rect(&CongratsLayoutEntity::NextButton, &())
+                                .centre()
+                                .extend(crate::z_indices::CONGRATS_BUTTON),
+                        ),
+                    },
+                    &(),
+                );
+
                 #[cfg(target_arch = "wasm32")]
                 {
                     commands.add_child(
@@ -48,25 +95,7 @@ impl MavericNode for CongratsView {
                     );
                 }
 
-                commands.add_child(
-                    "next level",
-                    Text2DNode {
-                        text: TextNode {
-                            text: "Next",
-                            font_size,
-                            color: BUTTON_TEXT_COLOR,
-                            font: BUTTONS_FONT_PATH,
-                            alignment: TextAlignment::Center,
-                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                        },
-                        transform: Transform::from_translation(
-                            size.get_rect(&CongratsLayoutEntity::NextButton, &())
-                                .centre()
-                                .extend(crate::z_indices::CONGRATS_BUTTON),
-                        ),
-                    },
-                    &(),
-                );
+
             });
     }
 }

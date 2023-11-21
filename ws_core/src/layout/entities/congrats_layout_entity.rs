@@ -10,8 +10,10 @@ use super::consts::*;
 )]
 pub enum CongratsLayoutEntity {
     LevelTime = 0,
-    ShareButton = 1,
+    HintsUsed = 1,
     NextButton = 2,
+    ShareButton = 3,
+
 }
 
 impl CongratsLayoutEntity {
