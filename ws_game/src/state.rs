@@ -442,6 +442,10 @@ pub mod tests {
 
     #[test]
     pub fn test_auto_hints() {
+
+        //TODO test the following with everything but croatia
+        //PLTAOAYIMRNDFCEG	Europe Countries 6	Croatia 	France  	Germany 	Italy   	Malta   	Poland  	Romania
+
         let level = DesignedLevel::from_tsv_line(
             "DNGLHUAOSTRPAIYC	Europe Countries 2	Austria 	Croatia 	Cyprus  	Hungary 	Poland  	Portugal",
         );

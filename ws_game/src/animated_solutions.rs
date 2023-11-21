@@ -43,9 +43,9 @@ pub fn animate_solution(
         return;
     };
 
-    let Some(last_tile) = solution.last() else{return;};
+    //let Some(last_tile) = solution.last() else{return;};
 
-    let mid_destination = size.get_rect(&LayoutGridTile(*last_tile), &()).centre();
+    let mid_destination = size.get_rect(&LayoutTextItem::FoundWordAnimation, &()).centre();
     let word_destination_rect = size.get_rect(&layout_word_tile, words);
     let word_destination_centre = word_destination_rect.centre();
 
@@ -58,11 +58,11 @@ pub fn animate_solution(
     let translation_speed = LinearSpeed{units_per_second: word_destination_rect.extents.y.abs() * SPEED_MULTIPLIER };
     let speed = (translation_speed, scale_speed);
 
-    let right_push = ((mid_destination.x - ((solution.len() as f32 + 0.5) * font_size * SPACING)) + (size.scaled_width * 0.5)).min(0.0);
+    //let right_push = ((mid_destination.x - ((solution.len() as f32 + 0.5) * font_size * SPACING)) + (size.scaled_width * 0.5)).min(0.0);
 
 
     for (index, (tile, character)) in solution.iter().zip(word.characters.iter()).enumerate() {
-        let index_back = solution.len() - (index + 1);
+
         let text = Text::from_section(
             character.as_char().to_string(),
             TextStyle {
@@ -80,7 +80,8 @@ pub fn animate_solution(
             NextStep::None,
         );
 
-        let destination_one =  mid_destination - Vec2{x: right_push + (index_back as f32 * font_size * SPACING), y: 0.0 } ;
+        let offset = (solution.len()as f32 / 2.0) - index as f32 ;
+        let destination_one =  mid_destination - Vec2{x: ((offset - 0.5) * font_size * SPACING), y: 0.0 } ;
 
         //let speed_one = calculate_speed(&start_position, &destination_one, core::time::Duration::from_secs_f32(2.0));
 
