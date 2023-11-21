@@ -14,9 +14,10 @@ pub mod state;
 pub mod ui_view;
 pub mod video;
 pub mod view;
+pub mod z_indices;
 #[cfg(target_arch = "wasm32")]
 pub mod wasm;
-pub mod z_indices;
+
 
 fn main() {
     crate::startup::go();

@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use arrayvec::ArrayVec;
 use serde::{Deserialize, Serialize};
 
@@ -155,16 +157,20 @@ pub fn find_solution(characters: &CharsArray, grid: &Grid) -> Option<Solution> {
     None
 }
 
-impl Word {
-    pub fn from_str(text: &str) -> Result<Self, &'static str> {
+impl FromStr for Word{
+    type Err = &'static str;
 
-        let characters = normalize_characters_array(text)?;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let characters = normalize_characters_array(s)?;
 
         Ok(Self {
             characters,
-            text: text.to_string(),
+            text: s.to_string(),
         })
     }
+}
+
+impl Word {
 
     pub fn find_solution(&self, grid: &Grid) -> Option<Solution> {
         //TODO more efficient path if word has no duplicate letters
@@ -186,6 +192,8 @@ impl Word {
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
     use arrayvec::ArrayVec;
 
     use crate::prelude::*;

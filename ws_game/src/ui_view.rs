@@ -1,5 +1,4 @@
 use crate::prelude::*;
-use itertools::Itertools;
 use maveric::transition::speed::LinearSpeed;
 use maveric::{
     transition::speed::ScalarSpeed, widgets::text2d_node::Text2DNode, with_bundle::WithBundle,
@@ -209,7 +208,7 @@ impl MavericNode for WordsNode {
 #[derive(Debug, PartialEq)]
 pub struct WordNode {
     pub tile: LayoutWordTile,
-    pub word: Word,
+    pub word: DisplayWord,
     pub completion: Completion,
     pub rect: LayoutRectangle,
 }
@@ -235,14 +234,9 @@ impl MavericNode for WordNode {
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node_and_context(|node, size, commands| {
             let text = match node.completion {
-                Completion::Unstarted => node.word.characters.len().to_string(), //todo show word structure
+                Completion::Unstarted => node.word.hidden_text.clone(),
                 Completion::ManualHinted(hints) | Completion::AutoHinted(hints) => {
-                    let hinted_characters = node.word.text.chars().take(hints.get());
-                    let question_marks = std::iter::repeat('?'); //todo show word structure
-
-                    std::iter::Iterator::chain(hinted_characters, question_marks)
-                        .take(node.word.characters.len())
-                        .join("")
+                        node.word.hinted_text(hints)
                 }
 
                 Completion::Complete => node.word.text.to_string(),

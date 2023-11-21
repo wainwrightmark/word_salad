@@ -13,7 +13,7 @@ impl From<usize> for LayoutWordTile {
 }
 
 impl LayoutStructure for LayoutWordTile {
-    type Context = Vec<Word>;
+    type Context = Vec<DisplayWord>;
     type Iterator = LayoutWordTileIter;
 
     fn iter_all(context: &Self::Context) -> Self::Iterator {
@@ -36,10 +36,9 @@ impl LayoutStructure for LayoutWordTile {
     }
 
     fn size(&self, context: &Self::Context) -> Vec2 {
-        // TODO count runes not string length
         let num_letters = context
             .get(self.0)
-            .map(|x| x.text.len())
+            .map(|x| x.graphemes.len())
             .unwrap_or_default();
 
         let width = WORD_WIDTH_FIXED + (num_letters as f32 * WORD_WIDTH_PER_CHARACTER);

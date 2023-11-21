@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use itertools::Itertools;
 use lazy_static::lazy_static;
 use nice_bevy_utils::TrackableResource;
@@ -46,11 +48,12 @@ impl CurrentLevel {
     }
 }
 
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DesignedLevel {
     pub name: String,
     pub grid: Grid,
-    pub words: Vec<Word>,
+    pub words: Vec<DisplayWord>,
 }
 
 const LEVEL_LINES: &str = include_str!("levels.tsv");
@@ -86,7 +89,7 @@ impl DesignedLevel {
 
         let words = iter
             .map(|x| x.trim().to_string())
-            .flat_map(|x| Word::from_str(x.as_str()).ok())
+            .flat_map(|x| DisplayWord::from_str(x.as_str()).ok())
             .sorted_by_cached_key(|x| x.text.to_ascii_lowercase())
             .collect();
 

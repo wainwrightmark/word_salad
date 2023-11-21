@@ -139,18 +139,19 @@ impl Character {
 
 pub fn normalize_characters_array(text: &str) -> Result<ArrayVec<Character, 16>, &'static str> {
     let mut characters = ArrayVec::<Character, 16>::default();
+    let unicode_graphemes = unicode_segmentation::UnicodeSegmentation::graphemes(text, true);
 
-    let normalized = unicode_normalization::UnicodeNormalization::nfd(text);
+    for grapheme in unicode_graphemes {
+        let mut normalized = unicode_normalization::UnicodeNormalization::nfd(grapheme);
 
-    for char in normalized {
-
-        if char.is_ascii() {
-            let character = Character::try_from(char)?;
-            if !character.is_blank() {
-                characters
-                    .try_push(character)
-                    .map_err(|_| "Word is too long")?;
-            }
+        let Some(c) = normalized.next() else {
+            continue;
+        };
+        let character = Character::try_from(c)?;
+        if !character.is_blank() {
+            characters
+                .try_push(character)
+                .map_err(|_| "Word is too long")?;
         }
     }
 
@@ -161,7 +162,7 @@ impl TryFrom<char> for Character {
     type Error = &'static str;
 
     fn try_from(value: char) -> Result<Self, Self::Error> {
-        if value.is_ascii_punctuation() {
+        if value.is_ascii_punctuation() | value.is_ascii_whitespace() {
             return Ok(Character::Blank);
         }
 
@@ -198,20 +199,18 @@ impl TryFrom<char> for Character {
     }
 }
 
-
 #[cfg(test)]
-mod tests{
+mod tests {
     use crate::normalize_characters_array;
     use test_case::test_case;
 
     #[test_case("abcd", "ab cd")]
     #[test_case("dali", "Dalí")]
     #[test_case("walle", "Wall-E")]
-    fn test_equal(expected: &str, actual: &str){
+    fn test_equal(expected: &str, actual: &str) {
         let expected_len = expected.len();
         let expected = normalize_characters_array(expected).unwrap();
         let actual = normalize_characters_array(actual).unwrap();
-
 
         assert_eq!(actual, expected);
         assert_eq!(actual.len(), expected_len);

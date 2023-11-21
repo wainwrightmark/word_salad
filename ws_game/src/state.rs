@@ -219,7 +219,7 @@ impl Completion {
         }
     }
 
-    pub fn known_characters<'a, 'w>(&'a self, word: &'w Word) -> Option<&'w [Character]> {
+    pub fn known_characters<'a, 'w>(&'a self, word: &'w DisplayWord) -> Option<&'w [Character]> {
         match self {
             Completion::Unstarted => None,
             Completion::Complete => Some(&word.characters),

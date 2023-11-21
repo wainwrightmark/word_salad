@@ -18,7 +18,7 @@ impl Plugin for AnimatedSolutionPlugin {
 pub fn animate_solution(
     commands: &mut Commands,
     solution: &Solution,
-    word: &Word,
+    word: &DisplayWord,
     is_first_time: bool,
     asset_server: &AssetServer,
     size: &Size,

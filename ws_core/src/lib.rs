@@ -2,12 +2,14 @@ pub mod character;
 pub mod finder;
 pub mod layout;
 pub mod word;
+pub mod display_word;
 pub use crate::prelude::*;
 
 pub mod prelude {
 
     pub use crate::character::*;
     pub use crate::word::*;
+    pub use crate::display_word::*;
 
     pub use arrayvec::ArrayVec;
     pub use geometrid::prelude::HasCenter;
