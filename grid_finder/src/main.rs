@@ -1,6 +1,7 @@
 pub mod clustering;
 pub mod combinations;
 pub mod orientation;
+pub mod search;
 
 use clap::Parser;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
@@ -32,6 +33,9 @@ struct Options {
 
     #[arg(short, long, default_value = "5")]
     pub minimum: u32,
+
+    #[arg(long)]
+    pub search: Option<String>
 }
 
 fn main() {
@@ -42,7 +46,14 @@ fn main() {
     LogWrapper::new(multi.clone(), logger).try_init().unwrap();
 
     let options = Options::parse();
-    do_finder(options);
+
+    if let Some(search) = options.search{
+        search::do_search(search);
+    }
+    else{
+        do_finder(options);
+    }
+
 
     info!("Finished... Press enter");
     io::stdin().read_line(&mut String::new()).unwrap();

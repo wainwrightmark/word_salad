@@ -16,6 +16,12 @@ pub struct DisplayWord {
     pub graphemes: Vec<CharGrapheme>,
 }
 
+impl std::fmt::Display for DisplayWord{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.text.fmt(f)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CharGrapheme {
     pub is_game_char: bool,

@@ -1,52 +1,8 @@
 use std::str::FromStr;
 
 use itertools::Itertools;
-use lazy_static::lazy_static;
-use nice_bevy_utils::TrackableResource;
 use serde::{Deserialize, Serialize};
-use ws_core::finder::helpers::LetterCounts;
-
-use crate::prelude::*;
-
-#[derive(Debug, Clone, Resource, PartialEq, Eq, Serialize, Deserialize)]
-pub enum CurrentLevel {
-    Fixed { level_index: usize },
-    Custom(DesignedLevel), //todo more sophisticated pointer
-}
-
-impl TrackableResource for CurrentLevel {
-    const KEY: &'static str = "CurrentLevel";
-}
-
-impl Default for CurrentLevel {
-    fn default() -> Self {
-        Self::Fixed { level_index: 0 }
-    }
-}
-
-impl CurrentLevel {
-    pub fn level(&self) -> &DesignedLevel {
-        match self {
-            CurrentLevel::Fixed { level_index } => {
-                let index = level_index % LEVELS.len();
-                &LEVELS[index]
-            }
-            CurrentLevel::Custom(level) => level,
-        }
-    }
-
-    pub fn to_next_level(&mut self, found_words: &mut FoundWordsState) {
-        let next_index = match *self {
-            CurrentLevel::Fixed { level_index } => level_index.saturating_add(1),
-            CurrentLevel::Custom(_) => 0,
-        };
-
-        *self = CurrentLevel::Fixed {
-            level_index: next_index,
-        };
-        *found_words = FoundWordsState::new_from_level(&self);
-    }
-}
+use crate::{finder::helpers::LetterCounts, Grid, prelude::*};
 
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -56,27 +12,20 @@ pub struct DesignedLevel {
     pub words: Vec<DisplayWord>,
 }
 
-const LEVEL_LINES: &str = include_str!("levels.tsv");
-lazy_static! {
-    static ref LEVELS: Vec<DesignedLevel> = {
-        let lines = LEVEL_LINES.lines();
+impl std::fmt::Display for DesignedLevel{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{grid}\t{name}\t{words}",
 
-        let r: Vec<DesignedLevel> = lines.map(DesignedLevel::from_tsv_line).collect();
-        r
-    };
-}
-
-pub fn level_name(index: u32) -> String {
-    let index = (index as usize) % LEVELS.len();
-
-    LEVELS[index].name.clone()
-}
-
-pub fn level_count() -> u32 {
-    LEVEL_LINES.len() as u32
+    grid = self.grid.iter().join(""), name=self.name, words= self.words.iter().join("\t"))
+    }
 }
 
 impl DesignedLevel {
+
+    pub fn letter_counts(&self)-> Option<LetterCounts>{
+        LetterCounts::try_from_iter(self.grid.iter(). cloned())
+    }
+
     pub fn from_tsv_line(line: &str) -> Self {
         let mut iter = line.split('\t');
 
@@ -103,16 +52,16 @@ impl DesignedLevel {
 
 impl DesignedLevel {
     pub fn try_from_path(path: String) -> Option<Self> {
-        info!("path: {path}");
+        //info!("path: {path}");
 
         if path.is_empty() || path.eq_ignore_ascii_case("/") {
             return None;
         }
 
         if path.to_ascii_lowercase().starts_with("/game") {
-            info!("Path starts with game");
+            //info!("Path starts with game");
             let data = path[6..].to_string();
-            info!("{data}");
+            //info!("{data}");
 
             use base64::Engine;
 
@@ -121,7 +70,7 @@ impl DesignedLevel {
                 .ok()?;
 
             let data = String::from_utf8(data).ok()?;
-            info!("{data}");
+            //info!("{data}");
 
             let level = DesignedLevel::from_tsv_line(&data);
 
@@ -147,14 +96,14 @@ impl DesignedLevel {
             .map(|x| x.1)
         {
             let Some(characters) = word.letter_counts() else {
-                warn!("Could not get letter counts for word");
+                //warn!("Could not get letter counts for word");
                 return unneeded_tiles;
             };
 
             match needed_characters.try_union(&characters) {
                 Some(set) => needed_characters = set,
                 None => {
-                    warn!("Could not get letter counts for word");
+                    //warn!("Could not get letter counts for word");
                     return unneeded_tiles;
                 }
             }
@@ -168,14 +117,14 @@ impl DesignedLevel {
             .filter(|x| !x.is_blank())
             .cloned();
         let Some(remaining_characters) = LetterCounts::try_from_iter(remaining_characters) else {
-            warn!("Could not get letter counts of remaining tiles");
+            //warn!("Could not get letter counts of remaining tiles");
             return unneeded_tiles;
         };
 
         let Some(potentially_redundant_characters) =
             remaining_characters.try_difference(&needed_characters)
         else {
-            warn!("Remaining characters was not a superset of needed characters");
+            //warn!("Remaining characters was not a superset of needed characters"); //todo add log to this crate
             return unneeded_tiles;
         };
 

@@ -1,7 +1,7 @@
 pub mod animated_solutions;
 pub mod asynchronous;
 pub mod constants;
-pub mod designed_level;
+pub mod current_level;
 pub mod grid_input;
 
 pub mod congrats_view;
@@ -29,7 +29,7 @@ pub mod prelude {
     pub use crate::asynchronous::*;
     pub use crate::congrats_view::*;
     pub use crate::constants::*;
-    pub use crate::designed_level::*;
+    pub use crate::current_level::*;
     pub use crate::game_grid_view::*;
     pub use crate::grid_input::*;
     pub use crate::level_time::*;
