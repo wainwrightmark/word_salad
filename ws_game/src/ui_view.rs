@@ -1,7 +1,7 @@
 use crate::prelude::*;
-use maveric::transition::speed::LinearSpeed;
+use maveric::transition::speed::{LinearSpeed, ScalarSpeed};
 use maveric::{
-    transition::speed::ScalarSpeed, widgets::text2d_node::Text2DNode, with_bundle::WithBundle,
+    widgets::text2d_node::Text2DNode, with_bundle::WithBundle,
 };
 use ws_core::layout::entities::*;
 use ws_core::prelude::*;
@@ -183,7 +183,7 @@ impl MavericNode for WordsNode {
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
                 let words = &context.1.level().words;
-
+                let font_size = context.3.font_size::<LayoutWordTile>();
                 for (index, word) in words.iter().enumerate() {
                     let completion = context.2.get_completion(index);
                     let tile = LayoutWordTile(index);
@@ -195,8 +195,9 @@ impl MavericNode for WordsNode {
                             tile,
                             completion,
                             rect,
+                            font_size
                         },
-                        &context.3,
+                        &(),
                     );
                 }
             });
@@ -209,28 +210,27 @@ pub struct WordNode {
     pub word: DisplayWord,
     pub completion: Completion,
     pub rect: LayoutRectangle,
+    pub font_size: f32,
 }
 
 impl MavericNode for WordNode {
-    type Context = Size;
+    type Context = NoContext;
 
-    fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
-        commands.scope(|commands| {
-            commands
+    fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
+        commands
                 .ignore_node()
                 .ignore_context()
                 .insert(SpatialBundle::default())
                 .finish()
-        });
 
-        commands
-            .map_args(|x| x.completion.color())
-            .ignore_context()
-            .animate_on_node::<BackgroundColorLens>(Some(ScalarSpeed::new(1.0)));
+        // commands
+        //     .map_args(|x| x.completion.color())
+        //     .ignore_context()
+        //     .animate_on_node::<BackgroundColorLens>(Some(ScalarSpeed::new(1.0)));
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
-        commands.unordered_children_with_node_and_context(|node, size, commands| {
+        commands.unordered_children_with_node(|node,  commands| {
             let text = match node.completion {
                 Completion::Unstarted => node.word.hidden_text.clone(),
                 Completion::ManualHinted(hints) | Completion::AutoHinted(hints) => {
@@ -243,14 +243,14 @@ impl MavericNode for WordNode {
             let centre = node.rect.centre();
 
             let text_translation = centre.extend(crate::z_indices::WORD_TEXT);
-            let font_size = size.font_size::<LayoutWordTile>();
+            //let font_size = size.font_size::<LayoutWordTile>();
 
             commands.add_child(
                 "text",
                 Text2DNode {
                     text: TextNode {
                         text,
-                        font_size,
+                        font_size: node.font_size,
                         color: convert_color(palette::BUTTON_TEXT_COLOR),
                         font: SOLUTIONS_FONT_PATH,
                         alignment: TextAlignment::Center,
@@ -278,20 +278,25 @@ impl MavericNode for WordNode {
                         y: e.y,
                     },
                 ],
-                radius: size.tile_size() * 0.15,
+                radius: e.y.abs() * 0.5,
                 closed: true,
             };
 
             let fill_color = node.completion.color();
-
+            let amount_per_second = node.completion.is_unstarted().then_some(10.0).unwrap_or(1.0);
             commands.add_child(
                 "shape",
                 LyonShapeNode {
                     transform: Transform::from_translation(shape_translation),
-                    fill: Fill::color(*fill_color),
+                    fill: Fill::color(convert_color(palette::WORD_BACKGROUND_UNSTARTED)),
                     stroke: Stroke::color(convert_color(palette::WORD_BORDER)),
                     shape: rectangle,
-                },
+                }.with_transition_to::<FillColorLens>(
+                    *fill_color,
+                    ScalarSpeed {
+                        amount_per_second,
+                    },
+                ),
                 &(),
             );
         })
