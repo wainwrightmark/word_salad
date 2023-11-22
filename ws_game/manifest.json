@@ -1,0 +1,35 @@
+{
+    "name": "Word Salad: A new classic word puzzle",
+    "lang": "en-US",
+    "short_name": "Word Salad",
+    "icons": [
+      {
+        "src": "/icon/icon.svg",
+        "type": "image/svg+xml",
+        "sizes": "512x512"
+      },
+      {
+        "src": "/icon/icon192.png",
+        "type": "image/png",
+        "sizes": "192x192"
+      },
+      {
+        "src": "/icon/icon512.png",
+        "type": "image/png",
+        "sizes": "512x512"
+      }
+    ],
+    "id": "word_salad",
+    "start_url": "/",
+    "background_color": "#86adea",
+    "display": "standalone",
+    "scope": "/",
+    "theme_color": "#86adea",
+    "shortcuts": [
+    ],
+    "description": "A new classic word puzzle",
+    "display_override": [],
+    "orientation": "portrait"
+
+
+  }

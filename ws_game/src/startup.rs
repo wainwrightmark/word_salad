@@ -17,7 +17,7 @@ pub fn go() {
 
     let window_plugin = WindowPlugin {
         primary_window: Some(Window {
-            title: "steks".to_string(),
+            title: "Word Salad".to_string(),
             canvas: Some("#game".to_string()),
             resolution: bevy::window::WindowResolution::new(IDEAL_WIDTH, IDEAL_HEIGHT),
             resize_constraints: WindowResizeConstraints::default(),
