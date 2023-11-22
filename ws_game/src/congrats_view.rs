@@ -78,7 +78,7 @@ impl MavericNode for CongratsView {
                             text: TextNode {
                                 text: "Share",
                                 font_size,
-                                color: BUTTON_TEXT_COLOR,
+                                color: convert_color(palette::BUTTON_TEXT_COLOR),
                                 font: BUTTONS_FONT_PATH,
                                 alignment: TextAlignment::Center,
                                 linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
