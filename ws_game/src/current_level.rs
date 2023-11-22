@@ -52,7 +52,7 @@ lazy_static! {
     static ref LEVELS: Vec<DesignedLevel> = {
         let lines = LEVEL_LINES.lines();
 
-        let r: Vec<DesignedLevel> = lines.map(DesignedLevel::from_tsv_line).collect();
+        let r: Vec<DesignedLevel> = lines.map(DesignedLevel::from_tsv_line).map(|x|x.unwrap()) .collect();
         r
     };
 }

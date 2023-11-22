@@ -26,15 +26,14 @@ impl DesignedLevel {
         LetterCounts::try_from_iter(self.grid.iter(). cloned())
     }
 
-    pub fn from_tsv_line(line: &str) -> Self {
+    pub fn from_tsv_line(line: &str) -> Result<Self, String> {
         let mut iter = line.split('\t');
 
-        let chars: &str = iter.next().expect("Level should have a grid");
-        let name: &str = iter.next().expect("Level should have name");
+        let chars: &str = iter.next().ok_or_else(||format!("Level '{line}' should have a grid"))?;
+        let name: &str = iter.next().ok_or_else(||format!("Level '{line}' should have a name"))?;
 
         let grid = try_make_grid(chars)
-            //.map(|x| x.with_flip(FlipAxes::Vertical))
-            .expect("Should be able to make grid");
+            .ok_or_else(||format!("Level '{line}' should be able to make grid"))?;
 
         let words = iter
             .map(|x| x.trim().to_string())
@@ -42,11 +41,11 @@ impl DesignedLevel {
             .sorted_by_cached_key(|x| x.text.to_ascii_lowercase())
             .collect();
 
-        Self {
+        Ok(Self {
             name: name.to_string(),
             grid,
             words,
-        }
+        })
     }
 }
 
@@ -72,9 +71,7 @@ impl DesignedLevel {
             let data = String::from_utf8(data).ok()?;
             //info!("{data}");
 
-            let level = DesignedLevel::from_tsv_line(&data);
-
-            Some(level)
+            DesignedLevel::from_tsv_line(&data).ok()
         } else {
             None
         }
@@ -189,7 +186,7 @@ pub mod tests {
         let level = DesignedLevel::from_tsv_line(
             // spellchecker:disable-next-line
             "ASHPKILOEUIOGNDT\tSports\tPOLO\tSHOOTING\tKENDO\tSAILING\tLUGE\tSKIING",
-        );
+        ).unwrap();
 
         // A|S|H|P
         // K|I|L|O

@@ -1,0 +1,34 @@
+[package]
+name = "ws_levels"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rand = "0.8.5"
+itertools = "0.12"
+strum = { version = "0.25", features = ["derive"] }
+chrono = { version = "0.4", features = ["serde", "wasmbind"] }
+serde = { version = "1", features = ["derive", "rc"] }
+anyhow = "1"
+base64 = "0.21"
+geometrid = { version = "0.6", features = ["glam", "serde"] }
+glam = "0.24"
+prime_bag = { git = 'https://github.com/wainwrightmark/prime-bag'}
+serde_with = "3"
+lazy_static = "1.4"
+serde_yaml = "0.9"
+serde_repr = "0.1"
+enumset = { version = "1", features = ["serde"] }
+arrayvec = { version = "0.7.4", features = ["serde"] }
+num-traits = "0.2"
+num-derive = "0.4"
+unicode-normalization = "0.1"
+unicode-segmentation = "1.10"
+ws_core = {path= "../ws_core"}
+
+[dev-dependencies]
+insta = "1"
+test-case = "3"
+criterion = "0.5"

@@ -2,6 +2,7 @@
 members = [
 "ws_core",
 "ws_game",
+"ws_levels",
 "grid_finder",
 "sheet_reader"
 ]

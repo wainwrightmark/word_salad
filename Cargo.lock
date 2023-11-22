@@ -4408,6 +4408,37 @@ dependencies = [
  "wasm-bindgen-futures",
  "web-sys",
  "ws_core",
+ "ws_levels",
+]
+
+[[package]]
+name = "ws_levels"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "arrayvec",
+ "base64",
+ "chrono",
+ "criterion",
+ "enumset",
+ "geometrid",
+ "glam",
+ "insta",
+ "itertools 0.12.0",
+ "lazy_static",
+ "num-derive",
+ "num-traits",
+ "prime_bag",
+ "rand",
+ "serde",
+ "serde_repr",
+ "serde_with",
+ "serde_yaml",
+ "strum",
+ "test-case",
+ "unicode-normalization",
+ "unicode-segmentation",
+ "ws_core",
 ]
 
 [[package]]

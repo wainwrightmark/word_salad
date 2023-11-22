@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 ws_core = {path= "../ws_core"}
+ws_levels = {path= "../ws_levels"}
 rand = "0.8.5"
 itertools = "0.12"
 bevy_prototype_lyon = { version = "0.10" }

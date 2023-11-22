@@ -28,7 +28,7 @@ pub fn do_search(search: String){
         let grid_file_text = std::fs::read_to_string(grids_path.clone()).unwrap();
 
         for line in grid_file_text.lines(){
-            let level = DesignedLevel::from_tsv_line(line);
+            let level = DesignedLevel::from_tsv_line(line).unwrap();
 
             let level_letter_counts = level.letter_counts().expect("Could not get grid letter counts");
 

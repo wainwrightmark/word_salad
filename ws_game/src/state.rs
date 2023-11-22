@@ -450,7 +450,7 @@ pub mod tests {
 
         let level = DesignedLevel::from_tsv_line(
             "DNGLHUAOSTRPAIYC	Europe Countries 2	Austria 	Croatia 	Cyprus  	Hungary 	Poland  	Portugal",
-        );
+        ).unwrap();
         let cl = CurrentLevel::Custom(level);
         let mut found_words = FoundWordsState::new_from_level(&cl);
 
