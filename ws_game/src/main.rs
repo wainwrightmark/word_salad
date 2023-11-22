@@ -51,4 +51,9 @@ pub mod prelude {
     pub use ws_core::prelude::*;
 
     pub use ws_core::Tile;
+
+    pub const fn convert_color(c: BasicColor)-> Color{
+        let BasicColor { red, green, blue, alpha } = c;
+        Color::Rgba { red, green, blue, alpha }
+    }
 }

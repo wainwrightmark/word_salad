@@ -8,7 +8,7 @@ const CLEAR_COLOR: Color = {
     if cfg!(target_arch = "wasm32") {
         Color::NONE
     } else {
-        Color::ALICE_BLUE
+        convert_color(palette::GAME_BACKGROUND)
     }
 };
 

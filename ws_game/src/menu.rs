@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use maveric::transition::prelude::*;
 use maveric::{impl_maveric_root, prelude::*};
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
+use ws_core::palette;
 
 use std::string::ToString;
 use std::time::Duration;
@@ -10,6 +11,7 @@ use strum::{Display, EnumIs};
 use crate::constants::{
     level_count, level_name, CurrentLevel, VideoEvent, VideoResource, MENU_BUTTON_FONT_PATH,
 };
+use crate::prelude::convert_color;
 use crate::state::{ChosenState, FoundWordsState};
 
 pub struct MenuPlugin;
@@ -205,14 +207,14 @@ fn icon_button_node(button_action: ButtonAction) -> impl MavericNode<Context = N
     ButtonNode {
         style: IconNodeStyle,
         visibility: Visibility::Visible,
-        border_color: BUTTON_BORDER,
-        background_color: ICON_BUTTON_BACKGROUND,
+        border_color: convert_color(palette::BUTTON_BORDER),
+        background_color: convert_color(palette::ICON_BUTTON_BACKGROUND),
         marker: button_action,
         children: (TextNode {
             text: button_action.icon(),
             font: MENU_BUTTON_FONT_PATH,
             font_size: ICON_FONT_SIZE,
-            color: BUTTON_TEXT_COLOR,
+            color: convert_color(palette::BUTTON_TEXT_COLOR),
             alignment: TextAlignment::Center,
             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
         },),
@@ -223,14 +225,14 @@ fn text_button_node(button_action: ButtonAction) -> impl MavericNode<Context = N
     ButtonNode {
         style: TextButtonStyle,
         visibility: Visibility::Visible,
-        border_color: BUTTON_BORDER,
-        background_color: TEXT_BUTTON_BACKGROUND,
+        border_color: convert_color(palette::BUTTON_BORDER) ,
+        background_color: convert_color(palette::TEXT_BUTTON_BACKGROUND),
         marker: button_action,
         children: (TextNode {
             text: button_action.text(),
             font: MENU_BUTTON_FONT_PATH,
             font_size: BUTTON_FONT_SIZE,
-            color: BUTTON_TEXT_COLOR,
+            color: convert_color(palette::BUTTON_TEXT_COLOR),
             alignment: TextAlignment::Center,
             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
         },),
@@ -244,15 +246,15 @@ fn text_and_image_button_node(
     ButtonNode {
         style: TextButtonStyle,
         visibility: Visibility::Visible,
-        border_color: BUTTON_BORDER,
-        background_color: TEXT_BUTTON_BACKGROUND,
+        border_color: convert_color(palette::BUTTON_BORDER),
+        background_color: convert_color(palette::TEXT_BUTTON_BACKGROUND),
         marker: button_action,
         children: (
             TextNode {
                 text: button_action.text(),
                 font: MENU_BUTTON_FONT_PATH,
                 font_size: BUTTON_FONT_SIZE,
-                color: BUTTON_TEXT_COLOR,
+                color: convert_color(palette::BUTTON_TEXT_COLOR),
                 alignment: TextAlignment::Center,
                 linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
             },
@@ -358,8 +360,8 @@ impl MavericNode for LevelMenuArrows {
 
                 ..Default::default()
             },
-            background_color: BackgroundColor(TEXT_BUTTON_BACKGROUND),
-            border_color: BorderColor(BUTTON_BORDER),
+            background_color: BackgroundColor(convert_color(palette::TEXT_BUTTON_BACKGROUND)),
+            border_color: BorderColor(convert_color(palette::BUTTON_BORDER)),
             ..Default::default()
         });
     }
@@ -406,11 +408,6 @@ const BUTTON_FONT_SIZE: f32 = 22.0;
 
 const LEVELS_PER_PAGE: u32 = 8;
 
-pub const BUTTON_BORDER: Color = Color::BLACK;
-pub const BUTTON_TEXT_COLOR: Color = Color::rgb(0.1, 0.1, 0.1);
-
-pub const ICON_BUTTON_BACKGROUND: Color = Color::NONE;
-pub const TEXT_BUTTON_BACKGROUND: Color = Color::WHITE;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct BigImageNodeStyle;

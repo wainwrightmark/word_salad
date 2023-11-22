@@ -27,9 +27,9 @@ pub fn animate_solution(
 
     //info!("Animate solution");
     let color = if is_first_time {
-        Color::LIME_GREEN
+        palette::ANIMATED_SOLUTION_NEW
     } else {
-        Color::YELLOW
+        palette::ANIMATED_SOLUTION_OLD
     };
 
     const SECONDS: f32 = 3.0;
@@ -67,7 +67,7 @@ pub fn animate_solution(
             character.as_char().to_string(),
             TextStyle {
                 font_size: font_size,
-                color,
+                color: convert_color(color),
                 font: font.clone(),
             },
         );

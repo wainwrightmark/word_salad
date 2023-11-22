@@ -206,16 +206,18 @@ pub enum Completion {
 
 impl Completion {
     pub fn color(&self) -> &'static Color {
-        const INCOMPLETE_COLOR: Color = Color::ALICE_BLUE;
-        const HINT_COLOR: Color = Color::rgb(0.3, 0.3, 0.9);
-        const AUTO_HINT_COLOR: Color = Color::SILVER;
-        const COMPLETE_COLOR: Color = Color::GREEN;
+
+        const UNSTARTED: &'static Color = & convert_color(palette::WORD_BACKGROUND_UNSTARTED);
+        const MANUAL: &'static Color = & convert_color(palette::WORD_BACKGROUND_MANUAL_HINT);
+        const COMPLETE: &'static Color = & convert_color(palette::WORD_BACKGROUND_COMPLETE);
+        const AUTO: &'static Color = & convert_color(palette::WORD_BACKGROUND_AUTO_HINT);
+
 
         match self {
-            Completion::Unstarted => &INCOMPLETE_COLOR,
-            Completion::ManualHinted(_) => &HINT_COLOR,
-            Completion::Complete => &COMPLETE_COLOR,
-            Completion::AutoHinted(_) => &AUTO_HINT_COLOR,
+            Completion::Unstarted => UNSTARTED,
+            Completion::ManualHinted(_) => MANUAL,
+            Completion::Complete => COMPLETE,
+            Completion::AutoHinted(_) => AUTO,
         }
     }
 

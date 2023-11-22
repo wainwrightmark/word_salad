@@ -126,19 +126,19 @@ impl MavericNode for GridTile {
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
             let tile_size = node.tile_size;
-            let fill = if node.selected {
-                Color::ALICE_BLUE
+            let fill = convert_color(if node.selected {
+                palette::GRID_TILE_FILL_SELECTED
             } else {
-                Color::GRAY
-            };
+                palette::GRID_TILE_FILL_UNSELECTED
+            });
 
             commands.add_child(
                 0,
                 LyonShapeNode {
                     shape: make_rounded_square(tile_size, tile_size * 0.1),
                     transform: Transform::from_xyz(0.0, 0.0, crate::z_indices::GRID_TILE),
-                    fill: Fill::color(Color::GRAY),
-                    stroke: Stroke::color(Color::DARK_GRAY),
+                    fill: Fill::color(convert_color(palette::GRID_TILE_FILL_UNSELECTED)),
+                    stroke: Stroke::color(convert_color(palette::GRID_TILE_STROKE)),
                 }
                 .with_transition_to::<FillColorLens>(
                     fill,
@@ -194,7 +194,7 @@ impl MavericNode for GridLetter {
                         text: args.character.to_tile_string(),
                         font: TILE_FONT_PATH,
                         font_size: args.font_size,
-                        color: Color::DARK_GRAY,
+                        color: convert_color(palette::GRID_LETTER),
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     },
@@ -234,11 +234,11 @@ impl MavericNode for HintGlows {
 
                     let shape = make_rounded_square(tile_size * 0.8, tile_size * 0.1);
 
-                    let color = if manual_hints.get_bit(&tile){
-                        Color::GOLD
+                    let color = convert_color(if manual_hints.get_bit(&tile){
+                        palette::MANUAL_HINT_GLOW
                     }else{
-                        Color::BLUE
-                    };
+                        palette::AUTO_HINT_GLOW
+                    });
 
                     commands.add_child(
                         tile.inner() as u32,
@@ -290,7 +290,7 @@ impl MavericNode for WordLine {
 
             let mut width = size.get_rect(&GameLayoutEntity::Grid, &()).extents.x * 50. / 320.;
 
-            let color = Color::rgba(0.9, 0.25, 0.95, 0.9);
+
 
             if args.previous.is_none() {
                 commands.insert(Transition::<StrokeWidthLens>::new(TransitionStep::new_arc(
@@ -316,7 +316,7 @@ impl MavericNode for WordLine {
                 ..Default::default()
             });
             commands.insert(Stroke {
-                color,
+                color: convert_color(palette::WORD_LINE_COLOR),
                 options: StrokeOptions::default()
                     .with_line_width(width)
                     .with_start_cap(LineCap::Round)

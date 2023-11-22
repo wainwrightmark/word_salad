@@ -9,8 +9,6 @@ use ws_core::prelude::*;
 #[derive(Debug, Clone, PartialEq)]
 pub struct UI;
 
-//pub const BUTTON_FONT_SIZE: f32 = 22.0;
-pub const BUTTON_TEXT_COLOR: Color = Color::rgb(0.1, 0.1, 0.1);
 pub const TEXT_BUTTON_WIDTH: f32 = 140.;
 pub const TEXT_BUTTON_HEIGHT: f32 = 30.;
 pub const UI_BORDER_WIDTH: Val = Val::Px(3.0);
@@ -39,7 +37,7 @@ impl MavericNode for UI {
                         text: TextNode {
                             text: "\u{f0c9}",
                             font_size: top_bar_font_size,
-                            color: BUTTON_TEXT_COLOR,
+                            color: convert_color(palette::BUTTON_TEXT_COLOR),
                             font: MENU_BUTTON_FONT_PATH,
                             alignment: TextAlignment::Center,
                             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -76,7 +74,7 @@ impl MavericNode for UI {
                             text: TextNode {
                                 text: time_text,
                                 font_size: top_bar_font_size,
-                                color: BUTTON_TEXT_COLOR,
+                                color: convert_color(palette::BUTTON_TEXT_COLOR),
                                 font: MENU_BUTTON_FONT_PATH,
                                 alignment: TextAlignment::Center,
                                 linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -106,7 +104,7 @@ impl MavericNode for UI {
                         text: TextNode {
                             text: context.2.hints_used.to_string(),
                             font_size: top_bar_font_size,
-                            color: BUTTON_TEXT_COLOR,
+                            color: convert_color(palette::BUTTON_TEXT_COLOR),
                             font: BUTTONS_FONT_PATH,
                             alignment: TextAlignment::Center,
                             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -128,7 +126,7 @@ impl MavericNode for UI {
                         text: TextNode {
                             text: title,
                             font_size: text_font_size,
-                            color: BUTTON_TEXT_COLOR,
+                            color: convert_color(palette::BUTTON_TEXT_COLOR),
                             font: TITLE_FONT_PATH,
                             alignment: TextAlignment::Center,
                             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -148,7 +146,7 @@ impl MavericNode for UI {
                         text: TextNode {
                             text: "Theme",
                             font_size: text_font_size,
-                            color: BUTTON_TEXT_COLOR,
+                            color: convert_color(palette::BUTTON_TEXT_COLOR),
                             font: TITLE_FONT_PATH,
                             alignment: TextAlignment::Center,
                             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -236,7 +234,7 @@ impl MavericNode for WordNode {
             let text = match node.completion {
                 Completion::Unstarted => node.word.hidden_text.clone(),
                 Completion::ManualHinted(hints) | Completion::AutoHinted(hints) => {
-                        node.word.hinted_text(hints)
+                    node.word.hinted_text(hints)
                 }
 
                 Completion::Complete => node.word.text.to_string(),
@@ -253,7 +251,7 @@ impl MavericNode for WordNode {
                     text: TextNode {
                         text,
                         font_size,
-                        color: BUTTON_TEXT_COLOR,
+                        color: convert_color(palette::BUTTON_TEXT_COLOR),
                         font: SOLUTIONS_FONT_PATH,
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -291,7 +289,7 @@ impl MavericNode for WordNode {
                 LyonShapeNode {
                     transform: Transform::from_translation(shape_translation),
                     fill: Fill::color(*fill_color),
-                    stroke: Stroke::color(Color::DARK_GRAY),
+                    stroke: Stroke::color(convert_color(palette::WORD_BORDER)),
                     shape: rectangle,
                 },
                 &(),

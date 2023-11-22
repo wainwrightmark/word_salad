@@ -4,8 +4,6 @@ use ws_core::layout::entities::*;
 #[derive(Debug, Clone, PartialEq)]
 pub struct CongratsView;
 
-//pub const BUTTON_FONT_SIZE: f32 = 22.0;
-pub const BUTTON_TEXT_COLOR: Color = Color::rgb(0.1, 0.1, 0.1);
 
 impl MavericNode for CongratsView {
     type Context = NC5<ChosenState, CurrentLevel, FoundWordsState, Size, LevelTime>;
@@ -38,7 +36,7 @@ impl MavericNode for CongratsView {
                         text: TextNode {
                             text: hints_used_text,
                             font_size,
-                            color: BUTTON_TEXT_COLOR,
+                            color: convert_color(palette::BUTTON_TEXT_COLOR),
                             font: BUTTONS_FONT_PATH,
                             alignment: TextAlignment::Center,
                             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -58,7 +56,7 @@ impl MavericNode for CongratsView {
                         text: TextNode {
                             text: "Next",
                             font_size,
-                            color: BUTTON_TEXT_COLOR,
+                            color: convert_color(palette::BUTTON_TEXT_COLOR),
                             font: BUTTONS_FONT_PATH,
                             alignment: TextAlignment::Center,
                             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
