@@ -3,7 +3,7 @@ pub mod asynchronous;
 pub mod constants;
 pub mod current_level;
 pub mod grid_input;
-
+pub mod top_bar_view;
 pub mod congrats_view;
 pub mod game_grid_view;
 pub mod input;
@@ -15,6 +15,7 @@ pub mod ui_view;
 pub mod video;
 pub mod view;
 pub mod z_indices;
+pub mod menu_layout;
 #[cfg(target_arch = "wasm32")]
 pub mod wasm;
 
@@ -34,7 +35,9 @@ pub mod prelude {
     pub use crate::grid_input::*;
     pub use crate::level_time::*;
     pub use crate::menu::*;
+    pub use crate::menu_layout::*;
     pub use crate::state::*;
+    pub use crate::top_bar_view::*;
     pub use crate::ui_view::*;
     pub use crate::video::*;
     pub use crate::view::*;

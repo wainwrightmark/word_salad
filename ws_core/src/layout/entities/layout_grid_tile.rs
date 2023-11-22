@@ -48,14 +48,14 @@ impl LayoutStructure for LayoutGridTile {
     }
 }
 
-impl LayoutStructureWithText for LayoutGridTile {
+impl LayoutStructureWithFont for LayoutGridTile {
     fn font_size() -> f32 {
         60.0
     }
 }
 
 #[derive(Copy, Clone, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct LayoutGridTileIter {
+pub struct LayoutGridTileIter { //TODO replace with array iter
     inner: u8,
 }
 

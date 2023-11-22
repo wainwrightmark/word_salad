@@ -56,7 +56,7 @@ impl LayoutStructure for LayoutTextItem {
     }
 }
 
-impl LayoutStructureWithText for LayoutTextItem {
+impl LayoutStructureWithFont for LayoutTextItem {
     fn font_size() -> f32 {
         32.0
     }

@@ -33,7 +33,7 @@ pub struct GridTiles {
 }
 
 impl MavericNode for GridTiles {
-    type Context = NC5<ChosenState, CurrentLevel, FoundWordsState, Size, LevelTime>;
+    type Context = ViewContext;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
@@ -209,7 +209,7 @@ impl MavericNode for GridLetter {
 pub struct HintGlows;
 
 impl MavericNode for HintGlows {
-    type Context = NC5<ChosenState, CurrentLevel, FoundWordsState, Size, LevelTime>;
+    type Context = ViewContext;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands

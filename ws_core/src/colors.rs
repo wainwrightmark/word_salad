@@ -79,4 +79,9 @@ pub mod palette {
 
     pub const MANUAL_HINT_GLOW: Color = Color::GOLD;
     pub const AUTO_HINT_GLOW: Color = Color::BLUE;
+
+
+    pub const MENU_BUTTON_TEXT: Color = Color::BLACK;
+    pub const MENU_BUTTON_FILL: Color = Color::WHITE;
+    pub const MENU_BUTTON_STROKE: Color = Color::BLACK;
 }

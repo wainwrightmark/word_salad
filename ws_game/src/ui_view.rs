@@ -1,20 +1,14 @@
 use crate::prelude::*;
 use maveric::transition::speed::{LinearSpeed, ScalarSpeed};
-use maveric::{
-    widgets::text2d_node::Text2DNode, with_bundle::WithBundle,
-};
+use maveric::{widgets::text2d_node::Text2DNode, with_bundle::WithBundle};
 use ws_core::layout::entities::*;
 use ws_core::prelude::*;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct UI;
 
-pub const TEXT_BUTTON_WIDTH: f32 = 140.;
-pub const TEXT_BUTTON_HEIGHT: f32 = 30.;
-pub const UI_BORDER_WIDTH: Val = Val::Px(3.0);
-
 impl MavericNode for UI {
-    type Context = NC5<ChosenState, CurrentLevel, FoundWordsState, Size, LevelTime>;
+    type Context = ViewContext;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
@@ -28,98 +22,9 @@ impl MavericNode for UI {
         commands
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
-                let size = &context.3;
-                let top_bar_font_size = size.font_size::<LayoutTopBarButton>();
-                let text_font_size = size.font_size::<LayoutTextItem>();
-                commands.add_child(
-                    "Burger",
-                    Text2DNode {
-                        text: TextNode {
-                            text: "\u{f0c9}",
-                            font_size: top_bar_font_size,
-                            color: convert_color(palette::BUTTON_TEXT_COLOR),
-                            font: MENU_BUTTON_FONT_PATH,
-                            alignment: TextAlignment::Center,
-                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                        },
-
-                        transform: Transform::from_translation(
-                            size.get_rect(&LayoutTopBarButton::MenuBurgerButton, &())
-                                .centre()
-                                .extend(crate::z_indices::TOP_BAR_BUTTON),
-                        ),
-                    },
-                    &(),
-                );
-
-                let time_text = match context.4.as_ref() {
-                    LevelTime::Started(..) => "00:00".to_string(),
-                    LevelTime::Finished { total_seconds } => format_seconds(*total_seconds),
-                };
-
-                let time_translation = if context.2.is_level_complete() {
-                    size.get_rect(&CongratsLayoutEntity::LevelTime, &())
-                        .centre()
-                        .extend(crate::z_indices::TOP_BAR_BUTTON)
-                } else {
-                    size.get_rect(&LayoutTopBarButton::TimeCounter, &())
-                        .centre()
-                        .extend(crate::z_indices::TOP_BAR_BUTTON)
-                };
-
-                commands.add_child(
-                    "TimeCounter",
-                    WithBundle {
-                        node: Text2DNode {
-                            text: TextNode {
-                                text: time_text,
-                                font_size: top_bar_font_size,
-                                color: convert_color(palette::BUTTON_TEXT_COLOR),
-                                font: MENU_BUTTON_FONT_PATH,
-                                alignment: TextAlignment::Center,
-                                linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                            },
-
-                            transform: Transform::from_translation(
-                                size.get_rect(&LayoutTopBarButton::TimeCounter, &())
-                                    .centre()
-                                    .extend(crate::z_indices::TOP_BAR_BUTTON),
-                            ),
-                        },
-                        bundle: TimeCounterMarker,
-                    }
-                    .with_transition_to::<TransformTranslationLens>(
-                        //TODO improve this animation
-                        time_translation,
-                        LinearSpeed {
-                            units_per_second: 100.0,
-                        },
-                    ),
-                    &(),
-                );
-
-                commands.add_child(
-                    "hints",
-                    Text2DNode {
-                        text: TextNode {
-                            text: context.2.hints_used.to_string(),
-                            font_size: top_bar_font_size,
-                            color: convert_color(palette::BUTTON_TEXT_COLOR),
-                            font: BUTTONS_FONT_PATH,
-                            alignment: TextAlignment::Center,
-                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                        },
-                        transform: Transform::from_translation(
-                            size.get_rect(&LayoutTopBarButton::HintCounter, &())
-                                .centre()
-                                .extend(crate::z_indices::TOP_BAR_BUTTON),
-                        ),
-                    },
-                    &(),
-                );
-
                 let title = context.1.level().name.trim().to_string();
-
+                let size = &context.3;
+                let text_font_size = size.font_size::<LayoutTextItem>();
                 commands.add_child(
                     "title",
                     Text2DNode {
@@ -169,7 +74,7 @@ impl MavericNode for UI {
 pub struct WordsNode;
 
 impl MavericNode for WordsNode {
-    type Context = NC5<ChosenState, CurrentLevel, FoundWordsState, Size, LevelTime>;
+    type Context = ViewContext;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
@@ -195,7 +100,7 @@ impl MavericNode for WordsNode {
                             tile,
                             completion,
                             rect,
-                            font_size
+                            font_size,
                         },
                         &(),
                     );
@@ -218,10 +123,10 @@ impl MavericNode for WordNode {
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
-                .ignore_node()
-                .ignore_context()
-                .insert(SpatialBundle::default())
-                .finish()
+            .ignore_node()
+            .ignore_context()
+            .insert(SpatialBundle::default())
+            .finish()
 
         // commands
         //     .map_args(|x| x.completion.color())
@@ -230,7 +135,7 @@ impl MavericNode for WordNode {
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
-        commands.unordered_children_with_node(|node,  commands| {
+        commands.unordered_children_with_node(|node, commands| {
             let text = match node.completion {
                 Completion::Unstarted => node.word.hidden_text.clone(),
                 Completion::ManualHinted(hints) | Completion::AutoHinted(hints) => {
@@ -283,7 +188,11 @@ impl MavericNode for WordNode {
             };
 
             let fill_color = node.completion.color();
-            let amount_per_second = node.completion.is_unstarted().then_some(10.0).unwrap_or(1.0);
+            let amount_per_second = node
+                .completion
+                .is_unstarted()
+                .then_some(10.0)
+                .unwrap_or(1.0);
             commands.add_child(
                 "shape",
                 LyonShapeNode {
@@ -291,11 +200,10 @@ impl MavericNode for WordNode {
                     fill: Fill::color(convert_color(palette::WORD_BACKGROUND_UNSTARTED)),
                     stroke: Stroke::color(convert_color(palette::WORD_BORDER)),
                     shape: rectangle,
-                }.with_transition_to::<FillColorLens>(
+                }
+                .with_transition_to::<FillColorLens>(
                     *fill_color,
-                    ScalarSpeed {
-                        amount_per_second,
-                    },
+                    ScalarSpeed { amount_per_second },
                 ),
                 &(),
             );

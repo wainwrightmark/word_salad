@@ -1,530 +1,157 @@
 use bevy::prelude::*;
-use maveric::transition::prelude::*;
-use maveric::{impl_maveric_root, prelude::*};
-use nice_bevy_utils::async_event_writer::AsyncEventWriter;
-use ws_core::palette;
-
-use std::string::ToString;
-use std::time::Duration;
-use strum::{Display, EnumIs};
-
-use crate::constants::{
-    level_count, level_name, CurrentLevel, VideoEvent, VideoResource, MENU_BUTTON_FONT_PATH,
+use bevy_prototype_lyon::{
+    draw::{Fill, Stroke},
+    shapes,
 };
-use crate::prelude::convert_color;
-use crate::state::{ChosenState, FoundWordsState};
+use maveric::{
+    helpers::{ChildCommands, TextNode, UnorderedChildCommands},
+    node::MavericNode,
+    node_context::NoContext,
+    root::MavericRoot,
+    widgets::text2d_node::Text2DNode,
+};
+use strum::EnumIs;
 
-pub struct MenuPlugin;
+use ws_core::{palette, LayoutRectangle, LayoutStructure, LayoutStructureWithFont, LayoutStructureWithStaticText};
+use ws_levels::level_group::LevelGroup;
 
-impl Plugin for MenuPlugin {
-    fn build(&self, app: &mut App) {
-        app.init_resource::<MenuState>()
-            .add_systems(Update, button_system);
-
-        app.register_transition::<StyleLeftLens>();
-        app.register_transition::<TransformScaleLens>();
-        app.register_transition::<TransformTranslationLens>();
-        app.register_transition::<BackgroundColorLens>();
-
-        app.register_maveric::<MenuRoot>();
-    }
-}
-
-#[derive(Clone, Copy, Debug, Display, PartialEq, Eq, Component)]
-pub enum ButtonAction {
-    OpenMenu,
-    Resume,
-    ChooseLevel,
-    GotoLevel { level: u32 },
-
-    NextLevelsPage,
-    PreviousLevelsPage,
-    Hint,
-    ResetLevel,
-
-    Video,
-
-    None,
-}
-
-impl ButtonAction {
-    pub fn main_buttons() -> &'static [Self] {
-        use ButtonAction::*;
-        &[
-            Resume,
-            ChooseLevel,
-            ResetLevel,
-            #[cfg(target_arch = "wasm32")]
-            Video,
-        ]
-    }
-
-    pub fn icon(&self) -> String {
-        use ButtonAction::*;
-        match self {
-            OpenMenu => "\u{f0c9}".to_string(),    // "Menu",
-            Resume => "\u{e817}".to_string(),      // "Menu",
-            ChooseLevel => "\u{e812}".to_string(), // "\u{e812};".to_string(),
-            GotoLevel { level } => level.to_string(),
-            PreviousLevelsPage => "\u{e81b}".to_string(),
-            NextLevelsPage => "\u{e81a}".to_string(),
-
-            None => "".to_string(),
-            Hint => "H".to_string(),
-            ResetLevel => "R".to_string(),
-            Video => "V".to_string(),
-        }
-    }
-
-    pub fn text(&self) -> String {
-        use ButtonAction::*;
-        match self {
-            OpenMenu => "Menu".to_string(),
-            Resume => "Resume".to_string(),
-            ChooseLevel => "Choose Level".to_string(),
-            GotoLevel { level } => level_name(*level),
-            NextLevelsPage => "Next Levels".to_string(),
-            PreviousLevelsPage => "Previous Levels".to_string(),
-            ResetLevel => "Reset Level".to_string(),
-            Hint => "Hint".to_string(),
-            Video => "Video".to_string(),
-            None => "".to_string(),
-        }
-    }
-}
-
-fn button_system(
-    mut interaction_query: Query<
-        (&Interaction, &ButtonAction),
-        (Changed<Interaction>, With<Button>),
-    >,
-    mut state: ResMut<MenuState>,
-
-    mut current_level: ResMut<CurrentLevel>,
-    mut found_words: ResMut<FoundWordsState>,
-    mut chosen_state: ResMut<ChosenState>,
-    video_state: Res<VideoResource>,
-    video_events: AsyncEventWriter<VideoEvent>,
-) {
-    for (interaction, action) in &mut interaction_query {
-        if *interaction != Interaction::Pressed {
-            continue;
-        }
-
-        match action {
-            ButtonAction::OpenMenu => *state = MenuState::ShowMainMenu,
-            ButtonAction::ChooseLevel => *state = MenuState::ShowLevelsPage(0),
-            ButtonAction::NextLevelsPage => {
-                if let MenuState::ShowLevelsPage(x) = state.as_ref() {
-                    *state = MenuState::ShowLevelsPage(x + 1)
-                };
-            }
-            ButtonAction::PreviousLevelsPage => {
-                if let MenuState::ShowLevelsPage(x) = state.as_ref() {
-                    *state = MenuState::ShowLevelsPage(x.saturating_sub(1))
-                };
-            }
-            ButtonAction::None => {}
-
-            ButtonAction::Video => {
-                video_state.toggle_video_streaming(video_events.clone());
-                *state = MenuState::Closed;
-            }
-
-            ButtonAction::Resume => {
-                *state = MenuState::Closed;
-            }
-            ButtonAction::GotoLevel { level } => {
-                *current_level = CurrentLevel::Fixed {
-                    level_index: *level as usize,
-                };
-
-                *found_words = FoundWordsState::new_from_level(&current_level);
-                *chosen_state = ChosenState::default();
-
-                *state = MenuState::Closed;
-            }
-            ButtonAction::ResetLevel => {
-                current_level.set_changed();
-                *found_words = FoundWordsState::new_from_level(&current_level);
-                *chosen_state = ChosenState::default();
-
-                *state = MenuState::Closed;
-            }
-            ButtonAction::Hint => {
-                found_words.try_hint(current_level.as_ref());
-            } //_ =>
-        }
-    }
-}
+use crate::prelude::{
+    convert_color, level_group_layout::LevelGroupLayout,
+    levels_menu_layout::LevelsMenuLayoutEntity, main_menu_layout::MainMenuLayoutEntity,
+    LyonShapeNode, SaladWindowSize, Size, ViewContext, MENU_BUTTON_FONT_PATH,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Resource, EnumIs)]
 pub enum MenuState {
     #[default]
     Closed,
     ShowMainMenu,
-    ShowLevelsPage(u32),
+    ChooseLevelsPage,
+    LevelGroupPage(LevelGroup),
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Default)]
-pub struct MenuRoot;
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub struct Menu;
 
-impl_maveric_root!(MenuRoot);
+impl MavericNode for Menu {
+    type Context = ViewContext;
 
-impl MavericRootChildren for MenuRoot {
-    type Context = NC2<MenuState, AssetServer>;
-
-    fn set_children(
-        context: &<Self::Context as NodeContext>::Wrapper<'_>,
-        commands: &mut impl ChildCommands,
-    ) {
-        let transition_duration: Duration = Duration::from_secs_f32(0.5);
-
-        fn get_carousel_child(page: u32) -> Option<MainOrLevelMenu> {
-            Some(if let Some(page) = page.checked_sub(1) {
-                MainOrLevelMenu::Level(page)
-            } else {
-                MainOrLevelMenu::Main
-            })
-        }
-
-        let carousel = match context.0.as_ref() {
-            MenuState::Closed => {
-                //commands.add_child("open_icon", menu_button_node(), &context.1);
-                return;
-            }
-            MenuState::ShowMainMenu => Carousel::new(0, get_carousel_child, transition_duration),
-            MenuState::ShowLevelsPage(n) => {
-                Carousel::new(n + 1_u32, get_carousel_child, transition_duration)
-            }
-        };
-
-        commands.add_child("carousel", carousel, context);
-    }
-}
-
-fn icon_button_node(button_action: ButtonAction) -> impl MavericNode<Context = NoContext> {
-    ButtonNode {
-        style: IconNodeStyle,
-        visibility: Visibility::Visible,
-        border_color: convert_color(palette::BUTTON_BORDER),
-        background_color: convert_color(palette::ICON_BUTTON_BACKGROUND),
-        marker: button_action,
-        children: (TextNode {
-            text: button_action.icon(),
-            font: MENU_BUTTON_FONT_PATH,
-            font_size: ICON_FONT_SIZE,
-            color: convert_color(palette::BUTTON_TEXT_COLOR),
-            alignment: TextAlignment::Center,
-            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-        },),
-    }
-}
-
-fn text_button_node(button_action: ButtonAction) -> impl MavericNode<Context = NoContext> {
-    ButtonNode {
-        style: TextButtonStyle,
-        visibility: Visibility::Visible,
-        border_color: convert_color(palette::BUTTON_BORDER) ,
-        background_color: convert_color(palette::TEXT_BUTTON_BACKGROUND),
-        marker: button_action,
-        children: (TextNode {
-            text: button_action.text(),
-            font: MENU_BUTTON_FONT_PATH,
-            font_size: BUTTON_FONT_SIZE,
-            color: convert_color(palette::BUTTON_TEXT_COLOR),
-            alignment: TextAlignment::Center,
-            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-        },),
-    }
-}
-
-fn text_and_image_button_node(
-    button_action: ButtonAction,
-    image_path: &'static str,
-) -> impl MavericNode<Context = NoContext> {
-    ButtonNode {
-        style: TextButtonStyle,
-        visibility: Visibility::Visible,
-        border_color: convert_color(palette::BUTTON_BORDER),
-        background_color: convert_color(palette::TEXT_BUTTON_BACKGROUND),
-        marker: button_action,
-        children: (
-            TextNode {
-                text: button_action.text(),
-                font: MENU_BUTTON_FONT_PATH,
-                font_size: BUTTON_FONT_SIZE,
-                color: convert_color(palette::BUTTON_TEXT_COLOR),
-                alignment: TextAlignment::Center,
-                linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-            },
-            ImageNode {
-                path: image_path,
-                background_color: Color::WHITE,
-                style: SmallImageNodeStyle,
-            },
-        ),
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum MainOrLevelMenu {
-    Main,
-    Level(u32),
-}
-
-impl MavericNode for MainOrLevelMenu {
-    type Context = NC2<MenuState, AssetServer>;
-
-    fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
-        commands.ignore_node().ignore_context().insert(NodeBundle {
-            style: Style {
-                position_type: PositionType::Absolute,
-                left: Val::Percent(50.0),  // Val::Px(MENU_OFFSET),
-                right: Val::Percent(50.0), // Val::Px(MENU_OFFSET),
-                top: Val::Px(MENU_OFFSET),
-                display: Display::Flex,
-                flex_direction: FlexDirection::Column,
-
-                ..Default::default()
-            },
-            z_index: ZIndex::Global(10),
-            ..Default::default()
-        });
-    }
-
-    fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
+    fn set_components(commands: maveric::prelude::SetComponentCommands<Self, Self::Context>) {
         commands
             .ignore_context()
-            .unordered_children_with_node(|args, commands| match args {
-                MainOrLevelMenu::Main => {
-                    for (key, action) in ButtonAction::main_buttons().iter().enumerate() {
-                        let button = text_button_node(*action);
-                        let button = button.with_transition_in::<BackgroundColorLens>(
-                            Color::WHITE.with_a(0.0),
-                            Color::WHITE,
-                            Duration::from_secs_f32(1.0),
-                        );
+            .ignore_node()
+            .insert(SpatialBundle::default());
+    }
 
-                        commands.add_child(key as u32, button, &())
+    fn set_children<R: maveric::prelude::MavericRoot>(
+        commands: maveric::prelude::SetChildrenCommands<Self, Self::Context, R>,
+    ) {
+        commands
+            .ignore_node()
+            .unordered_children_with_context(|context, commands| {
+                let size = context.3.as_ref();
+                match context.5.as_ref() {
+                    MenuState::Closed => {}
+                    MenuState::ShowMainMenu => {
+                        add_menu_items::<R, MainMenuLayoutEntity>(&(), commands, size);
                     }
-                }
-                MainOrLevelMenu::Level(page) => {
-                    let start = page * LEVELS_PER_PAGE;
-                    let end = start + LEVELS_PER_PAGE;
-
-                    for (key, level) in (start..end).enumerate() {
-                        commands.add_child(
-                            key as u32,
-                            text_and_image_button_node(
-                                ButtonAction::GotoLevel { level },
-                                r#"images/MedalsBlack.png"#,
-                            ),
-                            &(),
-                        )
+                    MenuState::ChooseLevelsPage => {
+                        add_menu_items::<R, LevelsMenuLayoutEntity>(&(), commands, size);
                     }
-
-                    commands.add_child("buttons", LevelMenuArrows(*page), &());
+                    MenuState::LevelGroupPage(group) => {
+                        add_menu_items::<R, LevelGroupLayout>(&group, commands, size);
+                    }
                 }
             });
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Default)]
-pub struct LevelMenuArrows(u32);
+fn add_menu_items<R: MavericRoot, L: LayoutStructureWithFont + LayoutStructureWithStaticText>(
+    context: &<L as LayoutStructure>::Context,
 
-impl MavericNode for LevelMenuArrows {
+    commands: &mut UnorderedChildCommands<R>,
+    size: &Size,
+) {
+    let font_size = size.font_size::<L>();
+    for (index, entity) in L::iter_all(context).enumerate() {
+        let rect = size.get_rect(&entity, context);
+        commands.add_child(index as u32, MenuButton { font_size, rect,text: entity.text(context)}, &());
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub struct MenuButton {
+    pub font_size: f32,
+    pub rect: LayoutRectangle,
+    pub text: &'static str
+}
+
+impl MavericNode for MenuButton {
     type Context = NoContext;
 
-    fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
-        commands.ignore_node().ignore_context().insert(NodeBundle {
-            style: Style {
-                position_type: PositionType::Relative,
-                left: Val::Percent(0.0),
-                display: Display::Flex,
-                flex_direction: FlexDirection::Row,
-
-                width: Val::Px(TEXT_BUTTON_WIDTH),
-                height: Val::Px(TEXT_BUTTON_HEIGHT),
-                margin: UiRect {
-                    left: Val::Auto,
-                    right: Val::Auto,
-                    top: Val::Px(5.0),
-                    bottom: Val::Px(5.0),
-                },
-                justify_content: JustifyContent::Center,
-                align_items: AlignItems::Center,
-                flex_grow: 0.0,
-                flex_shrink: 0.0,
-                border: UiRect::all(UI_BORDER_WIDTH),
-
-                ..Default::default()
-            },
-            background_color: BackgroundColor(convert_color(palette::TEXT_BUTTON_BACKGROUND)),
-            border_color: BorderColor(convert_color(palette::BUTTON_BORDER)),
-            ..Default::default()
-        });
+    fn set_components(commands: maveric::prelude::SetComponentCommands<Self, Self::Context>) {
+        commands
+            .ignore_node()
+            .ignore_context()
+            .insert(SpatialBundle::default());
     }
 
-    fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
-        commands.unordered_children_with_node_and_context(|args, context, commands| {
-            if args.0 == 0 {
-                commands.add_child("left", icon_button_node(ButtonAction::OpenMenu), context)
-            } else {
+    fn set_children<R: MavericRoot>(
+        commands: maveric::prelude::SetChildrenCommands<Self, Self::Context, R>,
+    ) {
+        commands
+            .ignore_context()
+            .unordered_children_with_node(|node, commands| {
+                let MenuButton { font_size, rect, text } = node;
+                let centre = rect.centre();
+                let text_translation = centre.extend(crate::z_indices::MENU_BUTTON_TEXT);
+
                 commands.add_child(
-                    "left",
-                    icon_button_node(ButtonAction::PreviousLevelsPage),
-                    context,
-                )
-            }
+                    "text",
+                    Text2DNode {
+                        text: TextNode {
+                            text: *text,
+                            font_size: *font_size,
+                            color: convert_color(palette::MENU_BUTTON_TEXT),
+                            font: MENU_BUTTON_FONT_PATH,
+                            alignment: TextAlignment::Center,
+                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                        },
+                        transform: Transform::from_translation(text_translation),
+                    },
+                    &(),
+                );
 
-            let number_of_pages = (level_count() / LEVELS_PER_PAGE) + 1;
+                let shape_translation = centre.extend(crate::z_indices::MENU_BUTTON_BACKGROUND);
 
-            if args.0 < number_of_pages {
+                let e = rect.extents * 0.5;
+
+                let rectangle = shapes::RoundedPolygon {
+                    points: vec![
+                        e,
+                        Vec2 {
+                            x: e.x,
+                            y: e.y * -1.0,
+                        },
+                        e * -1.0,
+                        Vec2 {
+                            x: e.x * -1.0,
+                            y: e.y,
+                        },
+                    ],
+                    radius: e.y.abs() * 0.5,
+                    closed: true,
+                };
                 commands.add_child(
-                    "right",
-                    icon_button_node(ButtonAction::NextLevelsPage),
-                    context,
-                )
-            } else {
-                commands.add_child("right", icon_button_node(ButtonAction::None), context)
-            }
-        });
-    }
-}
-
-pub const ICON_BUTTON_WIDTH: f32 = 65.;
-pub const ICON_BUTTON_HEIGHT: f32 = 65.;
-
-pub const TEXT_BUTTON_WIDTH: f32 = 360.;
-pub const TEXT_BUTTON_HEIGHT: f32 = 60.;
-
-pub const MENU_OFFSET: f32 = 10.;
-
-pub const UI_BORDER_WIDTH: Val = Val::Px(3.0);
-
-const ICON_FONT_SIZE: f32 = 30.0;
-const BUTTON_FONT_SIZE: f32 = 22.0;
-
-const LEVELS_PER_PAGE: u32 = 8;
-
-
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
-pub struct BigImageNodeStyle;
-
-impl IntoBundle for BigImageNodeStyle {
-    type B = Style;
-
-    fn into_bundle(self) -> Self::B {
-        Style {
-            width: Val::Px(TEXT_BUTTON_HEIGHT * 2.0),
-            height: Val::Px(TEXT_BUTTON_HEIGHT),
-            margin: UiRect {
-                left: Val::Auto,
-                right: Val::Auto,
-                top: Val::Px(5.0),
-                bottom: Val::Px(5.0),
-            },
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            flex_grow: 0.0,
-            flex_shrink: 0.0,
-            border: UiRect::all(UI_BORDER_WIDTH),
-            ..default()
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
-pub struct SmallImageNodeStyle;
-
-impl IntoBundle for SmallImageNodeStyle {
-    type B = Style;
-
-    fn into_bundle(self) -> Self::B {
-        Style {
-            width: Val::Px((TEXT_BUTTON_HEIGHT - 10.0) * 2.0),
-            height: Val::Px(TEXT_BUTTON_HEIGHT - 10.0),
-            margin: UiRect {
-                left: Val::Auto,
-                right: Val::Px(0.0),
-                top: Val::Px(5.0),
-                bottom: Val::Px(5.0),
-            },
-            align_self: AlignSelf::Center,
-            justify_self: JustifySelf::End,
-            ..default()
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
-pub struct IconNodeStyle;
-
-impl IntoBundle for IconNodeStyle {
-    type B = Style;
-
-    fn into_bundle(self) -> Self::B {
-        Style {
-            width: Val::Px(ICON_BUTTON_WIDTH),
-            height: Val::Px(ICON_BUTTON_HEIGHT),
-            margin: UiRect::all(Val::Auto),
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            flex_grow: 0.0,
-            flex_shrink: 0.0,
-
-            ..Default::default()
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
-pub struct OpenMenuButtonStyle;
-
-impl IntoBundle for OpenMenuButtonStyle {
-    type B = Style;
-
-    fn into_bundle(self) -> Self::B {
-        Style {
-            width: Val::Px(ICON_BUTTON_WIDTH),
-            height: Val::Px(ICON_BUTTON_HEIGHT),
-            margin: UiRect::DEFAULT,
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            flex_grow: 0.0,
-            flex_shrink: 0.0,
-            left: Val::Px(40.0),
-            top: Val::Px(40.0),
-
-            ..Default::default()
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
-pub struct TextButtonStyle;
-
-impl IntoBundle for TextButtonStyle {
-    type B = Style;
-
-    fn into_bundle(self) -> Self::B {
-        Style {
-            width: Val::Px(TEXT_BUTTON_WIDTH),
-            height: Val::Px(TEXT_BUTTON_HEIGHT),
-            margin: UiRect {
-                left: Val::Auto,
-                right: Val::Auto,
-                top: Val::Px(5.0),
-                bottom: Val::Px(5.0),
-            },
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            flex_grow: 0.0,
-            flex_shrink: 0.0,
-            border: UiRect::all(UI_BORDER_WIDTH),
-
-            ..Default::default()
-        }
+                    "shape",
+                    LyonShapeNode {
+                        transform: Transform::from_translation(shape_translation),
+                        fill: Fill::color(convert_color(palette::MENU_BUTTON_FILL)),
+                        stroke: Stroke::color(convert_color(palette::MENU_BUTTON_STROKE)),
+                        shape: rectangle,
+                    },
+                    &(),
+                );
+            })
     }
 }

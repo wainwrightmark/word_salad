@@ -11,6 +11,7 @@ pub struct StatePlugin;
 impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<ChosenState>();
+        app.init_resource::<MenuState>();
         app.init_tracked_resource::<CurrentLevel>();
         app.init_tracked_resource::<FoundWordsState>();
 

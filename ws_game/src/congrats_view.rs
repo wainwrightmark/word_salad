@@ -6,7 +6,7 @@ pub struct CongratsView;
 
 
 impl MavericNode for CongratsView {
-    type Context = NC5<ChosenState, CurrentLevel, FoundWordsState, Size, LevelTime>;
+    type Context = ViewContext;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands

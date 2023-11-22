@@ -55,7 +55,7 @@ impl LayoutStructure for LayoutTopBarButton {
     }
 }
 
-impl LayoutStructureWithText for LayoutTopBarButton {
+impl LayoutStructureWithFont for LayoutTopBarButton {
     fn font_size() -> f32 {
         22.0
     }

@@ -4396,6 +4396,7 @@ dependencies = [
  "lazy_static",
  "maveric",
  "nice_bevy_utils",
+ "num-traits",
  "rand",
  "serde",
  "serde-wasm-bindgen",

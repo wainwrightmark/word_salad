@@ -1,7 +1,12 @@
-use crate::prelude::*;
+use crate::prelude::{
+    level_group_layout::LevelGroupLayout, levels_menu_layout::LevelsMenuLayoutEntity,
+    main_menu_layout::MainMenuLayoutEntity, *,
+};
 use bevy::{prelude::*, window::PrimaryWindow};
+use nice_bevy_utils::async_event_writer::AsyncEventWriter;
 use strum::EnumIs;
 use ws_core::layout::entities::*;
+use ws_levels::level_sequence::LevelSequence;
 pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
@@ -29,13 +34,99 @@ impl InputType {
         chosen_state: &mut ResMut<ChosenState>,
         input_state: &mut Local<GridInputState>,
         found_words: &mut ResMut<FoundWordsState>,
+        video_state: &VideoResource,
+        video_events: &AsyncEventWriter<VideoEvent>,
     ) {
         let level_complete = found_words.is_level_complete();
         match self {
             InputType::Start(position) => {
+                if !menu_state.is_closed() {
+
+                    if let Some(button) = size.try_pick::<LayoutTopBarButton>(*position, &()) {
+                        match button {
+                            LayoutTopBarButton::MenuBurgerButton => {
+                                *menu_state.as_mut() = MenuState::ShowMainMenu;
+                            }
+                            LayoutTopBarButton::TimeCounter => {}
+                            LayoutTopBarButton::HintCounter => {}
+                        }
+                        return;
+                    }
+                    match menu_state.as_ref() {
+                        MenuState::Closed => {}
+                        MenuState::ShowMainMenu => {
+                            let Some(entity) =
+                                size.try_pick::<MainMenuLayoutEntity>(*position, &())
+                            else {
+                                return;
+                            };
+
+                            match entity {
+                                MainMenuLayoutEntity::Resume => {
+                                    *menu_state.as_mut() = MenuState::Closed;
+                                }
+                                MainMenuLayoutEntity::ChooseLevel => {
+                                    *menu_state.as_mut() = MenuState::ChooseLevelsPage;
+                                }
+                                MainMenuLayoutEntity::ResetLevel => {
+                                    current_level.set_changed();
+                                    *found_words.as_mut() =
+                                        FoundWordsState::new_from_level(&current_level);
+                                    *chosen_state.as_mut() = ChosenState::default();
+
+                                    *menu_state.as_mut() = MenuState::Closed;
+                                }
+                                MainMenuLayoutEntity::Video => {
+                                    video_state.toggle_video_streaming(video_events.clone());
+                                    *menu_state.as_mut() = MenuState::Closed;
+                                }
+                            }
+                        }
+                        MenuState::ChooseLevelsPage => {
+                            let Some(entity) =
+                                size.try_pick::<LevelsMenuLayoutEntity>(*position, &())
+                            else {
+                                return;
+                            };
+
+                            match entity {
+                                LevelsMenuLayoutEntity::DailyChallenge => {
+                                    current_level
+                                        .to_level(found_words, LevelSequence::DailyChallenge);
+                                    *menu_state.as_mut() = MenuState::Closed;
+                                }
+                                LevelsMenuLayoutEntity::Tutorial => {
+                                    current_level.to_level(found_words, LevelSequence::Tutorial);
+                                    *menu_state.as_mut() = MenuState::Closed;
+                                }
+                                LevelsMenuLayoutEntity::AdditionalLevel(level_group) => {
+                                    *menu_state.as_mut() = MenuState::LevelGroupPage(level_group);
+                                }
+                                LevelsMenuLayoutEntity::Back => {
+                                    *menu_state.as_mut() = MenuState::ShowMainMenu;
+                                }
+                            }
+                        }
+                        MenuState::LevelGroupPage(group) => {
+                            let Some(entity) = size.try_pick::<LevelGroupLayout>(*position, &group)
+                            else {
+                                return;
+                            };
+
+                            let Some(sequence) = group.get_sequences().get(entity.index) else {
+                                return;
+                            };
+
+                            current_level.to_level(found_words, *sequence);
+                            *menu_state.as_mut() = MenuState::Closed;
+                        }
+                    }
+                }
+
                 let Some(layout_entity) = size.try_pick::<GameLayoutEntity>(*position, &()) else {
                     return;
                 };
+
                 match layout_entity {
                     GameLayoutEntity::TopBar => {
                         let Some(button) = size.try_pick::<LayoutTopBarButton>(*position, &())
@@ -72,7 +163,7 @@ impl InputType {
                                     current_level.to_next_level(found_words.as_mut());
                                 }
                                 CongratsLayoutEntity::LevelTime => {}
-                                CongratsLayoutEntity::HintsUsed => {},
+                                CongratsLayoutEntity::HintsUsed => {}
                             }
                         } else {
                             let Some(tile) = size.try_pick::<LayoutGridTile>(*position, &()) else {
@@ -131,11 +222,9 @@ fn handle_mouse_input(
     mut chosen_state: ResMut<ChosenState>,
     mut input_state: Local<GridInputState>,
     mut found_words: ResMut<FoundWordsState>,
+    video_state: Res<VideoResource>,
+    video_events: AsyncEventWriter<VideoEvent>,
 ) {
-    if !menu_state.is_closed() {
-        return;
-    }
-
     let input_type = if mouse_input.just_released(MouseButton::Left) {
         let position_option = get_cursor_position(q_windows);
         InputType::End(position_option)
@@ -160,6 +249,8 @@ fn handle_mouse_input(
         &mut chosen_state,
         &mut input_state,
         &mut found_words,
+        &video_state,
+        &video_events,
     );
 }
 
@@ -173,11 +264,9 @@ fn handle_touch_input(
     mut chosen_state: ResMut<ChosenState>,
     mut input_state: Local<GridInputState>,
     mut found_words: ResMut<FoundWordsState>,
+    video_state: Res<VideoResource>,
+    video_events: AsyncEventWriter<VideoEvent>,
 ) {
-    if !menu_state.is_closed() {
-        return;
-    }
-
     for ev in touch_events.read() {
         let input_type = match ev.phase {
             bevy::input::touch::TouchPhase::Started => {
@@ -206,6 +295,8 @@ fn handle_touch_input(
             &mut chosen_state,
             &mut input_state,
             &mut found_words,
+            &video_state,
+            &video_events,
         );
     }
 }
