@@ -84,9 +84,9 @@ impl FoundWordsState {
         self.hint_set::<true>(level, solution)
     }
 
-    pub fn auto_hint_set(&self, level: &DesignedLevel, solution: &Solution) -> GridSet {
-        self.hint_set::<false>(level, solution)
-    }
+    // pub fn auto_hint_set(&self, level: &DesignedLevel, solution: &Solution) -> GridSet {
+    //     self.hint_set::<false>(level, solution)
+    // }
 
     fn hint_set<const MANUAL: bool>(
         &self,
@@ -102,7 +102,8 @@ impl FoundWordsState {
             //hint all known first letters
             for (word, completion) in level.words.iter().zip(self.word_completions.iter()) {
                 if !(MANUAL && completion.is_manual_hinted()
-                    || (!MANUAL && completion.is_auto_hinted()))
+                    // || (!MANUAL && completion.is_auto_hinted())
+                )
                 {
                     continue;
                 }
@@ -117,7 +118,7 @@ impl FoundWordsState {
             // hint all solutions starting with this
             for (word, completion) in level.words.iter().zip(self.word_completions.iter()) {
                 let hints = match (completion, MANUAL) {
-                    (Completion::AutoHinted(hints), false) => hints,
+                    // (Completion::AutoHinted(hints), false) => hints,
                     (Completion::ManualHinted(hints), true) => hints,
                     _ => {
                         continue;
@@ -174,14 +175,14 @@ impl FoundWordsState {
                 self.hints_used += 1;
             }
             Completion::Complete => return false,
-            Completion::AutoHinted(hints) => {
-                if hints.get() >= word.characters.len() {
-                    return false;
-                }
-                let new_hints = hints.saturating_add(1);
-                *hints = new_hints;
-                *completion = Completion::ManualHinted(new_hints);
-            }
+            // Completion::AutoHinted(hints) => {
+            //     if hints.get() >= word.characters.len() {
+            //         return false;
+            //     }
+            //     let new_hints = hints.saturating_add(1);
+            //     *hints = new_hints;
+            //     *completion = Completion::ManualHinted(new_hints);
+            // }
         }
         return true;
     }
@@ -204,7 +205,7 @@ impl FoundWordsState {
                     min_hint_index = Some(index);
                     break 'check;
                 }
-                Completion::ManualHinted(hints) | Completion::AutoHinted(hints) => {
+                Completion::ManualHinted(hints) => {
                     if hints.get() < word.characters.len() && hints.get() < min_hints {
                         min_hints = hints.get();
                         min_hint_index = Some(index)
@@ -227,7 +228,7 @@ impl FoundWordsState {
 #[derive(Debug, PartialEq, Clone, Copy, Eq, Serialize, Deserialize, EnumIs)]
 pub enum Completion {
     Unstarted,
-    AutoHinted(NonZeroUsize),
+    // AutoHinted(NonZeroUsize),
     ManualHinted(NonZeroUsize),
     Complete,
 }
@@ -237,13 +238,13 @@ impl Completion {
         const UNSTARTED: &'static Color = &convert_color(palette::WORD_BACKGROUND_UNSTARTED);
         const MANUAL: &'static Color = &convert_color(palette::WORD_BACKGROUND_MANUAL_HINT);
         const COMPLETE: &'static Color = &convert_color(palette::WORD_BACKGROUND_COMPLETE);
-        const AUTO: &'static Color = &convert_color(palette::WORD_BACKGROUND_AUTO_HINT);
+        // const AUTO: &'static Color = &convert_color(palette::WORD_BACKGROUND_AUTO_HINT);
 
         match self {
             Completion::Unstarted => UNSTARTED,
             Completion::ManualHinted(_) => MANUAL,
             Completion::Complete => COMPLETE,
-            Completion::AutoHinted(_) => AUTO,
+            // Completion::AutoHinted(_) => AUTO,
         }
     }
 
@@ -251,7 +252,7 @@ impl Completion {
         match self {
             Completion::Unstarted => None,
             Completion::Complete => Some(&word.characters),
-            Completion::AutoHinted(hints) | Completion::ManualHinted(hints) => Some(
+             Completion::ManualHinted(hints) => Some(
                 &word
                     .characters
                     .split_at(hints.get().min(word.characters.len()))
@@ -306,7 +307,7 @@ fn track_found_words(
         &current_level,
     );
 
-    found_words.calculate_auto_hints(&current_level);
+    // found_words.calculate_auto_hints(&current_level);
 
     if is_first_time {
         chosen.is_just_finished = true;
@@ -346,13 +347,7 @@ impl FoundWordsState {
             .word_completions
             .iter()
             .zip(level.words.iter())
-            .map(|(completion, word)| match completion {
-                Completion::Unstarted => None, //a `None` is a word that we can check
-                Completion::AutoHinted(h) | Completion::ManualHinted(h) => {
-                    Some(&word.characters.as_slice()[..h.get()])
-                }
-                Completion::Complete => Some(word.characters.as_slice()),
-            })
+            .map(|(completion, word)| completion.known_characters(word))
             //dedup to remove consecutive `None`
             .dedup()
             .peekable();
@@ -390,7 +385,7 @@ impl FoundWordsState {
                 }
             }
             if predecessor.is_none() && successor.is_none() {
-                //info!("No pre or succ");
+                //info!("No pre or successor");
                 return GridSet::EMPTY;
             }
 
@@ -417,70 +412,70 @@ impl FoundWordsState {
         inadvisable
     }
 
-    fn calculate_auto_hints(&mut self, level: &CurrentLevel) {
-        let level = level.level();
+    // fn calculate_auto_hints(&mut self, level: &CurrentLevel) {
+    //     let level = level.level();
 
-        let mut word_index = 0;
+    //     let mut word_index = 0;
 
-        while let Some(completion) = self.word_completions.get(word_index) {
-            if completion.is_manual_hinted() || completion.is_complete() {
-                word_index += 1;
-                continue;
-            }
+    //     while let Some(completion) = self.word_completions.get(word_index) {
+    //         if completion.is_manual_hinted() || completion.is_complete() {
+    //             word_index += 1;
+    //             continue;
+    //         }
 
-            let preceder: &[Character] = self
-                .word_completions
-                .iter()
-                .zip(level.words.iter())
-                .take(word_index)
-                .flat_map(|(c, w)| c.known_characters(w))
-                .rev()
-                .next()
-                .unwrap_or_default();
+    //         let preceder: &[Character] = self
+    //             .word_completions
+    //             .iter()
+    //             .zip(level.words.iter())
+    //             .take(word_index)
+    //             .flat_map(|(c, w)| c.known_characters(w))
+    //             .rev()
+    //             .next()
+    //             .unwrap_or_default();
 
-            let successor: &[Character] = self
-                .word_completions
-                .iter()
-                .zip(level.words.iter())
-                .skip(word_index)
-                .flat_map(|(c, w)| c.known_characters(w))
-                .next()
-                .unwrap_or_default();
+    //         let successor: &[Character] = self
+    //             .word_completions
+    //             .iter()
+    //             .zip(level.words.iter())
+    //             .skip(word_index)
+    //             .flat_map(|(c, w)| c.known_characters(w))
+    //             .next()
+    //             .unwrap_or_default();
 
-            if !(preceder.is_empty() && successor.is_empty()) {
-                if let Some(letters) = level
-                    .words
-                    .get(word_index)
-                    .and_then(|x| NonZeroUsize::new(x.characters.len()))
-                {
-                    let hints = self
-                        .unneeded_tiles
-                        .negate()
-                        .iter_true_tiles()
-                        .flat_map(|tile| {
-                            count_hints(
-                                tile,
-                                &level.grid,
-                                self.unneeded_tiles,
-                                preceder,
-                                successor,
-                                letters,
-                            )
-                        })
-                        .exactly_one();
+    //         if !(preceder.is_empty() && successor.is_empty()) {
+    //             if let Some(letters) = level
+    //                 .words
+    //                 .get(word_index)
+    //                 .and_then(|x| NonZeroUsize::new(x.characters.len()))
+    //             {
+    //                 let hints = self
+    //                     .unneeded_tiles
+    //                     .negate()
+    //                     .iter_true_tiles()
+    //                     .flat_map(|tile| {
+    //                         count_hints(
+    //                             tile,
+    //                             &level.grid,
+    //                             self.unneeded_tiles,
+    //                             preceder,
+    //                             successor,
+    //                             letters,
+    //                         )
+    //                     })
+    //                     .exactly_one();
 
-                    match hints {
-                        Ok(hints) => {
-                            self.word_completions[word_index] = Completion::AutoHinted(hints);
-                        }
-                        Err(_) => {}
-                    }
-                }
-            }
+    //                 match hints {
+    //                     Ok(hints) => {
+    //                         self.word_completions[word_index] = Completion::AutoHinted(hints);
+    //                     }
+    //                     Err(_) => {}
+    //                 }
+    //             }
+    //         }
 
-            word_index += 1;
-        }
-    }
+    //         word_index += 1;
+    //     }
+    // }
 }
 
 fn could_precede(p: &[Character], s: &[Character]) -> bool {
@@ -574,44 +569,44 @@ pub mod tests {
 
     use crate::prelude::{Completion, CurrentLevel, DesignedLevel, FoundWordsState};
 
-    #[test]
-    pub fn test_auto_hints() {
-        //TODO test the following with everything but croatia
-        // spellchecker:disable-next-line
-        //PLTAOAYIMRNDFCEG	Europe Countries 6	Croatia 	France  	Germany 	Italy   	Malta   	Poland  	Romania
+    // #[test]
+    // pub fn test_auto_hints() {
+    //     //TODO test the following with everything but croatia
+    //     // spellchecker:disable-next-line
+    //     //PLTAOAYIMRNDFCEG	Europe Countries 6	Croatia 	France  	Germany 	Italy   	Malta   	Poland  	Romania
 
-        let level = DesignedLevel::from_tsv_line(
-            // spellchecker:disable-next-line
-            "DNGLHUAOSTRPAIYC	Europe Countries 2	Austria 	Croatia 	Cyprus  	Hungary 	Poland  	Portugal",
-        )
-        .unwrap();
-        let cl = CurrentLevel::Custom(level);
-        let mut found_words = FoundWordsState::new_from_level(&cl);
+    //     let level = DesignedLevel::from_tsv_line(
+    //         // spellchecker:disable-next-line
+    //         "DNGLHUAOSTRPAIYC	Europe Countries 2	Austria 	Croatia 	Cyprus  	Hungary 	Poland  	Portugal",
+    //     )
+    //     .unwrap();
+    //     let cl = CurrentLevel::Custom(level);
+    //     let mut found_words = FoundWordsState::new_from_level(&cl);
 
-        found_words.calculate_auto_hints(&cl);
+    //     found_words.calculate_auto_hints(&cl);
 
-        for word in found_words.word_completions.iter() {
-            assert!(
-                word.is_unstarted(),
-                "All words should be unstarted at this stage"
-            )
-        }
+    //     for word in found_words.word_completions.iter() {
+    //         assert!(
+    //             word.is_unstarted(),
+    //             "All words should be unstarted at this stage"
+    //         )
+    //     }
 
-        for (index, completion) in found_words.word_completions.iter_mut().enumerate() {
-            if index != 1 {
-                *completion = Completion::Complete;
-            }
-        }
+    //     for (index, completion) in found_words.word_completions.iter_mut().enumerate() {
+    //         if index != 1 {
+    //             *completion = Completion::Complete;
+    //         }
+    //     }
 
-        found_words.update_unneeded_tiles(cl.level());
+    //     found_words.update_unneeded_tiles(cl.level());
 
-        found_words.calculate_auto_hints(&cl);
+    //     found_words.calculate_auto_hints(&cl);
 
-        let croatia_completion = found_words.word_completions[1];
+    //     let croatia_completion = found_words.word_completions[1];
 
-        assert_eq!(
-            croatia_completion,
-            Completion::AutoHinted(NonZeroUsize::new(2).unwrap())
-        );
-    }
+    //     assert_eq!(
+    //         croatia_completion,
+    //         Completion::AutoHinted(NonZeroUsize::new(2).unwrap())
+    //     );
+    // }
 }

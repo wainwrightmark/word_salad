@@ -39,11 +39,12 @@ impl Selectability{
     }
 
     pub fn tile_border_proportion(&self)-> f32{
+
+        const SELECTED: f32 = 1. / 36.;
+        const UNSELECTED: f32 = 1. / 36.;
         match self{
-            Selectability::Selectable => 2. / 36.,
-            Selectability::Selected =>  3. / 36.,
-            Selectability::Unselectable => 0.,
-            Selectability::Inadvisable => 0.,
+            Selectability::Selected =>  SELECTED,
+            _=>UNSELECTED
         }
     }
 }
@@ -83,7 +84,7 @@ impl MavericNode for GridTiles {
             let level = context.1.level();
             let inadvisable_tiles: GridSet = context.2.calculate_inadvisable_tiles(&solution, level);
 
-            let hint_set = context.2.auto_hint_set(&level, &solution).union(&context.2.manual_hint_set(&level, &solution));
+            let hint_set = &context.2.manual_hint_set(&level, &solution);
 
             let inadvisable_tiles = inadvisable_tiles.intersect(&hint_set.negate());
             for (tile, character) in context.1.level().grid.enumerate() {
@@ -184,7 +185,7 @@ impl MavericNode for GridTile {
                 .with_transition_to::<FillColorLens>(
                     fill,
                     ScalarSpeed {
-                        amount_per_second: 1.0,
+                        amount_per_second: 0.1,
                     },
                 ),
                 &(),
@@ -266,9 +267,9 @@ impl MavericNode for HintGlows {
                 let level = context.1.level();
                 let solution = context.0.current_solution();
                 let manual_hints = context.2.manual_hint_set(level, &solution);
-                let auto_hints = context.2.auto_hint_set(level, &solution);
 
-                for tile in (manual_hints.union(&auto_hints)).iter_true_tiles() {
+
+                for tile in (manual_hints).iter_true_tiles() {
                     let rect = context.3.get_rect(&LayoutGridTile(tile), &());
 
                     let translation = rect.centre().extend(crate::z_indices::HINT);
@@ -276,11 +277,7 @@ impl MavericNode for HintGlows {
 
                     let shape = make_rounded_square(tile_size * 0.8, tile_size * 0.1);
 
-                    let color = convert_color(if manual_hints.get_bit(&tile) {
-                        palette::MANUAL_HINT_GLOW
-                    } else {
-                        palette::AUTO_HINT_GLOW
-                    });
+                    let color = convert_color(palette::MANUAL_HINT_GLOW);
 
                     commands.add_child(
                         tile.inner() as u32,

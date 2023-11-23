@@ -138,7 +138,7 @@ impl MavericNode for WordNode {
         commands.unordered_children_with_node(|node, commands| {
             let text = match node.completion {
                 Completion::Unstarted => node.word.hidden_text.clone(),
-                Completion::ManualHinted(hints) | Completion::AutoHinted(hints) => {
+                Completion::ManualHinted(hints) => {
                     node.word.hinted_text(hints)
                 }
 

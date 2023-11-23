@@ -71,8 +71,8 @@ pub mod palette {
 
     pub const GRID_TILE_STROKE: Color = Color::DARK_GRAY;
     pub const GRID_TILE_FILL_SELECTABLE: Color = Color::rgb(0.7, 0.7, 0.7);
-    pub const GRID_TILE_FILL_INADVISABLE: Color = GRID_TILE_FILL_SELECTABLE;//  Color::rgb(0.4, 0.5, 0.5);
-    pub const GRID_TILE_FILL_UNSELECTABLE: Color = Color::rgb(0.4, 0.4, 0.4);
+    pub const GRID_TILE_FILL_INADVISABLE: Color = GRID_TILE_FILL_UNSELECTABLE;//  Color::rgb(0.4, 0.5, 0.5);
+    pub const GRID_TILE_FILL_UNSELECTABLE: Color = Color::rgb(0.5, 0.5, 0.5);
     pub const GRID_TILE_FILL_SELECTED: Color = Color::ALICE_BLUE;
 
     pub const GRID_LETTER: Color = Color::DARK_GRAY;
