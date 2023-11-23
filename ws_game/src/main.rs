@@ -1,5 +1,6 @@
 pub mod animated_solutions;
 pub mod asynchronous;
+pub mod chosen_state;
 pub mod completion;
 pub mod congrats_view;
 pub mod constants;
@@ -28,6 +29,7 @@ pub mod prelude {
 
     pub use crate::animated_solutions::*;
     pub use crate::asynchronous::*;
+    pub use crate::chosen_state::*;
     pub use crate::congrats_view::*;
     pub use crate::constants::*;
     pub use crate::current_level::*;
@@ -39,6 +41,7 @@ pub mod prelude {
     pub use crate::state::*;
     pub use crate::top_bar_view::*;
     pub use crate::ui_view::*;
+    pub use crate::video::*;
     pub use crate::video::*;
     pub use crate::view::*;
 

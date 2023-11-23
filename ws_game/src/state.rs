@@ -25,23 +25,6 @@ impl Plugin for StatePlugin {
     }
 }
 
-#[derive(Debug, Clone, Resource, PartialEq, Eq, Default, Serialize, Deserialize)]
-pub struct ChosenState {
-    pub solution: Solution,
-    pub is_just_finished: bool,
-}
-
-impl ChosenState {
-    const EMPTY_SOLUTION: &'static Solution = &Solution::new_const();
-    pub fn current_solution(&self) -> &Solution {
-        if self.is_just_finished {
-            Self::EMPTY_SOLUTION
-        } else {
-            &self.solution
-        }
-    }
-}
-
 #[derive(Debug, Clone, Resource, Serialize, Deserialize)]
 pub struct FoundWordsState {
     pub unneeded_tiles: GridSet,
@@ -88,23 +71,17 @@ impl FoundWordsState {
     //     self.hint_set::<false>(level, solution)
     // }
 
-    fn hint_set<const MANUAL: bool>(
-        &self,
-        level: &DesignedLevel,
-        solution: &Solution,
-    ) -> GridSet {
+    fn hint_set<const MANUAL: bool>(&self, level: &DesignedLevel, solution: &Solution) -> GridSet {
         let mut set = GridSet::default();
         let adjusted_grid = self.adjusted_grid(level);
-
-
 
         if solution.is_empty() {
             //hint all known first letters
             for (word, completion) in level.words.iter().zip(self.word_completions.iter()) {
-                if !(MANUAL && completion.is_manual_hinted()
+                if !(
+                    MANUAL && completion.is_manual_hinted()
                     // || (!MANUAL && completion.is_auto_hinted())
-                )
-                {
+                ) {
                     continue;
                 }
 
@@ -252,7 +229,7 @@ impl Completion {
         match self {
             Completion::Unstarted => None,
             Completion::Complete => Some(&word.characters),
-             Completion::ManualHinted(hints) => Some(
+            Completion::ManualHinted(hints) => Some(
                 &word
                     .characters
                     .split_at(hints.get().min(word.characters.len()))
@@ -366,8 +343,6 @@ impl FoundWordsState {
 
                 if slice.starts_with(&chosen_characters) {
                     predecessor = slice.iter().skip(chosen_characters.len()).cloned().next();
-
-
                 }
                 continue;
             }
@@ -565,9 +540,9 @@ fn count_hints(
 #[cfg(test)]
 pub mod tests {
 
-    use std::num::NonZeroUsize;
+    // use std::num::NonZeroUsize;
 
-    use crate::prelude::{Completion, CurrentLevel, DesignedLevel, FoundWordsState};
+    // use crate::prelude::{Completion, CurrentLevel, DesignedLevel, FoundWordsState};
 
     // #[test]
     // pub fn test_auto_hints() {

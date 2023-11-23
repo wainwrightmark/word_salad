@@ -23,7 +23,7 @@ use crate::level_sequence::LevelSequence;
 pub enum LevelGroup {
     GlobalLocation = 0,
     HistoryMythology = 1,
-    Science = 2
+    Science = 2,
 }
 
 impl LevelGroup {
@@ -36,10 +36,8 @@ impl LevelGroup {
             ],
             LevelGroup::HistoryMythology => {
                 &[LevelSequence::USPresidents, LevelSequence::GreekGods]
-            },
-            LevelGroup::Science => {
-                &[LevelSequence::Scientists, LevelSequence::Insects]
-            },
+            }
+            LevelGroup::Science => &[LevelSequence::Scientists, LevelSequence::Insects],
         }
     }
 

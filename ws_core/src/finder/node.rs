@@ -102,9 +102,13 @@ pub fn try_make_grid_with_blank_filling(
                 .try_insert(replacement)
                 .expect("prime bag error");
 
-
-
-            let result = try_make_grid_with_blank_filling(new_letters, words, exclude_words, replacement, counter);
+            let result = try_make_grid_with_blank_filling(
+                new_letters,
+                words,
+                exclude_words,
+                replacement,
+                counter,
+            );
             if result.is_some() {
                 return result;
             }
@@ -492,8 +496,13 @@ mod tests {
             current: 0,
         };
         let exclude_words = vec![];
-        let solution =
-            try_make_grid_with_blank_filling(letters, &words, &exclude_words, Character::E, &mut counter);
+        let solution = try_make_grid_with_blank_filling(
+            letters,
+            &words,
+            &exclude_words,
+            Character::E,
+            &mut counter,
+        );
         println!("{:?}", now.elapsed());
         match solution {
             Some(GridResult { grid, .. }) => {

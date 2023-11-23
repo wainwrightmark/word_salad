@@ -49,7 +49,6 @@ lazy_static! {
             .map(|x| x.unwrap()),
         "US Presidents"
     );
-
     pub(crate) static ref SCIENTISTS: Vec<DesignedLevel> = number_levels(
         include_str!("levels/science/scientists.tsv")
             .lines()
@@ -57,7 +56,6 @@ lazy_static! {
             .map(|x| x.unwrap()),
         "Scientists"
     );
-
     pub(crate) static ref INSECTS: Vec<DesignedLevel> = number_levels(
         include_str!("levels/science/insects.tsv")
             .lines()

@@ -25,12 +25,12 @@ pub enum Selectability {
     Selectable,
     Selected,
     Unselectable,
-    Inadvisable
+    Inadvisable,
 }
 
-impl Selectability{
-    pub fn tile_fill_color(&self)-> Color{
-        match self{
+impl Selectability {
+    pub fn tile_fill_color(&self) -> Color {
+        match self {
             Selectability::Selectable => convert_color(palette::GRID_TILE_FILL_SELECTABLE),
             Selectability::Selected => convert_color(palette::GRID_TILE_FILL_SELECTED),
             Selectability::Unselectable => convert_color(palette::GRID_TILE_FILL_UNSELECTABLE),
@@ -38,13 +38,12 @@ impl Selectability{
         }
     }
 
-    pub fn tile_border_proportion(&self)-> f32{
-
+    pub fn tile_border_proportion(&self) -> f32 {
         const SELECTED: f32 = 1. / 36.;
         const UNSELECTED: f32 = 1. / 36.;
-        match self{
-            Selectability::Selected =>  SELECTED,
-            _=>UNSELECTED
+        match self {
+            Selectability::Selected => SELECTED,
+            _ => UNSELECTED,
         }
     }
 }
@@ -77,12 +76,13 @@ impl MavericNode for GridTiles {
             }
             let solution = context.0.current_solution();
             let selected_tile: Option<&geometrid::prelude::Tile<4, 4>> = solution.last();
-            let selectable_tiles: GridSet = match selected_tile{
+            let selectable_tiles: GridSet = match selected_tile {
                 Some(tile) => GridSet::from_iter(tile.iter_adjacent()),
                 None => GridSet::ALL,
             };
             let level = context.1.level();
-            let inadvisable_tiles: GridSet = context.2.calculate_inadvisable_tiles(&solution, level);
+            let inadvisable_tiles: GridSet =
+                context.2.calculate_inadvisable_tiles(&solution, level);
 
             let hint_set = &context.2.manual_hint_set(&level, &solution);
 
@@ -97,17 +97,15 @@ impl MavericNode for GridTiles {
                     continue;
                 }
 
-
-                let selectability = if Some(&tile) == selected_tile{
+                let selectability = if Some(&tile) == selected_tile {
                     Selectability::Selected
-                } else if inadvisable_tiles.get_bit(&tile){
+                } else if inadvisable_tiles.get_bit(&tile) {
                     Selectability::Inadvisable
-                }else if selectable_tiles.get_bit(&tile){
+                } else if selectable_tiles.get_bit(&tile) {
                     Selectability::Selectable
-                }else{
+                } else {
                     Selectability::Unselectable
                 };
-
 
                 let size = context.3.as_ref();
                 let tile_size = size.tile_size();
@@ -171,7 +169,7 @@ impl MavericNode for GridTile {
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
             let tile_size = node.tile_size;
-            let fill =  node.selectability.tile_fill_color();
+            let fill = node.selectability.tile_fill_color();
             let line_width = tile_size * node.selectability.tile_border_proportion();
 
             commands.add_child(
@@ -180,7 +178,7 @@ impl MavericNode for GridTile {
                     shape: make_rounded_square(tile_size, tile_size * 0.1),
                     transform: Transform::from_xyz(0.0, 0.0, crate::z_indices::GRID_TILE),
                     fill: Fill::color(convert_color(palette::GRID_TILE_FILL_SELECTABLE)),
-                    stroke: Stroke::new(convert_color(palette::GRID_TILE_STROKE), line_width ),
+                    stroke: Stroke::new(convert_color(palette::GRID_TILE_STROKE), line_width),
                 }
                 .with_transition_to::<FillColorLens>(
                     fill,
@@ -267,7 +265,6 @@ impl MavericNode for HintGlows {
                 let level = context.1.level();
                 let solution = context.0.current_solution();
                 let manual_hints = context.2.manual_hint_set(level, &solution);
-
 
                 for tile in (manual_hints).iter_true_tiles() {
                     let rect = context.3.get_rect(&LayoutGridTile(tile), &());
