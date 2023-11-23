@@ -71,7 +71,8 @@ pub mod palette {
     pub const WORD_LINE_COLOR: Color = Color::rgba(0.9, 0.25, 0.95, 0.9);
 
     pub const GRID_TILE_STROKE: Color = Color::DARK_GRAY;
-    pub const GRID_TILE_FILL_UNSELECTED: Color = Color::GRAY;
+    pub const GRID_TILE_FILL_SELECTABLE: Color = Color::rgb(0.6, 0.6, 0.6);
+    pub const GRID_TILE_FILL_UNSELECTABLE: Color = Color::rgb(0.4, 0.4, 0.4);
     pub const GRID_TILE_FILL_SELECTED: Color = Color::ALICE_BLUE;
 
     pub const GRID_LETTER: Color = Color::DARK_GRAY;

@@ -14,12 +14,27 @@ use ws_core::Tile;
 pub struct GridTile {
     pub tile: Tile,
     pub character: Character,
-    pub selected: bool,
-    // pub hinted: bool,
-    //pub needed: bool,
+    pub selectability: Selectability,
     pub tile_size: f32,
     pub font_size: f32,
     pub centre: Vec2,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum Selectability {
+    Selectable,
+    Selected,
+    Unselectable,
+}
+
+impl Selectability{
+    pub fn tile_fill_color(&self)-> Color{
+        match self{
+            Selectability::Selectable => convert_color(palette::GRID_TILE_FILL_SELECTABLE),
+            Selectability::Selected => convert_color(palette::GRID_TILE_FILL_SELECTED),
+            Selectability::Unselectable => convert_color(palette::GRID_TILE_FILL_UNSELECTABLE),
+        }
+    }
 }
 
 maveric::define_lens!(StrokeColorLens, Stroke, Color, color);
@@ -48,6 +63,8 @@ impl MavericNode for GridTiles {
             if node.level_complete {
                 return;
             }
+            let selected_tile = if context.0.is_just_finished {None} else{context.0.solution.last()} ;
+
             // let hint_set = context.2.hint_set();
             for (tile, character) in context.1.level().grid.enumerate() {
                 if character.is_blank() {
@@ -59,7 +76,20 @@ impl MavericNode for GridTiles {
                     continue;
                 }
 
-                let selected = !context.0.is_just_finished && context.0 .solution.last() == Some(&tile);
+
+                let selectability = match selected_tile {
+                    Some(selected_tile) => {
+                        if selected_tile == &tile{
+                            Selectability::Selected
+                        }else if selected_tile.is_adjacent_to(&tile){
+                            Selectability::Selectable
+                        }
+                        else{
+                            Selectability::Unselectable
+                        }
+                    },
+                    None => Selectability::Selectable,
+                };
 
 
                 let size = context.3.as_ref();
@@ -72,9 +102,7 @@ impl MavericNode for GridTiles {
                     GridTile {
                         tile,
                         character: *character,
-                        selected,
-                        //needed,
-                        // hinted,
+                        selectability,
                         tile_size,
                         font_size,
                         centre,
@@ -126,18 +154,14 @@ impl MavericNode for GridTile {
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
             let tile_size = node.tile_size;
-            let fill = convert_color(if node.selected {
-                palette::GRID_TILE_FILL_SELECTED
-            } else {
-                palette::GRID_TILE_FILL_UNSELECTED
-            });
+            let fill =  node.selectability.tile_fill_color();
 
             commands.add_child(
                 0,
                 LyonShapeNode {
                     shape: make_rounded_square(tile_size, tile_size * 0.1),
                     transform: Transform::from_xyz(0.0, 0.0, crate::z_indices::GRID_TILE),
-                    fill: Fill::color(convert_color(palette::GRID_TILE_FILL_UNSELECTED)),
+                    fill: Fill::color(convert_color(palette::GRID_TILE_FILL_SELECTABLE)),
                     stroke: Stroke::color(convert_color(palette::GRID_TILE_STROKE)),
                 }
                 .with_transition_to::<FillColorLens>(
@@ -262,9 +286,9 @@ impl MavericNode for HintGlows {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct WordLine{
+pub struct WordLine {
     pub solution: Solution,
-    pub should_hide: bool
+    pub should_hide: bool,
 }
 
 impl MavericNode for WordLine {
@@ -282,13 +306,12 @@ impl MavericNode for WordLine {
             } else {
                 match args.previous {
                     Some(s) => {
-                        if s.should_hide{
+                        if s.should_hide {
                             (args.node.solution.as_slice(), false)
-                        }
-                        else{
+                        } else {
                             (s.solution.as_slice(), false)
                         }
-                    },
+                    }
                     None => (args.node.solution.as_slice(), false),
                 }
 
@@ -321,7 +344,10 @@ impl MavericNode for WordLine {
                         amount_per_second: 50.0,
                     }),
                 );
-            } else if args.previous.is_some_and(|x| !x.solution.is_empty() && !x.should_hide) {
+            } else if args
+                .previous
+                .is_some_and(|x| !x.solution.is_empty() && !x.should_hide)
+            {
                 //info!("Word line remains visible");
                 commands.remove::<Transition<StrokeWidthLens>>();
             } else {
