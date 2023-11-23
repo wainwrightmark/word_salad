@@ -19,14 +19,18 @@ impl ChosenState {
 
     /// Is length >=6 and Damerau–Levenshtein distance to a solution <= 1 and same first letter
 
-    pub fn is_close_to_a_solution(&self, level: &DesignedLevel) -> bool {
-        if self.current_solution().len() < 5 {
+    pub fn is_close_to_a_solution(&self, level: &DesignedLevel, found_words: &FoundWordsState) -> bool {
+        let solution = self.current_solution();
+        if solution.len() < 5 {
             return false;
         }
 
-        let chars: CharsArray = self.solution.iter().map(|t| level.grid[*t]).collect();
+        let chars: CharsArray = solution.iter().map(|t| level.grid[*t]).collect();
 
-        for word in level.words.iter() {
+        for (word, completion) in level.words.iter().zip(found_words.word_completions.iter()) {
+            if completion.is_complete(){
+                continue;
+            }
             if word.characters.get(0) == chars.get(0) {
                 if Self::lev_distance_one_or_less(&chars, &word.characters) {
                     return true;

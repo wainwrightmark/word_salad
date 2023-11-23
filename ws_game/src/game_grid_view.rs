@@ -5,6 +5,7 @@ use maveric::{
     transition::speed::{LinearSpeed, ScalarSpeed},
     widgets::text2d_node::Text2DNode,
 };
+use serde::de;
 use std::time::Duration;
 use ws_core::layout::entities::*;
 use ws_core::prelude::*;
@@ -302,7 +303,10 @@ impl MavericNode for HintGlows {
 pub struct WordLine {
     pub solution: Solution,
     pub should_hide: bool,
+    pub close_to_solution: bool,
 }
+
+
 
 impl MavericNode for WordLine {
     type Context = Size;
@@ -346,34 +350,55 @@ impl MavericNode for WordLine {
                 }
             }
 
-            let mut width = size.get_rect(&GameLayoutEntity::Grid, &()).extents.x * 50. / 320.;
+            let mut default_width = size.get_rect(&GameLayoutEntity::Grid, &()).extents.x * 50. / 320.;
 
             if !visible {
                 //info!("Word line not visible");
                 commands.transition_value::<StrokeWidthLens>(
-                    50.0,
+                    default_width,
                     0.0,
                     Some(ScalarSpeed {
-                        amount_per_second: 50.0,
+                        amount_per_second: default_width,
                     }),
                 );
             } else if args
                 .previous
                 .is_some_and(|x| !x.solution.is_empty() && !x.should_hide)
             {
-                //info!("Word line remains visible");
-                commands.remove::<Transition<StrokeWidthLens>>();
+                if args.node.close_to_solution {
+                    commands.insert(Transition::<StrokeWidthLens>::new(
+                        TransitionStep::new_cycle(
+                            [
+                                (
+                                    default_width * 1.05,
+                                    ScalarSpeed {
+                                        amount_per_second: 5.0,
+                                    },
+                                ),
+                                (
+                                    default_width,
+                                    ScalarSpeed {
+                                        amount_per_second: 5.0,
+                                    },
+                                ),
+                            ]
+                            .into_iter(),
+                        ),
+                    ))
+                } else {
+                    commands.remove::<Transition<StrokeWidthLens>>();
+                }
             } else {
                 //info!("Word line newly visible");
                 commands.insert(Transition::<StrokeWidthLens>::new(TransitionStep::new_arc(
-                    width,
+                    default_width,
                     Some(ScalarSpeed {
-                        amount_per_second: width,
+                        amount_per_second: default_width,
                     }),
                     NextStep::None,
                 )));
 
-                width = 0.0;
+                default_width = 0.0;
             }
 
             commands.insert(ShapeBundle {
@@ -388,7 +413,7 @@ impl MavericNode for WordLine {
             commands.insert(Stroke {
                 color: convert_color(palette::WORD_LINE_COLOR),
                 options: StrokeOptions::default()
-                    .with_line_width(width)
+                    .with_line_width(default_width)
                     .with_start_cap(LineCap::Round)
                     .with_end_cap(LineCap::Round)
                     .with_line_join(LineJoin::Round),
