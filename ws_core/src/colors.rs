@@ -34,8 +34,7 @@ impl BasicColor {
     pub(crate) const DARK_GRAY: BasicColor = BasicColor::rgb(0.25, 0.25, 0.25);
     /// <div style="background-color:rgb(100%, 84%, 0%); width: 10px; padding: 10px; border: 1px solid;"></div>
     pub(crate) const GOLD: BasicColor = BasicColor::rgb(1.0, 0.84, 0.0);
-    /// <div style="background-color:rgb(50%, 50%, 50%); width: 10px; padding: 10px; border: 1px solid;"></div>
-    pub(crate) const GRAY: BasicColor = BasicColor::rgb(0.5, 0.5, 0.5);
+
     /// <div style="background-color:rgb(0%, 100%, 0%); width: 10px; padding: 10px; border: 1px solid;"></div>
     pub(crate) const GREEN: BasicColor = BasicColor::rgb(0.0, 1.0, 0.0);
 
@@ -71,7 +70,8 @@ pub mod palette {
     pub const WORD_LINE_COLOR: Color = Color::rgba(0.9, 0.25, 0.95, 0.9);
 
     pub const GRID_TILE_STROKE: Color = Color::DARK_GRAY;
-    pub const GRID_TILE_FILL_SELECTABLE: Color = Color::rgb(0.6, 0.6, 0.6);
+    pub const GRID_TILE_FILL_SELECTABLE: Color = Color::rgb(0.7, 0.7, 0.7);
+    pub const GRID_TILE_FILL_INADVISABLE: Color =   Color::rgb(0.5, 0.5, 0.5);
     pub const GRID_TILE_FILL_UNSELECTABLE: Color = Color::rgb(0.4, 0.4, 0.4);
     pub const GRID_TILE_FILL_SELECTED: Color = Color::ALICE_BLUE;
 

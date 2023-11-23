@@ -25,6 +25,7 @@ pub enum Selectability {
     Selectable,
     Selected,
     Unselectable,
+    Inadvisable
 }
 
 impl Selectability{
@@ -33,6 +34,7 @@ impl Selectability{
             Selectability::Selectable => convert_color(palette::GRID_TILE_FILL_SELECTABLE),
             Selectability::Selected => convert_color(palette::GRID_TILE_FILL_SELECTED),
             Selectability::Unselectable => convert_color(palette::GRID_TILE_FILL_UNSELECTABLE),
+            Selectability::Inadvisable => convert_color(palette::GRID_TILE_FILL_INADVISABLE),
         }
     }
 }
@@ -63,9 +65,18 @@ impl MavericNode for GridTiles {
             if node.level_complete {
                 return;
             }
-            let selected_tile = if context.0.is_just_finished {None} else{context.0.solution.last()} ;
+            let solution = context.0.current_solution();
+            let selected_tile: Option<&geometrid::prelude::Tile<4, 4>> = solution.last();
+            let selectable_tiles: GridSet = match selected_tile{
+                Some(tile) => GridSet::from_iter(tile.iter_adjacent()),
+                None => GridSet::ALL,
+            };
+            let level = context.1.level();
+            let inadvisable_tiles: GridSet = context.2.calculate_inadvisable_tiles(&solution, level);
 
-            // let hint_set = context.2.hint_set();
+            let hint_set = context.2.auto_hint_set(&level, &solution).union(&context.2.manual_hint_set(&level, &solution));
+
+            let inadvisable_tiles = inadvisable_tiles.intersect(&hint_set.negate());
             for (tile, character) in context.1.level().grid.enumerate() {
                 if character.is_blank() {
                     continue;
@@ -77,18 +88,14 @@ impl MavericNode for GridTiles {
                 }
 
 
-                let selectability = match selected_tile {
-                    Some(selected_tile) => {
-                        if selected_tile == &tile{
-                            Selectability::Selected
-                        }else if selected_tile.is_adjacent_to(&tile){
-                            Selectability::Selectable
-                        }
-                        else{
-                            Selectability::Unselectable
-                        }
-                    },
-                    None => Selectability::Selectable,
+                let selectability = if Some(&tile) == selected_tile{
+                    Selectability::Selected
+                } else if inadvisable_tiles.get_bit(&tile){
+                    Selectability::Inadvisable
+                }else if selectable_tiles.get_bit(&tile){
+                    Selectability::Selectable
+                }else{
+                    Selectability::Unselectable
                 };
 
 
@@ -246,8 +253,10 @@ impl MavericNode for HintGlows {
         commands
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
-                let manual_hints = context.2.manual_hint_set(&context.1, &context.0);
-                let auto_hints = context.2.auto_hint_set(&context.1, &context.0);
+                let level = context.1.level();
+                let solution = context.0.current_solution();
+                let manual_hints = context.2.manual_hint_set(level, &solution);
+                let auto_hints = context.2.auto_hint_set(level, &solution);
 
                 for tile in (manual_hints.union(&auto_hints)).iter_true_tiles() {
                     let rect = context.3.get_rect(&LayoutGridTile(tile), &());

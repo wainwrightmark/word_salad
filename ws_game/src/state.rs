@@ -26,9 +26,20 @@ impl Plugin for StatePlugin {
 }
 
 #[derive(Debug, Clone, Resource, PartialEq, Eq, Default, Serialize, Deserialize)]
-pub struct ChosenState{
-    pub solution : Solution,
-    pub is_just_finished: bool
+pub struct ChosenState {
+    pub solution: Solution,
+    pub is_just_finished: bool,
+}
+
+impl ChosenState {
+    const EMPTY_SOLUTION: &'static Solution = &Solution::new_const();
+    pub fn current_solution(&self) -> &Solution {
+        if self.is_just_finished {
+            Self::EMPTY_SOLUTION
+        } else {
+            &self.solution
+        }
+    }
 }
 
 #[derive(Debug, Clone, Resource, Serialize, Deserialize)]
@@ -59,8 +70,8 @@ impl FoundWordsState {
     }
 
     /// Grid with unneeded characters blanked
-    fn adjusted_grid(&self, level: &CurrentLevel) -> Grid {
-        let mut grid = level.level().grid;
+    fn adjusted_grid(&self, level: &DesignedLevel) -> Grid {
+        let mut grid = level.grid;
 
         for tile in self.unneeded_tiles.iter_true_tiles() {
             grid[tile] = Character::Blank;
@@ -69,29 +80,27 @@ impl FoundWordsState {
         grid
     }
 
-    pub fn manual_hint_set(&self, level: &CurrentLevel, chosen_state: &ChosenState) -> GridSet {
-        self.hint_set::<true>(level, chosen_state)
+    pub fn manual_hint_set(&self, level: &DesignedLevel, solution: &Solution) -> GridSet {
+        self.hint_set::<true>(level, solution)
     }
 
-    pub fn auto_hint_set(&self, level: &CurrentLevel, chosen_state: &ChosenState) -> GridSet {
-        self.hint_set::<false>(level, chosen_state)
+    pub fn auto_hint_set(&self, level: &DesignedLevel, solution: &Solution) -> GridSet {
+        self.hint_set::<false>(level, solution)
     }
 
     fn hint_set<const MANUAL: bool>(
         &self,
-        level: &CurrentLevel,
-        chosen_state: &ChosenState,
+        level: &DesignedLevel,
+        solution: &Solution,
     ) -> GridSet {
         let mut set = GridSet::default();
         let adjusted_grid = self.adjusted_grid(level);
 
-        if chosen_state.is_just_finished{
-            return set;
-        }
 
-        if chosen_state.solution.is_empty() {
+
+        if solution.is_empty() {
             //hint all known first letters
-            for (word, completion) in level.level().words.iter().zip(self.word_completions.iter()) {
+            for (word, completion) in level.words.iter().zip(self.word_completions.iter()) {
                 if !(MANUAL && completion.is_manual_hinted()
                     || (!MANUAL && completion.is_auto_hinted()))
                 {
@@ -106,7 +115,7 @@ impl FoundWordsState {
             }
         } else {
             // hint all solutions starting with this
-            for (word, completion) in level.level().words.iter().zip(self.word_completions.iter()) {
+            for (word, completion) in level.words.iter().zip(self.word_completions.iter()) {
                 let hints = match (completion, MANUAL) {
                     (Completion::AutoHinted(hints), false) => hints,
                     (Completion::ManualHinted(hints), true) => hints,
@@ -115,13 +124,13 @@ impl FoundWordsState {
                     }
                 };
 
-                if hints.get() <= chosen_state.solution.len() {
+                if hints.get() <= solution.len() {
                     continue;
                 };
 
                 if let Some(solution) = word.find_solution(&adjusted_grid) {
-                    if solution.starts_with(chosen_state.solution.as_slice()) {
-                        if let Some(tile) = solution.get(chosen_state.solution.len()) {
+                    if solution.starts_with(solution.as_slice()) {
+                        if let Some(tile) = solution.get(solution.len()) {
                             set.set_bit(tile, true)
                         }
                     }
@@ -314,6 +323,100 @@ impl FoundWordsState {
         });
     }
 
+    pub fn calculate_inadvisable_tiles(
+        &self,
+        current_solution: &Solution,
+        level: &DesignedLevel,
+    ) -> GridSet {
+        let mut selectable = match current_solution.last() {
+            Some(tile) => GridSet::from_iter(tile.iter_adjacent()),
+            None => GridSet::ALL,
+        };
+
+        for tile in current_solution {
+            selectable.set_bit(tile, false);
+        }
+
+        let mut inadvisable = selectable.intersect(&self.unneeded_tiles.negate());
+
+        let chosen_characters: ArrayVec<Character, 16> =
+            current_solution.iter().map(|x| level.grid[*x]).collect();
+
+        let mut slices = self
+            .word_completions
+            .iter()
+            .zip(level.words.iter())
+            .map(|(completion, word)| match completion {
+                Completion::Unstarted => None, //a `None` is a word that we can check
+                Completion::AutoHinted(h) | Completion::ManualHinted(h) => {
+                    Some(&word.characters.as_slice()[..h.get()])
+                }
+                Completion::Complete => Some(word.characters.as_slice()),
+            })
+            //dedup to remove consecutive `None`
+            .dedup()
+            .peekable();
+
+        let mut predecessor: Option<Character> = None;
+        //let mut count = 0;
+
+        while let Some(slice) = slices.next() {
+            //   count += 1;
+            //todo check length of this word
+            if let Some(slice) = slice {
+                if !could_precede(slice, &chosen_characters) {
+                    //info!("Went past prefix after {count}");
+                    return inadvisable;
+                }
+
+                if slice.starts_with(&chosen_characters) {
+                    predecessor = slice.iter().skip(chosen_characters.len()).cloned().next();
+
+
+                }
+                //continue;
+            }
+
+            let mut successor: Option<Character> = None;
+
+            if let Some(slice) = slices.peek() {
+                if let Some(slice) = slice {
+                    if !could_precede(&chosen_characters, slice) {
+                        continue;
+                    }
+                    if slice.starts_with(&chosen_characters) {
+                        successor = slice.iter().skip(chosen_characters.len()).cloned().next();
+                    }
+                }
+            }
+            if predecessor.is_none() && successor.is_none() {
+                //info!("No pre or succ");
+                return GridSet::EMPTY;
+            }
+
+            'tiles: for tile in inadvisable.clone().iter_true_tiles() {
+                let character = level.grid[tile];
+                if let Some(p) = predecessor {
+                    if p.as_char() > character.as_char() {
+                        continue 'tiles;
+                    }
+                }
+                if let Some(s) = successor {
+                    if s.as_char() < character.as_char() {
+                        continue 'tiles;
+                    }
+                }
+                inadvisable.set_bit(&tile, false);
+            }
+            if inadvisable.is_empty() {
+                //info!("All bits unset");
+                return GridSet::EMPTY;
+            }
+        }
+        //info!("Checked all words {count}");
+        inadvisable
+    }
+
     fn calculate_auto_hints(&mut self, level: &CurrentLevel) {
         let level = level.level();
 
@@ -378,6 +481,18 @@ impl FoundWordsState {
             word_index += 1;
         }
     }
+}
+
+fn could_precede(p: &[Character], s: &[Character]) -> bool {
+    for (p, s) in p.iter().zip(s.iter()) {
+        match p.as_char().cmp(&s.as_char()) {
+            std::cmp::Ordering::Less => return true,
+            std::cmp::Ordering::Equal => {}
+            std::cmp::Ordering::Greater => return false,
+        }
+    }
+
+    true
 }
 
 /// If this doesn't come between the preceder and succeeder, return None
