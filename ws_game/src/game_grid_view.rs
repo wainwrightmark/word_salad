@@ -37,6 +37,15 @@ impl Selectability{
             Selectability::Inadvisable => convert_color(palette::GRID_TILE_FILL_INADVISABLE),
         }
     }
+
+    pub fn tile_border_proportion(&self)-> f32{
+        match self{
+            Selectability::Selectable => 2. / 36.,
+            Selectability::Selected =>  3. / 36.,
+            Selectability::Unselectable => 0.,
+            Selectability::Inadvisable => 0.,
+        }
+    }
 }
 
 maveric::define_lens!(StrokeColorLens, Stroke, Color, color);
@@ -162,6 +171,7 @@ impl MavericNode for GridTile {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
             let tile_size = node.tile_size;
             let fill =  node.selectability.tile_fill_color();
+            let line_width = tile_size * node.selectability.tile_border_proportion();
 
             commands.add_child(
                 0,
@@ -169,7 +179,7 @@ impl MavericNode for GridTile {
                     shape: make_rounded_square(tile_size, tile_size * 0.1),
                     transform: Transform::from_xyz(0.0, 0.0, crate::z_indices::GRID_TILE),
                     fill: Fill::color(convert_color(palette::GRID_TILE_FILL_SELECTABLE)),
-                    stroke: Stroke::color(convert_color(palette::GRID_TILE_STROKE)),
+                    stroke: Stroke::new(convert_color(palette::GRID_TILE_STROKE), line_width ),
                 }
                 .with_transition_to::<FillColorLens>(
                     fill,

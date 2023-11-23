@@ -374,7 +374,7 @@ impl FoundWordsState {
 
 
                 }
-                //continue;
+                continue;
             }
 
             let mut successor: Option<Character> = None;
