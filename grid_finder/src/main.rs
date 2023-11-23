@@ -92,11 +92,29 @@ fn do_finder(options: Options) {
             }
         }
 
+        let master_path = format!("grids/{file_name}");
+        let master_file_text = std::fs::read_to_string(master_path).unwrap_or_default();
+
+
+        let mut master_words = make_words_vec_from_file(&master_file_text);
+        if master_words.len() > 0{
+            let word_set: HashSet<_> = word_map.iter().map(|x|x.array.as_slice()).collect();
+            let total_master_count = master_words.len();
+            master_words.retain(|x|!word_set.contains(x.array.as_slice()));
+            let new_master_count = master_words.len();
+
+            info!("Found {total_master_count} words. {new_master_count} will be treated as exclusions")
+        }
+
+
+
+
+
         let grids_write_path = Path::new(write_path.as_str());
         let grids_file =
             std::fs::File::create(grids_write_path).expect("Could not find output folder");
         let grids_writer = BufWriter::new(grids_file);
-        let grids = create_grids(&word_map, grids_writer, options.minimum);
+        let grids = create_grids(&word_map, &master_words, grids_writer, options.minimum);
 
         let all_words = grids
             .iter()
@@ -125,6 +143,7 @@ fn do_finder(options: Options) {
 
 fn create_grids(
     all_words: &Vec<FinderWord>,
+    exclude_words: &Vec<FinderWord>,
     mut file: BufWriter<File>,
     min_size: u32,
 ) -> Vec<GridResult> {
@@ -169,9 +188,12 @@ fn create_grids(
                 let mut counter = FakeCounter;
                 let finder_words = set.get_words(all_words);
 
+                let exclude_words = exclude_words.iter().filter(|w| set.letter_counts.is_superset(&w.counts)).cloned().collect_vec();
+
                 let result = ws_core::finder::node::try_make_grid_with_blank_filling(
                     set.letter_counts,
                     &finder_words,
+                    &exclude_words,
                     Character::E,
                     &mut counter,
                 );

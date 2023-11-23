@@ -68,6 +68,7 @@ impl LayoutStructure for LevelsMenuLayoutEntity {
             Self::Tutorial,
             Self::AdditionalLevel(LevelGroup::GlobalLocation),
             Self::AdditionalLevel(LevelGroup::HistoryMythology),
+            Self::AdditionalLevel(LevelGroup::Science),
             Self::Back,
         ]
         .into_iter()

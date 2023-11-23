@@ -40,6 +40,10 @@ pub enum LevelSequence {
     GreekGods = 5,
     #[strum(message = "US Presidents")]
     USPresidents = 6,
+    #[strum(message = "Scientists")]
+    Scientists = 7,
+    #[strum(message = "Insects")]
+    Insects = 8,
 }
 
 impl LevelSequence {
@@ -52,6 +56,8 @@ impl LevelSequence {
             LevelSequence::USStates => &*US_STATES,
             LevelSequence::GreekGods => &*GREEK_GODS,
             LevelSequence::USPresidents => &*US_PRESIDENTS,
+            LevelSequence::Scientists => &*SCIENTISTS,
+            LevelSequence::Insects => &*INSECTS,
         };
 
         let index = index % levels.len();
@@ -70,6 +76,8 @@ impl LevelSequence {
             LevelSequence::USStates => "US States",
             LevelSequence::GreekGods => "Greek Gods",
             LevelSequence::USPresidents => "US Presidents",
+            LevelSequence::Scientists => "Scientists",
+            LevelSequence::Insects => "Insects",
         }
     }
 }

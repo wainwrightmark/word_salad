@@ -32,8 +32,10 @@ pub fn criterion_benchmark(c: &mut Criterion) {
         blanks_to_add -= 1;
     }
 
+    let exclude_words = vec![];
+
     c.bench_function("EU Countries", |b| {
-        b.iter(|| try_make_grid_with_blank_filling(letters, &words, Character::E, &mut FakeCounter))
+        b.iter(|| try_make_grid_with_blank_filling(letters, &words, &exclude_words, Character::E, &mut FakeCounter))
     });
 }
 

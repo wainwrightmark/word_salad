@@ -35,7 +35,7 @@ impl PartialGrid {
         grid
     }
 
-    pub fn check_matches(&self, nodes: &NodeMap, words: &Vec<FinderWord>) -> bool {
+    pub fn check_matches(&self, nodes: &NodeMap, words: &Vec<FinderWord>, exclude_words: &Vec<FinderWord>) -> bool {
         let solution_grid = self.to_grid(nodes);
 
         //println!("Solution found:\n{solution_grid}");
@@ -44,6 +44,13 @@ impl PartialGrid {
                 return false;
             }
         }
+
+        for word in exclude_words{
+            if find_solution(&word.array, &solution_grid).is_some(){
+                return false;
+            }
+        }
+
         true
     }
 
@@ -53,6 +60,7 @@ impl PartialGrid {
         all_nodes: &NodeMap,
         level: usize,
         words: &Vec<FinderWord>,
+        exclude_words: &Vec<FinderWord>
     ) -> Option<Self> {
         if !counter.try_increment() {
             return None;
@@ -81,7 +89,7 @@ impl PartialGrid {
             })
         else {
             //run out of options
-            if self.check_matches(all_nodes, words) {
+            if self.check_matches(all_nodes, words, exclude_words) {
                 return Some(self.clone());
             } else {
                 return None;
@@ -146,7 +154,7 @@ impl PartialGrid {
         {
             self.place_node(node, *tile);
 
-            if let Some(result) = self.solve_recursive(counter, all_nodes, level + 1, words) {
+            if let Some(result) = self.solve_recursive(counter, all_nodes, level + 1, words, exclude_words) {
                 return Some(result);
             }
 

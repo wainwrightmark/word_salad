@@ -70,10 +70,11 @@ impl std::fmt::Display for GridResult {
 pub fn try_make_grid_with_blank_filling(
     letters: LetterCounts,
     words: &Vec<FinderWord>,
+    exclude_words: &Vec<FinderWord>,
     first_blank_replacement: Character,
     counter: &mut impl Counter,
 ) -> Option<GridResult> {
-    let result = try_make_grid(letters, words, counter);
+    let result = try_make_grid(letters, words, exclude_words, counter);
     //println!("{} tries", result.tries);
     if result.is_some() {
         return result;
@@ -101,7 +102,9 @@ pub fn try_make_grid_with_blank_filling(
                 .try_insert(replacement)
                 .expect("prime bag error");
 
-            let result = try_make_grid_with_blank_filling(new_letters, words, replacement, counter);
+
+
+            let result = try_make_grid_with_blank_filling(new_letters, words, exclude_words, replacement, counter);
             if result.is_some() {
                 return result;
             }
@@ -181,6 +184,7 @@ enum WordLetterResult<'a> {
 pub fn try_make_grid(
     letters: LetterCounts,
     words: &Vec<FinderWord>,
+    exclude_words: &Vec<FinderWord>,
     counter: &mut impl Counter,
 ) -> Option<GridResult> {
     //println!("Try to make grid: {l:?} : {w:?}", l= crate::get_raw_text(&letters), w= crate::write_words(words) );
@@ -290,7 +294,7 @@ pub fn try_make_grid(
             .unwrap_or_else(|| NodeBuilder::new(tile, Character::Blank).into())
     });
 
-    let Some(solution) = grid.solve_recursive(counter, &nodes, 0, words) else {
+    let Some(solution) = grid.solve_recursive(counter, &nodes, 0, words, exclude_words) else {
         return None;
     };
 
@@ -487,9 +491,9 @@ mod tests {
             max: 1000000000,
             current: 0,
         };
-
+        let exclude_words = vec![];
         let solution =
-            try_make_grid_with_blank_filling(letters, &words, Character::E, &mut counter);
+            try_make_grid_with_blank_filling(letters, &words, &exclude_words, Character::E, &mut counter);
         println!("{:?}", now.elapsed());
         match solution {
             Some(GridResult { grid, .. }) => {

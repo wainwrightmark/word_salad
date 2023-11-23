@@ -49,6 +49,22 @@ lazy_static! {
             .map(|x| x.unwrap()),
         "US Presidents"
     );
+
+    pub(crate) static ref SCIENTISTS: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/science/scientists.tsv")
+            .lines()
+            .map(DesignedLevel::from_tsv_line)
+            .map(|x| x.unwrap()),
+        "Scientists"
+    );
+
+    pub(crate) static ref INSECTS: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/science/insects.tsv")
+            .lines()
+            .map(DesignedLevel::from_tsv_line)
+            .map(|x| x.unwrap()),
+        "Insects"
+    );
 }
 
 pub fn number_levels(
@@ -79,6 +95,8 @@ pub mod tests {
             US_STATES.iter(),
             GREEK_GODS.iter(),
             US_PRESIDENTS.iter(),
+            SCIENTISTS.iter(),
+            INSECTS.iter(),
         ]
         .iter()
         .cloned()
