@@ -59,8 +59,8 @@ impl MavericNode for GridTiles {
                     continue;
                 }
 
-                let selected = context.0 .0.last() == Some(&tile);
-                // let hinted = hint_set.get_bit(&tile);
+                let selected = !context.0.is_just_finished && context.0 .solution.last() == Some(&tile);
+
 
                 let size = context.3.as_ref();
                 let tile_size = size.tile_size();
@@ -262,7 +262,10 @@ impl MavericNode for HintGlows {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct WordLine(pub Solution);
+pub struct WordLine{
+    pub solution: Solution,
+    pub should_hide: bool
+}
 
 impl MavericNode for WordLine {
     type Context = Size;
@@ -273,11 +276,19 @@ impl MavericNode for WordLine {
                 return;
             }
             let size = args.context;
-            let solution = args.node;
+
+            let (solution, visible) = if args.node.solution.len() > 0 {
+                (args.node.solution.as_slice(), !args.node.should_hide)
+            } else {
+                (
+                    args.previous.map(|x| x.solution.as_slice()).unwrap_or_default(),
+                    false,
+                )
+            };
 
             let mut builder = PathBuilder::new();
 
-            for (index, tile) in solution.0.iter().enumerate() {
+            for (index, tile) in solution.iter().enumerate() {
                 let position = size.get_rect(&LayoutGridTile(*tile), &()).centre();
                 if index == 0 {
                     builder.move_to(position);
@@ -289,7 +300,20 @@ impl MavericNode for WordLine {
 
             let mut width = size.get_rect(&GameLayoutEntity::Grid, &()).extents.x * 50. / 320.;
 
-            if args.previous.is_none() {
+            if !visible {
+                //info!("Word line not visible");
+                commands.transition_value::<StrokeWidthLens>(
+                    50.0,
+                    0.0,
+                    Some(ScalarSpeed {
+                        amount_per_second: 50.0,
+                    }),
+                );
+            } else if args.previous.is_some_and(|x| !x.solution.is_empty() && !x.should_hide) {
+                //info!("Word line remains visible");
+                commands.remove::<Transition<StrokeWidthLens>>();
+            } else {
+                //info!("Word line newly visible");
                 commands.insert(Transition::<StrokeWidthLens>::new(TransitionStep::new_arc(
                     width,
                     Some(ScalarSpeed {
@@ -299,8 +323,6 @@ impl MavericNode for WordLine {
                 )));
 
                 width = 0.0;
-            } else {
-                commands.remove::<Transition<StrokeWidthLens>>();
             }
 
             commands.insert(ShapeBundle {
@@ -325,16 +347,5 @@ impl MavericNode for WordLine {
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.no_children()
-    }
-
-    fn on_deleted(&self, commands: &mut ComponentCommands) -> DeletionPolicy {
-        commands.transition_value::<StrokeWidthLens>(
-            50.0,
-            0.0,
-            Some(ScalarSpeed {
-                amount_per_second: 50.0,
-            }),
-        );
-        DeletionPolicy::Linger(Duration::from_secs_f32(1.0))
     }
 }

@@ -25,21 +25,25 @@ impl GridInputState {
         self.delete_on_end = false;
         self.last_tile = Some(tile);
 
-        if let Some(last) = chosen_state.0.last() {
-            if let Some(index) = chosen_state.0.iter().position(|x| *x == tile) {
+        if chosen_state.is_just_finished{
+            *chosen_state.as_mut() = ChosenState::default();
+        }
+
+        if let Some(last) = chosen_state.solution.last() {
+            if let Some(index) = chosen_state.solution.iter().position(|x| *x == tile) {
                 // element is already present
-                if index + 1 == chosen_state.0.len() {
+                if index + 1 == chosen_state.solution.len() {
                     //info!("His1");
                     self.delete_on_end = true;
                 } else {
                     //info!("His2");
-                    chosen_state.0.truncate(index + 1);
+                    chosen_state.solution.truncate(index + 1);
                 }
             } else if last.is_adjacent_to(&tile) {
                 //element is not already present
                 if allow_tile(tile, grid, found_words) {
                     //info!("His3");
-                    chosen_state.0.push(tile);
+                    chosen_state.solution.push(tile);
                 }
             } else {
                 //info!("His4");
@@ -49,7 +53,7 @@ impl GridInputState {
             //array is empty
             if allow_tile(tile, grid, found_words) {
                 //info!("His5");
-                chosen_state.0.push(tile);
+                chosen_state.solution.push(tile);
             }
         }
     }
@@ -67,28 +71,34 @@ impl GridInputState {
         self.delete_on_end = false;
         self.last_tile = Some(tile);
 
-        if let Some(last) = chosen_state.0.last() {
-            if let Some(index) = chosen_state.0.iter().position(|x| *x == tile) {
+        if chosen_state.is_just_finished{
+            *chosen_state.as_mut() = ChosenState::default();
+        }
+
+        if let Some(last) = chosen_state.solution.last() {
+            if let Some(index) = chosen_state.solution.iter().position(|x| *x == tile) {
                 // element is already present
-                if index + 1 == chosen_state.0.len() {
+                if index + 1 == chosen_state.solution.len() {
                 } else {
                     //info!("Him1");
-                    chosen_state.0.truncate(index + 1);
+                    chosen_state.solution.truncate(index + 1);
                 }
             } else if last.is_adjacent_to(&tile) {
                 //element is not already present
                 if allow_tile(tile, grid, found_words) {
                     //info!("Him2");
-                    chosen_state.0.push(tile);
+                    chosen_state.solution.push(tile);
                 }
             }
         }
     }
 
     pub fn handle_input_end(&mut self, chosen_state: &mut ResMut<ChosenState>, location: Tile) {
+
+
         if self.delete_on_end && self.last_tile == Some(location) {
             //info!("Hie1");
-            chosen_state.0.pop();
+            chosen_state.solution.pop();
         }
         self.last_tile = None;
         self.delete_on_end = false;

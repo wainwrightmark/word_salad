@@ -26,7 +26,10 @@ impl Plugin for StatePlugin {
 }
 
 #[derive(Debug, Clone, Resource, PartialEq, Eq, Default, Serialize, Deserialize)]
-pub struct ChosenState(pub Solution);
+pub struct ChosenState{
+    pub solution : Solution,
+    pub is_just_finished: bool
+}
 
 #[derive(Debug, Clone, Resource, Serialize, Deserialize)]
 pub struct FoundWordsState {
@@ -82,7 +85,11 @@ impl FoundWordsState {
         let mut set = GridSet::default();
         let adjusted_grid = self.adjusted_grid(level);
 
-        if chosen_state.0.is_empty() {
+        if chosen_state.is_just_finished{
+            return set;
+        }
+
+        if chosen_state.solution.is_empty() {
             //hint all known first letters
             for (word, completion) in level.level().words.iter().zip(self.word_completions.iter()) {
                 if !(MANUAL && completion.is_manual_hinted()
@@ -108,13 +115,13 @@ impl FoundWordsState {
                     }
                 };
 
-                if hints.get() <= chosen_state.0.len() {
+                if hints.get() <= chosen_state.solution.len() {
                     continue;
                 };
 
                 if let Some(solution) = word.find_solution(&adjusted_grid) {
-                    if solution.starts_with(chosen_state.0.as_slice()) {
-                        if let Some(tile) = solution.get(chosen_state.0.len()) {
+                    if solution.starts_with(chosen_state.solution.as_slice()) {
+                        if let Some(tile) = solution.get(chosen_state.solution.len()) {
                             set.set_bit(tile, true)
                         }
                     }
@@ -253,11 +260,11 @@ fn track_found_words(
     asset_server: Res<AssetServer>,
     size: Res<Size>,
 ) {
-    if !chosen.is_changed() {
+    if !chosen.is_changed() || chosen.is_just_finished {
         return;
     }
     let grid = current_level.level().grid;
-    let chars: CharsArray = chosen.0.iter().map(|t| grid[*t]).collect();
+    let chars: CharsArray = chosen.solution.iter().map(|t| grid[*t]).collect();
 
     let level = current_level.level();
     let Some((word_index, word)) = level
@@ -282,7 +289,7 @@ fn track_found_words(
 
     crate::animated_solutions::animate_solution(
         &mut commands,
-        &chosen.0,
+        &chosen.solution,
         word,
         is_first_time,
         &asset_server,
@@ -293,7 +300,7 @@ fn track_found_words(
     found_words.calculate_auto_hints(&current_level);
 
     if is_first_time {
-        *chosen = ChosenState::default();
+        chosen.is_just_finished = true;
     }
 }
 
