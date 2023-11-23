@@ -3,47 +3,47 @@ use lazy_static::lazy_static;
 use ws_core::DesignedLevel;
 
 lazy_static! {
-    pub(crate) static ref TUTORIAL: Vec<DesignedLevel> = include_str!("levels/tutorial.tsv")
+    pub(crate) static ref TUTORIAL: Vec<DesignedLevel> = include_str!("levels\\tutorial.tsv")
         .lines()
         .map(DesignedLevel::from_tsv_line)
         .map(|x| x.unwrap())
         .collect_vec();
     pub(crate) static ref DAILY_CHALLENGE: Vec<DesignedLevel> =
-        include_str!("levels/daily_challenge.tsv")
+        include_str!("levels\\daily_challenge.tsv")
             .lines()
             .map(DesignedLevel::from_tsv_line)
             .map(|x| x.unwrap())
             .collect_vec();
     pub(crate) static ref EU_CAPITALS: Vec<DesignedLevel> = number_levels(
-        include_str!("levels/global_location/eu_capitals.tsv")
+        include_str!("levels\\global_location\\eu_capitals.tsv")
             .lines()
             .map(DesignedLevel::from_tsv_line)
             .map(|x| x.unwrap()),
         "EU Capitals"
     );
     pub(crate) static ref EU_COUNTRIES: Vec<DesignedLevel> = number_levels(
-        include_str!("levels/global_location/eu_countries.tsv")
+        include_str!("levels\\global_location\\eu_countries.tsv")
             .lines()
             .map(DesignedLevel::from_tsv_line)
             .map(|x| x.unwrap()),
         "EU Countries"
     );
     pub(crate) static ref US_STATES: Vec<DesignedLevel> = number_levels(
-        include_str!("levels/global_location/us_states.tsv")
+        include_str!("levels\\global_location\\us_states.tsv")
             .lines()
             .map(DesignedLevel::from_tsv_line)
             .map(|x| x.unwrap()),
         "US States"
     );
     pub(crate) static ref GREEK_GODS: Vec<DesignedLevel> = number_levels(
-        include_str!("levels/history_and_mythology/greek_gods.tsv")
+        include_str!("levels\\history_and_mythology\\greek_gods.tsv")
             .lines()
             .map(DesignedLevel::from_tsv_line)
             .map(|x| x.unwrap()),
         "Greek Gods"
     );
     pub(crate) static ref US_PRESIDENTS: Vec<DesignedLevel> = number_levels(
-        include_str!("levels/history_and_mythology/us_presidents.tsv")
+        include_str!("levels\\history_and_mythology\\us_presidents.tsv")
             .lines()
             .map(DesignedLevel::from_tsv_line)
             .map(|x| x.unwrap()),
