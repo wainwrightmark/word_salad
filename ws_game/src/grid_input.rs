@@ -25,7 +25,7 @@ impl GridInputState {
         self.delete_on_end = false;
         self.last_tile = Some(tile);
 
-        if chosen_state.is_just_finished{
+        if chosen_state.is_just_finished {
             *chosen_state.as_mut() = ChosenState::default();
         }
 
@@ -35,6 +35,8 @@ impl GridInputState {
                 if index + 1 == chosen_state.solution.len() {
                     //info!("His1");
                     self.delete_on_end = true;
+                } else if index == 0 {
+                    chosen_state.solution.clear();
                 } else {
                     //info!("His2");
                     chosen_state.solution.truncate(index + 1);
@@ -71,18 +73,14 @@ impl GridInputState {
         self.delete_on_end = false;
         self.last_tile = Some(tile);
 
-        if chosen_state.is_just_finished{
+        if chosen_state.is_just_finished {
             *chosen_state.as_mut() = ChosenState::default();
         }
 
         if let Some(last) = chosen_state.solution.last() {
             if let Some(index) = chosen_state.solution.iter().position(|x| *x == tile) {
                 // element is already present
-                if index + 1 == chosen_state.solution.len() {
-                } else {
-                    //info!("Him1");
-                    chosen_state.solution.truncate(index + 1);
-                }
+                chosen_state.solution.truncate(index + 1);
             } else if last.is_adjacent_to(&tile) {
                 //element is not already present
                 if allow_tile(tile, grid, found_words) {
@@ -94,10 +92,7 @@ impl GridInputState {
     }
 
     pub fn handle_input_end(&mut self, chosen_state: &mut ResMut<ChosenState>, location: Tile) {
-
-
         if self.delete_on_end && self.last_tile == Some(location) {
-            //info!("Hie1");
             chosen_state.solution.pop();
         }
         self.last_tile = None;
