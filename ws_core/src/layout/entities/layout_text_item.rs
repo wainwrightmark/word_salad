@@ -10,7 +10,7 @@ use super::consts::*;
 pub enum LayoutTextItem {
     PuzzleTitle,
     PuzzleTheme,
-    FoundWordAnimation
+    FoundWordAnimation,
 }
 
 impl LayoutTextItem {
@@ -51,7 +51,12 @@ impl LayoutStructure for LayoutTextItem {
         Vec2 {
             x: (IDEAL_WIDTH - TEXT_ITEM_WIDTH) / 2.,
             y: TOP_BAR_ICON_SIZE
-                + Spacing::SpaceAround.apply(TEXT_AREA_HEIGHT, TEXT_ITEM_HEIGHT, Self::COUNT, self.index()),
+                + Spacing::SpaceAround.apply(
+                    TEXT_AREA_HEIGHT,
+                    TEXT_ITEM_HEIGHT,
+                    Self::COUNT,
+                    self.index(),
+                ),
         }
     }
 }

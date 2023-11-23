@@ -222,7 +222,6 @@ impl MavericNode for HintGlows {
         commands
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
-
                 let manual_hints = context.2.manual_hint_set(&context.1, &context.0);
                 let auto_hints = context.2.auto_hint_set(&context.1, &context.0);
 
@@ -234,9 +233,9 @@ impl MavericNode for HintGlows {
 
                     let shape = make_rounded_square(tile_size * 0.8, tile_size * 0.1);
 
-                    let color = convert_color(if manual_hints.get_bit(&tile){
+                    let color = convert_color(if manual_hints.get_bit(&tile) {
                         palette::MANUAL_HINT_GLOW
-                    }else{
+                    } else {
                         palette::AUTO_HINT_GLOW
                     });
 
@@ -289,8 +288,6 @@ impl MavericNode for WordLine {
             }
 
             let mut width = size.get_rect(&GameLayoutEntity::Grid, &()).extents.x * 50. / 320.;
-
-
 
             if args.previous.is_none() {
                 commands.insert(Transition::<StrokeWidthLens>::new(TransitionStep::new_arc(

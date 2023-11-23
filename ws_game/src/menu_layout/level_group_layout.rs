@@ -1,8 +1,8 @@
-use super::{MENU_BUTTON_HEIGHT, MENU_BUTTON_WIDTH, MENU_BUTTON_FONT_SIZE};
+use super::{MENU_BUTTON_FONT_SIZE, MENU_BUTTON_HEIGHT, MENU_BUTTON_WIDTH};
 use bevy::math::Vec2;
 use ws_core::{
     layout::entities::{IDEAL_HEIGHT, IDEAL_WIDTH, TOP_BAR_ICON_SIZE},
-    LayoutStructure, Spacing, LayoutStructureWithFont, LayoutStructureWithStaticText,
+    LayoutStructure, LayoutStructureWithFont, LayoutStructureWithStaticText, Spacing,
 };
 use ws_levels::level_group::LevelGroup;
 
@@ -80,9 +80,12 @@ impl Iterator for LevelGroupLayoutIter {
     }
 }
 
-
-impl LayoutStructureWithStaticText for LevelGroupLayout{
-    fn text(&self,context: &Self::Context ) -> &'static str {
-        context.get_sequences().get(self.index).map(|x|x.name()) .unwrap_or("Unknown")
+impl LayoutStructureWithStaticText for LevelGroupLayout {
+    fn text(&self, context: &Self::Context) -> &'static str {
+        context
+            .get_sequences()
+            .get(self.index)
+            .map(|x| x.name())
+            .unwrap_or("Unknown")
     }
 }

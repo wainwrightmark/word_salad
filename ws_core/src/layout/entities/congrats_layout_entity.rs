@@ -13,7 +13,6 @@ pub enum CongratsLayoutEntity {
     HintsUsed = 1,
     NextButton = 2,
     ShareButton = 3,
-
 }
 
 impl CongratsLayoutEntity {

@@ -35,7 +35,7 @@ struct Options {
     pub minimum: u32,
 
     #[arg(long)]
-    pub search: Option<String>
+    pub search: Option<String>,
 }
 
 fn main() {
@@ -47,13 +47,11 @@ fn main() {
 
     let options = Options::parse();
 
-    if let Some(search) = options.search{
+    if let Some(search) = options.search {
         search::do_search(search);
-    }
-    else{
+    } else {
         do_finder(options);
     }
-
 
     info!("Finished... Press enter");
     io::stdin().read_line(&mut String::new()).unwrap();
@@ -84,12 +82,12 @@ fn do_finder(options: Options) {
         let word_map = make_words_vec_from_file(data_file_text.as_str());
 
         info!("{} Words", word_map.len());
-        for word in word_map.iter().map(|x|x.text.clone()).sorted(){
-            info!("{word}", )
+        for word in word_map.iter().map(|x| x.text.clone()).sorted() {
+            info!("{word}",)
         }
 
-        for (a,b) in word_map.iter().sorted_by_key(|x|&x.array).tuple_windows(){
-            if b.array.starts_with(&a.array){
+        for (a, b) in word_map.iter().sorted_by_key(|x| &x.array).tuple_windows() {
+            if b.array.starts_with(&a.array) {
                 warn!("'{}' is a prefix of '{}'", a.text, b.text)
             }
         }

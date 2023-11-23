@@ -2,17 +2,19 @@ use std::str::FromStr;
 
 use indicatif::{ProgressBar, ProgressStyle};
 use log::info;
-use ws_core::{Word, DesignedLevel};
+use ws_core::{DesignedLevel, Word};
 
-pub fn do_search(search: String){
+pub fn do_search(search: String) {
     let folder = std::fs::read_dir("grids").unwrap();
 
-    let words: Vec<_> = search.split_ascii_whitespace().map(|s| Word::from_str(s).unwrap())
-    .map(|w| {let lc = w.letter_counts().unwrap(); (w,lc)})
-    .collect();
-
-
-
+    let words: Vec<_> = search
+        .split_ascii_whitespace()
+        .map(|s| Word::from_str(s).unwrap())
+        .map(|w| {
+            let lc = w.letter_counts().unwrap();
+            (w, lc)
+        })
+        .collect();
 
     let paths: Vec<_> = folder.collect();
 
@@ -27,20 +29,30 @@ pub fn do_search(search: String){
         let grids_path = path.as_ref().unwrap().path();
         let grid_file_text = std::fs::read_to_string(grids_path.clone()).unwrap();
 
-        for line in grid_file_text.lines(){
+        for line in grid_file_text.lines() {
             let level = DesignedLevel::from_tsv_line(line).unwrap();
 
-            let level_letter_counts = level.letter_counts().expect("Could not get grid letter counts");
+            let level_letter_counts = level
+                .letter_counts()
+                .expect("Could not get grid letter counts");
 
-            for (word, _) in words.iter().filter(|(_, lc)|level_letter_counts.is_superset(lc)){
+            for (word, _) in words
+                .iter()
+                .filter(|(_, lc)| level_letter_counts.is_superset(lc))
+            {
                 total_possibles += 1;
-                if let Some(..) = word.find_solution(&level.grid){
+                if let Some(..) = word.find_solution(&level.grid) {
                     total_solutions += 1;
-                    info!("Found {word} in {file} {level} ", file= grids_path.file_name().map(|x|x.to_string_lossy()).unwrap_or_default(), word = word.text)
+                    info!(
+                        "Found {word} in {file} {level} ",
+                        file = grids_path
+                            .file_name()
+                            .map(|x| x.to_string_lossy())
+                            .unwrap_or_default(),
+                        word = word.text
+                    )
                 }
             }
-
-
         }
 
         pb.inc(1);

@@ -25,10 +25,10 @@ pub trait LayoutStructure: Sized + PartialEq + Debug {
     fn iter_all(context: &Self::Context) -> Self::Iterator;
 }
 
-pub trait LayoutStructureWithFont : LayoutStructure {
+pub trait LayoutStructureWithFont: LayoutStructure {
     fn font_size() -> f32;
 }
 
 pub trait LayoutStructureWithStaticText: LayoutStructure {
-    fn text(&self,context: &Self::Context ) -> &'static str;
+    fn text(&self, context: &Self::Context) -> &'static str;
 }

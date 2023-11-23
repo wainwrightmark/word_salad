@@ -66,7 +66,6 @@ pub fn go() {
 
     app.add_plugins(InputPlugin);
 
-
     app.add_plugins(WindowSizePlugin::<SaladWindowBreakPoints>::default());
 
     #[cfg(target_arch = "wasm32")]
@@ -107,7 +106,7 @@ fn choose_level_on_game_load(
     mut current_level: ResMut<CurrentLevel>,
     mut found_words: ResMut<FoundWordsState>,
     mut chosen_state: ResMut<ChosenState>,
-    mut timer: ResMut<crate::level_time::LevelTime>
+    mut timer: ResMut<crate::level_time::LevelTime>,
 ) {
     #[cfg(target_arch = "wasm32")]
     {

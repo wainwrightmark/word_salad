@@ -1,9 +1,8 @@
 use std::str::FromStr;
 
+use crate::{finder::helpers::LetterCounts, prelude::*, Grid};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
-use crate::{finder::helpers::LetterCounts, Grid, prelude::*};
-
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DesignedLevel {
@@ -12,28 +11,35 @@ pub struct DesignedLevel {
     pub words: Vec<DisplayWord>,
 }
 
-impl std::fmt::Display for DesignedLevel{
+impl std::fmt::Display for DesignedLevel {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{grid}\t{name}\t{words}",
-
-    grid = self.grid.iter().join(""), name=self.name, words= self.words.iter().join("\t"))
+        write!(
+            f,
+            "{grid}\t{name}\t{words}",
+            grid = self.grid.iter().join(""),
+            name = self.name,
+            words = self.words.iter().join("\t")
+        )
     }
 }
 
 impl DesignedLevel {
-
-    pub fn letter_counts(&self)-> Option<LetterCounts>{
-        LetterCounts::try_from_iter(self.grid.iter(). cloned())
+    pub fn letter_counts(&self) -> Option<LetterCounts> {
+        LetterCounts::try_from_iter(self.grid.iter().cloned())
     }
 
     pub fn from_tsv_line(line: &str) -> Result<Self, String> {
         let mut iter = line.split('\t');
 
-        let chars: &str = iter.next().ok_or_else(||format!("Level '{line}' should have a grid"))?;
-        let name: &str = iter.next().ok_or_else(||format!("Level '{line}' should have a name"))?;
+        let chars: &str = iter
+            .next()
+            .ok_or_else(|| format!("Level '{line}' should have a grid"))?;
+        let name: &str = iter
+            .next()
+            .ok_or_else(|| format!("Level '{line}' should have a name"))?;
 
         let grid = try_make_grid(chars)
-            .ok_or_else(||format!("Level '{line}' should be able to make grid"))?;
+            .ok_or_else(|| format!("Level '{line}' should be able to make grid"))?;
 
         let words = iter
             .map(|x| x.trim().to_string())
@@ -186,7 +192,8 @@ pub mod tests {
         let level = DesignedLevel::from_tsv_line(
             // spellchecker:disable-next-line
             "ASHPKILOEUIOGNDT\tSports\tPOLO\tSHOOTING\tKENDO\tSAILING\tLUGE\tSKIING",
-        ).unwrap();
+        )
+        .unwrap();
 
         // A|S|H|P
         // K|I|L|O

@@ -18,27 +18,31 @@ use crate::level_sequence::LevelSequence;
     Ord,
     Serialize,
     Deserialize,
-    Hash
+    Hash,
 )]
-pub enum LevelGroup{
+pub enum LevelGroup {
     GlobalLocation = 0,
-    HistoryMythology = 1
+    HistoryMythology = 1,
 }
 
-impl LevelGroup{
-    pub fn get_sequences(&self)-> &'static[LevelSequence]
-    {
-        match self{
-            LevelGroup::GlobalLocation => &[LevelSequence::USStates, LevelSequence::EUCapitals, LevelSequence::EUCountries],
-            LevelGroup::HistoryMythology => &[LevelSequence::USPresidents, LevelSequence::GreekGods],
+impl LevelGroup {
+    pub fn get_sequences(&self) -> &'static [LevelSequence] {
+        match self {
+            LevelGroup::GlobalLocation => &[
+                LevelSequence::USStates,
+                LevelSequence::EUCapitals,
+                LevelSequence::EUCountries,
+            ],
+            LevelGroup::HistoryMythology => {
+                &[LevelSequence::USPresidents, LevelSequence::GreekGods]
+            }
         }
     }
 
-    pub fn name(&self)-> &'static str{
+    pub fn name(&self) -> &'static str {
         match self {
             LevelGroup::GlobalLocation => "Global Location",
             LevelGroup::HistoryMythology => "History / Mythology",
         }
     }
 }
-

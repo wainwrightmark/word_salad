@@ -1,6 +1,9 @@
 use std::num::NonZeroUsize;
 
-use crate::{prelude::*, completion::{TotalCompletion, track_level_completion}};
+use crate::{
+    completion::{track_level_completion, TotalCompletion},
+    prelude::*,
+};
 use itertools::Itertools;
 use nice_bevy_utils::{CanInitTrackedResource, TrackableResource};
 use serde::{Deserialize, Serialize};
@@ -71,15 +74,20 @@ impl FoundWordsState {
         self.hint_set::<false>(level, chosen_state)
     }
 
-    fn hint_set<const MANUAL: bool>(&self, level: &CurrentLevel, chosen_state: &ChosenState) -> GridSet{
+    fn hint_set<const MANUAL: bool>(
+        &self,
+        level: &CurrentLevel,
+        chosen_state: &ChosenState,
+    ) -> GridSet {
         let mut set = GridSet::default();
         let adjusted_grid = self.adjusted_grid(level);
 
         if chosen_state.0.is_empty() {
             //hint all known first letters
             for (word, completion) in level.level().words.iter().zip(self.word_completions.iter()) {
-
-                if !(MANUAL && completion.is_manual_hinted() || (!MANUAL && completion.is_auto_hinted())) {
+                if !(MANUAL && completion.is_manual_hinted()
+                    || (!MANUAL && completion.is_auto_hinted()))
+                {
                     continue;
                 }
 
@@ -92,12 +100,12 @@ impl FoundWordsState {
         } else {
             // hint all solutions starting with this
             for (word, completion) in level.level().words.iter().zip(self.word_completions.iter()) {
-
-                let hints = match (completion, MANUAL){
-
+                let hints = match (completion, MANUAL) {
                     (Completion::AutoHinted(hints), false) => hints,
                     (Completion::ManualHinted(hints), true) => hints,
-                    _=> {continue;}
+                    _ => {
+                        continue;
+                    }
                 };
 
                 if hints.get() <= chosen_state.0.len() {
@@ -193,7 +201,8 @@ impl FoundWordsState {
         let Some(index) = min_hint_index else {
             return false;
         };
-        self.word_completions[index] = Completion::ManualHinted(NonZeroUsize::MIN.saturating_add(min_hints));
+        self.word_completions[index] =
+            Completion::ManualHinted(NonZeroUsize::MIN.saturating_add(min_hints));
 
         true
     }
@@ -209,12 +218,10 @@ pub enum Completion {
 
 impl Completion {
     pub fn color(&self) -> &'static Color {
-
-        const UNSTARTED: &'static Color = & convert_color(palette::WORD_BACKGROUND_UNSTARTED);
-        const MANUAL: &'static Color = & convert_color(palette::WORD_BACKGROUND_MANUAL_HINT);
-        const COMPLETE: &'static Color = & convert_color(palette::WORD_BACKGROUND_COMPLETE);
-        const AUTO: &'static Color = & convert_color(palette::WORD_BACKGROUND_AUTO_HINT);
-
+        const UNSTARTED: &'static Color = &convert_color(palette::WORD_BACKGROUND_UNSTARTED);
+        const MANUAL: &'static Color = &convert_color(palette::WORD_BACKGROUND_MANUAL_HINT);
+        const COMPLETE: &'static Color = &convert_color(palette::WORD_BACKGROUND_COMPLETE);
+        const AUTO: &'static Color = &convert_color(palette::WORD_BACKGROUND_AUTO_HINT);
 
         match self {
             Completion::Unstarted => UNSTARTED,
@@ -447,13 +454,15 @@ pub mod tests {
 
     #[test]
     pub fn test_auto_hints() {
-
         //TODO test the following with everything but croatia
+        // spellchecker:disable-next-line
         //PLTAOAYIMRNDFCEG	Europe Countries 6	Croatia 	France  	Germany 	Italy   	Malta   	Poland  	Romania
 
         let level = DesignedLevel::from_tsv_line(
+            // spellchecker:disable-next-line
             "DNGLHUAOSTRPAIYC	Europe Countries 2	Austria 	Croatia 	Cyprus  	Hungary 	Poland  	Portugal",
-        ).unwrap();
+        )
+        .unwrap();
         let cl = CurrentLevel::Custom(level);
         let mut found_words = FoundWordsState::new_from_level(&cl);
 
@@ -478,6 +487,9 @@ pub mod tests {
 
         let croatia_completion = found_words.word_completions[1];
 
-        assert_eq!(croatia_completion, Completion::AutoHinted(NonZeroUsize::new(2).unwrap()));
+        assert_eq!(
+            croatia_completion,
+            Completion::AutoHinted(NonZeroUsize::new(2).unwrap())
+        );
     }
 }

@@ -1,8 +1,8 @@
-use std::{str::FromStr, num::NonZeroUsize};
+use std::{num::NonZeroUsize, str::FromStr};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{prelude::*, finder::helpers::LetterCounts};
+use crate::{finder::helpers::LetterCounts, prelude::*};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DisplayWord {
@@ -16,7 +16,7 @@ pub struct DisplayWord {
     pub graphemes: Vec<CharGrapheme>,
 }
 
-impl std::fmt::Display for DisplayWord{
+impl std::fmt::Display for DisplayWord {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.text.fmt(f)
     }
@@ -29,7 +29,6 @@ pub struct CharGrapheme {
 }
 
 impl DisplayWord {
-
     pub fn find_solution(&self, grid: &Grid) -> Option<Solution> {
         //TODO more efficient path if word has no duplicate letters
 
@@ -43,23 +42,21 @@ impl DisplayWord {
         find_solutions(&self.characters, grid)
     }
 
-    pub fn letter_counts(&self)-> Option<LetterCounts>{
+    pub fn letter_counts(&self) -> Option<LetterCounts> {
         LetterCounts::try_from_iter(self.characters.iter().cloned())
     }
 
-    pub fn hinted_text(&self, hints: NonZeroUsize)-> String{
+    pub fn hinted_text(&self, hints: NonZeroUsize) -> String {
         let mut result: String = Default::default();
         let mut hints_left = hints.get();
 
-        for grapheme in self.graphemes.iter(){
-
-            if !grapheme.is_game_char || hints_left > 0{
+        for grapheme in self.graphemes.iter() {
+            if !grapheme.is_game_char || hints_left > 0 {
                 result.push_str(grapheme.grapheme.as_str());
-                if grapheme.is_game_char{
+                if grapheme.is_game_char {
                     hints_left = hints_left.saturating_sub(1);
                 }
-            }
-            else{
+            } else {
                 result.push('?');
             }
         }

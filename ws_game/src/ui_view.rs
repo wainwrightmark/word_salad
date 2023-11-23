@@ -1,6 +1,6 @@
 use crate::prelude::*;
-use maveric::transition::speed::{LinearSpeed, ScalarSpeed};
-use maveric::{widgets::text2d_node::Text2DNode, with_bundle::WithBundle};
+use maveric::transition::speed::ScalarSpeed;
+use maveric::widgets::text2d_node::Text2DNode;
 use ws_core::layout::entities::*;
 use ws_core::prelude::*;
 

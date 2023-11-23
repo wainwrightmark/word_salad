@@ -3,7 +3,7 @@ use std::str::FromStr;
 use arrayvec::ArrayVec;
 use serde::{Deserialize, Serialize};
 
-use crate::{prelude::*, finder::helpers::LetterCounts};
+use crate::{finder::helpers::LetterCounts, prelude::*};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Word {
@@ -157,7 +157,7 @@ pub fn find_solution(characters: &CharsArray, grid: &Grid) -> Option<Solution> {
     None
 }
 
-impl FromStr for Word{
+impl FromStr for Word {
     type Err = &'static str;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -171,7 +171,6 @@ impl FromStr for Word{
 }
 
 impl Word {
-
     pub fn find_solution(&self, grid: &Grid) -> Option<Solution> {
         //TODO more efficient path if word has no duplicate letters
 
@@ -185,7 +184,7 @@ impl Word {
         find_solutions(&self.characters, grid)
     }
 
-    pub fn letter_counts(&self)-> Option<LetterCounts>{
+    pub fn letter_counts(&self) -> Option<LetterCounts> {
         LetterCounts::try_from_iter(self.characters.iter().cloned())
     }
 }

@@ -24,7 +24,6 @@ pub fn animate_solution(
     size: &Size,
     level: &CurrentLevel,
 ) {
-
     //info!("Animate solution");
     let color = if is_first_time {
         palette::ANIMATED_SOLUTION_NEW
@@ -45,7 +44,9 @@ pub fn animate_solution(
 
     //let Some(last_tile) = solution.last() else{return;};
 
-    let mid_destination = size.get_rect(&LayoutTextItem::FoundWordAnimation, &()).centre();
+    let mid_destination = size
+        .get_rect(&LayoutTextItem::FoundWordAnimation, &())
+        .centre();
     let word_destination_rect = size.get_rect(&layout_word_tile, words);
     let word_destination_centre = word_destination_rect.centre();
 
@@ -54,15 +55,17 @@ pub fn animate_solution(
     let font = asset_server.load(SOLUTIONS_FONT_PATH);
     let font_size = size.font_size::<LayoutGridTile>();
 
-    let scale_speed = LinearSpeed{units_per_second: 1.0 / SECONDS};
-    let translation_speed = LinearSpeed{units_per_second: word_destination_rect.extents.y.abs() * SPEED_MULTIPLIER };
+    let scale_speed = LinearSpeed {
+        units_per_second: 1.0 / SECONDS,
+    };
+    let translation_speed = LinearSpeed {
+        units_per_second: word_destination_rect.extents.y.abs() * SPEED_MULTIPLIER,
+    };
     let speed = (translation_speed, scale_speed);
 
     //let right_push = ((mid_destination.x - ((solution.len() as f32 + 0.5) * font_size * SPACING)) + (size.scaled_width * 0.5)).min(0.0);
 
-
     for (index, (tile, character)) in solution.iter().zip(word.characters.iter()).enumerate() {
-
         let text = Text::from_section(
             character.as_char().to_string(),
             TextStyle {
@@ -73,23 +76,31 @@ pub fn animate_solution(
         );
         let start_position = size.get_rect(&LayoutGridTile(*tile), &()).centre();
 
-
-        let step_two = TransitionStep::<(TransformTranslationLens, TransformScaleLens)>:: new_arc(
-            (word_destination_centre.extend(crate::z_indices::ANIMATED_SOLUTION), Vec3::ZERO),
+        let step_two = TransitionStep::<(TransformTranslationLens, TransformScaleLens)>::new_arc(
+            (
+                word_destination_centre.extend(crate::z_indices::ANIMATED_SOLUTION),
+                Vec3::ZERO,
+            ),
             Some(speed),
             NextStep::None,
         );
 
-        let offset = (solution.len()as f32 / 2.0) - index as f32 ;
-        let destination_one =  mid_destination - Vec2{x: ((offset - 0.5) * font_size * SPACING), y: 0.0 } ;
+        let offset = (solution.len() as f32 / 2.0) - index as f32;
+        let destination_one = mid_destination
+            - Vec2 {
+                x: ((offset - 0.5) * font_size * SPACING),
+                y: 0.0,
+            };
 
         //let speed_one = calculate_speed(&start_position, &destination_one, core::time::Duration::from_secs_f32(2.0));
 
         let step_one = TransitionStep::<(TransformTranslationLens, TransformScaleLens)>::new_arc(
-            (destination_one.extend(crate::z_indices::ANIMATED_SOLUTION), Vec3::ONE * MID_SCALE),
+            (
+                destination_one.extend(crate::z_indices::ANIMATED_SOLUTION),
+                Vec3::ONE * MID_SCALE,
+            ),
             Some(speed),
-
-            NextStep::Step(step_two)
+            NextStep::Step(step_two),
         );
 
         let components = (
@@ -103,18 +114,11 @@ pub fn animate_solution(
                 ),
                 ..Default::default()
             },
-            Transition::new(step_one)
+            Transition::new(step_one),
         );
 
         commands.spawn(components);
     }
-
-
-
-
-
-
-
 }
 
 #[derive(Debug, Component)]
@@ -135,4 +139,3 @@ fn handle_scheduled_for_removal(
         }
     }
 }
-

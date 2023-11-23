@@ -55,7 +55,8 @@ impl LayoutStructureWithFont for LayoutGridTile {
 }
 
 #[derive(Copy, Clone, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct LayoutGridTileIter { //TODO replace with array iter
+pub struct LayoutGridTileIter {
+    //TODO replace with array iter
     inner: u8,
 }
 

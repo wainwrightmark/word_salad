@@ -1,7 +1,10 @@
-use crate::{prelude::{
-    level_group_layout::LevelGroupLayout, levels_menu_layout::LevelsMenuLayoutEntity,
-    main_menu_layout::MainMenuLayoutEntity, *,
-}, completion::TotalCompletion};
+use crate::{
+    completion::TotalCompletion,
+    prelude::{
+        level_group_layout::LevelGroupLayout, levels_menu_layout::LevelsMenuLayoutEntity,
+        main_menu_layout::MainMenuLayoutEntity, *,
+    },
+};
 use bevy::{prelude::*, window::PrimaryWindow};
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
 use strum::EnumIs;
@@ -42,7 +45,6 @@ impl InputType {
         match self {
             InputType::Start(position) => {
                 if !menu_state.is_closed() {
-
                     if let Some(button) = size.try_pick::<LayoutTopBarButton>(*position, &()) {
                         match button {
                             LayoutTopBarButton::MenuBurgerButton => {
@@ -92,12 +94,21 @@ impl InputType {
 
                             match entity {
                                 LevelsMenuLayoutEntity::DailyChallenge => {
-                                    current_level
-                                        .to_level(LevelSequence::DailyChallenge, total_completion, found_words.as_mut(), chosen_state.as_mut());
+                                    current_level.to_level(
+                                        LevelSequence::DailyChallenge,
+                                        total_completion,
+                                        found_words.as_mut(),
+                                        chosen_state.as_mut(),
+                                    );
                                     *menu_state.as_mut() = MenuState::Closed;
                                 }
                                 LevelsMenuLayoutEntity::Tutorial => {
-                                    current_level.to_level(LevelSequence::Tutorial, total_completion, found_words.as_mut(), chosen_state.as_mut());
+                                    current_level.to_level(
+                                        LevelSequence::Tutorial,
+                                        total_completion,
+                                        found_words.as_mut(),
+                                        chosen_state.as_mut(),
+                                    );
                                     *menu_state.as_mut() = MenuState::Closed;
                                 }
                                 LevelsMenuLayoutEntity::AdditionalLevel(level_group) => {
@@ -118,7 +129,12 @@ impl InputType {
                                 return;
                             };
 
-                            current_level.to_level(*sequence, total_completion, found_words.as_mut(), chosen_state.as_mut());
+                            current_level.to_level(
+                                *sequence,
+                                total_completion,
+                                found_words.as_mut(),
+                                chosen_state.as_mut(),
+                            );
                             *menu_state.as_mut() = MenuState::Closed;
                         }
                     }
@@ -161,7 +177,11 @@ impl InputType {
                                     }
                                 }
                                 CongratsLayoutEntity::NextButton => {
-                                    current_level.to_next_level(total_completion, found_words.as_mut(), chosen_state.as_mut());
+                                    current_level.to_next_level(
+                                        total_completion,
+                                        found_words.as_mut(),
+                                        chosen_state.as_mut(),
+                                    );
                                 }
                                 CongratsLayoutEntity::LevelTime => {}
                                 CongratsLayoutEntity::HintsUsed => {}
@@ -225,7 +245,7 @@ fn handle_mouse_input(
     mut found_words: ResMut<FoundWordsState>,
     video_state: Res<VideoResource>,
     video_events: AsyncEventWriter<VideoEvent>,
-    total_completion: Res<TotalCompletion>
+    total_completion: Res<TotalCompletion>,
 ) {
     let input_type = if mouse_input.just_released(MouseButton::Left) {
         let position_option = get_cursor_position(q_windows);
@@ -269,7 +289,7 @@ fn handle_touch_input(
     mut found_words: ResMut<FoundWordsState>,
     video_state: Res<VideoResource>,
     video_events: AsyncEventWriter<VideoEvent>,
-    total_completion: Res<TotalCompletion>
+    total_completion: Res<TotalCompletion>,
 ) {
     for ev in touch_events.read() {
         let input_type = match ev.phase {

@@ -226,7 +226,7 @@ impl WordCombination {
 pub mod tests {
     use super::*;
     use itertools::Itertools;
-    use std::{time::Instant, collections::HashSet};
+    use std::{collections::HashSet, time::Instant};
     use test_case::test_case;
 
     #[test]
@@ -247,13 +247,20 @@ pub mod tests {
 
         //println!("{}", possible_combinations.iter().map(|x| x.display_string(words.as_slice())).sorted().dedup().join("\\n"));
 
-        let actual_set: HashSet<_> = possible_combinations.iter().map(|x| x.display_string(words.as_slice())).collect();
+        let actual_set: HashSet<_> = possible_combinations
+            .iter()
+            .map(|x| x.display_string(words.as_slice()))
+            .collect();
 
-        for combo in expected.split("\n"){
+        for combo in expected.split("\n") {
             assert!(actual_set.contains(combo));
         }
 
-        assert_eq!(actual_set.len(), expected.split("\n").count(), "Number of combinations");
+        assert_eq!(
+            actual_set.len(),
+            expected.split("\n").count(),
+            "Number of combinations"
+        );
     }
 
     #[test_case("monkey\ncow\nant\nantelope", "monkey\ncow\nant\nantelope")]

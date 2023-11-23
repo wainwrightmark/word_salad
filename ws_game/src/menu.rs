@@ -12,7 +12,10 @@ use maveric::{
 };
 use strum::EnumIs;
 
-use ws_core::{palette, LayoutRectangle, LayoutStructure, LayoutStructureWithFont, LayoutStructureWithStaticText};
+use ws_core::{
+    palette, LayoutRectangle, LayoutStructure, LayoutStructureWithFont,
+    LayoutStructureWithStaticText,
+};
 use ws_levels::level_group::LevelGroup;
 
 use crate::prelude::{
@@ -75,7 +78,15 @@ fn add_menu_items<R: MavericRoot, L: LayoutStructureWithFont + LayoutStructureWi
     let font_size = size.font_size::<L>();
     for (index, entity) in L::iter_all(context).enumerate() {
         let rect = size.get_rect(&entity, context);
-        commands.add_child(index as u32, MenuButton { font_size, rect,text: entity.text(context)}, &());
+        commands.add_child(
+            index as u32,
+            MenuButton {
+                font_size,
+                rect,
+                text: entity.text(context),
+            },
+            &(),
+        );
     }
 }
 
@@ -83,7 +94,7 @@ fn add_menu_items<R: MavericRoot, L: LayoutStructureWithFont + LayoutStructureWi
 pub struct MenuButton {
     pub font_size: f32,
     pub rect: LayoutRectangle,
-    pub text: &'static str
+    pub text: &'static str,
 }
 
 impl MavericNode for MenuButton {
@@ -102,7 +113,11 @@ impl MavericNode for MenuButton {
         commands
             .ignore_context()
             .unordered_children_with_node(|node, commands| {
-                let MenuButton { font_size, rect, text } = node;
+                let MenuButton {
+                    font_size,
+                    rect,
+                    text,
+                } = node;
                 let centre = rect.centre();
                 let text_translation = centre.extend(crate::z_indices::MENU_BUTTON_TEXT);
 

@@ -4,7 +4,6 @@ use ws_core::layout::entities::*;
 #[derive(Debug, Clone, PartialEq)]
 pub struct CongratsView;
 
-
 impl MavericNode for CongratsView {
     type Context = ViewContext;
 
@@ -23,11 +22,10 @@ impl MavericNode for CongratsView {
                 let size = &context.3;
                 let font_size = size.font_size::<CongratsLayoutEntity>();
 
-                let hints_used_text = match context.2.hints_used{
+                let hints_used_text = match context.2.hints_used {
                     0 => "No hints used".to_string(),
                     1 => "1 hint used".to_string(),
-                    n => format!("{n} hints used")
-
+                    n => format!("{n} hints used"),
                 };
 
                 commands.add_child(
@@ -92,8 +90,6 @@ impl MavericNode for CongratsView {
                         &(),
                     );
                 }
-
-
             });
     }
 }

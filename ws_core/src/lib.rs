@@ -1,19 +1,19 @@
 pub mod character;
 pub mod colors;
+pub mod designed_level;
+pub mod display_word;
 pub mod finder;
 pub mod layout;
 pub mod word;
-pub mod display_word;
-pub mod designed_level;
 pub use crate::prelude::*;
 
 pub mod prelude {
 
     pub use crate::character::*;
-    pub use crate::word::*;
-    pub use crate::display_word::*;
-    pub use crate::designed_level::*;
     pub use crate::colors::*;
+    pub use crate::designed_level::*;
+    pub use crate::display_word::*;
+    pub use crate::word::*;
 
     pub use arrayvec::ArrayVec;
     pub use geometrid::prelude::HasCenter;

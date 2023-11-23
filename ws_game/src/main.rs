@@ -1,25 +1,24 @@
 pub mod animated_solutions;
 pub mod asynchronous;
-pub mod constants;
 pub mod completion;
-pub mod current_level;
-pub mod grid_input;
-pub mod top_bar_view;
 pub mod congrats_view;
+pub mod constants;
+pub mod current_level;
 pub mod game_grid_view;
+pub mod grid_input;
 pub mod input;
 pub mod level_time;
 pub mod menu;
+pub mod menu_layout;
 pub mod startup;
 pub mod state;
+pub mod top_bar_view;
 pub mod ui_view;
 pub mod video;
 pub mod view;
-pub mod z_indices;
-pub mod menu_layout;
 #[cfg(target_arch = "wasm32")]
 pub mod wasm;
-
+pub mod z_indices;
 
 fn main() {
     crate::startup::go();
@@ -56,8 +55,18 @@ pub mod prelude {
 
     pub use ws_core::Tile;
 
-    pub const fn convert_color(c: BasicColor)-> Color{
-        let BasicColor { red, green, blue, alpha } = c;
-        Color::Rgba { red, green, blue, alpha }
+    pub const fn convert_color(c: BasicColor) -> Color {
+        let BasicColor {
+            red,
+            green,
+            blue,
+            alpha,
+        } = c;
+        Color::Rgba {
+            red,
+            green,
+            blue,
+            alpha,
+        }
     }
 }

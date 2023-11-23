@@ -1,24 +1,14 @@
 use bevy::math::Vec2;
-use strum::{Display, EnumCount, EnumIter, EnumMessage, IntoEnumIterator};
+use strum::{Display, EnumCount, EnumIter, IntoEnumIterator};
 use ws_core::{
     layout::entities::{IDEAL_HEIGHT, IDEAL_WIDTH, TOP_BAR_ICON_SIZE},
-    LayoutStructure, LayoutStructureWithFont, Spacing, LayoutStructureWithStaticText,
+    LayoutStructure, LayoutStructureWithFont, LayoutStructureWithStaticText, Spacing,
 };
 
 use super::{MENU_BUTTON_FONT_SIZE, MENU_BUTTON_HEIGHT, MENU_BUTTON_WIDTH};
 
 #[derive(
-    Debug,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    Hash,
-    PartialOrd,
-    Ord,
-    EnumIter,
-    EnumCount,
-    Display,
+    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter, EnumCount, Display,
 )]
 pub enum MainMenuLayoutEntity {
     Resume = 0,
@@ -59,7 +49,7 @@ impl LayoutStructure for MainMenuLayoutEntity {
             y: TOP_BAR_ICON_SIZE
                 + Spacing::Centre.apply(
                     IDEAL_HEIGHT - TOP_BAR_ICON_SIZE,
-                    MENU_BUTTON_HEIGHT* 1.2,
+                    MENU_BUTTON_HEIGHT * 1.2,
                     Self::COUNT,
                     self.index(),
                 ),
@@ -77,9 +67,8 @@ impl LayoutStructureWithFont for MainMenuLayoutEntity {
     }
 }
 
-
-impl LayoutStructureWithStaticText for MainMenuLayoutEntity{
-    fn text(&self, context: &Self::Context) -> &'static str {
+impl LayoutStructureWithStaticText for MainMenuLayoutEntity {
+    fn text(&self, _context: &Self::Context) -> &'static str {
         match self {
             MainMenuLayoutEntity::Resume => "Resume",
             MainMenuLayoutEntity::ChooseLevel => "Levels",
