@@ -280,10 +280,22 @@ impl MavericNode for WordLine {
             let (solution, visible) = if args.node.solution.len() > 0 {
                 (args.node.solution.as_slice(), !args.node.should_hide)
             } else {
-                (
-                    args.previous.map(|x| x.solution.as_slice()).unwrap_or_default(),
-                    false,
-                )
+                match args.previous {
+                    Some(s) => {
+                        if s.should_hide{
+                            (args.node.solution.as_slice(), false)
+                        }
+                        else{
+                            (s.solution.as_slice(), false)
+                        }
+                    },
+                    None => (args.node.solution.as_slice(), false),
+                }
+
+                // (
+                //     args.previous.map(|x| x.solution.as_slice()).unwrap_or_default(),
+                //     false,
+                // )
             };
 
             let mut builder = PathBuilder::new();
