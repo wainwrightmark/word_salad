@@ -1,6 +1,7 @@
 pub mod animated_solutions;
 pub mod asynchronous;
 pub mod constants;
+pub mod completion;
 pub mod current_level;
 pub mod grid_input;
 pub mod top_bar_view;

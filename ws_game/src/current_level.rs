@@ -3,7 +3,7 @@ use nice_bevy_utils::TrackableResource;
 use serde::{Deserialize, Serialize};
 use ws_levels::level_sequence::LevelSequence;
 
-use crate::prelude::*;
+use crate::{prelude::*, completion::TotalCompletion};
 
 #[derive(Debug, Clone, Resource, PartialEq, Eq, Serialize, Deserialize)]
 pub enum CurrentLevel {
@@ -31,25 +31,23 @@ impl CurrentLevel {
         }
     }
 
-    pub fn to_level(&mut self, found_words: &mut FoundWordsState, sequence: LevelSequence ){
+    pub fn to_level(&mut self, sequence: LevelSequence, total_completion: &TotalCompletion, found_words: &mut FoundWordsState, chosen_state: &mut ChosenState){
+        let level_index = total_completion.next_level(sequence);
         *self = CurrentLevel::Fixed {
-            level_index: 0,
+            level_index,
             sequence
         };
         *found_words = FoundWordsState::new_from_level(&self);
+        *chosen_state = ChosenState::default();
     }
 
-    pub fn to_next_level(&mut self, found_words: &mut FoundWordsState) {
-        let (next_index, sequence) = match *self {
-            CurrentLevel::Fixed { level_index,sequence } => (level_index.saturating_add(1), sequence),
-            CurrentLevel::Custom(_) => (0, LevelSequence::DailyChallenge),
+    pub fn to_next_level(&mut self,total_completion: &TotalCompletion, found_words: &mut FoundWordsState,  chosen_state: &mut ChosenState) {
+        let sequence = match *self {
+            CurrentLevel::Fixed { sequence, .. } => sequence,
+            CurrentLevel::Custom(_) => LevelSequence::DailyChallenge,
         };
 
-        *self = CurrentLevel::Fixed {
-            level_index: next_index,
-            sequence
-        };
-        *found_words = FoundWordsState::new_from_level(&self);
+        self.to_level( sequence, total_completion, found_words,chosen_state);
     }
 }
 

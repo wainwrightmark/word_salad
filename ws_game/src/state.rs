@@ -1,6 +1,6 @@
 use std::num::NonZeroUsize;
 
-use crate::prelude::*;
+use crate::{prelude::*, completion::{TotalCompletion, track_level_completion}};
 use itertools::Itertools;
 use nice_bevy_utils::{CanInitTrackedResource, TrackableResource};
 use serde::{Deserialize, Serialize};
@@ -14,8 +14,10 @@ impl Plugin for StatePlugin {
         app.init_resource::<MenuState>();
         app.init_tracked_resource::<CurrentLevel>();
         app.init_tracked_resource::<FoundWordsState>();
+        app.init_tracked_resource::<TotalCompletion>();
 
         app.add_systems(Update, track_found_words);
+        app.add_systems(Update, track_level_completion);
         // app.add_systems(Update, track_level_change);
     }
 }

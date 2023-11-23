@@ -56,9 +56,9 @@ impl LayoutStructure for LevelsMenuLayoutEntity {
         Vec2 {
             x: (IDEAL_WIDTH - MENU_BUTTON_WIDTH) / 2.,
             y: TOP_BAR_ICON_SIZE
-                + Spacing::SpaceAround.apply(
+                + Spacing::Centre.apply(
                     IDEAL_HEIGHT - TOP_BAR_ICON_SIZE,
-                    MENU_BUTTON_HEIGHT,
+                    MENU_BUTTON_HEIGHT* 1.2,
                     Self::COUNT,
                     self.index(),
                 ),

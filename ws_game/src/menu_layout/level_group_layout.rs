@@ -38,7 +38,7 @@ impl LayoutStructure for LevelGroupLayout {
             y: TOP_BAR_ICON_SIZE
                 + Spacing::Centre.apply(
                     IDEAL_HEIGHT - TOP_BAR_ICON_SIZE,
-                    MENU_BUTTON_HEIGHT,
+                    MENU_BUTTON_HEIGHT * 1.2,
                     context.get_sequences().len(),
                     self.index,
                 ),

@@ -25,6 +25,7 @@ use ws_core::DesignedLevel;
 )]
 
 pub enum LevelSequence {
+    //DO NOT CHANGE THESE NUMBERS - THEY ARE USED FOR COMPLETION TRACKING
     #[strum(message = "Tutorial")]
     Tutorial = 0,
     #[strum(message = "Word Salad")]

@@ -1,7 +1,7 @@
-use crate::prelude::{
+use crate::{prelude::{
     level_group_layout::LevelGroupLayout, levels_menu_layout::LevelsMenuLayoutEntity,
     main_menu_layout::MainMenuLayoutEntity, *,
-};
+}, completion::TotalCompletion};
 use bevy::{prelude::*, window::PrimaryWindow};
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
 use strum::EnumIs;
@@ -34,6 +34,7 @@ impl InputType {
         chosen_state: &mut ResMut<ChosenState>,
         input_state: &mut Local<GridInputState>,
         found_words: &mut ResMut<FoundWordsState>,
+        total_completion: &TotalCompletion,
         video_state: &VideoResource,
         video_events: &AsyncEventWriter<VideoEvent>,
     ) {
@@ -92,11 +93,11 @@ impl InputType {
                             match entity {
                                 LevelsMenuLayoutEntity::DailyChallenge => {
                                     current_level
-                                        .to_level(found_words, LevelSequence::DailyChallenge);
+                                        .to_level(LevelSequence::DailyChallenge, total_completion, found_words.as_mut(), chosen_state.as_mut());
                                     *menu_state.as_mut() = MenuState::Closed;
                                 }
                                 LevelsMenuLayoutEntity::Tutorial => {
-                                    current_level.to_level(found_words, LevelSequence::Tutorial);
+                                    current_level.to_level(LevelSequence::Tutorial, total_completion, found_words.as_mut(), chosen_state.as_mut());
                                     *menu_state.as_mut() = MenuState::Closed;
                                 }
                                 LevelsMenuLayoutEntity::AdditionalLevel(level_group) => {
@@ -117,7 +118,7 @@ impl InputType {
                                 return;
                             };
 
-                            current_level.to_level(found_words, *sequence);
+                            current_level.to_level(*sequence, total_completion, found_words.as_mut(), chosen_state.as_mut());
                             *menu_state.as_mut() = MenuState::Closed;
                         }
                     }
@@ -160,7 +161,7 @@ impl InputType {
                                     }
                                 }
                                 CongratsLayoutEntity::NextButton => {
-                                    current_level.to_next_level(found_words.as_mut());
+                                    current_level.to_next_level(total_completion, found_words.as_mut(), chosen_state.as_mut());
                                 }
                                 CongratsLayoutEntity::LevelTime => {}
                                 CongratsLayoutEntity::HintsUsed => {}
@@ -224,6 +225,7 @@ fn handle_mouse_input(
     mut found_words: ResMut<FoundWordsState>,
     video_state: Res<VideoResource>,
     video_events: AsyncEventWriter<VideoEvent>,
+    total_completion: Res<TotalCompletion>
 ) {
     let input_type = if mouse_input.just_released(MouseButton::Left) {
         let position_option = get_cursor_position(q_windows);
@@ -249,6 +251,7 @@ fn handle_mouse_input(
         &mut chosen_state,
         &mut input_state,
         &mut found_words,
+        &total_completion,
         &video_state,
         &video_events,
     );
@@ -266,6 +269,7 @@ fn handle_touch_input(
     mut found_words: ResMut<FoundWordsState>,
     video_state: Res<VideoResource>,
     video_events: AsyncEventWriter<VideoEvent>,
+    total_completion: Res<TotalCompletion>
 ) {
     for ev in touch_events.read() {
         let input_type = match ev.phase {
@@ -295,6 +299,7 @@ fn handle_touch_input(
             &mut chosen_state,
             &mut input_state,
             &mut found_words,
+            &total_completion,
             &video_state,
             &video_events,
         );
