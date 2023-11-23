@@ -127,20 +127,13 @@ impl MavericNode for WordNode {
             .ignore_context()
             .insert(SpatialBundle::default())
             .finish()
-
-        // commands
-        //     .map_args(|x| x.completion.color())
-        //     .ignore_context()
-        //     .animate_on_node::<BackgroundColorLens>(Some(ScalarSpeed::new(1.0)));
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node(|node, commands| {
             let text = match node.completion {
                 Completion::Unstarted => node.word.hidden_text.clone(),
-                Completion::ManualHinted(hints) => {
-                    node.word.hinted_text(hints)
-                }
+                Completion::ManualHinted(hints) => node.word.hinted_text(hints),
 
                 Completion::Complete => node.word.text.to_string(),
             };
@@ -229,18 +222,20 @@ impl<G: Geometry + PartialEq + Send + Sync + 'static> MavericNode for LyonShapeN
                 .insert_with_node(|node| {
                     (
                         GeometryBuilder::build_as(node),
-                        bevy::sprite::Mesh2dHandle::default(),
                         ShapeBundle::default().material,
-                        VisibilityBundle::default(),
-                        GlobalTransform::default(),
                     )
                 })
                 .finish()
         });
-
+        commands.scope(|c| c.map_args(|x| &x.transform).insert_bundle().finish());
         commands.scope(|c| c.map_args(|x| &x.fill).insert_bundle().finish());
         commands.scope(|c| c.map_args(|x| &x.stroke).insert_bundle().finish());
-        commands.scope(|c| c.map_args(|x| &x.transform).insert_bundle().finish());
+
+        commands.ignore_context().ignore_node().insert((
+            bevy::sprite::Mesh2dHandle::default(),
+            VisibilityBundle::default(),
+            GlobalTransform::default(),
+        ));
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
