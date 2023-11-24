@@ -65,13 +65,13 @@ impl MavericNode for Menu {
                 match context.5.as_ref() {
                     MenuState::Closed => {}
                     MenuState::ShowMainMenu => {
-                        add_menu_items::<R, MainMenuLayoutEntity>(&(), commands, size);
+                        add_menu_items::<R, MainMenuLayoutEntity>(&(), commands, size, 100);
                     }
                     MenuState::ChooseLevelsPage => {
-                        add_menu_items::<R, LevelsMenuLayoutEntity>(&(), commands, size);
+                        add_menu_items::<R, LevelsMenuLayoutEntity>(&(), commands, size, 200);
                     }
                     MenuState::LevelGroupPage(group) => {
-                        add_menu_items::<R, LevelGroupLayoutEntity>(&group, commands, size);
+                        add_menu_items::<R, LevelGroupLayoutEntity>(&group, commands, size, 300);
                     }
                 }
             });
@@ -86,12 +86,13 @@ fn add_menu_items<
 
     commands: &mut UnorderedChildCommands<R>,
     size: &Size,
+    key_offset: u32
 ) {
     let font_size = size.font_size::<L>();
     for (index, entity) in L::iter_all(context).enumerate() {
         let rect = size.get_rect(&entity, context);
         commands.add_child(
-            index as u32,
+            (index as u32) + key_offset,
             ButtonNode2d {
                 font_size,
                 rect,

@@ -1,5 +1,7 @@
+use bevy::ecs::system::EntityCommand;
 use bevy::prelude::*;
 
+use maveric::transition::speed::{ScalarSpeed, LinearSpeed};
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
 use ws_core::layout::entities::{CongratsLayoutEntity, LayoutTopBarButton, LayoutWordTile};
 use ws_levels::level_sequence::LevelSequence;
@@ -16,6 +18,7 @@ impl Plugin for ButtonPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(PressedButton::default());
         app.add_systems(Update, track_pressed_button);
+        app.register_transition::<TransformScaleLens>();
     }
 }
 
@@ -67,9 +70,10 @@ impl From<CongratsLayoutEntity> for ButtonInteraction {
 }
 
 fn track_pressed_button(
+    mut commands: Commands,
     pressed_button: Res<PressedButton>,
     mut prev: Local<PressedButton>,
-    mut query: Query<(&ButtonInteraction, &mut Transform)>,
+    mut query: Query<(Entity, &ButtonInteraction)>,
 ) {
     if !pressed_button.is_changed() {
         return;
@@ -78,14 +82,33 @@ fn track_pressed_button(
     *prev = pressed_button.clone();
 
     if let Some(interaction) = previous.interaction {
-        if let Some((_, mut transform)) = query.iter_mut().filter(|x| x.0 == &interaction).next() {
-            transform.scale = Vec3::ONE;
+        if let Some((entity, _)) = query.iter_mut().filter(|x| x.1 == &interaction).next() {
+            commands
+                .entity(entity)
+                .insert(Transition::<TransformScaleLens>::new(
+                    TransitionStep::new_arc(
+                        Vec3::ONE * 1.00,
+                        Some(LinearSpeed {
+                            units_per_second: 0.1,
+                        }),
+                        NextStep::None
+                    )));
+
         }
     }
 
     if let Some(interaction) = pressed_button.as_ref().interaction {
-        if let Some((_, mut transform)) = query.iter_mut().filter(|x| x.0 == &interaction).next() {
-            transform.scale = Vec3::ONE * 1.1;
+        if let Some((entity, _)) = query.iter_mut().filter(|x| x.1 == &interaction).next() {
+            commands
+                .entity(entity)
+                .insert(Transition::<TransformScaleLens>::new(
+                    TransitionStep::new_arc(
+                        Vec3::ONE * 0.95,
+                        Some(LinearSpeed {
+                            units_per_second: 0.1,
+                        }),
+                        NextStep::None
+                    )));
         }
     }
 }

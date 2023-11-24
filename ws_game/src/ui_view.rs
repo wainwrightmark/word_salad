@@ -1,6 +1,7 @@
 use crate::prelude::*;
 use maveric::transition::speed::ScalarSpeed;
 use maveric::widgets::text2d_node::Text2DNode;
+use maveric::with_bundle::WithBundle;
 use ws_core::layout::entities::*;
 use ws_core::prelude::*;
 
@@ -188,12 +189,16 @@ impl MavericNode for WordNode {
                 .unwrap_or(1.0);
             commands.add_child(
                 "shape",
-                LyonShapeNode {
-                    transform: Transform::from_translation(shape_translation),
-                    fill: Fill::color(convert_color(palette::WORD_BACKGROUND_UNSTARTED)),
-                    stroke: Stroke::color(convert_color(palette::WORD_BORDER)),
-                    shape: rectangle,
+                WithBundle{
+                    node: LyonShapeNode {
+                        transform: Transform::from_translation(shape_translation),
+                        fill: Fill::color(convert_color(palette::WORD_BACKGROUND_UNSTARTED)),
+                        stroke: Stroke::color(convert_color(palette::WORD_BORDER)),
+                        shape: rectangle,
+                    },
+                    bundle: (ButtonInteraction::WordButton(node.tile))
                 }
+
                 .with_transition_to::<FillColorLens>(
                     *fill_color,
                     ScalarSpeed { amount_per_second },
