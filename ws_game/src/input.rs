@@ -1,7 +1,7 @@
 use crate::{
     completion::TotalCompletion,
     prelude::{
-        level_group_layout::LevelGroupLayout, levels_menu_layout::LevelsMenuLayoutEntity,
+        level_group_layout::LevelGroupLayoutEntity, levels_menu_layout::LevelsMenuLayoutEntity,
         main_menu_layout::MainMenuLayoutEntity, *,
     },
 };
@@ -9,13 +9,14 @@ use bevy::{prelude::*, window::PrimaryWindow};
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
 use strum::EnumIs;
 use ws_core::layout::entities::*;
-use ws_levels::level_sequence::LevelSequence;
 pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, handle_mouse_input);
         app.add_systems(Update, handle_touch_input);
+
+        app.add_plugins(ButtonPlugin);
     }
 }
 
@@ -25,6 +26,93 @@ pub enum InputType {
     Start(Vec2),
     Move(Vec2),
     End(Option<Vec2>),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, EnumIs)]
+pub enum InteractionEntity {
+    Button(ButtonInteraction),
+    Tile(Tile),
+}
+
+impl InteractionEntity {
+    pub fn try_get_button<T: LayoutStructure + Into<ButtonInteraction>>(
+        position: &Vec2,
+        size: &Size,
+        context: &T::Context,
+    ) -> Option<Self> {
+        return size
+            .try_pick::<T>(*position, context)
+            .map(|x| InteractionEntity::Button(x.into()));
+    }
+
+    pub fn try_find(
+        position: &Vec2,
+        size: &Size,
+        menu_state: &MenuState,
+        current_level: &CurrentLevel,
+        is_level_complete: bool,
+        grid_tolerance: Option<f32>,
+    ) -> Option<Self> {
+        if size
+            .get_rect(&GameLayoutEntity::TopBar, &())
+            .contains(*position)
+        {
+            return Self::try_get_button::<LayoutTopBarButton>(position, size, &());
+        }
+
+        match menu_state {
+            MenuState::Closed => {
+                if is_level_complete {
+                    return Self::try_get_button::<CongratsLayoutEntity>(position, size, &());
+                }
+
+                let Some(layout_entity) = size.try_pick::<GameLayoutEntity>(*position, &()) else {
+                    return None;
+                };
+                match layout_entity {
+                    GameLayoutEntity::TopBar => {
+                        return Self::try_get_button::<LayoutTopBarButton>(position, size, &());
+                    }
+                    GameLayoutEntity::TextArea => {
+                        return None;
+                    }
+                    GameLayoutEntity::Grid => match grid_tolerance {
+                        Some(tolerance) => {
+                            return size
+                                .try_pick_with_tolerance::<LayoutGridTile>(
+                                    *position,
+                                    tolerance,
+                                    &(),
+                                )
+                                .map(|t| Self::Tile(t.0))
+                        }
+                        None => {
+                            return size
+                                .try_pick::<LayoutGridTile>(*position, &())
+                                .map(|t| Self::Tile(t.0))
+                        }
+                    },
+                    GameLayoutEntity::WordList => {
+                        return Self::try_get_button::<LayoutWordTile>(
+                            position,
+                            size,
+                            &current_level.level().words,
+                        );
+                    }
+                }
+            }
+
+            MenuState::ShowMainMenu => {
+                return Self::try_get_button::<MainMenuLayoutEntity>(position, size, &());
+            }
+            MenuState::ChooseLevelsPage => {
+                return Self::try_get_button::<LevelsMenuLayoutEntity>(position, size, &());
+            }
+            MenuState::LevelGroupPage(group) => {
+                return Self::try_get_button::<LevelGroupLayoutEntity>(position, size, &group);
+            }
+        }
+    }
 }
 
 impl InputType {
@@ -38,198 +126,104 @@ impl InputType {
         input_state: &mut Local<GridInputState>,
         found_words: &mut ResMut<FoundWordsState>,
         total_completion: &TotalCompletion,
+        pressed_button: &mut ResMut<PressedButton>,
         video_state: &VideoResource,
         video_events: &AsyncEventWriter<VideoEvent>,
     ) {
-        let level_complete = found_words.is_level_complete();
-        match self {
+        let is_level_complete = found_words.is_level_complete();
+
+        let button_interaction: Option<ButtonInteraction> = match self {
             InputType::Start(position) => {
-                if !menu_state.is_closed() {
-                    if let Some(button) = size.try_pick::<LayoutTopBarButton>(*position, &()) {
-                        match button {
-                            LayoutTopBarButton::MenuBurgerButton => {
-                                *menu_state.as_mut() = MenuState::ShowMainMenu;
-                            }
-                            LayoutTopBarButton::TimeCounter => {}
-                            LayoutTopBarButton::HintCounter => {}
-                        }
-                        return;
-                    }
-                    match menu_state.as_ref() {
-                        MenuState::Closed => {}
-                        MenuState::ShowMainMenu => {
-                            let Some(entity) =
-                                size.try_pick::<MainMenuLayoutEntity>(*position, &())
-                            else {
-                                return;
-                            };
-
-                            match entity {
-                                MainMenuLayoutEntity::Resume => {
-                                    *menu_state.as_mut() = MenuState::Closed;
-                                }
-                                MainMenuLayoutEntity::ChooseLevel => {
-                                    *menu_state.as_mut() = MenuState::ChooseLevelsPage;
-                                }
-                                MainMenuLayoutEntity::ResetLevel => {
-                                    current_level.set_changed();
-                                    *found_words.as_mut() =
-                                        FoundWordsState::new_from_level(&current_level);
-                                    *chosen_state.as_mut() = ChosenState::default();
-
-                                    *menu_state.as_mut() = MenuState::Closed;
-                                }
-                                MainMenuLayoutEntity::Video => {
-                                    video_state.toggle_video_streaming(video_events.clone());
-                                    *menu_state.as_mut() = MenuState::Closed;
-                                }
-                            }
-                        }
-                        MenuState::ChooseLevelsPage => {
-                            let Some(entity) =
-                                size.try_pick::<LevelsMenuLayoutEntity>(*position, &())
-                            else {
-                                return;
-                            };
-
-                            match entity {
-                                LevelsMenuLayoutEntity::DailyChallenge => {
-                                    current_level.to_level(
-                                        LevelSequence::DailyChallenge,
-                                        total_completion,
-                                        found_words.as_mut(),
-                                        chosen_state.as_mut(),
-                                    );
-                                    *menu_state.as_mut() = MenuState::Closed;
-                                }
-                                LevelsMenuLayoutEntity::Tutorial => {
-                                    current_level.to_level(
-                                        LevelSequence::Tutorial,
-                                        total_completion,
-                                        found_words.as_mut(),
-                                        chosen_state.as_mut(),
-                                    );
-                                    *menu_state.as_mut() = MenuState::Closed;
-                                }
-                                LevelsMenuLayoutEntity::AdditionalLevel(level_group) => {
-                                    *menu_state.as_mut() = MenuState::LevelGroupPage(level_group);
-                                }
-                                LevelsMenuLayoutEntity::Back => {
-                                    *menu_state.as_mut() = MenuState::ShowMainMenu;
-                                }
-                            }
-                        }
-                        MenuState::LevelGroupPage(group) => {
-                            let Some(entity) = size.try_pick::<LevelGroupLayout>(*position, &group)
-                            else {
-                                return;
-                            };
-
-                            let Some(sequence) = group.get_sequences().get(entity.index) else {
-                                return;
-                            };
-
-                            current_level.to_level(
-                                *sequence,
-                                total_completion,
-                                found_words.as_mut(),
-                                chosen_state.as_mut(),
+                if let Some(interaction) = InteractionEntity::try_find(
+                    position,
+                    size,
+                    menu_state,
+                    current_level,
+                    is_level_complete,
+                    None,
+                ) {
+                    match interaction {
+                        InteractionEntity::Button(button) => Some(button),
+                        InteractionEntity::Tile(tile) => {
+                            input_state.handle_input_start(
+                                chosen_state,
+                                tile,
+                                &current_level.level().grid,
+                                found_words,
                             );
-                            *menu_state.as_mut() = MenuState::Closed;
+                            None
                         }
                     }
-                }
-
-                let Some(layout_entity) = size.try_pick::<GameLayoutEntity>(*position, &()) else {
-                    return;
-                };
-
-                match layout_entity {
-                    GameLayoutEntity::TopBar => {
-                        let Some(button) = size.try_pick::<LayoutTopBarButton>(*position, &())
-                        else {
-                            return;
-                        };
-                        match button {
-                            LayoutTopBarButton::MenuBurgerButton => {
-                                *menu_state.as_mut() = MenuState::ShowMainMenu;
-                            }
-                            LayoutTopBarButton::TimeCounter => {}
-                            LayoutTopBarButton::HintCounter => {
-                                found_words.try_hint(current_level);
-                            }
-                        }
-                    }
-                    GameLayoutEntity::TextArea => {}
-                    GameLayoutEntity::Grid => {
-                        if level_complete {
-                            let Some(entity) =
-                                size.try_pick::<CongratsLayoutEntity>(*position, &())
-                            else {
-                                return;
-                            };
-
-                            match entity {
-                                CongratsLayoutEntity::ShareButton => {
-                                    #[cfg(target_arch = "wasm32")]
-                                    {
-                                        crate::wasm::share();
-                                    }
-                                }
-                                CongratsLayoutEntity::NextButton => {
-                                    current_level.to_next_level(
-                                        total_completion,
-                                        found_words.as_mut(),
-                                        chosen_state.as_mut(),
-                                    );
-                                }
-                                CongratsLayoutEntity::LevelTime => {}
-                                CongratsLayoutEntity::HintsUsed => {}
-                            }
-                        } else {
-                            let Some(tile) = size.try_pick::<LayoutGridTile>(*position, &()) else {
-                                return;
-                            };
-                            let grid = &current_level.level().grid;
-                            input_state.handle_input_start(chosen_state, tile.0, grid, found_words);
-                        }
-                    }
-                    GameLayoutEntity::WordList => {
-                        let words = &current_level.level().words;
-                        let Some(word) = size.try_pick::<LayoutWordTile>(*position, words) else {
-                            return;
-                        };
-
-                        found_words.try_hint_word(current_level, word.0);
-                    }
+                } else {
+                    None
                 }
             }
             InputType::Move(position) => {
-                if level_complete {
-                    return;
-                };
-                let Some(tile) =
-                    size.try_pick_with_tolerance::<LayoutGridTile>(*position, MOVE_TOLERANCE, &())
-                else {
-                    return;
-                };
-                let grid = &current_level.level().grid;
-                input_state.handle_input_move(chosen_state, tile.0, grid, found_words);
-            }
-            InputType::End(position) => match position {
-                Some(position) => {
-                    if level_complete {
-                        return;
-                    };
-                    if let Some(tile) = size.try_pick::<LayoutGridTile>(*position, &()) {
-                        input_state.handle_input_end(chosen_state, tile.0);
-                    } else {
-                        input_state.handle_input_end_no_location();
+                if let Some(interaction) = InteractionEntity::try_find(
+                    position,
+                    size,
+                    menu_state,
+                    current_level,
+                    is_level_complete,
+                    Some(MOVE_TOLERANCE),
+                ) {
+                    match interaction {
+                        InteractionEntity::Button(button) => Some(button),
+                        InteractionEntity::Tile(tile) => {
+                            input_state.handle_input_move(
+                                chosen_state,
+                                tile,
+                                &current_level.level().grid,
+                                found_words,
+                            );
+                            None
+                        }
                     }
+                } else {
+                    None
                 }
-                None => input_state.handle_input_end_no_location(),
-            },
-        }
+            }
+            InputType::End(Some(position)) => {
+                if let Some(interaction) = InteractionEntity::try_find(
+                    position,
+                    size,
+                    menu_state,
+                    current_level,
+                    is_level_complete,
+                    None,
+                ) {
+                    match interaction {
+                        InteractionEntity::Button(button) => {
+                            button.on_pressed(
+                                current_level,
+                                menu_state,
+                                chosen_state,
+                                found_words,
+                                total_completion,
+                                video_state,
+                                video_events,
+                            );
+
+                            input_state.handle_input_end_no_location();
+                            None
+                        }
+                        InteractionEntity::Tile(tile) => {
+                            input_state.handle_input_end(chosen_state, tile);
+                            None
+                        }
+                    }
+                } else {
+                    input_state.handle_input_end_no_location();
+                    None
+                }
+            }
+            InputType::End(None) => {
+                input_state.handle_input_end_no_location();
+                None
+            }
+        };
+
+        pressed_button.interaction = button_interaction;
     }
 }
 
@@ -243,6 +237,7 @@ fn handle_mouse_input(
     mut chosen_state: ResMut<ChosenState>,
     mut input_state: Local<GridInputState>,
     mut found_words: ResMut<FoundWordsState>,
+    mut pressed_button: ResMut<PressedButton>,
     video_state: Res<VideoResource>,
     video_events: AsyncEventWriter<VideoEvent>,
     total_completion: Res<TotalCompletion>,
@@ -272,6 +267,7 @@ fn handle_mouse_input(
         &mut input_state,
         &mut found_words,
         &total_completion,
+        &mut pressed_button,
         &video_state,
         &video_events,
     );
@@ -287,6 +283,7 @@ fn handle_touch_input(
     mut chosen_state: ResMut<ChosenState>,
     mut input_state: Local<GridInputState>,
     mut found_words: ResMut<FoundWordsState>,
+    mut pressed_button: ResMut<PressedButton>,
     video_state: Res<VideoResource>,
     video_events: AsyncEventWriter<VideoEvent>,
     total_completion: Res<TotalCompletion>,
@@ -320,6 +317,7 @@ fn handle_touch_input(
             &mut input_state,
             &mut found_words,
             &total_completion,
+            &mut pressed_button,
             &video_state,
             &video_events,
         );

@@ -5,7 +5,7 @@ use maveric::{
     transition::speed::{LinearSpeed, ScalarSpeed},
     widgets::text2d_node::Text2DNode,
 };
-use serde::de;
+
 use std::time::Duration;
 use ws_core::layout::entities::*;
 use ws_core::prelude::*;
@@ -306,8 +306,6 @@ pub struct WordLine {
     pub close_to_solution: bool,
 }
 
-
-
 impl MavericNode for WordLine {
     type Context = Size;
 
@@ -350,7 +348,8 @@ impl MavericNode for WordLine {
                 }
             }
 
-            let mut default_width = size.get_rect(&GameLayoutEntity::Grid, &()).extents.x * 50. / 320.;
+            let mut default_width =
+                size.get_rect(&GameLayoutEntity::Grid, &()).extents.x * 50. / 320.;
 
             if !visible {
                 //info!("Word line not visible");

@@ -18,7 +18,9 @@ impl MavericRootChildren for ViewRoot {
 
             commands.add_child("cells", GridTiles { level_complete }, context);
 
-            let close_to_solution = context.0.is_close_to_a_solution(context.1.level(), context.2.as_ref());
+            let close_to_solution = context
+                .0
+                .is_close_to_a_solution(context.1.level(), context.2.as_ref());
             commands.add_child(
                 "word_line",
                 WordLine {

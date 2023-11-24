@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use strum::{Display, EnumCount, EnumIs, EnumIter, EnumMessage};
+use strum::{Display, EnumCount, EnumIs, EnumIter};
 
 use crate::level_sequence::LevelSequence;
 
@@ -11,7 +11,6 @@ use crate::level_sequence::LevelSequence;
     EnumCount,
     EnumIter,
     EnumIs,
-    EnumMessage,
     PartialEq,
     Eq,
     PartialOrd,
@@ -39,6 +38,12 @@ impl LevelGroup {
             }
             LevelGroup::Science => &[LevelSequence::Scientists, LevelSequence::Insects],
         }
+    }
+
+    pub fn get_level_sequence(&self, index: usize) -> LevelSequence {
+        let s = self.get_sequences();
+        let index = index % s.len();
+        s[index]
     }
 
     pub fn name(&self) -> &'static str {

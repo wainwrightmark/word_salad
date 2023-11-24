@@ -1,27 +1,22 @@
 use bevy::prelude::*;
-use bevy_prototype_lyon::{
-    draw::{Fill, Stroke},
-    shapes,
-};
+
 use maveric::{
-    helpers::{ChildCommands, TextNode, UnorderedChildCommands},
+    helpers::{ChildCommands, UnorderedChildCommands},
     node::MavericNode,
-    node_context::NoContext,
     root::MavericRoot,
-    widgets::text2d_node::Text2DNode,
 };
 use strum::EnumIs;
 
 use ws_core::{
-    palette, LayoutRectangle, LayoutStructure, LayoutStructureWithFont,
+    LayoutStructure, LayoutStructureWithFont,
     LayoutStructureWithStaticText,
 };
 use ws_levels::level_group::LevelGroup;
 
 use crate::prelude::{
-    convert_color, level_group_layout::LevelGroupLayout,
+    level_group_layout::LevelGroupLayoutEntity,
     levels_menu_layout::LevelsMenuLayoutEntity, main_menu_layout::MainMenuLayoutEntity,
-    LyonShapeNode, SaladWindowSize, Size, ViewContext, MENU_BUTTON_FONT_PATH,
+    ButtonInteraction, ButtonNode2d, SaladWindowSize, Size, ViewContext,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Resource, EnumIs)]
@@ -31,6 +26,20 @@ pub enum MenuState {
     ShowMainMenu,
     ChooseLevelsPage,
     LevelGroupPage(LevelGroup),
+}
+
+impl MenuState {
+    pub fn toggle(&mut self) {
+        *self = if self.is_closed() {
+            MenuState::ShowMainMenu
+        } else {
+            MenuState::Closed
+        }
+    }
+
+    pub fn close(&mut self) {
+        *self = MenuState::Closed
+    }
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -62,14 +71,17 @@ impl MavericNode for Menu {
                         add_menu_items::<R, LevelsMenuLayoutEntity>(&(), commands, size);
                     }
                     MenuState::LevelGroupPage(group) => {
-                        add_menu_items::<R, LevelGroupLayout>(&group, commands, size);
+                        add_menu_items::<R, LevelGroupLayoutEntity>(&group, commands, size);
                     }
                 }
             });
     }
 }
 
-fn add_menu_items<R: MavericRoot, L: LayoutStructureWithFont + LayoutStructureWithStaticText>(
+fn add_menu_items<
+    R: MavericRoot,
+    L: LayoutStructureWithFont + LayoutStructureWithStaticText + Into<ButtonInteraction>,
+>(
     context: &<L as LayoutStructure>::Context,
 
     commands: &mut UnorderedChildCommands<R>,
@@ -80,93 +92,13 @@ fn add_menu_items<R: MavericRoot, L: LayoutStructureWithFont + LayoutStructureWi
         let rect = size.get_rect(&entity, context);
         commands.add_child(
             index as u32,
-            MenuButton {
+            ButtonNode2d {
                 font_size,
                 rect,
                 text: entity.text(context),
+                interaction: entity.into(),
             },
             &(),
         );
-    }
-}
-
-#[derive(Debug, PartialEq)]
-pub struct MenuButton {
-    pub font_size: f32,
-    pub rect: LayoutRectangle,
-    pub text: &'static str,
-}
-
-impl MavericNode for MenuButton {
-    type Context = NoContext;
-
-    fn set_components(commands: maveric::prelude::SetComponentCommands<Self, Self::Context>) {
-        commands
-            .ignore_node()
-            .ignore_context()
-            .insert(SpatialBundle::default());
-    }
-
-    fn set_children<R: MavericRoot>(
-        commands: maveric::prelude::SetChildrenCommands<Self, Self::Context, R>,
-    ) {
-        commands
-            .ignore_context()
-            .unordered_children_with_node(|node, commands| {
-                let MenuButton {
-                    font_size,
-                    rect,
-                    text,
-                } = node;
-                let centre = rect.centre();
-                let text_translation = centre.extend(crate::z_indices::MENU_BUTTON_TEXT);
-
-                commands.add_child(
-                    "text",
-                    Text2DNode {
-                        text: TextNode {
-                            text: *text,
-                            font_size: *font_size,
-                            color: convert_color(palette::MENU_BUTTON_TEXT),
-                            font: MENU_BUTTON_FONT_PATH,
-                            alignment: TextAlignment::Center,
-                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                        },
-                        transform: Transform::from_translation(text_translation),
-                    },
-                    &(),
-                );
-
-                let shape_translation = centre.extend(crate::z_indices::MENU_BUTTON_BACKGROUND);
-
-                let e = rect.extents * 0.5;
-
-                let rectangle = shapes::RoundedPolygon {
-                    points: vec![
-                        e,
-                        Vec2 {
-                            x: e.x,
-                            y: e.y * -1.0,
-                        },
-                        e * -1.0,
-                        Vec2 {
-                            x: e.x * -1.0,
-                            y: e.y,
-                        },
-                    ],
-                    radius: e.y.abs() * 0.5,
-                    closed: true,
-                };
-                commands.add_child(
-                    "shape",
-                    LyonShapeNode {
-                        transform: Transform::from_translation(shape_translation),
-                        fill: Fill::color(convert_color(palette::MENU_BUTTON_FILL)),
-                        stroke: Stroke::color(convert_color(palette::MENU_BUTTON_STROKE)),
-                        shape: rectangle,
-                    },
-                    &(),
-                );
-            })
     }
 }

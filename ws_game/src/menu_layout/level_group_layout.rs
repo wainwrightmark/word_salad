@@ -7,11 +7,11 @@ use ws_core::{
 use ws_levels::level_group::LevelGroup;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct LevelGroupLayout {
+pub struct LevelGroupLayoutEntity {
     pub index: usize,
 }
 
-impl LayoutStructure for LevelGroupLayout {
+impl LayoutStructure for LevelGroupLayoutEntity {
     type Context = LevelGroup;
 
     type Iterator = LevelGroupLayoutIter;
@@ -53,7 +53,7 @@ impl LayoutStructure for LevelGroupLayout {
     }
 }
 
-impl LayoutStructureWithFont for LevelGroupLayout {
+impl LayoutStructureWithFont for LevelGroupLayoutEntity {
     fn font_size() -> f32 {
         MENU_BUTTON_FONT_SIZE
     }
@@ -65,13 +65,13 @@ pub struct LevelGroupLayoutIter {
 }
 
 impl Iterator for LevelGroupLayoutIter {
-    type Item = LevelGroupLayout;
+    type Item = LevelGroupLayoutEntity;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.next_index >= self.group.get_sequences().len() {
             return None;
         } else {
-            let next = LevelGroupLayout {
+            let next = LevelGroupLayoutEntity {
                 index: self.next_index,
             };
             self.next_index += 1;
@@ -80,7 +80,7 @@ impl Iterator for LevelGroupLayoutIter {
     }
 }
 
-impl LayoutStructureWithStaticText for LevelGroupLayout {
+impl LayoutStructureWithStaticText for LevelGroupLayoutEntity {
     fn text(&self, context: &Self::Context) -> &'static str {
         context
             .get_sequences()
