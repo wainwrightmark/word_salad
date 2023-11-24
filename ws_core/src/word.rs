@@ -163,6 +163,10 @@ impl FromStr for Word {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let characters = normalize_characters_array(s)?;
 
+        if characters.len() <=3 {
+            return Err("Word has 3 or fewer characters");
+        }
+
         Ok(Self {
             characters,
             text: s.to_string(),
@@ -223,23 +227,30 @@ mod tests {
     #[test]
     pub fn test_find_paths() {
         // spellchecker:disable-next-line
-        let grid = try_make_grid("UOEVFRNEHITSNTFY").expect("Should be able to make grid");
-        let one = Word::from_str("one").expect("Should be able to make word");
+        let grid = try_make_grid("SGOPELWODEMKVEEU").expect("Should be able to make grid");
+        // spellchecker:disable-next-line
+        let pokemon = Word::from_str("eevee").expect("Should be able to make word");
 
-        let paths = one.find_solutions(&grid);
+        let paths = pokemon.find_solutions(&grid);
+
+        let expected_0: ArrayVec<Tile, 16> = arrayvec::ArrayVec::from_iter([
+            Tile::new_const::<0, 1>(),
+            Tile::new_const::<1, 2>(),
+            Tile::new_const::<0, 3>(),
+            Tile::new_const::<1, 3>(),
+            Tile::new_const::<2, 3>(),
+        ]);
+
+
 
         assert_eq!(2, paths.len());
 
-        let expected_0: ArrayVec<Tile, 16> = arrayvec::ArrayVec::from_iter([
-            Tile::new_const::<1, 0>(),
-            Tile::new_const::<2, 1>(),
-            Tile::new_const::<2, 0>(),
-        ]);
-
         let expected_1: ArrayVec<Tile, 16> = arrayvec::ArrayVec::from_iter([
-            Tile::new_const::<1, 0>(),
-            Tile::new_const::<2, 1>(),
-            Tile::new_const::<3, 1>(),
+            Tile::new_const::<2, 3>(),
+            Tile::new_const::<1, 3>(),
+            Tile::new_const::<0, 3>(),
+            Tile::new_const::<1, 2>(),
+            Tile::new_const::<0, 1>(),
         ]);
 
         assert_eq!(expected_0, paths[0]);

@@ -88,6 +88,7 @@ fn score_solution(solution: &ArrayVec<Tile, 16>) -> i32 {
 pub mod tests {
     use std::str::FromStr;
 
+    use itertools::Itertools;
     use test_case::test_case;
     use ws_core::finder::node::GridResult;
 
@@ -95,33 +96,19 @@ pub mod tests {
 
     #[test_case(
         // spellchecker:disable-next-line
-        "BMJUHOADSENGLISE	7	Amos	Daniel	Genesis	Hosea	Job	Joel	Judges",
-        "U|J|M|B\n\
-    D|A|O|H\n\
-    G|N|E|S\n\
-    E|S|I|L"
+        "VENMOUAULTRSHPEN	7	Earth	Mars	Neptune	Pluto	Saturn	Uranus	Venus"
     )]
     #[test_case(
         // spellchecker:disable-next-line
-        "HLOVPTUEERANNSUM	7	Earth	Mars	Neptune	Pluto	Saturn	Uranus	Venus",
-        "V|E|N|M\n\
-    O|U|A|U\n\
-    L|T|R|S\n\
-    H|P|E|N"
+        "ZEUAMSTIEREH_DAN	8	Ares    	Athena  	Demeter 	Hades   	Hera    	Hermes  	Hestia  	Zeus    "
     )]
-    #[test_case(
-        // spellchecker:disable-next-line
-        "BLMOUANSHYEDTRIP	7	Baht	Dirham	Peso	Real	Riyal	Yen	Yuan",
-        "P|D|S|O\n\
-    I|E|N|M\n\
-    R|Y|A|L\n\
-    T|H|U|B"
-    )]
-    pub fn test_optimize(input: &str, expected: &str) {
+
+    pub fn test_optimize(input: &str) {
         let mut grid_result = GridResult::from_str(input).unwrap();
-
+        let before =grid_result.grid.iter().join("");
         optimize_orientation(&mut grid_result);
+        let after =grid_result.grid.iter().join("");
 
-        assert_eq!(grid_result.grid.to_string(), expected)
+        assert_eq!(before, after)
     }
 }

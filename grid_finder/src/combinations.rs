@@ -231,9 +231,9 @@ pub mod tests {
 
     #[test]
     pub fn test_possible_combinations() {
-        let input = "monkey\ncow\nant\nantelope";
+        let input = "hydrogen\nhelium\nlithium\nboron\ncarbon";
 
-        let now = Instant::now();
+        let _now = Instant::now();
 
         let words = make_words_vec_from_file(input);
         let word_letters: Vec<LetterCounts> = words.iter().map(|x| x.counts).collect_vec();
@@ -241,9 +241,9 @@ pub mod tests {
         let possible_combinations: Vec<WordCombination> =
             get_combinations(word_letters.as_slice(), 16);
 
-        println!("{:?}", now.elapsed());
+        //println!("{:?}", _now.elapsed());
 
-        let expected = "ant\nant, antelope\nant, antelope, cow\nant, antelope, cow, monkey\nant, antelope, monkey\nant, cow\nant, cow, monkey\nant, monkey";
+        let expected = "boron\nboron, carbon\nboron, carbon, helium\nboron, carbon, helium, hydrogen\nboron, carbon, helium, lithium\nboron, carbon, hydrogen\nboron, carbon, lithium\nboron, helium\nboron, helium, hydrogen\nboron, helium, hydrogen, lithium\nboron, helium, lithium\nboron, hydrogen\nboron, hydrogen, lithium\nboron, lithium";
 
         //println!("{}", possible_combinations.iter().map(|x| x.display_string(words.as_slice())).sorted().dedup().join("\\n"));
 

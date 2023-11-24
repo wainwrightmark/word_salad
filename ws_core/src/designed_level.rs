@@ -41,11 +41,11 @@ impl DesignedLevel {
         let grid = try_make_grid(chars)
             .ok_or_else(|| format!("Level '{line}' should be able to make grid"))?;
 
-        let words = iter
-            .map(|x| x.trim().to_string())
-            .flat_map(|x| DisplayWord::from_str(x.as_str()).ok())
-            .sorted_by_cached_key(|x| x.text.to_ascii_lowercase())
-            .collect();
+        let mut words: Vec<DisplayWord> = iter
+            .map(|x| DisplayWord::from_str(x.trim()).map_err(|e| format!("Word '{x}' is not valid {e}")) )
+            .try_collect()?;
+
+        words.sort_by_cached_key(|x| x.text.to_ascii_lowercase());
 
         Ok(Self {
             name: name.to_string(),

@@ -119,6 +119,10 @@ impl FromStr for DisplayWord {
             hidden_text += stack.to_string().as_str();
         }
 
+        if characters.len() <=3 {
+            return Err("Word has 3 or fewer characters");
+        }
+
         Ok(Self {
             characters,
             text: s.to_string(),

@@ -9,7 +9,16 @@ pub type LetterCounts = PrimeBag128<Character>;
 pub fn make_words_vec_from_file(text: &str) -> Vec<FinderWord> {
     text.lines()
         //.flat_map(|x| x.split(','))
-        .flat_map(FinderWord::try_new)
+        .flat_map(|s|{
+            match FinderWord::from_str(s){
+                Ok(word) => Some(word),
+                Err(err) => {
+                    log::warn!("Word '{s}' is invalid: {err}");
+                    None
+                },
+            }
+
+        })
         .sorted_by_key(|x| x.counts)
         .dedup()
         .collect_vec()
@@ -28,19 +37,22 @@ impl std::fmt::Display for FinderWord {
     }
 }
 
-impl FinderWord {
-    pub fn try_new(text: &str) -> Option<Self> {
-        //println!("'{text}'");
-        let array = Word::from_str(text).ok().map(|x| x.characters)?;
+impl FromStr for FinderWord{
+    type Err = &'static str;
 
-        let counts: PrimeBag128<Character> = PrimeBag128::try_from_iter(array.iter().cloned())?;
-        Some(Self {
-            array,
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let word = Word::from_str(s)?;
+
+
+        let counts: PrimeBag128<Character> = PrimeBag128::try_from_iter(word.characters.iter().cloned()).ok_or("Could not create prime bag")?;
+        Ok(Self {
+            array: word.characters,
             counts,
-            text: text.to_string(),
+            text: word.text,
         })
     }
 }
+
 
 /// Counts the number of distinct index of of letters adjacent to a letter which is this character
 pub fn count_adjacent_indexes(word: &FinderWord, char: Character) -> usize {

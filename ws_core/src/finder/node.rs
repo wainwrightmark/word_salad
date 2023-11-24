@@ -28,16 +28,19 @@ impl FromStr for GridResult {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut iter = s.split('\t');
 
-        let chars: &str = iter.next().expect("Level should have a grid");
-        let _name: &str = iter.next().expect("Level should have name");
+        let chars: &str = iter.next().ok_or("Level should have a grid")?;
+        let _name: &str = iter.next().ok_or("Level should have name")?;
 
-        let grid = prelude::try_make_grid(chars).expect("Should be able to make grid");
+        let grid = prelude::try_make_grid(chars).ok_or("Should be able to make grid")?;
 
-        let words = iter
-            .map(|x| x.trim().to_string())
-            .flat_map(|x| FinderWord::try_new(x.as_str()))
-            .sorted_by_cached_key(|x| x.text.to_ascii_lowercase())
-            .collect();
+        let mut words: Vec<FinderWord> = iter
+            .map(|x| FinderWord::from_str(x.trim()))
+            .try_collect()?;
+
+        words.sort_by_cached_key(|x|x.text.to_ascii_lowercase());
+
+            // .sorted_by_cached_key(|x| x.text.to_ascii_lowercase())
+            // .collect();
 
         let mut letters = LetterCounts::default();
         for c in grid.iter() {
@@ -444,7 +447,7 @@ mod tests {
     use super::*;
     use test_case::test_case;
 
-    #[test_case("DOG\nTOAD\nPIGEON\nOWL\nPIG\nANT\nCAT\nLION\nDEER\nCOW\nGOAT\nBEE\nTIGER")]
+
     #[test_case("SILVER\nORANGE\nGREEN\nIVORY\nCORAL\nOLIVE\nTEAL\nGRAY\nCYAN\nRED")]
     #[test_case("CROATIA\nROMANIA\nIRELAND\nLATVIA\nPOLAND\nFRANCE\nMALTA\nLIL")]
     #[test_case("CROATIA\nROMANIA\nIRELAND\nLATVIA\nPOLAND\nFRANCE\nMALTA")]
@@ -460,7 +463,7 @@ mod tests {
     // spellchecker:disable-next-line
     #[test_case("ALDGATE\nANGEL\nALDGATEEAST\nBANK\nLANCASTERGATE")]
     #[test_case("WELLS\nLEEDS\nELY\nLISBURN\nDERBY\nNEWRY\nSALISBURY")]
-    #[test_case("Cat\nDog")]
+    #[test_case("Sporty\nScary")]
     //#[test_case("Utah\nOhio\nMaine\nIdaho\nIndiana\nMontana\nArizona")] //TODO make this case fast
     #[test_case("Teal\nWheat\nWhite\nGreen\nCyan\nGray\nCoral\nOrange\nMagenta")]
     pub fn test_try_make_grid(input: &'static str) {

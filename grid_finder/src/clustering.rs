@@ -167,6 +167,8 @@ fn find_best_point_to_add(chosen_points: &[WordsSet], all_points: &[WordsSet]) -
 
 #[cfg(test)]
 pub mod test {
+    use std::str::FromStr;
+
     use itertools::Itertools;
     use ws_core::{
         finder::{helpers::FinderWord, node::GridResult},
@@ -177,7 +179,7 @@ pub mod test {
 
     #[test]
     pub fn test_clustering() {
-        let months = include_str!("../grids/months.txt");
+        let months = include_str!("../grids/planets.txt");
         let word_vectors = get_words_vectors(months, 5);
         let all_words = word_vectors
             .iter()
@@ -211,7 +213,7 @@ pub mod test {
                 let words = line
                     .split('\t')
                     .skip(2)
-                    .map(|x| FinderWord::try_new(x).unwrap())
+                    .map(|x| FinderWord::from_str(x).unwrap())
                     .collect_vec();
                 words
             })

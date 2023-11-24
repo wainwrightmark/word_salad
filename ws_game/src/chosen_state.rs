@@ -115,10 +115,10 @@ pub mod tests {
     #[test_case("acc", "abb", false)]
     #[test_case("abab", "baba", false)]
     fn test_difference(l: &str, r: &str, expected: bool) {
-        let l = Word::from_str(l).unwrap();
-        let r = Word::from_str(r).unwrap();
+        let l = normalize_characters_array(l).unwrap();
+        let r = normalize_characters_array(r).unwrap();
 
-        let actual = ChosenState::lev_distance_one_or_less(&l.characters, &r.characters);
+        let actual = ChosenState::lev_distance_one_or_less(&l, &r);
 
         if expected {
             assert!(actual, "Should return true")

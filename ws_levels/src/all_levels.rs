@@ -105,7 +105,11 @@ pub mod tests {
 
     #[test]
     pub fn test_all_levels_valid() {
-        for level in get_all_levels() {
+        let levels = get_all_levels();
+
+        assert!(levels.len() > 5);
+
+        for level in levels {
             let name = &level.name;
             assert!(level.words.len() > 0, "Level {name} should have words");
             for word in level.words.into_iter() {

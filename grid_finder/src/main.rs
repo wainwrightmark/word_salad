@@ -81,7 +81,7 @@ fn do_finder(options: Options) {
 
         let word_map = make_words_vec_from_file(data_file_text.as_str());
 
-        info!("{} Words", word_map.len());
+        info!("Found {} Words", word_map.len());
         for word in word_map.iter().map(|x| x.text.clone()).sorted() {
             info!("{word}",)
         }
@@ -92,7 +92,7 @@ fn do_finder(options: Options) {
             }
         }
 
-        let master_path = format!("grids/{file_name}");
+        let master_path = format!("master/{file_name}");
         let master_file_text = std::fs::read_to_string(master_path).unwrap_or_default();
 
         let mut master_words = make_words_vec_from_file(&master_file_text);
@@ -102,7 +102,7 @@ fn do_finder(options: Options) {
             master_words.retain(|x| !word_set.contains(x.array.as_slice()));
             let new_master_count = master_words.len();
 
-            info!("Found {total_master_count} words. {new_master_count} will be treated as exclusions")
+            info!("Found {total_master_count} words on the master list. {new_master_count} will be treated as exclusions")
         }
 
         let grids_write_path = Path::new(write_path.as_str());
