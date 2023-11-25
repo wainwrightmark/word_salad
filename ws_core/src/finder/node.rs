@@ -33,14 +33,13 @@ impl FromStr for GridResult {
 
         let grid = prelude::try_make_grid(chars).ok_or("Should be able to make grid")?;
 
-        let mut words: Vec<FinderWord> = iter
-            .map(|x| FinderWord::from_str(x.trim()))
-            .try_collect()?;
+        let mut words: Vec<FinderWord> =
+            iter.map(|x| FinderWord::from_str(x.trim())).try_collect()?;
 
-        words.sort_by_cached_key(|x|x.text.to_ascii_lowercase());
+        words.sort_by_cached_key(|x| x.text.to_ascii_lowercase());
 
-            // .sorted_by_cached_key(|x| x.text.to_ascii_lowercase())
-            // .collect();
+        // .sorted_by_cached_key(|x| x.text.to_ascii_lowercase())
+        // .collect();
 
         let mut letters = LetterCounts::default();
         for c in grid.iter() {
@@ -446,7 +445,6 @@ mod tests {
 
     use super::*;
     use test_case::test_case;
-
 
     #[test_case("SILVER\nORANGE\nGREEN\nIVORY\nCORAL\nOLIVE\nTEAL\nGRAY\nCYAN\nRED")]
     #[test_case("CROATIA\nROMANIA\nIRELAND\nLATVIA\nPOLAND\nFRANCE\nMALTA\nLIL")]

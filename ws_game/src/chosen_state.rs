@@ -101,7 +101,7 @@ impl ChosenState {
 
 #[cfg(test)]
 pub mod tests {
-    use std::str::FromStr;
+    
 
     use super::*;
     use test_case::test_case;

@@ -63,20 +63,21 @@ lazy_static! {
             .map(|x| x.unwrap()),
         "Insects"
     );
-
     pub(crate) static ref FRUIT: Vec<DesignedLevel> = number_levels(
         include_str!("levels/science/fruit.tsv")
             .lines()
             .map(DesignedLevel::from_tsv_line)
             .map(|x| x.unwrap()),
         "Fruit"
-    );pub(crate) static ref GEMSTONES: Vec<DesignedLevel> = number_levels(
+    );
+    pub(crate) static ref GEMSTONES: Vec<DesignedLevel> = number_levels(
         include_str!("levels/science/gemstones.tsv")
             .lines()
             .map(DesignedLevel::from_tsv_line)
             .map(|x| x.unwrap()),
         "Gemstones"
-    );pub(crate) static ref VEGETABLES: Vec<DesignedLevel> = number_levels(
+    );
+    pub(crate) static ref VEGETABLES: Vec<DesignedLevel> = number_levels(
         include_str!("levels/science/vegetables.tsv")
             .lines()
             .map(DesignedLevel::from_tsv_line)

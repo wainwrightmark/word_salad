@@ -42,7 +42,9 @@ impl DesignedLevel {
             .ok_or_else(|| format!("Level '{line}' should be able to make grid"))?;
 
         let mut words: Vec<DisplayWord> = iter
-            .map(|x| DisplayWord::from_str(x.trim()).map_err(|e| format!("Word '{x}' is not valid {e}")) )
+            .map(|x| {
+                DisplayWord::from_str(x.trim()).map_err(|e| format!("Word '{x}' is not valid {e}"))
+            })
             .try_collect()?;
 
         words.sort_by_cached_key(|x| x.text.to_ascii_lowercase());

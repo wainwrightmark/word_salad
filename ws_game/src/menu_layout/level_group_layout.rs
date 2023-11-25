@@ -94,17 +94,13 @@ impl Iterator for LevelGroupLayoutIter {
 
 impl LayoutStructureWithStaticText for LevelGroupLayoutEntity {
     fn text(&self, context: &Self::Context) -> &'static str {
-
-        match self{
-            LevelGroupLayoutEntity::Level { index } => {
-                context
-            .get_sequences()
-            .get(*index)
-            .map(|x| x.name())
-            .unwrap_or("Unknown")
-            },
+        match self {
+            LevelGroupLayoutEntity::Level { index } => context
+                .get_sequences()
+                .get(*index)
+                .map(|x| x.name())
+                .unwrap_or("Unknown"),
             LevelGroupLayoutEntity::Back => "Back",
         }
-
     }
 }

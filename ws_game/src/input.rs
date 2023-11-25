@@ -53,9 +53,8 @@ impl InteractionEntity {
         is_level_complete: bool,
         grid_tolerance: Option<f32>,
     ) -> Option<Self> {
-
         let tbi = Self::try_get_button::<LayoutTopBarButton>(position, size, &());
-        if tbi.is_some(){
+        if tbi.is_some() {
             return tbi;
         }
 
@@ -191,8 +190,6 @@ impl InputType {
                     is_level_complete,
                     None,
                 ) {
-                    info!("End interaction {interaction:?}");
-
                     match interaction {
                         InteractionEntity::Button(button) => {
                             button.on_pressed(

@@ -105,9 +105,9 @@ pub mod tests {
 
     pub fn test_optimize(input: &str) {
         let mut grid_result = GridResult::from_str(input).unwrap();
-        let before =grid_result.grid.iter().join("");
+        let before = grid_result.grid.iter().join("");
         optimize_orientation(&mut grid_result);
-        let after =grid_result.grid.iter().join("");
+        let after = grid_result.grid.iter().join("");
 
         assert_eq!(before, after)
     }

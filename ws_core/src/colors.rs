@@ -77,11 +77,9 @@ pub mod palette {
     // pub const GRID_TILE_FILL_INADVISABLE: Color = Color::rgb(0.5, 0.5, 0.5); //  Color::rgb(0.4, 0.5, 0.5);
     // pub const GRID_TILE_FILL_UNSELECTABLE: Color = Color::rgb(0.7, 0.7, 0.7);
 
-
     pub const GRID_LETTER: Color = Color::DARK_GRAY;
 
     pub const MANUAL_HINT_GLOW: Color = Color::GOLD;
-
 
     pub const MENU_BUTTON_TEXT: Color = Color::BLACK;
     pub const MENU_BUTTON_FILL: Color = Color::WHITE;

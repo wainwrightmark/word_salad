@@ -9,7 +9,7 @@ use maveric::{
     node_context::NoContext,
     root::MavericRoot,
     widgets::text2d_node::Text2DNode,
-    with_bundle::{WithBundle, CanWithBundle},
+    with_bundle::{CanWithBundle, WithBundle},
 };
 
 use ws_core::{palette, LayoutRectangle};
@@ -50,12 +50,13 @@ impl MavericNode for ButtonNode2d {
                     "text",
                     Text2DNode {
                         text: *text,
-                            font_size: *font_size,
-                            color: convert_color(palette::MENU_BUTTON_TEXT),
-                            font: MENU_BUTTON_FONT_PATH,
-                            alignment: TextAlignment::Center,
-                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                    }.with_bundle(Transform::from_translation(text_translation)),
+                        font_size: *font_size,
+                        color: convert_color(palette::MENU_BUTTON_TEXT),
+                        font: MENU_BUTTON_FONT_PATH,
+                        alignment: TextAlignment::Center,
+                        linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                    }
+                    .with_bundle(Transform::from_translation(text_translation)),
                     &(),
                 );
 

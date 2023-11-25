@@ -1,7 +1,6 @@
 use crate::prelude::*;
-use maveric::transition::speed::LinearSpeed;
+use maveric::widgets::text2d_node::Text2DNode;
 use maveric::with_bundle::CanWithBundle;
-use maveric::{widgets::text2d_node::Text2DNode, with_bundle::WithBundle};
 use ws_core::layout::entities::*;
 use ws_core::prelude::*;
 
@@ -43,54 +42,6 @@ impl MavericNode for TopBar {
                     &(),
                 );
 
-                let time_text = match context.4.as_ref() {
-                    LevelTime::Started(..) => "00:00".to_string(),
-                    LevelTime::Finished { total_seconds } => format_seconds(*total_seconds),
-                };
-
-                let time_translation = if context.2.is_level_complete() {
-                    size.get_rect(&CongratsLayoutEntity::LevelTime, &())
-                        .centre()
-                        .extend(crate::z_indices::TOP_BAR_BUTTON)
-                } else {
-                    size.get_rect(&LayoutTopBarButton::TimeCounter, &())
-                        .centre()
-                        .extend(crate::z_indices::TOP_BAR_BUTTON)
-                };
-
-                let units_per_second = if context.2.is_level_complete() {
-                    100.0
-                } else {
-                    1000.0
-                };
-
-                commands.add_child(
-                    //todo hide this in congrats mode and have a separate timer only in that mode
-                    "TimeCounter",
-                    WithBundle {
-                        node: Text2DNode {
-                            text: time_text,
-                            font_size: top_bar_font_size,
-                            color: convert_color(palette::BUTTON_TEXT_COLOR),
-                            font: MENU_BUTTON_FONT_PATH,
-                            alignment: TextAlignment::Center,
-                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                        }
-                        .with_bundle(Transform::from_translation(
-                            size.get_rect(&LayoutTopBarButton::TimeCounter, &())
-                                .centre()
-                                .extend(crate::z_indices::TOP_BAR_BUTTON),
-                        )),
-                        bundle: TimeCounterMarker,
-                    }
-                    .with_transition_to::<TransformTranslationLens>(
-                        //TODO improve this animation
-                        time_translation,
-                        LinearSpeed { units_per_second },
-                    ),
-                    &(),
-                );
-
                 commands.add_child(
                     "hints",
                     Text2DNode {
@@ -108,6 +59,35 @@ impl MavericNode for TopBar {
                     )),
                     &(),
                 );
+
+                if context.5.is_closed() && !context.2.is_level_complete() {
+                    let time_text = match context.4.as_ref() {
+                        LevelTime::Started(..) => "00:00".to_string(),
+                        LevelTime::Finished { total_seconds } => format_seconds(*total_seconds),
+                    };
+
+                    commands.add_child(
+                        //todo hide this in congrats mode and have a separate timer only in that mode
+                        "TimeCounter",
+                        Text2DNode {
+                            text: time_text,
+                            font_size: top_bar_font_size,
+                            color: convert_color(palette::BUTTON_TEXT_COLOR),
+                            font: MENU_BUTTON_FONT_PATH,
+                            alignment: TextAlignment::Center,
+                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                        }
+                        .with_bundle((
+                            Transform::from_translation(
+                                size.get_rect(&LayoutTopBarButton::TimeCounter, &())
+                                    .centre()
+                                    .extend(crate::z_indices::TOP_BAR_BUTTON),
+                            ),
+                            TimeCounterMarker,
+                        )),
+                        &(),
+                    );
+                }
             });
     }
 }

@@ -3,7 +3,8 @@ pub use bevy_prototype_lyon::prelude::*;
 use bevy_prototype_lyon::shapes::RoundedPolygon;
 use maveric::{
     transition::speed::{LinearSpeed, ScalarSpeed},
-    widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle,
+    widgets::text2d_node::Text2DNode,
+    with_bundle::CanWithBundle,
 };
 
 use std::time::Duration;
@@ -106,7 +107,10 @@ impl MavericNode for GridTiles {
 
                 let selectability = if Some(&tile) == selected_tile {
                     Selectability::Selected
-                } else if show_advisable && !inadvisable_tiles.get_bit(&tile) &&selectable_tiles.get_bit(&tile) {
+                } else if show_advisable
+                    && !inadvisable_tiles.get_bit(&tile)
+                    && selectable_tiles.get_bit(&tile)
+                {
                     Selectability::Advisable
                 } else {
                     Selectability::Other

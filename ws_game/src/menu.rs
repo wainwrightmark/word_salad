@@ -7,16 +7,13 @@ use maveric::{
 };
 use strum::EnumIs;
 
-use ws_core::{
-    LayoutStructure, LayoutStructureWithFont,
-    LayoutStructureWithStaticText,
-};
+use ws_core::{LayoutStructure, LayoutStructureWithFont, LayoutStructureWithStaticText};
 use ws_levels::level_group::LevelGroup;
 
 use crate::prelude::{
-    level_group_layout::LevelGroupLayoutEntity,
-    levels_menu_layout::LevelsMenuLayoutEntity, main_menu_layout::MainMenuLayoutEntity,
-    ButtonInteraction, ButtonNode2d, SaladWindowSize, Size, ViewContext,
+    level_group_layout::LevelGroupLayoutEntity, levels_menu_layout::LevelsMenuLayoutEntity,
+    main_menu_layout::MainMenuLayoutEntity, ButtonInteraction, ButtonNode2d, SaladWindowSize, Size,
+    ViewContext,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Resource, EnumIs)]
@@ -86,7 +83,7 @@ fn add_menu_items<
 
     commands: &mut UnorderedChildCommands<R>,
     size: &Size,
-    key_offset: u32
+    key_offset: u32,
 ) {
     let font_size = size.font_size::<L>();
     for (index, entity) in L::iter_all(context).enumerate() {

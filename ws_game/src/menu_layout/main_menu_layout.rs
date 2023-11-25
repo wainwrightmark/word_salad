@@ -1,4 +1,3 @@
-
 use bevy::math::Vec2;
 use strum::{Display, EnumCount, EnumIter, IntoEnumIterator};
 use ws_core::{

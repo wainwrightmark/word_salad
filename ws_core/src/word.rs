@@ -163,7 +163,7 @@ impl FromStr for Word {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let characters = normalize_characters_array(s)?;
 
-        if characters.len() <=3 {
+        if characters.len() <= 3 {
             return Err("Word has 3 or fewer characters");
         }
 
@@ -240,8 +240,6 @@ mod tests {
             Tile::new_const::<1, 3>(),
             Tile::new_const::<2, 3>(),
         ]);
-
-
 
         assert_eq!(2, paths.len());
 

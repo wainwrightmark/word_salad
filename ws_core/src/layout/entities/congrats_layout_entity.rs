@@ -9,7 +9,7 @@ use super::consts::*;
     Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter, EnumCount, Display,
 )]
 pub enum CongratsLayoutEntity {
-    LevelTime = 0,
+    TimeCounter = 0,
     HintsUsed = 1,
     NextButton = 2,
     ShareButton = 3,

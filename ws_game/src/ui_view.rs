@@ -214,8 +214,6 @@ impl<G: Geometry + PartialEq + Send + Sync + 'static> MavericNode for LyonShapeN
     type Context = NoContext;
 
     fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
-
-
         commands.scope(|commands| {
             commands
                 .map_node(|x| &x.shape)
