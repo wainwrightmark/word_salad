@@ -106,7 +106,7 @@ impl MavericNode for GridTiles {
 
                 let selectability = if Some(&tile) == selected_tile {
                     Selectability::Selected
-                } else if show_advisable && !inadvisable_tiles.get_bit(&tile) {
+                } else if show_advisable && !inadvisable_tiles.get_bit(&tile) &&selectable_tiles.get_bit(&tile) {
                     Selectability::Advisable
                 } else {
                     Selectability::Other
