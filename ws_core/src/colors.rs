@@ -28,8 +28,6 @@ impl BasicColor {
     pub(crate) const ALICE_BLUE: BasicColor = BasicColor::rgb(0.94, 0.97, 1.0);
     /// <div style="background-color:rgb(0%, 0%, 0%); width: 10px; padding: 10px; border: 1px solid;"></div>
     pub(crate) const BLACK: BasicColor = BasicColor::rgb(0.0, 0.0, 0.0);
-    /// <div style="background-color:rgb(0%, 0%, 100%); width: 10px; padding: 10px; border: 1px solid;"></div>
-    pub(crate) const BLUE: BasicColor = BasicColor::rgb(0.0, 0.0, 1.0);
     /// <div style="background-color:rgb(25%, 25%, 25%); width: 10px; padding: 10px; border: 1px solid;"></div>
     pub(crate) const DARK_GRAY: BasicColor = BasicColor::rgb(0.25, 0.25, 0.25);
     /// <div style="background-color:rgb(100%, 84%, 0%); width: 10px; padding: 10px; border: 1px solid;"></div>
@@ -70,15 +68,20 @@ pub mod palette {
     pub const WORD_LINE_COLOR: Color = Color::rgba(0.9, 0.25, 0.95, 0.9);
 
     pub const GRID_TILE_STROKE: Color = Color::DARK_GRAY;
-    pub const GRID_TILE_FILL_SELECTABLE: Color = Color::rgb(0.7, 0.7, 0.7);
-    pub const GRID_TILE_FILL_INADVISABLE: Color = GRID_TILE_FILL_UNSELECTABLE; //  Color::rgb(0.4, 0.5, 0.5);
-    pub const GRID_TILE_FILL_UNSELECTABLE: Color = Color::rgb(0.5, 0.5, 0.5);
-    pub const GRID_TILE_FILL_SELECTED: Color = Color::ALICE_BLUE;
+
+    pub const GRID_TILE_FILL_SELECTED: Color = Color::rgb(0.9, 0.9, 1.0);
+    pub const GRID_TILE_FILL_ADVISABLE: Color = Color::rgb(0.7, 0.7, 0.9);
+    pub const GRID_TILE_FILL_OTHER: Color = Color::rgb(0.7, 0.7, 0.7);
+
+    // pub const GRID_TILE_FILL_SELECTABLE: Color = Color::rgb(0.7, 0.7, 0.7);
+    // pub const GRID_TILE_FILL_INADVISABLE: Color = Color::rgb(0.5, 0.5, 0.5); //  Color::rgb(0.4, 0.5, 0.5);
+    // pub const GRID_TILE_FILL_UNSELECTABLE: Color = Color::rgb(0.7, 0.7, 0.7);
+
 
     pub const GRID_LETTER: Color = Color::DARK_GRAY;
 
     pub const MANUAL_HINT_GLOW: Color = Color::GOLD;
-    pub const AUTO_HINT_GLOW: Color = Color::BLUE;
+
 
     pub const MENU_BUTTON_TEXT: Color = Color::BLACK;
     pub const MENU_BUTTON_FILL: Color = Color::WHITE;

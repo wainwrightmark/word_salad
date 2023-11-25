@@ -23,19 +23,18 @@ pub struct GridTile {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Selectability {
-    Selectable,
     Selected,
-    Unselectable,
-    Inadvisable,
+    Advisable,
+    Other
 }
 
 impl Selectability {
     pub fn tile_fill_color(&self) -> Color {
         match self {
-            Selectability::Selectable => convert_color(palette::GRID_TILE_FILL_SELECTABLE),
+            Selectability::Advisable => convert_color(palette::GRID_TILE_FILL_ADVISABLE),
             Selectability::Selected => convert_color(palette::GRID_TILE_FILL_SELECTED),
-            Selectability::Unselectable => convert_color(palette::GRID_TILE_FILL_UNSELECTABLE),
-            Selectability::Inadvisable => convert_color(palette::GRID_TILE_FILL_INADVISABLE),
+            Selectability::Other => convert_color(palette::GRID_TILE_FILL_OTHER),
+
         }
     }
 
@@ -81,9 +80,16 @@ impl MavericNode for GridTiles {
                 Some(tile) => GridSet::from_iter(tile.iter_adjacent()),
                 None => GridSet::ALL,
             };
+
+            let selectable_tiles = selectable_tiles.intersect(&context.2.unneeded_tiles.negate());
+
             let level = context.1.level();
             let inadvisable_tiles: GridSet =
                 context.2.calculate_inadvisable_tiles(&solution, level);
+
+            //info!("{} ia {} st", inadvisable_tiles.count(), selectable_tiles.count());
+
+            let show_advisable = inadvisable_tiles.count() * 2 >= selectable_tiles.count();
 
             let hint_set = &context.2.manual_hint_set(&level, &solution);
 
@@ -100,13 +106,20 @@ impl MavericNode for GridTiles {
 
                 let selectability = if Some(&tile) == selected_tile {
                     Selectability::Selected
-                } else if inadvisable_tiles.get_bit(&tile) {
-                    Selectability::Inadvisable
-                } else if selectable_tiles.get_bit(&tile) {
-                    Selectability::Selectable
-                } else {
-                    Selectability::Unselectable
+                }
+                else if show_advisable && !inadvisable_tiles.get_bit(&tile){
+                    Selectability::Advisable
+                }else{
+                    Selectability::Other
                 };
+
+                //  else if inadvisable_tiles.get_bit(&tile) {
+                //     Selectability::Inadvisable
+                // } else if selectable_tiles.get_bit(&tile) {
+                //     Selectability::Selectable
+                // } else {
+                //     Selectability::Unselectable
+                // };
 
                 let size = context.3.as_ref();
                 let tile_size = size.tile_size();
@@ -178,7 +191,7 @@ impl MavericNode for GridTile {
                 LyonShapeNode {
                     shape: make_rounded_square(tile_size, tile_size * 0.1),
                     transform: Transform::from_xyz(0.0, 0.0, crate::z_indices::GRID_TILE),
-                    fill: Fill::color(convert_color(palette::GRID_TILE_FILL_SELECTABLE)),
+                    fill: Fill::color(convert_color(palette::GRID_TILE_FILL_OTHER)),
                     stroke: Stroke::new(convert_color(palette::GRID_TILE_STROKE), line_width),
                 }
                 .with_transition_to::<FillColorLens>(
