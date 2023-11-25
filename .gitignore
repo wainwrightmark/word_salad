@@ -8,8 +8,7 @@ grid_finder/clusters/*.txt
 grid_finder/master/*.txt
 grid_finder/todo/*.txt
 
-sheet_reader/data/*.txt
-sheet_reader_data/*
+sheet_reader/sheet_reader_data/*.txt
 sheet1.txt
 
 layout_example.svg

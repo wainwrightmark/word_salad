@@ -27,16 +27,11 @@ pub enum LevelGroup {
 
 impl LevelGroup {
     pub fn get_sequences(&self) -> &'static [LevelSequence] {
+        use LevelSequence::*;
         match self {
-            LevelGroup::GlobalLocation => &[
-                LevelSequence::USStates,
-                LevelSequence::EUCapitals,
-                LevelSequence::EUCountries,
-            ],
-            LevelGroup::HistoryMythology => {
-                &[LevelSequence::USPresidents, LevelSequence::GreekGods]
-            }
-            LevelGroup::Science => &[LevelSequence::Scientists, LevelSequence::Insects],
+            LevelGroup::GlobalLocation => &[USStates, EUCapitals, EUCountries],
+            LevelGroup::HistoryMythology => &[USPresidents, GreekGods],
+            LevelGroup::Science => &[Scientists, Insects, Fruit, Gemstones, Vegetables],
         }
     }
 

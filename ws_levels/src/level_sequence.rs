@@ -1,7 +1,7 @@
 use crate::all_levels::*;
 use num_derive::FromPrimitive;
 use serde::{Deserialize, Serialize};
-use strum::{Display, EnumCount, EnumIs, EnumIter, EnumMessage};
+use strum::{Display, EnumCount, EnumIs, EnumIter};
 use ws_core::DesignedLevel;
 
 #[repr(u8)]
@@ -13,7 +13,6 @@ use ws_core::DesignedLevel;
     EnumCount,
     EnumIter,
     EnumIs,
-    EnumMessage,
     PartialEq,
     Eq,
     PartialOrd,
@@ -26,24 +25,18 @@ use ws_core::DesignedLevel;
 
 pub enum LevelSequence {
     //DO NOT CHANGE THESE NUMBERS - THEY ARE USED FOR COMPLETION TRACKING
-    #[strum(message = "Tutorial")]
     Tutorial = 0,
-    #[strum(message = "Word Salad")]
     DailyChallenge = 1,
-    #[strum(message = "EU Capitals")]
     EUCapitals = 2,
-    #[strum(message = "EU Countries")]
     EUCountries = 3,
-    #[strum(message = "US States")]
     USStates = 4,
-    #[strum(message = "Greek Gods")]
     GreekGods = 5,
-    #[strum(message = "US Presidents")]
     USPresidents = 6,
-    #[strum(message = "Scientists")]
     Scientists = 7,
-    #[strum(message = "Insects")]
     Insects = 8,
+    Fruit = 9,
+    Gemstones = 10,
+    Vegetables = 11,
 }
 
 impl LevelSequence {
@@ -58,6 +51,9 @@ impl LevelSequence {
             LevelSequence::USPresidents => &*US_PRESIDENTS,
             LevelSequence::Scientists => &*SCIENTISTS,
             LevelSequence::Insects => &*INSECTS,
+            LevelSequence::Fruit => &*FRUIT,
+            LevelSequence::Gemstones => &*GEMSTONES,
+            LevelSequence::Vegetables => &*VEGETABLES,
         };
 
         let index = index % levels.len();
@@ -78,6 +74,9 @@ impl LevelSequence {
             LevelSequence::USPresidents => "US Presidents",
             LevelSequence::Scientists => "Scientists",
             LevelSequence::Insects => "Insects",
+            LevelSequence::Fruit => "Fruit",
+            LevelSequence::Gemstones => "Gemstones",
+            LevelSequence::Vegetables => "Vegetables",
         }
     }
 }

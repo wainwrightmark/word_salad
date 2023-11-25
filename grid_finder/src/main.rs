@@ -224,8 +224,8 @@ fn create_grids(
             .iter()
             .sorted_by_cached_key(|x| x.words.iter().sorted().join(""))
             .join("\n");
-        if !lines.is_empty() {
-            file.write((lines + "\n").as_bytes()).unwrap();
+        if !lines.trim().is_empty() {
+            file.write_all((lines + "\n").as_bytes()).unwrap();
         }
 
         let solution_count = solutions.len();

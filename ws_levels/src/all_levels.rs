@@ -63,6 +63,26 @@ lazy_static! {
             .map(|x| x.unwrap()),
         "Insects"
     );
+
+    pub(crate) static ref FRUIT: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/science/fruit.tsv")
+            .lines()
+            .map(DesignedLevel::from_tsv_line)
+            .map(|x| x.unwrap()),
+        "Fruit"
+    );pub(crate) static ref GEMSTONES: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/science/gemstones.tsv")
+            .lines()
+            .map(DesignedLevel::from_tsv_line)
+            .map(|x| x.unwrap()),
+        "Gemstones"
+    );pub(crate) static ref VEGETABLES: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/science/vegetables.tsv")
+            .lines()
+            .map(DesignedLevel::from_tsv_line)
+            .map(|x| x.unwrap()),
+        "Vegetables"
+    );
 }
 
 pub fn number_levels(
@@ -95,6 +115,9 @@ pub mod tests {
             US_PRESIDENTS.iter(),
             SCIENTISTS.iter(),
             INSECTS.iter(),
+            FRUIT.iter(),
+            GEMSTONES.iter(),
+            VEGETABLES.iter(),
         ]
         .iter()
         .cloned()
