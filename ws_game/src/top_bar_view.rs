@@ -60,6 +60,12 @@ impl MavericNode for TopBar {
                         .extend(crate::z_indices::TOP_BAR_BUTTON)
                 };
 
+                let units_per_second = if context.2.is_level_complete(){
+                    100.0
+                } else{
+                    1000.0
+                };
+
                 commands.add_child(
                     "TimeCounter",
                     WithBundle {
@@ -85,7 +91,7 @@ impl MavericNode for TopBar {
                         //TODO improve this animation
                         time_translation,
                         LinearSpeed {
-                            units_per_second: 100.0,
+                            units_per_second,
                         },
                     ),
                     &(),

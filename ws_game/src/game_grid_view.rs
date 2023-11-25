@@ -89,7 +89,7 @@ impl MavericNode for GridTiles {
 
             //info!("{} ia {} st", inadvisable_tiles.count(), selectable_tiles.count());
 
-            let show_advisable = inadvisable_tiles.count() * 2 >= selectable_tiles.count();
+            let show_advisable = !inadvisable_tiles.is_empty() && inadvisable_tiles.count() * 2 >= selectable_tiles.count();
 
             let hint_set = &context.2.manual_hint_set(&level, &solution);
 
