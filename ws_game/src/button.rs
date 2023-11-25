@@ -164,11 +164,21 @@ impl ButtonInteraction {
                 *menu_state.as_mut() = MenuState::LevelGroupPage(*group);
             }
             ButtonInteraction::LevelGroupMenu(entity) => {
-                if let MenuState::LevelGroupPage(level_group) = menu_state.as_ref() {
-                    let sequence = level_group.get_level_sequence(entity.index);
-                    current_level.to_level(sequence, total_completion, found_words, chosen_state);
-                    menu_state.close();
+
+                match entity{
+                    LevelGroupLayoutEntity::Level { index } => {
+                        if let MenuState::LevelGroupPage(level_group) = menu_state.as_ref() {
+                            let sequence = level_group.get_level_sequence(*index);
+                            current_level.to_level(sequence, total_completion, found_words, chosen_state);
+                            menu_state.close();
+                        }
+                    },
+                    LevelGroupLayoutEntity::Back => {
+                        *menu_state.as_mut() = MenuState::ChooseLevelsPage;
+                    },
                 }
+
+
             }
             ButtonInteraction::WordButton(word) => {
                 found_words.try_hint_word(&current_level, word.0);

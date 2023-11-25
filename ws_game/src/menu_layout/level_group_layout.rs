@@ -7,8 +7,9 @@ use ws_core::{
 use ws_levels::level_group::LevelGroup;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct LevelGroupLayoutEntity {
-    pub index: usize,
+pub enum LevelGroupLayoutEntity {
+    Level { index: usize },
+    Back,
 }
 
 impl LayoutStructure for LevelGroupLayoutEntity {
@@ -33,14 +34,18 @@ impl LayoutStructure for LevelGroupLayoutEntity {
     }
 
     fn location(&self, context: &Self::Context) -> bevy::prelude::Vec2 {
+        let child_index = match self {
+            LevelGroupLayoutEntity::Level { index } => *index,
+            LevelGroupLayoutEntity::Back => context.get_sequences().len(),
+        };
         Vec2 {
             x: (IDEAL_WIDTH - MENU_BUTTON_WIDTH) / 2.,
             y: TOP_BAR_ICON_SIZE
                 + Spacing::Centre.apply(
                     IDEAL_HEIGHT - TOP_BAR_ICON_SIZE,
                     MENU_BUTTON_HEIGHT * 1.2,
-                    context.get_sequences().len(),
-                    self.index,
+                    context.get_sequences().len() + 1,
+                    child_index,
                 ),
         }
     }
@@ -68,24 +73,38 @@ impl Iterator for LevelGroupLayoutIter {
     type Item = LevelGroupLayoutEntity;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.next_index >= self.group.get_sequences().len() {
-            return None;
-        } else {
-            let next = LevelGroupLayoutEntity {
-                index: self.next_index,
-            };
-            self.next_index += 1;
-            Some(next)
+        match self.next_index.cmp(&self.group.get_sequences().len()) {
+            std::cmp::Ordering::Less => {
+                let next = LevelGroupLayoutEntity::Level {
+                    index: self.next_index,
+                };
+                self.next_index += 1;
+                Some(next)
+            }
+            std::cmp::Ordering::Equal => {
+                self.next_index += 1;
+                return Some(LevelGroupLayoutEntity::Back);
+            }
+            std::cmp::Ordering::Greater => {
+                return None;
+            }
         }
     }
 }
 
 impl LayoutStructureWithStaticText for LevelGroupLayoutEntity {
     fn text(&self, context: &Self::Context) -> &'static str {
-        context
+
+        match self{
+            LevelGroupLayoutEntity::Level { index } => {
+                context
             .get_sequences()
-            .get(self.index)
+            .get(*index)
             .map(|x| x.name())
             .unwrap_or("Unknown")
+            },
+            LevelGroupLayoutEntity::Back => "Back",
+        }
+
     }
 }
