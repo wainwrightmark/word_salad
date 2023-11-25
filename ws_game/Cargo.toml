@@ -69,10 +69,10 @@ features = [
   "bevy_core_pipeline", # Higher-level rendering abstractions
   "bevy_sprite",        # 2D (sprites) rendering
   "bevy_text",          # Text/font rendering
-  "bevy_ui",            # UI toolkit
+  # "bevy_ui",            # UI toolkit
   "webgl2",
-  "bevy_gizmos",
-  "png"
+  # "bevy_gizmos",
+  # "png"
 ]
 
 [features]

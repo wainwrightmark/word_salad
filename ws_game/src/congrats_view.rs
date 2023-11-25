@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use maveric::widgets::text2d_node::Text2DNode;
+use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
 use ws_core::layout::entities::*;
 #[derive(Debug, Clone, PartialEq)]
 pub struct CongratsView;
@@ -7,12 +7,8 @@ pub struct CongratsView;
 impl MavericNode for CongratsView {
     type Context = ViewContext;
 
-    fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
-        commands
-            .ignore_context()
-            .ignore_node()
-            .insert(SpatialBundle::default())
-            .finish()
+    fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
+        commands.insert_static_bundle(SpatialBundle::default());
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
@@ -31,40 +27,36 @@ impl MavericNode for CongratsView {
                 commands.add_child(
                     "hints used",
                     Text2DNode {
-                        text: TextNode {
-                            text: hints_used_text,
-                            font_size,
-                            color: convert_color(palette::BUTTON_TEXT_COLOR),
-                            font: BUTTONS_FONT_PATH,
-                            alignment: TextAlignment::Center,
-                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                        },
-                        transform: Transform::from_translation(
-                            size.get_rect(&CongratsLayoutEntity::HintsUsed, &())
-                                .centre()
-                                .extend(crate::z_indices::CONGRATS_BUTTON),
-                        ),
-                    },
+                        text: hints_used_text,
+                        font_size,
+                        color: convert_color(palette::BUTTON_TEXT_COLOR),
+                        font: BUTTONS_FONT_PATH,
+                        alignment: TextAlignment::Center,
+                        linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                    }
+                    .with_bundle(Transform::from_translation(
+                        size.get_rect(&CongratsLayoutEntity::HintsUsed, &())
+                            .centre()
+                            .extend(crate::z_indices::CONGRATS_BUTTON),
+                    )),
                     &(),
                 );
 
                 commands.add_child(
                     "next level",
                     Text2DNode {
-                        text: TextNode {
-                            text: "Next",
-                            font_size,
-                            color: convert_color(palette::BUTTON_TEXT_COLOR),
-                            font: BUTTONS_FONT_PATH,
-                            alignment: TextAlignment::Center,
-                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                        },
-                        transform: Transform::from_translation(
-                            size.get_rect(&CongratsLayoutEntity::NextButton, &())
-                                .centre()
-                                .extend(crate::z_indices::CONGRATS_BUTTON),
-                        ),
-                    },
+                        text: "Next",
+                        font_size,
+                        color: convert_color(palette::BUTTON_TEXT_COLOR),
+                        font: BUTTONS_FONT_PATH,
+                        alignment: TextAlignment::Center,
+                        linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                    }
+                    .with_bundle(Transform::from_translation(
+                        size.get_rect(&CongratsLayoutEntity::NextButton, &())
+                            .centre()
+                            .extend(crate::z_indices::CONGRATS_BUTTON),
+                    )),
                     &(),
                 );
 

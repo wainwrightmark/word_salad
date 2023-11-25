@@ -3,7 +3,7 @@ pub use bevy_prototype_lyon::prelude::*;
 use bevy_prototype_lyon::shapes::RoundedPolygon;
 use maveric::{
     transition::speed::{LinearSpeed, ScalarSpeed},
-    widgets::text2d_node::Text2DNode,
+    widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle,
 };
 
 use std::time::Duration;
@@ -25,7 +25,7 @@ pub struct GridTile {
 pub enum Selectability {
     Selected,
     Advisable,
-    Other
+    Other,
 }
 
 impl Selectability {
@@ -34,7 +34,6 @@ impl Selectability {
             Selectability::Advisable => convert_color(palette::GRID_TILE_FILL_ADVISABLE),
             Selectability::Selected => convert_color(palette::GRID_TILE_FILL_SELECTED),
             Selectability::Other => convert_color(palette::GRID_TILE_FILL_OTHER),
-
         }
     }
 
@@ -89,7 +88,8 @@ impl MavericNode for GridTiles {
 
             //info!("{} ia {} st", inadvisable_tiles.count(), selectable_tiles.count());
 
-            let show_advisable = !inadvisable_tiles.is_empty() && inadvisable_tiles.count() * 2 >= selectable_tiles.count();
+            let show_advisable = !inadvisable_tiles.is_empty()
+                && inadvisable_tiles.count() * 2 >= selectable_tiles.count();
 
             let hint_set = &context.2.manual_hint_set(&level, &solution);
 
@@ -106,10 +106,9 @@ impl MavericNode for GridTiles {
 
                 let selectability = if Some(&tile) == selected_tile {
                     Selectability::Selected
-                }
-                else if show_advisable && !inadvisable_tiles.get_bit(&tile){
+                } else if show_advisable && !inadvisable_tiles.get_bit(&tile) {
                     Selectability::Advisable
-                }else{
+                } else {
                     Selectability::Other
                 };
 
@@ -167,7 +166,7 @@ impl MavericNode for GridTile {
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
             .ignore_context()
-            .map_args(|x| &x.centre)
+            .map_node(|x| &x.centre)
             .insert_with_node(|n| {
                 TransformBundle::from_transform(Transform::from_translation(n.extend(0.0)))
             })
@@ -243,16 +242,18 @@ impl MavericNode for GridLetter {
             commands.add_child(
                 0,
                 Text2DNode {
-                    transform: Transform::from_xyz(0.0, 0.0, crate::z_indices::TILE_TEXT),
-                    text: TextNode {
-                        text: args.character.to_tile_string(),
-                        font: TILE_FONT_PATH,
-                        font_size: args.font_size,
-                        color: convert_color(palette::GRID_LETTER),
-                        alignment: TextAlignment::Center,
-                        linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                    },
-                },
+                    text: args.character.to_tile_string(),
+                    font: TILE_FONT_PATH,
+                    font_size: args.font_size,
+                    color: convert_color(palette::GRID_LETTER),
+                    alignment: TextAlignment::Center,
+                    linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                }
+                .with_bundle(Transform::from_xyz(
+                    0.0,
+                    0.0,
+                    crate::z_indices::TILE_TEXT,
+                )),
                 &(),
             )
         });

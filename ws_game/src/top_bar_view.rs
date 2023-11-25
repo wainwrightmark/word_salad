@@ -1,5 +1,6 @@
 use crate::prelude::*;
 use maveric::transition::speed::LinearSpeed;
+use maveric::with_bundle::CanWithBundle;
 use maveric::{widgets::text2d_node::Text2DNode, with_bundle::WithBundle};
 use ws_core::layout::entities::*;
 use ws_core::prelude::*;
@@ -27,21 +28,18 @@ impl MavericNode for TopBar {
                 commands.add_child(
                     "Burger",
                     Text2DNode {
-                        text: TextNode {
-                            text: "\u{f0c9}",
-                            font_size: top_bar_font_size,
-                            color: convert_color(palette::BUTTON_TEXT_COLOR),
-                            font: MENU_BUTTON_FONT_PATH,
-                            alignment: TextAlignment::Center,
-                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                        },
-
-                        transform: Transform::from_translation(
-                            size.get_rect(&LayoutTopBarButton::MenuBurgerButton, &())
-                                .centre()
-                                .extend(crate::z_indices::TOP_BAR_BUTTON),
-                        ),
-                    },
+                        text: "\u{f0c9}",
+                        font_size: top_bar_font_size,
+                        color: convert_color(palette::BUTTON_TEXT_COLOR),
+                        font: MENU_BUTTON_FONT_PATH,
+                        alignment: TextAlignment::Center,
+                        linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                    }
+                    .with_bundle(Transform::from_translation(
+                        size.get_rect(&LayoutTopBarButton::MenuBurgerButton, &())
+                            .centre()
+                            .extend(crate::z_indices::TOP_BAR_BUTTON),
+                    )),
                     &(),
                 );
 
@@ -60,39 +58,35 @@ impl MavericNode for TopBar {
                         .extend(crate::z_indices::TOP_BAR_BUTTON)
                 };
 
-                let units_per_second = if context.2.is_level_complete(){
+                let units_per_second = if context.2.is_level_complete() {
                     100.0
-                } else{
+                } else {
                     1000.0
                 };
 
                 commands.add_child(
+                    //todo hide this in congrats mode and have a separate timer only in that mode
                     "TimeCounter",
                     WithBundle {
                         node: Text2DNode {
-                            text: TextNode {
-                                text: time_text,
-                                font_size: top_bar_font_size,
-                                color: convert_color(palette::BUTTON_TEXT_COLOR),
-                                font: MENU_BUTTON_FONT_PATH,
-                                alignment: TextAlignment::Center,
-                                linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                            },
-
-                            transform: Transform::from_translation(
-                                size.get_rect(&LayoutTopBarButton::TimeCounter, &())
-                                    .centre()
-                                    .extend(crate::z_indices::TOP_BAR_BUTTON),
-                            ),
-                        },
+                            text: time_text,
+                            font_size: top_bar_font_size,
+                            color: convert_color(palette::BUTTON_TEXT_COLOR),
+                            font: MENU_BUTTON_FONT_PATH,
+                            alignment: TextAlignment::Center,
+                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                        }
+                        .with_bundle(Transform::from_translation(
+                            size.get_rect(&LayoutTopBarButton::TimeCounter, &())
+                                .centre()
+                                .extend(crate::z_indices::TOP_BAR_BUTTON),
+                        )),
                         bundle: TimeCounterMarker,
                     }
                     .with_transition_to::<TransformTranslationLens>(
                         //TODO improve this animation
                         time_translation,
-                        LinearSpeed {
-                            units_per_second,
-                        },
+                        LinearSpeed { units_per_second },
                     ),
                     &(),
                 );
@@ -100,20 +94,18 @@ impl MavericNode for TopBar {
                 commands.add_child(
                     "hints",
                     Text2DNode {
-                        text: TextNode {
-                            text: context.2.hints_used.to_string(),
-                            font_size: top_bar_font_size,
-                            color: convert_color(palette::BUTTON_TEXT_COLOR),
-                            font: BUTTONS_FONT_PATH,
-                            alignment: TextAlignment::Center,
-                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                        },
-                        transform: Transform::from_translation(
-                            size.get_rect(&LayoutTopBarButton::HintCounter, &())
-                                .centre()
-                                .extend(crate::z_indices::TOP_BAR_BUTTON),
-                        ),
-                    },
+                        text: context.2.hints_used.to_string(),
+                        font_size: top_bar_font_size,
+                        color: convert_color(palette::BUTTON_TEXT_COLOR),
+                        font: BUTTONS_FONT_PATH,
+                        alignment: TextAlignment::Center,
+                        linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                    }
+                    .with_bundle(Transform::from_translation(
+                        size.get_rect(&LayoutTopBarButton::HintCounter, &())
+                            .centre()
+                            .extend(crate::z_indices::TOP_BAR_BUTTON),
+                    )),
                     &(),
                 );
             });

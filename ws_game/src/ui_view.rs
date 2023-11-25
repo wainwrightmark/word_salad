@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use maveric::transition::speed::ScalarSpeed;
 use maveric::widgets::text2d_node::Text2DNode;
-use maveric::with_bundle::WithBundle;
+use maveric::with_bundle::{CanWithBundle, WithBundle};
 use ws_core::layout::entities::*;
 use ws_core::prelude::*;
 
@@ -29,40 +29,36 @@ impl MavericNode for UI {
                 commands.add_child(
                     "title",
                     Text2DNode {
-                        text: TextNode {
-                            text: title,
-                            font_size: text_font_size,
-                            color: convert_color(palette::BUTTON_TEXT_COLOR),
-                            font: TITLE_FONT_PATH,
-                            alignment: TextAlignment::Center,
-                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                        },
-                        transform: Transform::from_translation(
-                            size.get_rect(&LayoutTextItem::PuzzleTitle, &())
-                                .centre()
-                                .extend(crate::z_indices::TEXT_AREA_TEXT),
-                        ),
-                    },
+                        text: title,
+                        font_size: text_font_size,
+                        color: convert_color(palette::BUTTON_TEXT_COLOR),
+                        font: TITLE_FONT_PATH,
+                        alignment: TextAlignment::Center,
+                        linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                    }
+                    .with_bundle(Transform::from_translation(
+                        size.get_rect(&LayoutTextItem::PuzzleTitle, &())
+                            .centre()
+                            .extend(crate::z_indices::TEXT_AREA_TEXT),
+                    )),
                     &(),
                 );
 
                 commands.add_child(
                     "theme",
                     Text2DNode {
-                        text: TextNode {
-                            text: "Theme",
-                            font_size: text_font_size,
-                            color: convert_color(palette::BUTTON_TEXT_COLOR),
-                            font: TITLE_FONT_PATH,
-                            alignment: TextAlignment::Center,
-                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                        },
-                        transform: Transform::from_translation(
-                            size.get_rect(&LayoutTextItem::PuzzleTheme, &())
-                                .centre()
-                                .extend(crate::z_indices::TEXT_AREA_TEXT),
-                        ),
-                    },
+                        text: "Theme",
+                        font_size: text_font_size,
+                        color: convert_color(palette::BUTTON_TEXT_COLOR),
+                        font: TITLE_FONT_PATH,
+                        alignment: TextAlignment::Center,
+                        linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                    }
+                    .with_bundle(Transform::from_translation(
+                        size.get_rect(&LayoutTextItem::PuzzleTheme, &())
+                            .centre()
+                            .extend(crate::z_indices::TEXT_AREA_TEXT),
+                    )),
                     &(),
                 );
 
@@ -147,16 +143,14 @@ impl MavericNode for WordNode {
             commands.add_child(
                 "text",
                 Text2DNode {
-                    text: TextNode {
-                        text,
-                        font_size: node.font_size,
-                        color: convert_color(palette::BUTTON_TEXT_COLOR),
-                        font: SOLUTIONS_FONT_PATH,
-                        alignment: TextAlignment::Center,
-                        linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                    },
-                    transform: Transform::from_translation(text_translation),
-                },
+                    text,
+                    font_size: node.font_size,
+                    color: convert_color(palette::BUTTON_TEXT_COLOR),
+                    font: SOLUTIONS_FONT_PATH,
+                    alignment: TextAlignment::Center,
+                    linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                }
+                .with_bundle(Transform::from_translation(text_translation)),
                 &(),
             );
 
@@ -189,16 +183,15 @@ impl MavericNode for WordNode {
                 .unwrap_or(1.0);
             commands.add_child(
                 "shape",
-                WithBundle{
+                WithBundle {
                     node: LyonShapeNode {
                         transform: Transform::from_translation(shape_translation),
                         fill: Fill::color(convert_color(palette::WORD_BACKGROUND_UNSTARTED)),
                         stroke: Stroke::color(convert_color(palette::WORD_BORDER)),
                         shape: rectangle,
                     },
-                    bundle: (ButtonInteraction::WordButton(node.tile))
+                    bundle: (ButtonInteraction::WordButton(node.tile)),
                 }
-
                 .with_transition_to::<FillColorLens>(
                     *fill_color,
                     ScalarSpeed { amount_per_second },
@@ -221,25 +214,23 @@ impl<G: Geometry + PartialEq + Send + Sync + 'static> MavericNode for LyonShapeN
     type Context = NoContext;
 
     fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
+
+
         commands.scope(|commands| {
             commands
-                .map_args(|x| &x.shape)
-                .insert_with_node(|node| {
-                    (
-                        GeometryBuilder::build_as(node),
-                        ShapeBundle::default().material,
-                    )
-                })
+                .map_node(|x| &x.shape)
+                .insert_with_node(|node| (GeometryBuilder::build_as(node),))
                 .finish()
         });
-        commands.scope(|c| c.map_args(|x| &x.transform).insert_bundle().finish());
-        commands.scope(|c| c.map_args(|x| &x.fill).insert_bundle().finish());
-        commands.scope(|c| c.map_args(|x| &x.stroke).insert_bundle().finish());
+        commands.node_to_bundle(|x| &x.transform);
+        commands.node_to_bundle(|x| &x.fill);
+        commands.node_to_bundle(|x| &x.stroke);
 
-        commands.ignore_context().ignore_node().insert((
+        commands.insert_static_bundle((
             bevy::sprite::Mesh2dHandle::default(),
             VisibilityBundle::default(),
             GlobalTransform::default(),
+            ShapeBundle::default().material,
         ));
     }
 
