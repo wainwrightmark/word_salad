@@ -4,7 +4,7 @@ use ws_levels::level_sequence::LevelSequence;
 
 use crate::{completion::TotalCompletion, prelude::*};
 
-#[derive(Debug, Clone, Resource, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Resource, PartialEq, Eq, Serialize, Deserialize, MavericContext)]
 pub enum CurrentLevel {
     Fixed {
         level_index: usize,

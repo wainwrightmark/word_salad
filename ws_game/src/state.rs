@@ -25,7 +25,7 @@ impl Plugin for StatePlugin {
     }
 }
 
-#[derive(Debug, Clone, Resource, Serialize, Deserialize)]
+#[derive(Debug, Clone, Resource, Serialize, Deserialize, MavericContext)]
 pub struct FoundWordsState {
     pub unneeded_tiles: GridSet,
     pub word_completions: Vec<Completion>,

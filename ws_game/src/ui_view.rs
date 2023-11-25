@@ -116,7 +116,7 @@ pub struct WordNode {
 }
 
 impl MavericNode for WordNode {
-    type Context = NoContext;
+    type Context = ();
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
@@ -211,7 +211,7 @@ pub struct LyonShapeNode<G: Geometry + PartialEq + Send + Sync + 'static> {
 }
 
 impl<G: Geometry + PartialEq + Send + Sync + 'static> MavericNode for LyonShapeNode<G> {
-    type Context = NoContext;
+    type Context = ();
 
     fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
         commands.scope(|commands| {

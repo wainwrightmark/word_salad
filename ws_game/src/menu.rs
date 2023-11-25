@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use maveric::{
-    helpers::{ChildCommands, UnorderedChildCommands},
+    helpers::{ChildCommands, UnorderedChildCommands, MavericContext},
     node::MavericNode,
     root::MavericRoot,
 };
@@ -16,7 +16,7 @@ use crate::prelude::{
     ViewContext,
 };
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Resource, EnumIs)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Resource, EnumIs, MavericContext)]
 pub enum MenuState {
     #[default]
     Closed,

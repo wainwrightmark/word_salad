@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Resource, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Resource, PartialEq, Eq, Default, Serialize, Deserialize, MavericContext)]
 pub struct ChosenState {
     pub solution: Solution,
     pub is_just_finished: bool,

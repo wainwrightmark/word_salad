@@ -1,6 +1,7 @@
 use crate::prelude::*;
 
-pub type ViewContext = NC6<ChosenState, CurrentLevel, FoundWordsState, Size, LevelTime, MenuState>;
+pub type ViewContext = (ChosenState, CurrentLevel, FoundWordsState, MyWindowSize, LevelTime, MenuState);
+#[derive(MavericRoot)]
 pub struct ViewRoot;
 
 impl MavericRootChildren for ViewRoot {
@@ -41,4 +42,4 @@ impl MavericRootChildren for ViewRoot {
     }
 }
 
-impl_maveric_root!(ViewRoot);
+

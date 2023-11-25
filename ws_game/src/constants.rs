@@ -5,6 +5,17 @@ pub use crate::prelude::*;
 
 pub type Size = WindowSize<SaladWindowBreakPoints>;
 
+#[derive(Debug)]
+pub struct MyWindowSize(pub Size);
+
+impl NodeContext for MyWindowSize{
+    type Wrapper<'c> = Res<'c, Size>;
+
+    fn has_changed(wrapper: &Self::Wrapper<'_>) -> bool {
+        wrapper.is_changed()
+    }
+}
+
 #[derive(Debug, Default)]
 pub struct SaladWindowBreakPoints;
 

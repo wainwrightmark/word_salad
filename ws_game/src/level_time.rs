@@ -15,7 +15,7 @@ impl Plugin for LevelTimePlugin {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Resource, Serialize, Deserialize, EnumIs)]
+#[derive(Debug, PartialEq, Clone, Resource, Serialize, Deserialize, EnumIs, MavericContext)]
 pub enum LevelTime {
     Started(DateTime<Utc>),
     Finished { total_seconds: u64 },

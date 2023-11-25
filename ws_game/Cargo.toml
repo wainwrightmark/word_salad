@@ -23,7 +23,7 @@ serde_with = "3"
 lazy_static = "1.4"
 serde_yaml = "0.9"
 maveric = { git = 'https://github.com/wainwrightmark/maveric', features = [
-  "widgets",
+  "widgets","derive"
 ] }
 nice_bevy_utils = { git = "https://github.com/wainwrightmark/nice_bevy_utils", features = ["async-channel", "bevy_pkv", "bevy_ui"]}
 serde_repr = "0.1"

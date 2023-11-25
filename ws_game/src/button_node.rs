@@ -6,7 +6,6 @@ use bevy_prototype_lyon::{
 use maveric::{
     helpers::ChildCommands,
     node::MavericNode,
-    node_context::NoContext,
     root::MavericRoot,
     widgets::text2d_node::Text2DNode,
     with_bundle::{CanWithBundle, WithBundle},
@@ -25,7 +24,7 @@ pub struct ButtonNode2d {
 }
 
 impl MavericNode for ButtonNode2d {
-    type Context = NoContext;
+    type Context = ();
 
     fn set_components(mut commands: maveric::prelude::SetComponentCommands<Self, Self::Context>) {
         commands.insert_static_bundle(SpatialBundle::default());

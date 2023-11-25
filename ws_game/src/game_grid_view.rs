@@ -165,7 +165,7 @@ fn make_rounded_square(size: f32, radius: f32) -> RoundedPolygon {
 }
 
 impl MavericNode for GridTile {
-    type Context = NoContext;
+    type Context = ();
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
@@ -232,7 +232,7 @@ pub struct GridLetter {
 }
 
 impl MavericNode for GridLetter {
-    type Context = NoContext;
+    type Context = ();
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
             .ignore_context()
@@ -325,7 +325,7 @@ pub struct WordLine {
 }
 
 impl MavericNode for WordLine {
-    type Context = Size;
+    type Context = MyWindowSize;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands.advanced(|args, commands| {
