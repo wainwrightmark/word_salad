@@ -59,7 +59,7 @@ pub mod palette {
 
     pub const GAME_BACKGROUND: Color = Color::ALICE_BLUE;
 
-    pub const WORD_BACKGROUND_UNSTARTED: Color = Color::ALICE_BLUE;
+    pub const WORD_BACKGROUND_UNSTARTED: Color = Color::rgb(0.7, 0.7, 0.7);
     pub const WORD_BACKGROUND_MANUAL_HINT: Color = Color::rgb(0.3, 0.3, 0.9);
     pub const WORD_BACKGROUND_AUTO_HINT: Color = Color::SILVER;
     pub const WORD_BACKGROUND_COMPLETE: Color = Color::GREEN;
@@ -82,6 +82,6 @@ pub mod palette {
     pub const MANUAL_HINT_GLOW: Color = Color::GOLD;
 
     pub const MENU_BUTTON_TEXT: Color = Color::BLACK;
-    pub const MENU_BUTTON_FILL: Color = Color::WHITE;
+    pub const MENU_BUTTON_FILL: Color = Color::rgb(0.8,0.8,0.8);
     pub const MENU_BUTTON_STROKE: Color = Color::BLACK;
 }

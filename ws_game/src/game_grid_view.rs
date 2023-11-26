@@ -191,20 +191,15 @@ impl MavericNode for GridTile {
 
             commands.add_child(
                 "tile",
-
-                SmudShapeNode{
-                    color: convert_color(palette::GRID_TILE_FILL_OTHER),
-                    sfd: "shaders/sdf/box.wgsl",
-                    fill: "shaders/fill/simple.wgsl",
-                    frame_size: 1.1,
-                    params: box_params(1.0, 1.0, 0.1)
-                }
-                .with_bundle(Transform{
-                    translation: Vec3::new(0.0,0.0, crate::z_indices::GRID_TILE),
-                    scale: Vec3::ONE * tile_size * 0.5,
-                    ..Default::default()
-                })
+                box_node(
+                    tile_size,
+                    tile_size,
+                    Vec3::new(0.0, 0.0, crate::z_indices::GRID_TILE),
+                    convert_color(palette::GRID_TILE_FILL_OTHER),
+                    0.1,
+                )
                 .with_transition_to::<SmudColorLens>(fill, 0.1.into()),
+                //,
                 &(),
             );
 
@@ -212,19 +207,14 @@ impl MavericNode for GridTile {
 
             commands.add_child(
                 "border",
-
-                SmudShapeNode{
-                    color: convert_color(palette::GRID_TILE_STROKE),
-                    sfd: "shaders/sdf/box_border.wgsl",
-                    fill: "shaders/fill/simple.wgsl",
-                    frame_size: 1.1,
-                    params: box_border_params(1.0, 1.0, 0.1, node.selectability.tile_border_proportion())
-                }
-                .with_bundle(Transform{
-                    translation: Vec3::new(0.0,0.0, crate::z_indices::GRID_BORDER),
-                    scale: Vec3::ONE * tile_size * 0.5,
-                    ..Default::default()
-                }),
+                box_border_node(
+                    tile_size,
+                    tile_size,
+                    Vec3::new(0.0, 0.0, crate::z_indices::GRID_BORDER),
+                    convert_color(palette::GRID_TILE_STROKE),
+                    0.1,
+                    node.selectability.tile_border_proportion(),
+                ),
                 &(),
             );
 
@@ -315,23 +305,23 @@ impl MavericNode for HintGlows {
 
                     let shape = make_rounded_square(tile_size * 0.8, tile_size * 0.1);
 
-                    let color = convert_color(palette::MANUAL_HINT_GLOW);
+                    let color = convert_color(palette::MANUAL_HINT_GLOW).with_a(0.7);
 
                     commands.add_child(
                         tile.inner() as u32,
-                        {
-                            LyonShapeNode {
-                                transform: Transform::from_translation(translation),
-                                fill: Fill::color(Color::NONE),
-                                stroke: Stroke::new(color.with_a(0.7), tile_size * 0.1),
-                                shape,
-                            }
-                            .with_transition_in::<StrokeColorLens>(
-                                color.with_a(0.0),
-                                color.with_a(0.7),
-                                Duration::from_secs(1),
-                            )
-                        },
+                        box_border_node(
+                            tile_size * 0.8,
+                            tile_size * 0.8,
+                            translation,
+                            color,
+                            0.1,
+                            0.1,
+                        )
+                        .with_transition_in::<StrokeColorLens>(
+                            color.with_a(0.0),
+                            color.with_a(0.7),
+                            Duration::from_secs(1),
+                        ),
                         &(),
                     );
                 }

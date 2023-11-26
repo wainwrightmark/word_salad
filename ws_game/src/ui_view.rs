@@ -155,25 +155,26 @@ impl MavericNode for WordNode {
             );
 
             let shape_translation = centre.extend(crate::z_indices::WORD_BACKGROUND);
+            let shape_border_translation = centre.extend(crate::z_indices::WORD_BACKGROUND + 1.0);
 
-            let e = node.rect.extents * 0.5;
+            // let e = node.rect.extents * 0.5;
 
-            let rectangle = shapes::RoundedPolygon {
-                points: vec![
-                    e,
-                    Vec2 {
-                        x: e.x,
-                        y: e.y * -1.0,
-                    },
-                    e * -1.0,
-                    Vec2 {
-                        x: e.x * -1.0,
-                        y: e.y,
-                    },
-                ],
-                radius: e.y.abs() * 0.5,
-                closed: true,
-            };
+            // let rectangle = shapes::RoundedPolygon {
+            //     points: vec![
+            //         e,
+            //         Vec2 {
+            //             x: e.x,
+            //             y: e.y * -1.0,
+            //         },
+            //         e * -1.0,
+            //         Vec2 {
+            //             x: e.x * -1.0,
+            //             y: e.y,
+            //         },
+            //     ],
+            //     radius: e.y.abs() * 0.5,
+            //     closed: true,
+            // };
 
             let fill_color = node.completion.color();
             let amount_per_second = node
@@ -181,58 +182,68 @@ impl MavericNode for WordNode {
                 .is_unstarted()
                 .then_some(10.0)
                 .unwrap_or(1.0);
+
             commands.add_child(
-                "shape",
-                WithBundle {
-                    node: LyonShapeNode {
-                        transform: Transform::from_translation(shape_translation),
-                        fill: Fill::color(convert_color(palette::WORD_BACKGROUND_UNSTARTED)),
-                        stroke: Stroke::color(convert_color(palette::WORD_BORDER)),
-                        shape: rectangle,
-                    },
-                    bundle: (ButtonInteraction::WordButton(node.tile)),
-                }
-                .with_transition_to::<FillColorLens>(
-                    *fill_color,
-                    ScalarSpeed { amount_per_second },
-                ),
+                "shape_fill",
+                box_node(
+                    node.rect.extents.x.abs(),
+                    node.rect.extents.y.abs(),
+                    shape_translation,
+                    convert_color(palette::WORD_BACKGROUND_UNSTARTED),
+                    0.1,
+                )
+                .with_bundle(ButtonInteraction::WordButton(node.tile))
+                .with_transition_to::<SmudColorLens>(*fill_color, amount_per_second.into()),
                 &(),
             );
+
+            // commands.add_child( //todo use a different shader rather than a border
+            //     "shape_border",
+            //     box_border_node(
+            //         node.rect.extents.x.abs(),
+            //         node.rect.extents.y.abs(),
+            //         shape_border_translation,
+            //         convert_color(palette::WORD_BORDER),
+            //         0.1,
+            //         0.025,
+            //     ),
+            //     &(),
+            // );
         })
     }
 }
 
-#[derive(PartialEq)]
-pub struct LyonShapeNode<G: Geometry + PartialEq + Send + Sync + 'static> {
-    pub shape: G,
-    pub transform: Transform,
-    pub fill: Fill,
-    pub stroke: Stroke,
-}
+// #[derive(PartialEq)]
+// pub struct LyonShapeNode<G: Geometry + PartialEq + Send + Sync + 'static> {
+//     pub shape: G,
+//     pub transform: Transform,
+//     pub fill: Fill,
+//     pub stroke: Stroke,
+// }
 
-impl<G: Geometry + PartialEq + Send + Sync + 'static> MavericNode for LyonShapeNode<G> {
-    type Context = ();
+// impl<G: Geometry + PartialEq + Send + Sync + 'static> MavericNode for LyonShapeNode<G> {
+//     type Context = ();
 
-    fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
-        commands.scope(|commands| {
-            commands
-                .map_node(|x| &x.shape)
-                .insert_with_node(|node| (GeometryBuilder::build_as(node),))
-                .finish()
-        });
-        commands.node_to_bundle(|x| &x.transform);
-        commands.node_to_bundle(|x| &x.fill);
-        commands.node_to_bundle(|x| &x.stroke);
+//     fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
+//         commands.scope(|commands| {
+//             commands
+//                 .map_node(|x| &x.shape)
+//                 .insert_with_node(|node| (GeometryBuilder::build_as(node),))
+//                 .finish()
+//         });
+//         commands.node_to_bundle(|x| &x.transform);
+//         commands.node_to_bundle(|x| &x.fill);
+//         commands.node_to_bundle(|x| &x.stroke);
 
-        commands.insert_static_bundle((
-            bevy::sprite::Mesh2dHandle::default(),
-            VisibilityBundle::default(),
-            GlobalTransform::default(),
-            ShapeBundle::default().material,
-        ));
-    }
+//         commands.insert_static_bundle((
+//             bevy::sprite::Mesh2dHandle::default(),
+//             VisibilityBundle::default(),
+//             GlobalTransform::default(),
+//             ShapeBundle::default().material,
+//         ));
+//     }
 
-    fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
-        commands.no_children()
-    }
-}
+//     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
+//         commands.no_children()
+//     }
+// }
