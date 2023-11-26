@@ -103,20 +103,21 @@ impl MavericNode for CongratsView {
                     commands.add_child(
                         "share",
                         Text2DNode {
-                            text: TextNode {
-                                text: "Share",
-                                font_size,
-                                color: convert_color(palette::BUTTON_TEXT_COLOR),
-                                font: BUTTONS_FONT_PATH,
-                                alignment: TextAlignment::Center,
-                                linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                            },
-                            transform: Transform::from_translation(
+                            text: "Share",
+                            font_size,
+                            color: convert_color(palette::BUTTON_TEXT_COLOR),
+                            font: BUTTONS_FONT_PATH,
+                            alignment: TextAlignment::Center,
+                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                        }
+                        .with_bundle(
+                            Transform::from_translation(
                                 size.get_rect(&CongratsLayoutEntity::ShareButton, &())
                                     .centre()
                                     .extend(crate::z_indices::CONGRATS_BUTTON),
-                            ),
-                        },
+                            )
+                        )
+                        ,
                         &(),
                     );
                 }

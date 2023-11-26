@@ -187,27 +187,49 @@ impl MavericNode for GridTile {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
             let tile_size = node.tile_size;
             let fill = node.selectability.tile_fill_color();
-            let line_width = tile_size * node.selectability.tile_border_proportion();
+            //let line_width = tile_size * node.selectability.tile_border_proportion();
 
             commands.add_child(
-                0,
-                LyonShapeNode {
-                    shape: make_rounded_square(tile_size, tile_size * 0.1),
-                    transform: Transform::from_xyz(0.0, 0.0, crate::z_indices::GRID_TILE),
-                    fill: Fill::color(convert_color(palette::GRID_TILE_FILL_OTHER)),
-                    stroke: Stroke::new(convert_color(palette::GRID_TILE_STROKE), line_width),
+                "tile",
+
+                SmudShapeNode{
+                    color: convert_color(palette::GRID_TILE_FILL_OTHER),
+                    sfd: "shaders/sdf/tile.wgsl",
+                    fill: "shaders/fill/simple.wgsl",
+                    frame_size: 1.3,
+                    params: Vec4::X * 0.1
                 }
-                .with_transition_to::<FillColorLens>(
-                    fill,
-                    ScalarSpeed {
-                        amount_per_second: 0.1,
-                    },
-                ),
+                .with_bundle(Transform{
+                    translation: Vec3::new(0.0,0.0, crate::z_indices::GRID_TILE),
+                    scale: Vec3::ONE * tile_size * 0.5,
+                    ..Default::default()
+                })
+                .with_transition_to::<SmudColorLens>(fill, 0.1.into()),
+                &(),
+            );
+
+            //u32::from_ne_bytes(bytes)
+
+            commands.add_child(
+                "border",
+
+                SmudShapeNode{
+                    color: convert_color(palette::GRID_TILE_STROKE),
+                    sfd: "shaders/sdf/tile_border.wgsl",
+                    fill: "shaders/fill/simple.wgsl",
+                    frame_size: 1.1,
+                    params: Vec4::new(0.1, node.selectability.tile_border_proportion(), 0.0,0.0)
+                }
+                .with_bundle(Transform{
+                    translation: Vec3::new(0.0,0.0, crate::z_indices::GRID_BORDER),
+                    scale: Vec3::ONE * tile_size * 0.5,
+                    ..Default::default()
+                }),
                 &(),
             );
 
             commands.add_child(
-                1,
+                "letter",
                 GridLetter {
                     character: node.character,
                     font_size: node.font_size,

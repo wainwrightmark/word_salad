@@ -1,4 +1,5 @@
 pub const GRID_TILE: f32 = 0.0;
+pub const GRID_BORDER: f32 = 10.0;
 pub const HINT: f32 = 50.0;
 pub const WORD_LINE: f32 = 75.0;
 pub const TILE_TEXT: f32 = 100.0;

@@ -34,7 +34,7 @@ pub fn go() {
         ..Default::default()
     };
 
-    app.insert_resource(Msaa::Sample4)
+    app.insert_resource(Msaa::Off)
         .insert_resource(ClearColor(CLEAR_COLOR))
         .add_plugins(
             DefaultPlugins
@@ -54,6 +54,7 @@ pub fn go() {
     app.add_plugins(StatePlugin);
     app.add_plugins(AnimatedSolutionPlugin);
     app.add_plugins(LevelTimePlugin);
+    app.add_plugins(ShapesPlugin);
 
     app.register_transition::<FillColorLens>();
     app.register_transition::<StrokeColorLens>();

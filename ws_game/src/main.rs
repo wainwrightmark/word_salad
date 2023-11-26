@@ -22,6 +22,7 @@ pub mod view;
 #[cfg(target_arch = "wasm32")]
 pub mod wasm;
 pub mod z_indices;
+pub mod shapes;
 
 fn main() {
     crate::startup::go();
@@ -48,6 +49,7 @@ pub mod prelude {
     pub use crate::video::*;
     pub use crate::video::*;
     pub use crate::view::*;
+    pub use crate::shapes::*;
 
     pub use std::array;
 
