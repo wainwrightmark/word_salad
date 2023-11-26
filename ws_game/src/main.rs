@@ -13,6 +13,7 @@ pub mod input;
 pub mod level_time;
 pub mod menu;
 pub mod menu_layout;
+pub mod shapes;
 pub mod startup;
 pub mod state;
 pub mod top_bar_view;
@@ -21,9 +22,8 @@ pub mod video;
 pub mod view;
 #[cfg(target_arch = "wasm32")]
 pub mod wasm;
-pub mod z_indices;
-pub mod shapes;
 pub mod wordline;
+pub mod z_indices;
 
 fn main() {
     crate::startup::go();
@@ -44,13 +44,13 @@ pub mod prelude {
     pub use crate::level_time::*;
     pub use crate::menu::*;
     pub use crate::menu_layout::*;
+    pub use crate::shapes::*;
     pub use crate::state::*;
     pub use crate::top_bar_view::*;
     pub use crate::ui_view::*;
     pub use crate::video::*;
     pub use crate::video::*;
     pub use crate::view::*;
-    pub use crate::shapes::*;
     pub use crate::wordline::*;
 
     pub use std::array;

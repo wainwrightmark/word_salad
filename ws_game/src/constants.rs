@@ -8,7 +8,7 @@ pub type Size = WindowSize<SaladWindowBreakPoints>;
 #[derive(Debug)]
 pub struct MyWindowSize;
 
-impl NodeContext for MyWindowSize{
+impl NodeContext for MyWindowSize {
     type Wrapper<'c> = Res<'c, Size>;
 
     fn has_changed(wrapper: &Self::Wrapper<'_>) -> bool {

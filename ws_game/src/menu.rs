@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use maveric::{
-    helpers::{ChildCommands, UnorderedChildCommands, MavericContext},
+    helpers::{ChildCommands, MavericContext, UnorderedChildCommands},
     node::MavericNode,
     root::MavericRoot,
 };

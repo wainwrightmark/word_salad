@@ -1,7 +1,6 @@
-
 use bevy::prelude::*;
 
-use maveric::transition::speed::{LinearSpeed};
+use maveric::transition::speed::LinearSpeed;
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
 use ws_core::layout::entities::{CongratsLayoutEntity, LayoutTopBarButton, LayoutWordTile};
 use ws_levels::level_sequence::LevelSequence;

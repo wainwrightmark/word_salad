@@ -1,7 +1,7 @@
 use crate::prelude::*;
-use maveric::transition::speed::ScalarSpeed;
+
 use maveric::widgets::text2d_node::Text2DNode;
-use maveric::with_bundle::{CanWithBundle, WithBundle};
+use maveric::with_bundle::CanWithBundle;
 use ws_core::layout::entities::*;
 use ws_core::prelude::*;
 
@@ -155,7 +155,7 @@ impl MavericNode for WordNode {
             );
 
             let shape_translation = centre.extend(crate::z_indices::WORD_BACKGROUND);
-            let shape_border_translation = centre.extend(crate::z_indices::WORD_BACKGROUND + 1.0);
+            let _shape_border_translation = centre.extend(crate::z_indices::WORD_BACKGROUND + 1.0);
 
             // let e = node.rect.extents * 0.5;
 
@@ -212,4 +212,3 @@ impl MavericNode for WordNode {
         })
     }
 }
-

@@ -110,14 +110,11 @@ impl MavericNode for CongratsView {
                             alignment: TextAlignment::Center,
                             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         }
-                        .with_bundle(
-                            Transform::from_translation(
-                                size.get_rect(&CongratsLayoutEntity::ShareButton, &())
-                                    .centre()
-                                    .extend(crate::z_indices::CONGRATS_BUTTON),
-                            )
-                        )
-                        ,
+                        .with_bundle(Transform::from_translation(
+                            size.get_rect(&CongratsLayoutEntity::ShareButton, &())
+                                .centre()
+                                .extend(crate::z_indices::CONGRATS_BUTTON),
+                        )),
                         &(),
                     );
                 }

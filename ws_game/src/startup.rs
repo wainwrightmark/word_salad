@@ -55,7 +55,6 @@ pub fn go() {
     app.add_plugins(LevelTimePlugin);
     app.add_plugins(ShapesPlugin);
 
-
     app.register_transition::<BackgroundColorLens>();
     app.register_transition::<TransformRotationYLens>();
     app.register_transition::<TransformTranslationLens>();

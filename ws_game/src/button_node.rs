@@ -6,9 +6,7 @@ use maveric::{
 
 use ws_core::{palette, LayoutRectangle};
 
-use crate::prelude::{
-    box_border_node, box_node, convert_color, ButtonInteraction, MENU_BUTTON_FONT_PATH,
-};
+use crate::prelude::{box_node, convert_color, ButtonInteraction, MENU_BUTTON_FONT_PATH};
 
 #[derive(Debug, PartialEq)]
 pub struct ButtonNode2d {

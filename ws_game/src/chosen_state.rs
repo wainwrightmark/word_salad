@@ -1,7 +1,9 @@
 use crate::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Resource, PartialEq, Eq, Default, Serialize, Deserialize, MavericContext)]
+#[derive(
+    Debug, Clone, Resource, PartialEq, Eq, Default, Serialize, Deserialize, MavericContext,
+)]
 pub struct ChosenState {
     pub solution: Solution,
     pub is_just_finished: bool,
@@ -101,7 +103,6 @@ impl ChosenState {
 
 #[cfg(test)]
 pub mod tests {
-    
 
     use super::*;
     use test_case::test_case;
