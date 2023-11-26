@@ -59,3 +59,11 @@ impl MavericNode for SmudShapeNode {
         commands.no_children()
     }
 }
+
+pub fn box_params(width: f32, height: f32, rounding: f32) -> Vec4 {
+    Vec4::new(width, height, rounding, 0.0)
+}
+
+pub fn box_border_params(width: f32, height: f32, rounding: f32, border_width: f32) -> Vec4 {
+    Vec4::new(width, height, rounding, border_width)
+}

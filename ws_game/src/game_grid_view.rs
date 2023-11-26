@@ -194,10 +194,10 @@ impl MavericNode for GridTile {
 
                 SmudShapeNode{
                     color: convert_color(palette::GRID_TILE_FILL_OTHER),
-                    sfd: "shaders/sdf/tile.wgsl",
+                    sfd: "shaders/sdf/box.wgsl",
                     fill: "shaders/fill/simple.wgsl",
-                    frame_size: 1.3,
-                    params: Vec4::X * 0.1
+                    frame_size: 1.1,
+                    params: box_params(1.0, 1.0, 0.1)
                 }
                 .with_bundle(Transform{
                     translation: Vec3::new(0.0,0.0, crate::z_indices::GRID_TILE),
@@ -215,10 +215,10 @@ impl MavericNode for GridTile {
 
                 SmudShapeNode{
                     color: convert_color(palette::GRID_TILE_STROKE),
-                    sfd: "shaders/sdf/tile_border.wgsl",
+                    sfd: "shaders/sdf/box_border.wgsl",
                     fill: "shaders/fill/simple.wgsl",
                     frame_size: 1.1,
-                    params: Vec4::new(0.1, node.selectability.tile_border_proportion(), 0.0,0.0)
+                    params: box_border_params(1.0, 1.0, 0.1, node.selectability.tile_border_proportion())
                 }
                 .with_bundle(Transform{
                     translation: Vec3::new(0.0,0.0, crate::z_indices::GRID_BORDER),
