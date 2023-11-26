@@ -1,10 +1,6 @@
 use crate::prelude::*;
-pub use bevy_prototype_lyon::prelude::*;
-use bevy_prototype_lyon::shapes::RoundedPolygon;
 use maveric::{
-    transition::speed::{LinearSpeed, ScalarSpeed},
-    widgets::text2d_node::Text2DNode,
-    with_bundle::CanWithBundle,
+    transition::speed::LinearSpeed, widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle,
 };
 
 use std::time::Duration;
@@ -48,11 +44,6 @@ impl Selectability {
     }
 }
 
-maveric::define_lens!(StrokeColorLens, Stroke, Color, color);
-maveric::define_lens!(StrokeOptionsLens, Stroke, StrokeOptions, options);
-maveric::define_lens!(StrokeOptionsWidthLens, StrokeOptions, f32, line_width);
-maveric::define_lens!(FillColorLens, Fill, Color, color);
-pub type StrokeWidthLens = Prism2<StrokeOptionsLens, StrokeOptionsWidthLens>;
 #[derive(Debug, Clone, PartialEq)]
 pub struct GridTiles {
     pub level_complete: bool,
@@ -144,24 +135,6 @@ impl MavericNode for GridTiles {
             }
         });
     }
-}
-
-fn make_rounded_square(size: f32, radius: f32) -> RoundedPolygon {
-    let a = size * 0.5;
-    let m_a = size * -0.5;
-
-    let rectangle = shapes::RoundedPolygon {
-        points: vec![
-            Vec2 { x: a, y: a },
-            Vec2 { x: a, y: m_a },
-            Vec2 { x: m_a, y: m_a },
-            Vec2 { x: m_a, y: a },
-        ],
-        radius,
-        closed: true,
-    };
-
-    rectangle
 }
 
 impl MavericNode for GridTile {
@@ -303,7 +276,7 @@ impl MavericNode for HintGlows {
                     let translation = rect.centre().extend(crate::z_indices::HINT);
                     let tile_size = rect.extents.x;
 
-                    let shape = make_rounded_square(tile_size * 0.8, tile_size * 0.1);
+                    //let shape = make_rounded_square(tile_size * 0.8, tile_size * 0.1);
 
                     let color = convert_color(palette::MANUAL_HINT_GLOW).with_a(0.7);
 
@@ -317,7 +290,7 @@ impl MavericNode for HintGlows {
                             0.1,
                             0.1,
                         )
-                        .with_transition_in::<StrokeColorLens>(
+                        .with_transition_in::<SmudColorLens>(
                             color.with_a(0.0),
                             color.with_a(0.7),
                             Duration::from_secs(1),
@@ -326,131 +299,5 @@ impl MavericNode for HintGlows {
                     );
                 }
             });
-    }
-}
-
-#[derive(Debug, PartialEq)]
-pub struct WordLine {
-    pub solution: Solution,
-    pub should_hide: bool,
-    pub close_to_solution: bool,
-}
-
-impl MavericNode for WordLine {
-    type Context = MyWindowSize;
-
-    fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
-        commands.advanced(|args, commands| {
-            if !args.is_hot() {
-                return;
-            }
-            let size = args.context;
-
-            let (solution, visible) = if args.node.solution.len() > 0 {
-                (args.node.solution.as_slice(), !args.node.should_hide)
-            } else {
-                match args.previous {
-                    Some(s) => {
-                        if s.should_hide {
-                            (args.node.solution.as_slice(), false)
-                        } else {
-                            (s.solution.as_slice(), false)
-                        }
-                    }
-                    None => (args.node.solution.as_slice(), false),
-                }
-
-                // (
-                //     args.previous.map(|x| x.solution.as_slice()).unwrap_or_default(),
-                //     false,
-                // )
-            };
-
-            let mut builder = PathBuilder::new();
-
-            for (index, tile) in solution.iter().enumerate() {
-                let position = size.get_rect(&LayoutGridTile(*tile), &()).centre();
-                if index == 0 {
-                    builder.move_to(position);
-                    builder.line_to(position);
-                } else {
-                    builder.line_to(position);
-                }
-            }
-
-            let mut default_width =
-                size.get_rect(&GameLayoutEntity::Grid, &()).extents.x * 50. / 320.;
-
-            if !visible {
-                //info!("Word line not visible");
-                commands.transition_value::<StrokeWidthLens>(
-                    default_width,
-                    0.0,
-                    Some(ScalarSpeed {
-                        amount_per_second: default_width,
-                    }),
-                );
-            } else if args
-                .previous
-                .is_some_and(|x| !x.solution.is_empty() && !x.should_hide)
-            {
-                if args.node.close_to_solution {
-                    commands.insert(Transition::<StrokeWidthLens>::new(
-                        TransitionStep::new_cycle(
-                            [
-                                (
-                                    default_width * 1.05,
-                                    ScalarSpeed {
-                                        amount_per_second: 5.0,
-                                    },
-                                ),
-                                (
-                                    default_width,
-                                    ScalarSpeed {
-                                        amount_per_second: 5.0,
-                                    },
-                                ),
-                            ]
-                            .into_iter(),
-                        ),
-                    ))
-                } else {
-                    commands.remove::<Transition<StrokeWidthLens>>();
-                }
-            } else {
-                //info!("Word line newly visible");
-                commands.insert(Transition::<StrokeWidthLens>::new(TransitionStep::new_arc(
-                    default_width,
-                    Some(ScalarSpeed {
-                        amount_per_second: default_width,
-                    }),
-                    NextStep::None,
-                )));
-
-                default_width = 0.0;
-            }
-
-            commands.insert(ShapeBundle {
-                path: builder.build(),
-                spatial: SpatialBundle::from_transform(Transform::from_translation(Vec3::new(
-                    0.0,
-                    0.0,
-                    crate::z_indices::WORD_LINE,
-                ))),
-                ..Default::default()
-            });
-            commands.insert(Stroke {
-                color: convert_color(palette::WORD_LINE_COLOR),
-                options: StrokeOptions::default()
-                    .with_line_width(default_width)
-                    .with_start_cap(LineCap::Round)
-                    .with_end_cap(LineCap::Round)
-                    .with_line_join(LineJoin::Round),
-            });
-        });
-    }
-
-    fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
-        commands.no_children()
     }
 }

@@ -11,6 +11,7 @@ impl Plugin for ShapesPlugin {
         app.add_plugins(SmudPlugin);
 
         app.register_transition::<SmudColorLens>();
+        app.register_transition::<Smud4ParamWLens>();
 
         app.add_systems(PostStartup, preload_shaders);
     }
@@ -18,9 +19,13 @@ impl Plugin for ShapesPlugin {
 
 maveric::define_lens!(SmudColorLens, SmudShape, Color, color);
 
+maveric::define_lens!(SmudParamsLens, SmudShape, Vec4, params);
+maveric::define_lens!(Vec4wLens, Vec4, f32, w);
+
+pub type Smud4ParamWLens = Prism2<SmudParamsLens, Vec4wLens>;
 fn preload_shaders(asset_server: Res<AssetServer>){
     //force all shaders to stay loaded
-    for shader in [BOX_SHADER_PATH, BOX_BORDER_SHADER_PATH, SIMPLE_FILL_SHADER_PATH]{
+    for shader in [BOX_SHADER_PATH, BOX_BORDER_SHADER_PATH, SIMPLE_FILL_SHADER_PATH, WORD_LINE_SHADER_PATH]{
         let handle: Handle<Shader> =  asset_server.load(shader);
         match handle{
             Handle::Strong(s) => {
@@ -89,8 +94,13 @@ fn box_border_params(width: f32, height: f32, rounding: f32, border_width: f32) 
 
 pub const BOX_SHADER_PATH: &'static str = "shaders/sdf/box.wgsl";
 pub const BOX_BORDER_SHADER_PATH: &'static str = "shaders/sdf/box_border.wgsl";
+pub const WORD_LINE_SHADER_PATH: &'static str = "shaders/sdf/word_line.wgsl";
+
+
 
 pub const SIMPLE_FILL_SHADER_PATH: &'static str = "shaders/fill/simple.wgsl";
+
+
 
 pub fn box_node(
     width: f32,

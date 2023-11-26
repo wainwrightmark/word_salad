@@ -10,7 +10,7 @@ ws_core = {path= "../ws_core"}
 ws_levels = {path= "../ws_levels"}
 rand = "0.8.5"
 itertools = "0.12"
-bevy_prototype_lyon = { version = "0.10" }
+# bevy_prototype_lyon = { version = "0.10" }
 strum = { version = "0.25", features = ["derive"] }
 chrono = { version = "0.4", features = ["serde", "wasmbind"] }
 bevy_pkv = { version = "0.9"}
@@ -34,6 +34,7 @@ wasm-bindgen-futures = "0.4.38"
 serde-wasm-bindgen = "0.6.1"
 num-traits = "0.2"
 bevy_smud = {path= "../../../random/bevy_smud"}
+bitfield-struct = "0.5.5"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 js-sys = { version = "0.3" }

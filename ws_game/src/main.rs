@@ -23,6 +23,7 @@ pub mod view;
 pub mod wasm;
 pub mod z_indices;
 pub mod shapes;
+pub mod wordline;
 
 fn main() {
     crate::startup::go();
@@ -50,6 +51,7 @@ pub mod prelude {
     pub use crate::video::*;
     pub use crate::view::*;
     pub use crate::shapes::*;
+    pub use crate::wordline::*;
 
     pub use std::array;
 

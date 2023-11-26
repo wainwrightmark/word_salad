@@ -213,37 +213,3 @@ impl MavericNode for WordNode {
     }
 }
 
-// #[derive(PartialEq)]
-// pub struct LyonShapeNode<G: Geometry + PartialEq + Send + Sync + 'static> {
-//     pub shape: G,
-//     pub transform: Transform,
-//     pub fill: Fill,
-//     pub stroke: Stroke,
-// }
-
-// impl<G: Geometry + PartialEq + Send + Sync + 'static> MavericNode for LyonShapeNode<G> {
-//     type Context = ();
-
-//     fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
-//         commands.scope(|commands| {
-//             commands
-//                 .map_node(|x| &x.shape)
-//                 .insert_with_node(|node| (GeometryBuilder::build_as(node),))
-//                 .finish()
-//         });
-//         commands.node_to_bundle(|x| &x.transform);
-//         commands.node_to_bundle(|x| &x.fill);
-//         commands.node_to_bundle(|x| &x.stroke);
-
-//         commands.insert_static_bundle((
-//             bevy::sprite::Mesh2dHandle::default(),
-//             VisibilityBundle::default(),
-//             GlobalTransform::default(),
-//             ShapeBundle::default().material,
-//         ));
-//     }
-
-//     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
-//         commands.no_children()
-//     }
-// }

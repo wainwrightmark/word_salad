@@ -47,7 +47,6 @@ pub fn go() {
                     },
                 ),
         )
-        .add_plugins(ShapePlugin)
         .add_systems(Startup, setup_system);
 
     app.register_maveric::<ViewRoot>();
@@ -56,9 +55,7 @@ pub fn go() {
     app.add_plugins(LevelTimePlugin);
     app.add_plugins(ShapesPlugin);
 
-    app.register_transition::<FillColorLens>();
-    app.register_transition::<StrokeColorLens>();
-    app.register_transition::<StrokeWidthLens>();
+
     app.register_transition::<BackgroundColorLens>();
     app.register_transition::<TransformRotationYLens>();
     app.register_transition::<TransformTranslationLens>();
