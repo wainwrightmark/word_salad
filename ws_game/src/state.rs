@@ -465,6 +465,7 @@ fn could_precede(p: &[Character], s: &[Character]) -> bool {
     true
 }
 
+#[allow(dead_code)]
 /// If this doesn't come between the preceder and succeeder, return None
 /// If there is exactly one child, which returns a value greater than zero, return that value + 1
 /// Otherwise return one

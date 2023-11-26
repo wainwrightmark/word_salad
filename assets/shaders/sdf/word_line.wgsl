@@ -68,7 +68,7 @@ fn get_position(x_bits: u32, y_bits: u32) -> vec2<f32> {
     let x_f = int_to_float(x_bits);
     let y_f = int_to_float(y_bits);
 
-    let v = vec2<f32>((x_f - 1.5) * 0.5, (y_f - 1.3) * -0.5);
+    let v = vec2<f32>((x_f - 1.5) * 0.5, (y_f - 1.5) * -0.5);
 
     return v;
 }

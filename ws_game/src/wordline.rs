@@ -40,19 +40,15 @@ impl MavericNode for WordLine {
                 }
             };
 
-            let scale = args
-                .context
-                .get_rect(&GameLayoutEntity::Grid, &())
-                .extents
-                .y
-                .abs()
-                * 0.5;
+            let rect = args.context.get_rect(&GameLayoutEntity::Grid, &());
+
+            let scale = rect.extents.x.abs() * 0.5;
             let initial_width = if !visible {
                 //info!("Word line not visible");
                 commands.transition_value::<Smud4ParamWLens>(
                     DEFAULT_WIDTH,
-                    -0.01,
-                    Some(DEFAULT_WIDTH.into()),
+                    DEFAULT_WIDTH * -1.0,
+                    Some((DEFAULT_WIDTH * 1.2).into()),
                 );
                 DEFAULT_WIDTH
             } else if args
@@ -81,14 +77,14 @@ impl MavericNode for WordLine {
                     NextStep::None,
                 )));
 
-                -0.01
+                DEFAULT_WIDTH * -1.0
             };
 
             let asset_server = commands
                 .get_res_untracked::<AssetServer>()
                 .expect("Wordline should be able to get asset server");
 
-            let fill = asset_server.load(SIMPLE_FILL_SHADER_PATH);
+            let fill = asset_server.load(WORD_LINE_FILL_SHADER_PATH);
             let sdf = asset_server.load(WORD_LINE_SHADER_PATH);
 
             let (arg_x, arg_y, arg_z) = solution_to_u32s(&solution);
@@ -112,55 +108,13 @@ impl MavericNode for WordLine {
                     ),
                 },
                 Transform {
-                    translation: Vec3::Z * z_indices::WORD_LINE,
+                    translation: rect.centre().extend(z_indices::WORD_LINE),
                     scale: Vec3::ONE * scale,
                     ..default()
                 },
             ));
         });
     }
-
-    // fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
-    //     commands.advanced(|args, commands| {
-    //         if !args.is_hot() {
-    //             return;
-    //         }
-    //         let size = args.context;
-
-    //         let mut builder = PathBuilder::new();
-
-    //         for (index, tile) in solution.iter().enumerate() {
-    //             let position = size.get_rect(&LayoutGridTile(*tile), &()).centre();
-    //             if index == 0 {
-    //                 builder.move_to(position);
-    //                 builder.line_to(position);
-    //             } else {
-    //                 builder.line_to(position);
-    //             }
-    //         }
-
-    //         let mut default_width =
-    //             size.get_rect(&GameLayoutEntity::Grid, &()).extents.x * 50. / 320.;
-
-    //         commands.insert(ShapeBundle {
-    //             path: builder.build(),
-    //             spatial: SpatialBundle::from_transform(Transform::from_translation(Vec3::new(
-    //                 0.0,
-    //                 0.0,
-    //                 crate::z_indices::WORD_LINE,
-    //             ))),
-    //             ..Default::default()
-    //         });
-    //         commands.insert(Stroke {
-    //             color: convert_color(palette::WORD_LINE_COLOR),
-    //             options: StrokeOptions::default()
-    //                 .with_line_width(default_width)
-    //                 .with_start_cap(LineCap::Round)
-    //                 .with_end_cap(LineCap::Round)
-    //                 .with_line_join(LineJoin::Round),
-    //         });
-    //     });
-    // }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.no_children()

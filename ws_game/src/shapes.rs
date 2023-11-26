@@ -28,8 +28,9 @@ fn preload_shaders(asset_server: Res<AssetServer>) {
     for shader in [
         BOX_SHADER_PATH,
         BOX_BORDER_SHADER_PATH,
-        SIMPLE_FILL_SHADER_PATH,
         WORD_LINE_SHADER_PATH,
+        SIMPLE_FILL_SHADER_PATH,
+        WORD_LINE_FILL_SHADER_PATH,
     ] {
         let handle: Handle<Shader> = asset_server.load(shader);
         match handle {
@@ -102,6 +103,7 @@ pub const BOX_BORDER_SHADER_PATH: &'static str = "shaders/sdf/box_border.wgsl";
 pub const WORD_LINE_SHADER_PATH: &'static str = "shaders/sdf/word_line.wgsl";
 
 pub const SIMPLE_FILL_SHADER_PATH: &'static str = "shaders/fill/simple.wgsl";
+pub const WORD_LINE_FILL_SHADER_PATH: &'static str = "shaders/fill/word_line_fill.wgsl";
 
 pub fn box_node(
     width: f32,
