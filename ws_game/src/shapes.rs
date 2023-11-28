@@ -39,6 +39,7 @@ fn preload_shaders(asset_server: Res<AssetServer>) {
         WORD_LINE_SHADER_PATH,
         SIMPLE_FILL_SHADER_PATH,
         WORD_LINE_FILL_SHADER_PATH,
+        FILL_WITH_OUTLINE_SHADER_PATH,
     ] {
         let handle: Handle<Shader> = asset_server.load(shader);
         match handle {
@@ -115,6 +116,7 @@ pub const BOX_BORDER_SHADER_PATH: &'static str = "shaders/sdf/box_border.wgsl";
 pub const WORD_LINE_SHADER_PATH: &'static str = "shaders/sdf/word_line.wgsl";
 
 pub const SIMPLE_FILL_SHADER_PATH: &'static str = "shaders/fill/simple.wgsl";
+pub const FILL_WITH_OUTLINE_SHADER_PATH: &'static str = "shaders/fill/fill_with_outline.wgsl";
 pub const WORD_LINE_FILL_SHADER_PATH: &'static str = "shaders/fill/word_line_fill.wgsl";
 
 pub fn box_node(
@@ -129,10 +131,19 @@ pub fn box_node(
         color,
         sfd: BOX_SHADER_PATH,
         fill: SIMPLE_FILL_SHADER_PATH,
-        frame_size: 1.1,
-        params: [width / scale, height / scale, rounding, 0.0, 0.0,0.0,0.0,0.0],
-        sdf_param_usage: ShaderParamUsage::from_params(&[0,1,2]),
-        fill_param_usage: ShaderParamUsage::NO_PARAMS
+        frame_size: 1.0,
+        params: [
+            width / scale,
+            height / scale,
+            rounding,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+        ],
+        sdf_param_usage: ShaderParamUsage::from_params(&[0, 1, 2]),
+        fill_param_usage: ShaderParamUsage::NO_PARAMS,
     }
     .with_bundle(Transform {
         translation,
@@ -154,11 +165,57 @@ pub fn box_border_node(
         color,
         sfd: BOX_BORDER_SHADER_PATH,
         fill: SIMPLE_FILL_SHADER_PATH,
-        frame_size: 1.1,
+        frame_size: 1.0,
 
-        params: [width / scale, height / scale, rounding, border_proportion, 0.0,0.0,0.0,0.0],
-        sdf_param_usage: ShaderParamUsage::from_params(&[0,1,2,3]),
-        fill_param_usage: ShaderParamUsage::NO_PARAMS
+        params: [
+            width / scale,
+            height / scale,
+            rounding,
+            border_proportion,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+        ],
+        sdf_param_usage: ShaderParamUsage::from_params(&[0, 1, 2, 3]),
+        fill_param_usage: ShaderParamUsage::NO_PARAMS,
+    }
+    .with_bundle(Transform {
+        translation,
+        scale: Vec3::ONE * scale * 0.5,
+        ..Default::default()
+    })
+}
+
+pub fn box_with_border_node(
+    width: f32,
+    height: f32,
+    translation: Vec3,
+    color: Color,
+    border_color: Color,
+    rounding: f32,
+    border_proportion: f32,
+) -> impl MavericNode<Context = ()> {
+    let scale = width.max(height);
+    SmudShapeNode {
+        color,
+        sfd: BOX_SHADER_PATH,
+        fill: FILL_WITH_OUTLINE_SHADER_PATH,
+        frame_size: 1.0,
+
+        params: [
+            width / scale,
+            height / scale,
+            rounding,
+
+            0.0,
+            border_proportion,
+            border_color.r(),
+            border_color.g(),
+            border_color.b(),
+        ],
+        sdf_param_usage: ShaderParamUsage::from_params(&[0, 1, 2]),
+        fill_param_usage: ShaderParamUsage::from_params(&[4,5,6,7]),
     }
     .with_bundle(Transform {
         translation,
