@@ -1,4 +1,6 @@
 use crate::prelude::*;
+use bevy_smud::param_usage::ShaderParamUsage;
+use bevy_smud::Frame;
 use maveric::{
     transition::speed::LinearSpeed, widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle,
 };
@@ -27,7 +29,6 @@ impl GridTile {
             //HintStatus::AutoHinted => palette::GRID_TILE_STROKE_AUTO_HINTED.convert_color(),
             _ => palette::GRID_TILE_FILL.convert_color(),
         }
-
     }
 
     fn border_color(&self) -> Color {
@@ -46,8 +47,6 @@ impl GridTile {
 /*
 TODOS
     add some sparkles
-    change wordline path to use two u32 parameters
-    add a proportion parameter to the grid line path
 
 */
 
@@ -211,8 +210,10 @@ impl MavericNode for GridTile {
                     border_proportion,
                 )
                 .with_transition_to::<SmudColorLens>(fill, 0.1.into())
-                .with_transition_to::<SmudParamLens<4>>(border_proportion, border_proportion.into())
-                ,
+                .with_transition_to::<SmudParamLens<4>>(
+                    border_proportion,
+                    border_proportion.into(),
+                ),
                 &(),
             );
 
@@ -224,6 +225,51 @@ impl MavericNode for GridTile {
                 },
                 context,
             );
+
+            match node.hint_status {
+                HintStatus::ManualHinted | HintStatus::Advisable =>
+                {
+                    let (p0, p1) = if node.hint_status.is_manual_hinted(){
+                        (4.0, 3.0)
+                    }else{
+                        (2.0, 2.0)
+                    };
+                    let seed = node.tile.inner() as f32 * 123.456;
+
+                    commands.add_child(
+                        "sparkle",
+                        SmudShapeNode {
+                            color: Color::PINK,
+                            sfd: ANYWHERE_SHADER_PATH,
+                            fill: SPARKLE_SHADER_PATH,
+                            frame_size: 1.0,
+                            params: [
+                                p0,
+                                p1,
+                                seed,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0,
+                            ],
+                            sdf_param_usage: ShaderParamUsage::NO_PARAMS,
+                            fill_param_usage: ShaderParamUsage::from_params(&[0,1,2]),
+                        }
+                        .with_bundle(Transform {
+                            translation: Vec3::Z * 100.0,
+                            scale: Vec3::ONE * tile_size * 0.5,
+                            ..default()
+                        }),
+                        context,
+                    );
+                }
+                 _ => {}
+            }
+
+
+
+
         })
     }
 
