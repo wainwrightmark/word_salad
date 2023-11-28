@@ -1,14 +1,13 @@
 #define_import_path shaders::word_line
 
-fn sdf(p: vec2<f32>, line_width: f32, f_arg1: f32, f_arg2: f32, f_arg3: f32) -> f32 {
+fn sdf(p: vec2<f32>, line_width: f32, f_points1: f32, f_points2: f32, segments: f32) -> f32 {
 
-    let arg1: u32 = bitcast<u32>(f_arg1);
-    let arg2: u32 = bitcast<u32>(f_arg2);
-    let arg3: u32 = bitcast<u32>(f_arg3);
-
+    let points1: u32 = bitcast<u32>(f_points1);
+    let points2: u32 = bitcast<u32>(f_points2);
 
 
-    return grid_sdf(p, arg1, arg2, arg3, line_width);
+
+    return grid_sdf(p, line_width, points1,points2, segments);
 
 }
 
@@ -16,38 +15,41 @@ fn sd_circle(p: vec2<f32>, r: f32) -> f32 {
     return length(p) - r;
 }
 
-fn grid_sdf(p: vec2<f32>, master: u32, block1: u32, block2: u32, line_width: f32) -> f32 {
+fn grid_sdf(p: vec2<f32>, line_width: f32, points1: u32, points2: u32, segments: f32) -> f32 {
     var result = 1.0;
+    var segments_remaining = segments;
+    if segments_remaining <= 0.0{
+            return result;
+    }
+    var current = get_position2(points1, 1u);
 
-    var count = master % 256u;
-    if (count == 0u) {return result;};
-    var current = get_position2(master, 256u);
-    result = min(result, sd_circle(p - current, line_width));
-    count -= 1u;
-    if (count == 0u) {return result;};
-    var next = get_position2(master, 256u* 16u);
-    result = min(result, line(p, current, next, line_width));
-    count -= 1u;
-    if (count == 0u) {return result;};
-    current = next;
-    var divisor: u32 = 1u;
-    for (var index: u32 = 0u; index < 7u; index ++) {
-        let next = get_position2(block1, divisor);
-        let line =  line(p, current, next, line_width);
+    result = sd_circle(p - current, line_width);
+
+    segments_remaining -= 1.0;
+
+    var divisor: u32 = 16u;
+    for (var index: u32 = 1u; index < 8u; index ++) {
+        if segments_remaining <= 0.0{
+            return result;
+        }
+        let next = get_position2(points1, divisor);
+        let line =  line(p, current, next, line_width, min(segments_remaining, 1.0) );
         result = min(result, line);
-        count -= 1u;
-        if (count == 0u) {return result;};
         current = next;
+        segments_remaining -= 1.0;
         divisor = divisor * 16u;
     }
+
     divisor = 1u;
-    for (var index: u32 = 0u; index < 7u; index ++) {
-        let next = get_position2(block2, divisor);
-        let line =  line(p, current, next, line_width);
+    for (var index: u32 = 0u; index < 8u; index ++) {
+        if segments_remaining <= 0.0{
+            return result;
+        }
+        let next = get_position2(points2, divisor);
+        let line =  line(p, current, next, line_width, min(segments_remaining, 1.0));
         result = min(result, line);
-        count -= 1u;
-        if (count == 0u) {return result;};
         current = next;
+        segments_remaining -= 1.0;
         divisor = divisor * 16u;
     }
     return result;
@@ -81,8 +83,8 @@ fn int_to_float(u: u32) -> f32 {
     return 0.0;
 }
 
-fn line(p: vec2<f32>, a: vec2<f32>, b: vec2<f32>, line_width: f32) -> f32 {
-    let ba = (b - a);
+fn line(p: vec2<f32>, a: vec2<f32>, b: vec2<f32>, line_width: f32, line_proportion: f32 ) -> f32 {
+    let ba = (b - a) * line_proportion;
     let pa = (p - a);
     let k: f32 = saturate(dot(pa, ba) / dot(ba, ba));
     let len = length(pa - (ba * k));

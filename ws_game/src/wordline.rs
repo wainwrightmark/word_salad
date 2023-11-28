@@ -26,18 +26,51 @@ impl MavericNode for WordLine {
 
             const DEFAULT_WIDTH: f32 = 0.15;
 
-            let (solution, visible) = if args.node.solution.len() > 0 {
-                (args.node.solution.as_slice(), !args.node.should_hide)
-            } else {
+            let (solution, visible, final_segment_length) = if args.node.solution.len() > 0 {
                 match args.previous {
-                    Some(s) => {
-                        if s.should_hide {
-                            (args.node.solution.as_slice(), false)
+                    Some(previous) => {
+                        if previous.solution.len() > args.node.solution.len()
+                            && !previous.should_hide
+                            && previous.solution.starts_with(&args.node.solution)
+                        {
+                            (
+                                previous.solution.as_slice(),
+                                !args.node.should_hide,
+                                args.node.solution.len(),
+                            )
                         } else {
-                            (s.solution.as_slice(), false)
+                            (
+                                args.node.solution.as_slice(),
+                                !args.node.should_hide,
+                                args.node.solution.len(),
+                            )
                         }
                     }
-                    None => (args.node.solution.as_slice(), false),
+                    None => (
+                        args.node.solution.as_slice(),
+                        !args.node.should_hide,
+                        args.node.solution.len(),
+                    ),
+                }
+            } else {
+                match args.previous {
+                    Some(previous) => {
+                        if previous.should_hide {
+                            // The previous was hidden so we should start again
+                            (
+                                args.node.solution.as_slice(),
+                                false,
+                                args.node.solution.len(),
+                            )
+                        } else {
+                            (previous.solution.as_slice(), false, previous.solution.len())
+                        }
+                    }
+                    None => (
+                        args.node.solution.as_slice(),
+                        false,
+                        args.node.solution.len(),
+                    ),
                 }
             };
 
@@ -72,13 +105,15 @@ impl MavericNode for WordLine {
                 DEFAULT_WIDTH
             } else {
                 //info!("Word line newly visible");
-                commands.insert(Transition::<SmudParamLens<0>>::new(TransitionStep::new_arc(
-                    DEFAULT_WIDTH,
-                    Some((DEFAULT_WIDTH * 4.0) .into()),
-                    NextStep::None,
-                )));
+                commands.insert(Transition::<SmudParamLens<0>>::new(
+                    TransitionStep::new_arc(
+                        DEFAULT_WIDTH,
+                        Some((DEFAULT_WIDTH * 4.0).into()),
+                        NextStep::None,
+                    ),
+                ));
 
-                DEFAULT_WIDTH * -1.0
+                DEFAULT_WIDTH * 0.25
             };
 
             let asset_server = commands
@@ -88,24 +123,41 @@ impl MavericNode for WordLine {
             let fill = asset_server.load(WORD_LINE_FILL_SHADER_PATH);
             let sdf = asset_server.load(WORD_LINE_SHADER_PATH);
 
-            let (arg_x, arg_y, arg_z) = solution_to_u32s(&solution);
-            let xu32: u32 = arg_x.into();
-            let yu32: u32 = arg_y.into();
-            let zu32: u32 = arg_z.into();
-            //info!("{xu32} {yu32} {zu32}");
+            let (points1, points2) = solution_to_u32s(&solution);
+            let points1: u32 = points1.into();
+            let points2: u32 = points2.into();
+            let final_segment_length = final_segment_length as f32;
+            let speed = 4.0;
 
-            //info!("Word line {scale}");
+            let segment_length = commands
+                .transition_value::<SmudParamLens<3>>(
+                    final_segment_length,
+                    final_segment_length,
+                    Some(speed.into()),
+                )
+                .min(final_segment_length + 1.0) // don't go more than half past the last tile
+                .min(solution.len() as f32) //don't show more tiles than we know
+                .max(final_segment_length - 0.75); //always be relatively close to the end
+
             commands.insert((
-                SmudShape {
+                SmudShape::<SHAPE_PARAMS> {
                     color: WORD_LINE_COLOR.convert_color(),
                     fill,
                     sdf,
                     frame: bevy_smud::Frame::Quad(1.0),
 
-
-                    params: [initial_width,u32_tof32(xu32),u32_tof32(yu32),u32_tof32(zu32), 0.0,0.0,0.0,0.0 ],
-                    sdf_param_usage: ShaderParamUsage::from_params(&[0,1,2,3]),
-                    fill_param_usage: ShaderParamUsage::NO_PARAMS
+                    params: [
+                        initial_width,
+                        u32_tof32(points1),
+                        u32_tof32(points2),
+                        segment_length,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                    ],
+                    sdf_param_usage: ShaderParamUsage::from_params(&[0, 1, 2, 3]),
+                    fill_param_usage: ShaderParamUsage::NO_PARAMS,
                 },
                 Transform {
                     translation: rect.centre().extend(z_indices::WORD_LINE),
@@ -121,17 +173,18 @@ impl MavericNode for WordLine {
     }
 }
 
-fn solution_to_u32s(solution: &[Tile]) -> (WordLineMaster, WordLinePoints, WordLinePoints) {
+fn solution_to_u32s(solution: &[Tile]) -> (WordLinePoints, WordLinePoints) {
     // let first = solution.last()?;
-    let mut master = WordLineMaster::default().with_padding2(1);
-    let mut block1 = WordLinePoints::default().with_padding(1);
-    let mut block2 = WordLinePoints::default().with_padding(1);
+    let mut block1 = WordLinePoints::default();
+    let mut block2 = WordLinePoints::default();
 
-    master = master.with_length(solution.len() as u8);
-    let mut iter = solution.iter().map(|x| x.inner());
+    let mut iter = solution
+        .iter()
+        .map(|x| x.inner())
+        .chain(std::iter::repeat(1)); //pad with 0b0010 to get around NaN issues
 
-    master = master.with_p0(iter.next().unwrap_or_default());
-    master = master.with_p1(iter.next().unwrap_or_default());
+    // master = master.with_p0(iter.next().unwrap_or_default());
+    // master = master.with_p1(iter.next().unwrap_or_default());
 
     block1 = block1.with_p0(iter.next().unwrap_or_default());
     block1 = block1.with_p1(iter.next().unwrap_or_default());
@@ -140,6 +193,7 @@ fn solution_to_u32s(solution: &[Tile]) -> (WordLineMaster, WordLinePoints, WordL
     block1 = block1.with_p4(iter.next().unwrap_or_default());
     block1 = block1.with_p5(iter.next().unwrap_or_default());
     block1 = block1.with_p6(iter.next().unwrap_or_default());
+    block1 = block1.with_p7(iter.next().unwrap_or_default());
 
     block2 = block2.with_p0(iter.next().unwrap_or_default());
     block2 = block2.with_p1(iter.next().unwrap_or_default());
@@ -148,28 +202,11 @@ fn solution_to_u32s(solution: &[Tile]) -> (WordLineMaster, WordLinePoints, WordL
     block2 = block2.with_p4(iter.next().unwrap_or_default());
     block2 = block2.with_p5(iter.next().unwrap_or_default());
     block2 = block2.with_p6(iter.next().unwrap_or_default());
+    block2 = block2.with_p7(iter.next().unwrap_or_default());
 
     //info!("{master:?} {block1:?} {block2:?}");
 
-    (master, block1, block2)
-}
-
-#[bitfield(u32, order = Lsb)]
-struct WordLineMaster {
-    #[bits(8)]
-    pub length: u8,
-
-    #[bits(4)]
-    p0: u8,
-
-    #[bits(4)]
-    p1: u8,
-
-    #[bits(8)]
-    padding1: u8,
-
-    #[bits(8)]
-    padding2: u8,
+    (block1, block2)
 }
 
 #[bitfield(u32, order = Lsb)]
@@ -196,7 +233,7 @@ struct WordLinePoints {
     p6: u8,
 
     #[bits(4)]
-    padding: u8,
+    p7: u8,
 }
 
 fn u32_tof32(a: u32) -> f32 {
