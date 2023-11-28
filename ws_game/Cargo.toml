@@ -33,7 +33,7 @@ bevy_embedded_assets = "0.9"
 wasm-bindgen-futures = "0.4.38"
 serde-wasm-bindgen = "0.6.1"
 num-traits = "0.2"
-bevy_smud = {path= "../../../random/bevy_smud"}
+bevy_smud = {git= "https://github.com/wainwrightmark/bevy_smud/", branch = "params"}
 bitfield-struct = "0.5.5"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]

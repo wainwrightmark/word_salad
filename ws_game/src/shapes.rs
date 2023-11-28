@@ -1,28 +1,36 @@
+use std::fmt::Debug;
+
 use bevy::prelude::*;
+use bevy_smud::param_usage::ShaderParamUsage;
 use bevy_smud::{Frame, SmudPlugin, SmudShape};
 use maveric::node::MavericNode;
 use maveric::prelude::*;
 use maveric::with_bundle::CanWithBundle;
 
+pub const SHAPE_PARAMS: usize = 8;
+
+pub type SmudShapeWithParams = SmudShape<SHAPE_PARAMS>;
+pub type SmudShapeParams = [f32; SHAPE_PARAMS];
+
+maveric::define_lens!(SmudColorLens, SmudShapeWithParams, Color, color);
+maveric::define_lens!(SmudParamsLens, SmudShapeWithParams, SmudShapeParams, params);
+
+pub type SmudParamLens<const INDEX: usize> =
+    Prism2<SmudParamsLens, ElementAtLens<INDEX, SHAPE_PARAMS, f32>>;
+
 pub struct ShapesPlugin;
 
 impl Plugin for ShapesPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(SmudPlugin);
+        app.add_plugins(SmudPlugin::<SHAPE_PARAMS>);
 
         app.register_transition::<SmudColorLens>();
-        app.register_transition::<Smud4ParamWLens>();
+        app.register_transition::<SmudParamLens<0>>();
 
         app.add_systems(PostStartup, preload_shaders);
     }
 }
 
-maveric::define_lens!(SmudColorLens, SmudShape, Color, color);
-
-maveric::define_lens!(SmudParamsLens, SmudShape, Vec4, params);
-maveric::define_lens!(Vec4wLens, Vec4, f32, w);
-
-pub type Smud4ParamWLens = Prism2<SmudParamsLens, Vec4wLens>;
 fn preload_shaders(asset_server: Res<AssetServer>) {
     //force all shaders to stay loaded
     for shader in [
@@ -51,7 +59,9 @@ pub struct SmudShapeNode {
     pub sfd: &'static str,
     pub fill: &'static str,
     pub frame_size: f32,
-    pub params: Vec4,
+    pub params: [f32; 8],
+    pub sdf_param_usage: ShaderParamUsage,
+    pub fill_param_usage: ShaderParamUsage,
 }
 
 impl MavericNode for SmudShapeNode {
@@ -72,12 +82,14 @@ impl MavericNode for SmudShapeNode {
             let sdf = asset_server.load(node.sfd);
             let fill = asset_server.load(node.fill);
 
-            let shape = SmudShape {
+            let shape = SmudShape::<SHAPE_PARAMS> {
                 color: node.color,
                 sdf,
                 fill,
                 frame: Frame::Quad(node.frame_size),
                 params: node.params,
+                sdf_param_usage: node.sdf_param_usage,
+                fill_param_usage: node.fill_param_usage,
             };
             c.insert(shape);
         });
@@ -90,13 +102,13 @@ impl MavericNode for SmudShapeNode {
     }
 }
 
-fn box_params(width: f32, height: f32, rounding: f32) -> Vec4 {
-    Vec4::new(width, height, rounding, 0.0)
-}
+// fn box_params(width: f32, height: f32, rounding: f32) -> Vec4 {
+//     Vec4::new(width, height, rounding, 0.0)
+// }
 
-fn box_border_params(width: f32, height: f32, rounding: f32, border_width: f32) -> Vec4 {
-    Vec4::new(width, height, rounding, border_width)
-}
+// fn box_border_params(width: f32, height: f32, rounding: f32, border_width: f32) -> Vec4 {
+//     Vec4::new(width, height, rounding, border_width)
+// }
 
 pub const BOX_SHADER_PATH: &'static str = "shaders/sdf/box.wgsl";
 pub const BOX_BORDER_SHADER_PATH: &'static str = "shaders/sdf/box_border.wgsl";
@@ -118,7 +130,9 @@ pub fn box_node(
         sfd: BOX_SHADER_PATH,
         fill: SIMPLE_FILL_SHADER_PATH,
         frame_size: 1.1,
-        params: box_params(width / scale, height / scale, rounding),
+        params: [width / scale, height / scale, rounding, 0.0, 0.0,0.0,0.0,0.0],
+        sdf_param_usage: ShaderParamUsage::from_params(&[0,1,2]),
+        fill_param_usage: ShaderParamUsage::NO_PARAMS
     }
     .with_bundle(Transform {
         translation,
@@ -141,7 +155,10 @@ pub fn box_border_node(
         sfd: BOX_BORDER_SHADER_PATH,
         fill: SIMPLE_FILL_SHADER_PATH,
         frame_size: 1.1,
-        params: box_border_params(width / scale, height / scale, rounding, border_proportion),
+
+        params: [width / scale, height / scale, rounding, border_proportion, 0.0,0.0,0.0,0.0],
+        sdf_param_usage: ShaderParamUsage::from_params(&[0,1,2,3]),
+        fill_param_usage: ShaderParamUsage::NO_PARAMS
     }
     .with_bundle(Transform {
         translation,

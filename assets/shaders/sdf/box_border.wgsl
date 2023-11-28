@@ -5,11 +5,11 @@
 // params.y is height ratio
 // params.z is rounding ratio for all four corners
 // params.w is the border width
-fn sdf(p: vec2<f32>, params: vec4<f32>) -> f32 {
+fn sdf(p: vec2<f32>, width: f32, height: f32, rounding: f32, border_width: f32) -> f32 {
 
-    let tile = sd_rounded_box(p, vec2<f32>(params.x, params.y), vec4<f32>(params.z, params.z, params.z, params.z));
+    let tile = sd_rounded_box(p, vec2<f32>(width, height), vec4<f32>(rounding));
 
-    let border = abs(tile) - params.w;
+    let border = abs(tile) - border_width;
 
     return border;
 }

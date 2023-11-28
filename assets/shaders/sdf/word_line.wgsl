@@ -1,11 +1,12 @@
 #define_import_path shaders::word_line
 
-fn sdf(p: vec2<f32>, params: vec4<f32>) -> f32 {
+fn sdf(p: vec2<f32>, line_width: f32, f_arg1: f32, f_arg2: f32, f_arg3: f32) -> f32 {
 
-    let arg1: u32 = bitcast<u32>(params.x);
-    let arg2: u32 = bitcast<u32>(params.y);
-    let arg3: u32 = bitcast<u32>(params.z);
-    let line_width: f32 = params.w;
+    let arg1: u32 = bitcast<u32>(f_arg1);
+    let arg2: u32 = bitcast<u32>(f_arg2);
+    let arg3: u32 = bitcast<u32>(f_arg3);
+
+
 
     return grid_sdf(p, arg1, arg2, arg3, line_width);
 

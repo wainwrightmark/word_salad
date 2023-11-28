@@ -1,6 +1,7 @@
 use crate::{prelude::*, z_indices};
 use bevy_smud::SmudShape;
 
+use bevy_smud::param_usage::ShaderParamUsage;
 use bitfield_struct::bitfield;
 use ws_core::layout::entities::*;
 use ws_core::palette::WORD_LINE_COLOR;
@@ -45,7 +46,7 @@ impl MavericNode for WordLine {
             let scale = rect.extents.x.abs() * 0.5;
             let initial_width = if !visible {
                 //info!("Word line not visible");
-                commands.transition_value::<Smud4ParamWLens>(
+                commands.transition_value::<SmudParamLens<0>>(
                     DEFAULT_WIDTH,
                     DEFAULT_WIDTH * -1.0,
                     Some((DEFAULT_WIDTH * 1.2).into()),
@@ -56,7 +57,7 @@ impl MavericNode for WordLine {
                 .is_some_and(|x| !x.solution.is_empty() && !x.should_hide)
             {
                 if args.node.close_to_solution {
-                    commands.insert(Transition::<Smud4ParamWLens>::new(
+                    commands.insert(Transition::<SmudParamLens<0>>::new(
                         TransitionStep::new_cycle(
                             [
                                 (DEFAULT_WIDTH * 1.05, 0.03.into()),
@@ -66,14 +67,14 @@ impl MavericNode for WordLine {
                         ),
                     ))
                 } else {
-                    commands.remove::<Transition<Smud4ParamWLens>>();
+                    commands.remove::<Transition<SmudParamLens<0>>>();
                 }
                 DEFAULT_WIDTH
             } else {
                 //info!("Word line newly visible");
-                commands.insert(Transition::<Smud4ParamWLens>::new(TransitionStep::new_arc(
+                commands.insert(Transition::<SmudParamLens<0>>::new(TransitionStep::new_arc(
                     DEFAULT_WIDTH,
-                    Some(DEFAULT_WIDTH.into()),
+                    Some((DEFAULT_WIDTH * 4.0) .into()),
                     NextStep::None,
                 )));
 
@@ -100,12 +101,11 @@ impl MavericNode for WordLine {
                     fill,
                     sdf,
                     frame: bevy_smud::Frame::Quad(1.0),
-                    params: Vec4::new(
-                        u32_tof32(xu32),
-                        u32_tof32(yu32),
-                        u32_tof32(zu32),
-                        initial_width,
-                    ),
+
+
+                    params: [initial_width,u32_tof32(xu32),u32_tof32(yu32),u32_tof32(zu32), 0.0,0.0,0.0,0.0 ],
+                    sdf_param_usage: ShaderParamUsage::from_params(&[0,1,2,3]),
+                    fill_param_usage: ShaderParamUsage::NO_PARAMS
                 },
                 Transform {
                     translation: rect.centre().extend(z_indices::WORD_LINE),
@@ -200,7 +200,7 @@ struct WordLinePoints {
 }
 
 fn u32_tof32(a: u32) -> f32 {
-    let r = f32::from_le_bytes(a.to_le_bytes());
+    let r = f32::from_bits(a);
     //info!("{r}");
     r
 }
