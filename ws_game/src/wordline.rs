@@ -97,7 +97,7 @@ impl MavericNode for WordLine {
             //info!("Word line {scale}");
             commands.insert((
                 SmudShape {
-                    color: convert_color(WORD_LINE_COLOR),
+                    color: WORD_LINE_COLOR.convert_color(),
                     fill,
                     sdf,
                     frame: bevy_smud::Frame::Quad(1.0),

@@ -8,7 +8,7 @@ const CLEAR_COLOR: Color = {
     if cfg!(target_arch = "wasm32") {
         Color::NONE
     } else {
-        convert_color(palette::GAME_BACKGROUND)
+        crate::prelude::convert_color_const(palette::GAME_BACKGROUND)
     }
 };
 

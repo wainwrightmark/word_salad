@@ -1,4 +1,4 @@
-use std::num::NonZeroUsize;
+use std::{convert, num::NonZeroUsize};
 
 use crate::{
     completion::{track_level_completion, TotalCompletion},
@@ -212,10 +212,10 @@ pub enum Completion {
 
 impl Completion {
     pub fn color(&self) -> &'static Color {
-        const UNSTARTED: &'static Color = &convert_color(palette::WORD_BACKGROUND_UNSTARTED);
-        const MANUAL: &'static Color = &convert_color(palette::WORD_BACKGROUND_MANUAL_HINT);
-        const COMPLETE: &'static Color = &convert_color(palette::WORD_BACKGROUND_COMPLETE);
-        // const AUTO: &'static Color = &convert_color(palette::WORD_BACKGROUND_AUTO_HINT);
+        const UNSTARTED: &'static Color = &convert_color_const(palette::WORD_BACKGROUND_UNSTARTED);
+        const MANUAL: &'static Color = &convert_color_const(palette::WORD_BACKGROUND_MANUAL_HINT);
+        const COMPLETE: &'static Color = &convert_color_const(palette::WORD_BACKGROUND_COMPLETE);
+        // const AUTO: &'static Color = &palette::WORD_BACKGROUND_AUTO_HINT.convert_color();
 
         match self {
             Completion::Unstarted => UNSTARTED,
@@ -301,6 +301,7 @@ impl FoundWordsState {
         });
     }
 
+    /// Inadvisable tiles are tiles that are selectable, but can't lead to a solution
     pub fn calculate_inadvisable_tiles(
         &self,
         current_solution: &Solution,
@@ -387,7 +388,8 @@ impl FoundWordsState {
         inadvisable
     }
 
-    // fn calculate_auto_hints(&mut self, level: &CurrentLevel) {
+    // fn calculate_auto_hints(&self, level: &CurrentLevel)-> GridSet {
+    //     let mut ret = GridSet::EMPTY;
     //     let level = level.level();
 
     //     let mut word_index = 0;
@@ -450,6 +452,8 @@ impl FoundWordsState {
 
     //         word_index += 1;
     //     }
+
+    //     ret
     // }
 }
 
@@ -465,7 +469,6 @@ fn could_precede(p: &[Character], s: &[Character]) -> bool {
     true
 }
 
-#[allow(dead_code)]
 /// If this doesn't come between the preceder and succeeder, return None
 /// If there is exactly one child, which returns a value greater than zero, return that value + 1
 /// Otherwise return one

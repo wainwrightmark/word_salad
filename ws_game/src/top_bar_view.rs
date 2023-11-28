@@ -29,7 +29,7 @@ impl MavericNode for TopBar {
                     Text2DNode {
                         text: "\u{f0c9}",
                         font_size: top_bar_font_size,
-                        color: convert_color(palette::BUTTON_TEXT_COLOR),
+                        color: palette::BUTTON_TEXT_COLOR.convert_color(),
                         font: MENU_BUTTON_FONT_PATH,
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -47,7 +47,7 @@ impl MavericNode for TopBar {
                     Text2DNode {
                         text: context.2.hints_used.to_string(),
                         font_size: top_bar_font_size,
-                        color: convert_color(palette::BUTTON_TEXT_COLOR),
+                        color: palette::BUTTON_TEXT_COLOR.convert_color(),
                         font: BUTTONS_FONT_PATH,
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -72,7 +72,7 @@ impl MavericNode for TopBar {
                         Text2DNode {
                             text: time_text,
                             font_size: top_bar_font_size,
-                            color: convert_color(palette::BUTTON_TEXT_COLOR),
+                            color: palette::BUTTON_TEXT_COLOR.convert_color(),
                             font: MENU_BUTTON_FONT_PATH,
                             alignment: TextAlignment::Center,
                             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,

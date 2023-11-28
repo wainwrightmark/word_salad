@@ -41,7 +41,7 @@ impl MavericRootChildren for ViewRoot {
             if context.2.is_level_complete() {
                 commands.add_child("congrats", CongratsView, context);
             } else {
-                commands.add_child("hints", HintGlows, context);
+                // commands.add_child("hints", HintGlows, context);
             }
         } else {
             commands.add_child("menu", Menu, context);

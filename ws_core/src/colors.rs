@@ -63,15 +63,17 @@ pub mod palette {
     pub const WORD_BACKGROUND_MANUAL_HINT: Color = Color::rgb(0.3, 0.3, 0.9);
     pub const WORD_BACKGROUND_AUTO_HINT: Color = Color::SILVER;
     pub const WORD_BACKGROUND_COMPLETE: Color = Color::GREEN;
-    pub const WORD_BORDER: Color = Color::DARK_GRAY;
+    //pub const WORD_BORDER: Color = Color::DARK_GRAY;
 
     pub const WORD_LINE_COLOR: Color = Color::rgba(0.9, 0.25, 0.95, 0.9);
 
-    pub const GRID_TILE_STROKE: Color = Color::DARK_GRAY;
+    pub const GRID_TILE_STROKE: Color = Color::rgb(0.25, 0.25,0.25);
+    pub const GRID_TILE_STROKE_AUTO_HINTED: Color = Color::rgb(0.25, 0.25,0.25);
+    pub const GRID_TILE_MANUAL_HINTED: Color = Color::rgb(1.0, 0.84,0.00);
 
-    pub const GRID_TILE_FILL_SELECTED: Color = Color::rgb(0.9, 0.9, 1.0);
-    pub const GRID_TILE_FILL_ADVISABLE: Color = Color::rgb(0.7, 0.7, 0.9);
-    pub const GRID_TILE_FILL_OTHER: Color = Color::rgb(0.7, 0.7, 0.7);
+    // pub const GRID_TILE_FILL_SELECTED: Color = Color::rgb(0.9, 0.9, 1.0);
+    // pub const GRID_TILE_FILL_ADVISABLE: Color = Color::rgb(0.7, 0.7, 0.9);
+    pub const GRID_TILE_FILL: Color = Color::rgb(0.7, 0.7, 0.7);
 
     // pub const GRID_TILE_FILL_SELECTABLE: Color = Color::rgb(0.7, 0.7, 0.7);
     // pub const GRID_TILE_FILL_INADVISABLE: Color = Color::rgb(0.5, 0.5, 0.5); //  Color::rgb(0.4, 0.5, 0.5);

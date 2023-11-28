@@ -70,7 +70,7 @@ pub fn animate_solution(
             character.as_char().to_string(),
             TextStyle {
                 font_size: font_size,
-                color: convert_color(color),
+                color: color.convert_color(),
                 font: font.clone(),
             },
         );

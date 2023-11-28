@@ -2,6 +2,7 @@ use crate::prelude::*;
 use maveric::{
     transition::speed::LinearSpeed, widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle,
 };
+use strum::EnumIs;
 
 use std::time::Duration;
 use ws_core::layout::entities::*;
@@ -13,33 +14,93 @@ pub struct GridTile {
     pub tile: Tile,
     pub character: Character,
     pub selectability: Selectability,
+    pub hint_status: HintStatus,
     pub tile_size: f32,
     pub font_size: f32,
     pub centre: Vec2,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+impl GridTile {
+    fn fill_color(&self) -> Color {
+        match self.hint_status {
+            HintStatus::ManualHinted => palette::GRID_TILE_MANUAL_HINTED.convert_color(),
+            //HintStatus::AutoHinted => palette::GRID_TILE_STROKE_AUTO_HINTED.convert_color(),
+            _ => palette::GRID_TILE_FILL.convert_color(),
+        }
+
+    }
+
+    fn border_color(&self) -> Color {
+        palette::GRID_TILE_STROKE.convert_color()
+    }
+
+    fn border_proportion(&self) -> f32 {
+        if self.selectability.is_selected() {
+            2. / 36.
+        } else {
+            1. / 36.
+        }
+    }
+}
+
+/*
+TODOS
+    add some sparkles
+    change wordline path to use two u32 parameters
+    add a proportion parameter to the grid line path
+
+*/
+
+#[derive(Debug, Clone, Copy, PartialEq, EnumIs)]
 pub enum Selectability {
     Selected,
-    Advisable,
-    Other,
+    Selectable,
+    Unselectable,
 }
 
 impl Selectability {
-    pub fn tile_fill_color(&self) -> Color {
-        match self {
-            Selectability::Advisable => convert_color(palette::GRID_TILE_FILL_ADVISABLE),
-            Selectability::Selected => convert_color(palette::GRID_TILE_FILL_SELECTED),
-            Selectability::Other => convert_color(palette::GRID_TILE_FILL_OTHER),
+    pub fn new(tile: Tile, selected_tile: Option<&Tile>) -> Self {
+        use Selectability::*;
+        match selected_tile {
+            Some(selected) => {
+                if tile == *selected {
+                    Selected
+                } else if tile.is_adjacent_to(selected) {
+                    Selectable
+                } else {
+                    Unselectable
+                }
+            }
+            None => Selectable,
         }
     }
+}
 
-    pub fn tile_border_proportion(&self) -> f32 {
-        const SELECTED: f32 = 1. / 36.;
-        const UNSELECTED: f32 = 1. / 36.;
-        match self {
-            Selectability::Selected => SELECTED,
-            _ => UNSELECTED,
+#[derive(Debug, Clone, Copy, PartialEq, EnumIs)]
+pub enum HintStatus {
+    ManualHinted,
+    //AutoHinted,
+    Advisable,
+    Inadvisable,
+    Unknown,
+}
+
+impl HintStatus {
+    pub fn new(
+        tile: Tile,
+        selectability: Selectability,
+        manual_hints: &GridSet,
+        inadvisable: &GridSet,
+    ) -> Self {
+        use HintStatus::*;
+        if manual_hints.get_bit(&tile) {
+            return ManualHinted;
+        } else if inadvisable.get_bit(&tile) {
+            return Inadvisable;
+        } else if selectability.is_selectable() && !inadvisable.is_empty() {
+            return Advisable;
+        } else {
+            return Unknown;
         }
     }
 }
@@ -67,21 +128,10 @@ impl MavericNode for GridTiles {
             }
             let solution = context.0.current_solution();
             let selected_tile: Option<&geometrid::prelude::Tile<4, 4>> = solution.last();
-            let selectable_tiles: GridSet = match selected_tile {
-                Some(tile) => GridSet::from_iter(tile.iter_adjacent()),
-                None => GridSet::ALL,
-            };
-
-            let selectable_tiles = selectable_tiles.intersect(&context.2.unneeded_tiles.negate());
 
             let level = context.1.level();
             let inadvisable_tiles: GridSet =
                 context.2.calculate_inadvisable_tiles(&solution, level);
-
-            //info!("{} ia {} st", inadvisable_tiles.count(), selectable_tiles.count());
-
-            let show_advisable = !inadvisable_tiles.is_empty()
-                && inadvisable_tiles.count() * 2 >= selectable_tiles.count();
 
             let hint_set = &context.2.manual_hint_set(&level, &solution);
 
@@ -96,24 +146,9 @@ impl MavericNode for GridTiles {
                     continue;
                 }
 
-                let selectability = if Some(&tile) == selected_tile {
-                    Selectability::Selected
-                } else if show_advisable
-                    && !inadvisable_tiles.get_bit(&tile)
-                    && selectable_tiles.get_bit(&tile)
-                {
-                    Selectability::Advisable
-                } else {
-                    Selectability::Other
-                };
-
-                //  else if inadvisable_tiles.get_bit(&tile) {
-                //     Selectability::Inadvisable
-                // } else if selectable_tiles.get_bit(&tile) {
-                //     Selectability::Selectable
-                // } else {
-                //     Selectability::Unselectable
-                // };
+                let selectability = Selectability::new(tile, selected_tile);
+                let hint_status =
+                    HintStatus::new(tile, selectability, hint_set, &inadvisable_tiles);
 
                 let size = context.3.as_ref();
                 let tile_size = size.tile_size();
@@ -129,6 +164,7 @@ impl MavericNode for GridTiles {
                         tile_size,
                         font_size,
                         centre,
+                        hint_status,
                     },
                     &(),
                 );
@@ -159,7 +195,9 @@ impl MavericNode for GridTile {
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
             let tile_size = node.tile_size;
-            let fill = node.selectability.tile_fill_color();
+            let fill = node.fill_color();
+            let border_color = node.border_color();
+            let border_proportion = node.border_proportion();
 
             commands.add_child(
                 "tile",
@@ -167,12 +205,14 @@ impl MavericNode for GridTile {
                     tile_size,
                     tile_size,
                     Vec3::new(0.0, 0.0, crate::z_indices::GRID_BORDER),
-                    convert_color(palette::GRID_TILE_FILL_OTHER),
-                    convert_color(palette::GRID_TILE_STROKE),
+                    fill,
+                    border_color,
                     0.1,
-                    node.selectability.tile_border_proportion(),
+                    border_proportion,
                 )
-                .with_transition_to::<SmudColorLens>(fill, 0.1.into()),
+                .with_transition_to::<SmudColorLens>(fill, 0.1.into())
+                .with_transition_to::<SmudParamLens<4>>(border_proportion, border_proportion.into())
+                ,
                 &(),
             );
 
@@ -219,7 +259,7 @@ impl MavericNode for GridLetter {
                     text: args.character.to_tile_string(),
                     font: TILE_FONT_PATH,
                     font_size: args.font_size,
-                    color: convert_color(palette::GRID_LETTER),
+                    color: palette::GRID_LETTER.convert_color(),
                     alignment: TextAlignment::Center,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                 }
@@ -234,55 +274,55 @@ impl MavericNode for GridLetter {
     }
 }
 
-#[derive(Debug, PartialEq)]
-pub struct HintGlows;
+// #[derive(Debug, PartialEq)]
+// pub struct HintGlows;
 
-impl MavericNode for HintGlows {
-    type Context = ViewContext;
+// impl MavericNode for HintGlows {
+//     type Context = ViewContext;
 
-    fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
-        commands
-            .ignore_context()
-            .ignore_node()
-            .insert(SpatialBundle::default());
-    }
+//     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
+//         commands
+//             .ignore_context()
+//             .ignore_node()
+//             .insert(SpatialBundle::default());
+//     }
 
-    fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
-        commands
-            .ignore_node()
-            .unordered_children_with_context(|context, commands| {
-                let level = context.1.level();
-                let solution = context.0.current_solution();
-                let manual_hints = context.2.manual_hint_set(level, &solution);
+//     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
+//         commands
+//             .ignore_node()
+//             .unordered_children_with_context(|context, commands| {
+//                 let level = context.1.level();
+//                 let solution = context.0.current_solution();
+//                 let manual_hints = context.2.manual_hint_set(level, &solution);
 
-                for tile in (manual_hints).iter_true_tiles() {
-                    let rect = context.3.get_rect(&LayoutGridTile(tile), &());
+//                 for tile in (manual_hints).iter_true_tiles() {
+//                     let rect = context.3.get_rect(&LayoutGridTile(tile), &());
 
-                    let translation = rect.centre().extend(crate::z_indices::HINT);
-                    let tile_size = rect.extents.x;
+//                     let translation = rect.centre().extend(crate::z_indices::HINT);
+//                     let tile_size = rect.extents.x;
 
-                    //let shape = make_rounded_square(tile_size * 0.8, tile_size * 0.1);
+//                     //let shape = make_rounded_square(tile_size * 0.8, tile_size * 0.1);
 
-                    let color = convert_color(palette::MANUAL_HINT_GLOW).with_a(0.7);
+//                     let color = palette::MANUAL_HINT_GLOW.convert_color().with_a(0.7);
 
-                    commands.add_child(
-                        tile.inner() as u32,
-                        box_border_node(
-                            tile_size * 0.8,
-                            tile_size * 0.8,
-                            translation,
-                            color,
-                            0.1,
-                            0.1,
-                        )
-                        .with_transition_in::<SmudColorLens>(
-                            color.with_a(0.0),
-                            color.with_a(0.7),
-                            Duration::from_secs(1),
-                        ),
-                        &(),
-                    );
-                }
-            });
-    }
-}
+//                     commands.add_child(
+//                         tile.inner() as u32,
+//                         box_border_node(
+//                             tile_size * 0.8,
+//                             tile_size * 0.8,
+//                             translation,
+//                             color,
+//                             0.1,
+//                             0.1,
+//                         )
+//                         .with_transition_in::<SmudColorLens>(
+//                             color.with_a(0.0),
+//                             color.with_a(0.7),
+//                             Duration::from_secs(1),
+//                         ),
+//                         &(),
+//                     );
+//                 }
+//             });
+//     }
+// }

@@ -66,13 +66,34 @@ pub mod prelude {
 
     pub use ws_core::Tile;
 
-    pub const fn convert_color(c: BasicColor) -> Color {
+    pub trait ConvertColor {
+        fn convert_color(self) -> Color;
+    }
+
+    impl ConvertColor for BasicColor {
+        fn convert_color(self) -> Color {
+            let BasicColor {
+                red,
+                green,
+                blue,
+                alpha,
+            } = self;
+            Color::Rgba {
+                red,
+                green,
+                blue,
+                alpha,
+            }
+        }
+    }
+
+    pub const fn convert_color_const(color: BasicColor) -> Color {
         let BasicColor {
             red,
             green,
             blue,
             alpha,
-        } = c;
+        } = color;
         Color::Rgba {
             red,
             green,

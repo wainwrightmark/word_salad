@@ -31,7 +31,7 @@ impl MavericNode for CongratsView {
                     Text2DNode {
                         text: hints_used_text,
                         font_size,
-                        color: convert_color(palette::BUTTON_TEXT_COLOR),
+                        color: palette::BUTTON_TEXT_COLOR.convert_color(),
                         font: BUTTONS_FONT_PATH,
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -66,7 +66,7 @@ impl MavericNode for CongratsView {
                     Text2DNode {
                         text: time_text,
                         font_size: top_bar_font_size,
-                        color: convert_color(palette::BUTTON_TEXT_COLOR),
+                        color: palette::BUTTON_TEXT_COLOR.convert_color(),
                         font: MENU_BUTTON_FONT_PATH,
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -85,7 +85,7 @@ impl MavericNode for CongratsView {
                     Text2DNode {
                         text: "Next",
                         font_size,
-                        color: convert_color(palette::BUTTON_TEXT_COLOR),
+                        color: palette::BUTTON_TEXT_COLOR.convert_color(),
                         font: BUTTONS_FONT_PATH,
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -105,7 +105,7 @@ impl MavericNode for CongratsView {
                         Text2DNode {
                             text: "Share",
                             font_size,
-                            color: convert_color(palette::BUTTON_TEXT_COLOR),
+                            color: palette::BUTTON_TEXT_COLOR.convert_color(),
                             font: BUTTONS_FONT_PATH,
                             alignment: TextAlignment::Center,
                             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,

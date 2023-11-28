@@ -6,7 +6,7 @@ use maveric::{
 
 use ws_core::{palette, LayoutRectangle};
 
-use crate::prelude::{box_node, convert_color, ButtonInteraction, MENU_BUTTON_FONT_PATH};
+use crate::prelude::{box_node, ConvertColor, ButtonInteraction, MENU_BUTTON_FONT_PATH};
 
 #[derive(Debug, PartialEq)]
 pub struct ButtonNode2d {
@@ -43,7 +43,7 @@ impl MavericNode for ButtonNode2d {
                     Text2DNode {
                         text: *text,
                         font_size: *font_size,
-                        color: convert_color(palette::MENU_BUTTON_TEXT),
+                        color: palette::MENU_BUTTON_TEXT.convert_color(),
                         font: MENU_BUTTON_FONT_PATH,
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -60,7 +60,7 @@ impl MavericNode for ButtonNode2d {
                         rect.extents.x.abs(),
                         rect.extents.y.abs(),
                         shape_translation,
-                        convert_color(palette::MENU_BUTTON_FILL),
+                        palette::MENU_BUTTON_FILL.convert_color(),
                         0.1,
                     )
                     .with_bundle(*interaction),
@@ -73,7 +73,7 @@ impl MavericNode for ButtonNode2d {
                 //         rect.extents.x.abs(),
                 //         rect.extents.y.abs(),
                 //         shape_border_translation,
-                //         convert_color(palette::MENU_BUTTON_STROKE),
+                //         palette::MENU_BUTTON_STROKE.convert_color(),
                 //         0.1,
                 //         0.02,
                 //     )

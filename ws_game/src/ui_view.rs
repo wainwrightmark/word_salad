@@ -31,7 +31,7 @@ impl MavericNode for UI {
                     Text2DNode {
                         text: title,
                         font_size: text_font_size,
-                        color: convert_color(palette::BUTTON_TEXT_COLOR),
+                        color: palette::BUTTON_TEXT_COLOR.convert_color(),
                         font: TITLE_FONT_PATH,
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -49,7 +49,7 @@ impl MavericNode for UI {
                     Text2DNode {
                         text: "Theme",
                         font_size: text_font_size,
-                        color: convert_color(palette::BUTTON_TEXT_COLOR),
+                        color: palette::BUTTON_TEXT_COLOR.convert_color(),
                         font: TITLE_FONT_PATH,
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -145,7 +145,7 @@ impl MavericNode for WordNode {
                 Text2DNode {
                     text,
                     font_size: node.font_size,
-                    color: convert_color(palette::BUTTON_TEXT_COLOR),
+                    color: palette::BUTTON_TEXT_COLOR.convert_color(),
                     font: SOLUTIONS_FONT_PATH,
                     alignment: TextAlignment::Center,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -189,7 +189,7 @@ impl MavericNode for WordNode {
                     node.rect.extents.x.abs(),
                     node.rect.extents.y.abs(),
                     shape_translation,
-                    convert_color(palette::WORD_BACKGROUND_UNSTARTED),
+                    palette::WORD_BACKGROUND_UNSTARTED.convert_color(),
                     0.1,
                 )
                 .with_bundle(ButtonInteraction::WordButton(node.tile))
@@ -203,7 +203,7 @@ impl MavericNode for WordNode {
             //         node.rect.extents.x.abs(),
             //         node.rect.extents.y.abs(),
             //         shape_border_translation,
-            //         convert_color(palette::WORD_BORDER),
+            //         palette::WORD_BORDER.convert_color(),
             //         0.1,
             //         0.025,
             //     ),

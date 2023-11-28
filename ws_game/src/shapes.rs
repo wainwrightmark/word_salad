@@ -26,6 +26,7 @@ impl Plugin for ShapesPlugin {
 
         app.register_transition::<SmudColorLens>();
         app.register_transition::<SmudParamLens<0>>();
+        app.register_transition::<SmudParamLens<4>>();
 
         app.add_systems(PostStartup, preload_shaders);
     }
