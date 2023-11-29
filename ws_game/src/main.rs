@@ -24,6 +24,7 @@ pub mod view;
 pub mod wasm;
 pub mod wordline;
 pub mod z_indices;
+pub mod popup;
 
 fn main() {
     crate::startup::go();
@@ -52,6 +53,7 @@ pub mod prelude {
     pub use crate::video::*;
     pub use crate::view::*;
     pub use crate::wordline::*;
+    pub use crate::popup::*;
 
     pub use std::array;
 

@@ -7,6 +7,7 @@ pub type ViewContext = (
     MyWindowSize,
     LevelTime,
     MenuState,
+    HintState
 );
 #[derive(MavericRoot)]
 pub struct ViewRoot;

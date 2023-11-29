@@ -1,4 +1,4 @@
-use std::{convert, num::NonZeroUsize};
+use std::num::NonZeroUsize;
 
 use crate::{
     completion::{track_level_completion, TotalCompletion},
@@ -26,10 +26,25 @@ impl Plugin for StatePlugin {
 }
 
 #[derive(Debug, Clone, Resource, Serialize, Deserialize, MavericContext)]
+pub struct HintState {
+    pub hints_remaining: usize,
+}
+
+impl Default for HintState {
+    fn default() -> Self {
+        Self { hints_remaining: 3 }
+    }
+}
+
+impl TrackableResource for HintState {
+    const KEY: &'static str = "HintState";
+}
+
+#[derive(Debug, Clone, Resource, Serialize, Deserialize, MavericContext)]
 pub struct FoundWordsState {
     pub unneeded_tiles: GridSet,
     pub word_completions: Vec<Completion>,
-    pub hints_used: usize,
+    pub hints_used1: usize,
 }
 
 impl Default for FoundWordsState {
@@ -48,7 +63,7 @@ impl FoundWordsState {
         Self {
             unneeded_tiles: GridSet::EMPTY,
             word_completions: vec![Completion::Unstarted; level.words.len()],
-            hints_used: 0,
+            hints_used1: 0,
         }
     }
 
@@ -129,8 +144,10 @@ impl FoundWordsState {
             .clone()
     }
 
-    pub fn try_hint_word(&mut self, current_level: &CurrentLevel, word_index: usize) -> bool {
+    pub fn try_hint_word(&mut self, hint_state: &mut ResMut<HintState>, current_level: &CurrentLevel, word_index: usize) -> bool {
         let level = current_level.level();
+
+        let Some(new_hints) = hint_state.hints_remaining.checked_sub(1)else {return false};
 
         let Some(completion) = self.word_completions.get_mut(word_index) else {
             return false;
@@ -142,30 +159,26 @@ impl FoundWordsState {
         match completion {
             Completion::Unstarted => {
                 *completion = Completion::ManualHinted(NonZeroUsize::MIN);
-                self.hints_used += 1;
+                self.hints_used1 += 1;
+                hint_state.hints_remaining = new_hints;
             }
             Completion::ManualHinted(hints) => {
                 if hints.get() >= word.characters.len() {
                     return false;
                 }
                 *hints = hints.saturating_add(1);
-                self.hints_used += 1;
+                self.hints_used1 += 1;
+                hint_state.hints_remaining = new_hints;
             }
             Completion::Complete => return false,
-            // Completion::AutoHinted(hints) => {
-            //     if hints.get() >= word.characters.len() {
-            //         return false;
-            //     }
-            //     let new_hints = hints.saturating_add(1);
-            //     *hints = new_hints;
-            //     *completion = Completion::ManualHinted(new_hints);
-            // }
         }
         return true;
     }
 
-    pub fn try_hint(&mut self, current_level: &CurrentLevel) -> bool {
+    pub fn try_hint(&mut self, hint_state: &mut ResMut<HintState>, current_level: &CurrentLevel) -> bool {
         let level = current_level.level();
+
+        let Some(new_hints) = hint_state.hints_remaining.checked_sub(1)else {return false};
 
         let mut min_hints = usize::MAX;
         let mut min_hint_index: Option<usize> = None;
@@ -197,6 +210,8 @@ impl FoundWordsState {
         };
         self.word_completions[index] =
             Completion::ManualHinted(NonZeroUsize::MIN.saturating_add(min_hints));
+        self.hints_used1 += 1;
+        hint_state.hints_remaining = new_hints;
 
         true
     }

@@ -3,7 +3,10 @@ use nice_bevy_utils::TrackableResource;
 use serde::{Deserialize, Serialize};
 use ws_levels::level_sequence::LevelSequence;
 
-use crate::prelude::{CurrentLevel, FoundWordsState};
+use crate::{
+    prelude::{CurrentLevel, FoundWordsState},
+    state::HintState,
+};
 
 #[derive(Debug, PartialEq, Resource, Serialize, Deserialize, Default, Clone)]
 pub struct TotalCompletion {
@@ -15,7 +18,11 @@ impl TrackableResource for TotalCompletion {
 }
 
 impl TotalCompletion {
-    pub fn level_complete(total_completion: &mut ResMut<Self>, current_level: &CurrentLevel) {
+    pub fn level_complete(
+        total_completion: &mut ResMut<Self>,
+        hints_state: &mut ResMut<HintState>,
+        current_level: &CurrentLevel,
+    ) {
         match current_level {
             CurrentLevel::Fixed {
                 level_index,
@@ -30,6 +37,12 @@ impl TotalCompletion {
                 let completion = total_completion.completions[sequence_index];
                 if completion < number_complete {
                     total_completion.completions[sequence_index] = number_complete;
+
+                    if number_complete <= sequence.level_count()
+                    {
+                        hints_state.hints_remaining += 2;
+                    }
+
                 }
             }
             CurrentLevel::Custom(_) => {}
@@ -47,10 +60,15 @@ pub fn track_level_completion(
     mut total_completion: ResMut<TotalCompletion>,
     current_level: Res<CurrentLevel>,
     found_words: Res<FoundWordsState>,
+    mut hints_state: ResMut<HintState>,
 ) {
     if !found_words.is_changed() || !found_words.is_level_complete() {
         return;
     }
 
-    TotalCompletion::level_complete(&mut total_completion, current_level.as_ref());
+    TotalCompletion::level_complete(
+        &mut total_completion,
+        &mut hints_state,
+        current_level.as_ref(),
+    );
 }

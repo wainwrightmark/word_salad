@@ -61,6 +61,9 @@ pub fn go() {
     app.register_transition::<TransformScaleLens>();
     app.register_transition::<(TransformTranslationLens, TransformScaleLens)>();
 
+    app.insert_resource(PopupState::default());
+    app.insert_resource(HintState::default());
+
     app.add_plugins(InputPlugin);
 
     app.add_plugins(WindowSizePlugin::<SaladWindowBreakPoints>::default());

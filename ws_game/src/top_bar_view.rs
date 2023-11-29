@@ -45,7 +45,7 @@ impl MavericNode for TopBar {
                 commands.add_child(
                     "hints",
                     Text2DNode {
-                        text: context.2.hints_used.to_string(),
+                        text: context.6.hints_remaining.to_string(),
                         font_size: top_bar_font_size,
                         color: palette::BUTTON_TEXT_COLOR.convert_color(),
                         font: BUTTONS_FONT_PATH,

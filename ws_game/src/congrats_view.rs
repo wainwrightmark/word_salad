@@ -20,7 +20,7 @@ impl MavericNode for CongratsView {
                 let size = &context.3;
                 let font_size = size.font_size::<CongratsLayoutEntity>();
 
-                let hints_used_text = match context.2.hints_used {
+                let hints_used_text = match context.2.hints_used1 {
                     0 => "No hints used".to_string(),
                     1 => "1 hint used".to_string(),
                     n => format!("{n} hints used"),

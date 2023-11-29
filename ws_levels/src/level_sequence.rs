@@ -41,6 +41,21 @@ pub enum LevelSequence {
 
 impl LevelSequence {
     pub fn get_level(&self, index: usize) -> &DesignedLevel {
+        let levels = self.levels();
+
+        let index = index % levels.len();
+
+        levels
+            .get(index)
+            .expect("All level sequences should have at least one level")
+    }
+
+    pub fn level_count(&self)-> usize{
+        let levels = self.levels();
+        levels.len()
+    }
+
+    fn levels(&self)-> &Vec<DesignedLevel>{
         let levels = match self {
             LevelSequence::Tutorial => &*TUTORIAL,
             LevelSequence::DailyChallenge => &*DAILY_CHALLENGE,
@@ -55,12 +70,7 @@ impl LevelSequence {
             LevelSequence::Gemstones => &*GEMSTONES,
             LevelSequence::Vegetables => &*VEGETABLES,
         };
-
-        let index = index % levels.len();
-
         levels
-            .get(index)
-            .expect("All level sequences should have at least one level")
     }
 
     pub fn name(&self) -> &'static str {

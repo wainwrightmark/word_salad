@@ -120,6 +120,8 @@ impl ButtonInteraction {
         menu_state: &mut ResMut<MenuState>,
         chosen_state: &mut ResMut<ChosenState>,
         found_words: &mut ResMut<FoundWordsState>,
+        mut hint_state: &mut ResMut<HintState>,
+        popup_state: &mut ResMut<PopupState>,
         total_completion: &TotalCompletion,
         video_state: &VideoResource,
         video_events: &AsyncEventWriter<VideoEvent>,
@@ -181,10 +183,18 @@ impl ButtonInteraction {
                 }
             },
             ButtonInteraction::WordButton(word) => {
-                found_words.try_hint_word(&current_level, word.0);
+                if hint_state.hints_remaining <= 0 {
+                    *popup_state.as_mut() = PopupState::BuyMoreHints;
+                } else {
+                    found_words.try_hint_word(&mut hint_state, &current_level, word.0);
+                }
             }
             ButtonInteraction::TopMenuItem(LayoutTopBarButton::HintCounter) => {
-                found_words.try_hint(current_level.as_ref());
+                if hint_state.hints_remaining <= 0 {
+                    *popup_state.as_mut() = PopupState::BuyMoreHints;
+                } else {
+                    found_words.try_hint(&mut hint_state, current_level.as_ref());
+                }
             }
             ButtonInteraction::TopMenuItem(LayoutTopBarButton::MenuBurgerButton) => {
                 menu_state.toggle()
