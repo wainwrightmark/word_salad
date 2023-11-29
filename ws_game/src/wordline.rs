@@ -26,65 +26,60 @@ impl MavericNode for WordLine {
 
             const DEFAULT_WIDTH: f32 = 0.15;
 
-            let (solution, visible, final_segment_length) = if args.node.solution.len() > 0 {
-                match args.previous {
-                    Some(previous) => {
-                        if previous.solution.len() > args.node.solution.len()
-                            && !previous.should_hide
-                            && previous.solution.starts_with(&args.node.solution)
-                        {
-                            (
-                                previous.solution.as_slice(),
-                                !args.node.should_hide,
-                                args.node.solution.len(),
-                            )
-                        } else {
-                            (
-                                args.node.solution.as_slice(),
-                                !args.node.should_hide,
-                                args.node.solution.len(),
-                            )
+            let solution: &[Tile];
+            let should_hide: bool;
+            let final_segment_length: usize;
+
+            if args.node.solution.len() > 0 {
+                {
+                    should_hide = args.node.should_hide;
+                    final_segment_length = args.node.solution.len();
+                    match args.previous {
+                        Some(previous) => {
+                            if previous.solution.len() > args.node.solution.len()
+                                && !previous.should_hide
+                                && previous.solution.starts_with(&args.node.solution)
+                            {
+                                solution = previous.solution.as_slice();
+                            } else {
+                                solution = args.node.solution.as_slice();
+                            }
                         }
-                    }
-                    None => (
-                        args.node.solution.as_slice(),
-                        !args.node.should_hide,
-                        args.node.solution.len(),
-                    ),
+                        None => {
+                            solution = args.node.solution.as_slice();
+                        }
+                    };
                 }
             } else {
+                should_hide = true;
+
                 match args.previous {
                     Some(previous) => {
                         if previous.should_hide {
                             // The previous was hidden so we should start again
-                            (
-                                args.node.solution.as_slice(),
-                                false,
-                                args.node.solution.len(),
-                            )
+                            solution = args.node.solution.as_slice();
+                            final_segment_length = args.node.solution.len();
                         } else {
-                            (previous.solution.as_slice(), false, previous.solution.len())
+                            solution = previous.solution.as_slice();
+                            final_segment_length = previous.solution.len();
                         }
                     }
-                    None => (
-                        args.node.solution.as_slice(),
-                        false,
-                        args.node.solution.len(),
-                    ),
+                    None => {
+                        solution = args.node.solution.as_slice();
+                        final_segment_length = args.node.solution.len();
+                    }
                 }
             };
 
             let rect = args.context.get_rect(&GameLayoutEntity::Grid, &());
 
             let scale = rect.extents.x.abs() * 0.5;
-            let initial_width = if !visible {
-                //info!("Word line not visible");
+            let initial_width = if should_hide {
+                info!("Word line not visible");
                 commands.transition_value::<SmudParamLens<0>>(
-                    DEFAULT_WIDTH,
-                    DEFAULT_WIDTH * -1.0,
+                    -DEFAULT_WIDTH,
                     Some((DEFAULT_WIDTH * 1.2).into()),
-                );
-                DEFAULT_WIDTH
+                )
             } else if args
                 .previous
                 .is_some_and(|x| !x.solution.is_empty() && !x.should_hide)
@@ -130,11 +125,7 @@ impl MavericNode for WordLine {
             let speed = 4.0;
 
             let segment_length = commands
-                .transition_value::<SmudParamLens<3>>(
-                    final_segment_length,
-                    final_segment_length,
-                    Some(speed.into()),
-                )
+                .transition_value::<SmudParamLens<3>>(final_segment_length, Some(speed.into()))
                 .min(final_segment_length + 1.0) // don't go more than half past the last tile
                 .min(solution.len() as f32) //don't show more tiles than we know
                 .max(final_segment_length - 0.75); //always be relatively close to the end
