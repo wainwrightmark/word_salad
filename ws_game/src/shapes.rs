@@ -26,6 +26,7 @@ impl Plugin for ShapesPlugin {
 
         app.register_transition::<SmudColorLens>();
         app.register_transition::<SmudParamLens<0>>();
+        app.register_transition::<SmudParamLens<2>>();
         app.register_transition::<SmudParamLens<3>>();
         app.register_transition::<SmudParamLens<4>>();
 
@@ -43,7 +44,7 @@ fn preload_shaders(asset_server: Res<AssetServer>) {
         WORD_LINE_FILL_SHADER_PATH,
         FILL_WITH_OUTLINE_SHADER_PATH,
         ANYWHERE_SHADER_PATH,
-        SPARKLE_SHADER_PATH
+        SPARKLE_SHADER_PATH,
     ] {
         let handle: Handle<Shader> = asset_server.load(shader);
         match handle {
@@ -213,7 +214,6 @@ pub fn box_with_border_node(
             width / scale,
             height / scale,
             rounding,
-
             0.0,
             border_proportion,
             border_color.r(),
@@ -221,7 +221,7 @@ pub fn box_with_border_node(
             border_color.b(),
         ],
         sdf_param_usage: ShaderParamUsage::from_params(&[0, 1, 2]),
-        fill_param_usage: ShaderParamUsage::from_params(&[4,5,6,7]),
+        fill_param_usage: ShaderParamUsage::from_params(&[4, 5, 6, 7]),
     }
     .with_bundle(Transform {
         translation,

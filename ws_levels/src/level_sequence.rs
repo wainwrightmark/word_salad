@@ -50,12 +50,12 @@ impl LevelSequence {
             .expect("All level sequences should have at least one level")
     }
 
-    pub fn level_count(&self)-> usize{
+    pub fn level_count(&self) -> usize {
         let levels = self.levels();
         levels.len()
     }
 
-    fn levels(&self)-> &Vec<DesignedLevel>{
+    fn levels(&self) -> &Vec<DesignedLevel> {
         let levels = match self {
             LevelSequence::Tutorial => &*TUTORIAL,
             LevelSequence::DailyChallenge => &*DAILY_CHALLENGE,

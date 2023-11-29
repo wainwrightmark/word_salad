@@ -38,11 +38,9 @@ impl TotalCompletion {
                 if completion < number_complete {
                     total_completion.completions[sequence_index] = number_complete;
 
-                    if number_complete <= sequence.level_count()
-                    {
+                    if number_complete <= sequence.level_count() {
                         hints_state.hints_remaining += 2;
                     }
-
                 }
             }
             CurrentLevel::Custom(_) => {}

@@ -49,12 +49,14 @@ impl MavericRootChildren for PopupStateRoot {
                         size.scaled_width,
                         size.scaled_height,
                         Vec3::Z * z_indices::POPUP_BOX_GREY_OUT,
-                        Color::GRAY.with_a(0.0),
+                        Color::GRAY.with_a(0.9),
                         0.0,
                     )
-                    .with_transition_in::<SmudColorLens>(
+                    .with_transition_in_out::<SmudColorLens>(
                         Color::GRAY.with_a(0.0),
                         Color::GRAY.with_a(0.9),
+                        Color::GRAY.with_a(0.0),
+                        core::time::Duration::from_millis(500),
                         core::time::Duration::from_millis(500),
                     ),
                     &(),

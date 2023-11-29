@@ -67,9 +67,9 @@ pub mod palette {
 
     pub const WORD_LINE_COLOR: Color = Color::rgba(0.9, 0.25, 0.95, 0.9);
 
-    pub const GRID_TILE_STROKE: Color = Color::rgb(0.25, 0.25,0.25);
-    pub const GRID_TILE_STROKE_AUTO_HINTED: Color = Color::rgb(0.25, 0.25,0.25);
-    pub const GRID_TILE_MANUAL_HINTED: Color = Color::rgb(1.0, 0.84,0.00);
+    pub const GRID_TILE_STROKE: Color = Color::rgb(0.25, 0.25, 0.25);
+    pub const GRID_TILE_STROKE_AUTO_HINTED: Color = Color::rgb(0.25, 0.25, 0.25);
+    pub const GRID_TILE_MANUAL_HINTED: Color = Color::rgb(1.0, 0.84, 0.00);
 
     // pub const GRID_TILE_FILL_SELECTED: Color = Color::rgb(0.9, 0.9, 1.0);
     // pub const GRID_TILE_FILL_ADVISABLE: Color = Color::rgb(0.7, 0.7, 0.9);
@@ -86,7 +86,6 @@ pub mod palette {
     pub const MENU_BUTTON_TEXT: Color = Color::BLACK;
     pub const MENU_BUTTON_FILL: Color = Color::rgb(0.8, 0.8, 0.8);
     pub const MENU_BUTTON_STROKE: Color = Color::BLACK;
-
 
     pub const POPUP_BOX_BACKGROUND: Color = Color::WHITE;
     pub const POPUP_BOX_BORDER: Color = Color::BLACK;

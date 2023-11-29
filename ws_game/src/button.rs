@@ -1,6 +1,4 @@
 use bevy::prelude::*;
-
-use maveric::transition::speed::LinearSpeed;
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
 use ws_core::layout::entities::{CongratsLayoutEntity, LayoutTopBarButton, LayoutWordTile};
 use ws_levels::level_sequence::LevelSequence;
@@ -35,7 +33,7 @@ pub enum ButtonInteraction {
     TopMenuItem(LayoutTopBarButton),
     Congrats(CongratsLayoutEntity),
     BuyMoreHints,
-    ClosePopups
+    ClosePopups,
 }
 
 impl From<MainMenuLayoutEntity> for ButtonInteraction {
@@ -82,18 +80,16 @@ fn track_pressed_button(
     let previous = prev.clone();
     *prev = pressed_button.clone();
 
-    if let Some(interaction) = previous.interaction {
-        if let Some((entity, _)) = query.iter_mut().filter(|x| x.1 == &interaction).next() {
+    if let Some(prev_interaction) = previous.interaction {
+        if Some(prev_interaction) == pressed_button.interaction {
+            return;
+        }
+
+        if let Some((entity, _)) = query.iter_mut().filter(|x| x.1 == &prev_interaction).next() {
             commands
                 .entity(entity)
-                .insert(Transition::<TransformScaleLens>::new(
-                    TransitionStep::new_arc(
-                        Vec3::ONE * 1.00,
-                        Some(LinearSpeed {
-                            units_per_second: 0.1,
-                        }),
-                        NextStep::None,
-                    ),
+                .insert(Transition::<SmudParamLens<2>>::new(
+                    TransitionStep::new_arc(0.1, Some(0.1.into()), NextStep::None),
                 ));
         }
     }
@@ -102,14 +98,8 @@ fn track_pressed_button(
         if let Some((entity, _)) = query.iter_mut().filter(|x| x.1 == &interaction).next() {
             commands
                 .entity(entity)
-                .insert(Transition::<TransformScaleLens>::new(
-                    TransitionStep::new_arc(
-                        Vec3::ONE * 0.95,
-                        Some(LinearSpeed {
-                            units_per_second: 0.1,
-                        }),
-                        NextStep::None,
-                    ),
+                .insert(Transition::<SmudParamLens<2>>::new(
+                    TransitionStep::new_arc(0.15, Some(0.5.into()), NextStep::None),
                 ));
         }
     }
@@ -216,10 +206,10 @@ impl ButtonInteraction {
             ButtonInteraction::BuyMoreHints => {
                 hint_state.hints_remaining += 3; //TODO actually make them buy them!
                 *popup_state.as_mut() = PopupState::None;
-            },
+            }
             ButtonInteraction::ClosePopups => {
                 *popup_state.as_mut() = PopupState::None;
-            },
+            }
         }
     }
 }

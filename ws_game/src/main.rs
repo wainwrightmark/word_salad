@@ -13,6 +13,7 @@ pub mod input;
 pub mod level_time;
 pub mod menu;
 pub mod menu_layout;
+pub mod popup;
 pub mod shapes;
 pub mod startup;
 pub mod state;
@@ -24,7 +25,6 @@ pub mod view;
 pub mod wasm;
 pub mod wordline;
 pub mod z_indices;
-pub mod popup;
 
 fn main() {
     crate::startup::go();
@@ -45,6 +45,7 @@ pub mod prelude {
     pub use crate::level_time::*;
     pub use crate::menu::*;
     pub use crate::menu_layout::*;
+    pub use crate::popup::*;
     pub use crate::shapes::*;
     pub use crate::state::*;
     pub use crate::top_bar_view::*;
@@ -53,7 +54,6 @@ pub mod prelude {
     pub use crate::video::*;
     pub use crate::view::*;
     pub use crate::wordline::*;
-    pub use crate::popup::*;
 
     pub use std::array;
 

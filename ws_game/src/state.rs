@@ -145,10 +145,17 @@ impl FoundWordsState {
             .clone()
     }
 
-    pub fn try_hint_word(&mut self, hint_state: &mut ResMut<HintState>, current_level: &CurrentLevel, word_index: usize) -> bool {
+    pub fn try_hint_word(
+        &mut self,
+        hint_state: &mut ResMut<HintState>,
+        current_level: &CurrentLevel,
+        word_index: usize,
+    ) -> bool {
         let level = current_level.level();
 
-        let Some(new_hints) = hint_state.hints_remaining.checked_sub(1)else {return false};
+        let Some(new_hints) = hint_state.hints_remaining.checked_sub(1) else {
+            return false;
+        };
 
         let Some(completion) = self.word_completions.get_mut(word_index) else {
             return false;
@@ -176,10 +183,16 @@ impl FoundWordsState {
         return true;
     }
 
-    pub fn try_hint(&mut self, hint_state: &mut ResMut<HintState>, current_level: &CurrentLevel) -> bool {
+    pub fn try_hint(
+        &mut self,
+        hint_state: &mut ResMut<HintState>,
+        current_level: &CurrentLevel,
+    ) -> bool {
         let level = current_level.level();
 
-        let Some(new_hints) = hint_state.hints_remaining.checked_sub(1)else {return false};
+        let Some(new_hints) = hint_state.hints_remaining.checked_sub(1) else {
+            return false;
+        };
 
         let mut min_hints = usize::MAX;
         let mut min_hint_index: Option<usize> = None;
@@ -488,6 +501,7 @@ fn could_precede(p: &[Character], s: &[Character]) -> bool {
 /// If this doesn't come between the preceder and succeeder, return None
 /// If there is exactly one child, which returns a value greater than zero, return that value + 1
 /// Otherwise return one
+#[allow(dead_code)]
 fn count_hints(
     tile: Tile,
     grid: &Grid,

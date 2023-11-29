@@ -23,11 +23,11 @@ impl LayoutRectangle {
         }
     }
 
-    pub fn width(&self)-> f32{
+    pub fn width(&self) -> f32 {
         self.extents.x.abs()
     }
 
-    pub fn height(&self)-> f32{
+    pub fn height(&self) -> f32 {
         self.extents.y.abs()
     }
 
