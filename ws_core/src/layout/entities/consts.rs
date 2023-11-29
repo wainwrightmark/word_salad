@@ -23,3 +23,16 @@ pub const WORD_ROW_PAD: f32 = 20.;
 
 pub const CONGRATS_ENTITY_HEIGHT: f32 = 40.0;
 pub const CONGRATS_ENTITY_WIDTH: f32 = 80.0;
+
+
+
+pub const HINTS_POPUP_BOX_TOP: f32 = 180.;
+pub const HINTS_POPUP_BOX_WIDTH: f32 = 300.;
+pub const HINTS_POPUP_BOX_HEIGHT: f32 = 200.;
+
+
+pub const HINTS_POPUP_BOX_TITLE_WIDTH: f32 = 280.;
+pub const HINTS_POPUP_BOX_TITLE_HEIGHT: f32 = 40.;
+
+pub const HINTS_POPUP_BOX_BUTTON_HEIGHT: f32 = 40.;
+pub const HINTS_POPUP_BOX_BUTTON_WIDTH: f32 = 280.;

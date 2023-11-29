@@ -18,6 +18,7 @@ impl Plugin for StatePlugin {
         app.init_tracked_resource::<CurrentLevel>();
         app.init_tracked_resource::<FoundWordsState>();
         app.init_tracked_resource::<TotalCompletion>();
+        app.init_tracked_resource::<HintState>();
 
         app.add_systems(Update, track_found_words);
         app.add_systems(Update, track_level_completion);

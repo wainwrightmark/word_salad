@@ -13,3 +13,8 @@ pub const MENU_BUTTON_BACKGROUND: f32 = 250.0;
 pub const TOP_BAR_BUTTON: f32 = 50.0;
 pub const CONGRATS_BUTTON: f32 = 50.0;
 pub const TEXT_AREA_TEXT: f32 = 50.0;
+
+pub const POPUP_BOX_GREY_OUT: f32 = 390.0;
+pub const POPUP_BOX_BACKGROUND: f32 = 400.0;
+pub const POPUP_BOX_BUTTON: f32 = 450.0;
+pub const POPUP_BOX_TEXT: f32 = 500.0;

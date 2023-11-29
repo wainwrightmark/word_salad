@@ -54,15 +54,13 @@ pub fn go() {
     app.add_plugins(AnimatedSolutionPlugin);
     app.add_plugins(LevelTimePlugin);
     app.add_plugins(ShapesPlugin);
+    app.add_plugins(PopupPlugin);
 
     app.register_transition::<BackgroundColorLens>();
     app.register_transition::<TransformRotationYLens>();
     app.register_transition::<TransformTranslationLens>();
     app.register_transition::<TransformScaleLens>();
     app.register_transition::<(TransformTranslationLens, TransformScaleLens)>();
-
-    app.insert_resource(PopupState::default());
-    app.insert_resource(HintState::default());
 
     app.add_plugins(InputPlugin);
 

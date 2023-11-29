@@ -23,6 +23,14 @@ impl LayoutRectangle {
         }
     }
 
+    pub fn width(&self)-> f32{
+        self.extents.x.abs()
+    }
+
+    pub fn height(&self)-> f32{
+        self.extents.y.abs()
+    }
+
     /// If the point in inside this rect, return another point, scaled to 0.0..1.0
     pub fn scaled_inside(&self, point: Vec2) -> Option<Vec2> {
         if !self.contains(point) {

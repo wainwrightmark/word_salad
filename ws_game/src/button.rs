@@ -34,6 +34,8 @@ pub enum ButtonInteraction {
     WordButton(LayoutWordTile),
     TopMenuItem(LayoutTopBarButton),
     Congrats(CongratsLayoutEntity),
+    BuyMoreHints,
+    ClosePopups
 }
 
 impl From<MainMenuLayoutEntity> for ButtonInteraction {
@@ -211,6 +213,13 @@ impl ButtonInteraction {
                     crate::wasm::share();
                 }
             }
+            ButtonInteraction::BuyMoreHints => {
+                hint_state.hints_remaining += 3; //TODO actually make them buy them!
+                *popup_state.as_mut() = PopupState::None;
+            },
+            ButtonInteraction::ClosePopups => {
+                *popup_state.as_mut() = PopupState::None;
+            },
         }
     }
 }

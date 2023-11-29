@@ -49,10 +49,30 @@ impl InteractionEntity {
         position: &Vec2,
         size: &Size,
         menu_state: &MenuState,
+        popup_state: &PopupState,
         current_level: &CurrentLevel,
         is_level_complete: bool,
         grid_tolerance: Option<f32>,
     ) -> Option<Self> {
+        match popup_state {
+            PopupState::None => {}
+            PopupState::BuyMoreHints => {
+                return match size.try_pick::<BuyMoreHintsLayoutEntity>(*position, &()) {
+                    Some(entity) => match entity {
+                        BuyMoreHintsLayoutEntity::Title => None,
+                        BuyMoreHintsLayoutEntity::BuyMoreHintsButton => {
+                            Some(InteractionEntity::Button(ButtonInteraction::BuyMoreHints))
+                        }
+                        BuyMoreHintsLayoutEntity::SufferAloneButton => {
+                            Some(InteractionEntity::Button(ButtonInteraction::ClosePopups))
+                        }
+                        BuyMoreHintsLayoutEntity::Box => None,
+                    },
+                    None => None,
+                }
+            }
+        }
+
         let tbi = Self::try_get_button::<LayoutTopBarButton>(position, size, &());
         if tbi.is_some() {
             return tbi;
@@ -138,6 +158,7 @@ impl InputType {
                     position,
                     size,
                     menu_state,
+                    &popup_state,
                     current_level,
                     is_level_complete,
                     None,
@@ -163,6 +184,7 @@ impl InputType {
                     position,
                     size,
                     menu_state,
+                    &popup_state,
                     current_level,
                     is_level_complete,
                     Some(MOVE_TOLERANCE),
@@ -188,6 +210,7 @@ impl InputType {
                     position,
                     size,
                     menu_state,
+                    &popup_state,
                     current_level,
                     is_level_complete,
                     None,

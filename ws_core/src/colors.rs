@@ -86,4 +86,8 @@ pub mod palette {
     pub const MENU_BUTTON_TEXT: Color = Color::BLACK;
     pub const MENU_BUTTON_FILL: Color = Color::rgb(0.8, 0.8, 0.8);
     pub const MENU_BUTTON_STROKE: Color = Color::BLACK;
+
+
+    pub const POPUP_BOX_BACKGROUND: Color = Color::WHITE;
+    pub const POPUP_BOX_BORDER: Color = Color::BLACK;
 }
