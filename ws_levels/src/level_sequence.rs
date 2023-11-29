@@ -37,6 +37,12 @@ pub enum LevelSequence {
     Fruit = 9,
     Gemstones = 10,
     Vegetables = 11,
+
+    Elements = 12,
+    FamousQueens = 13,
+
+    RomanGods = 14,
+    EgyptianGods = 15
 }
 
 impl LevelSequence {
@@ -69,6 +75,11 @@ impl LevelSequence {
             LevelSequence::Fruit => &*FRUIT,
             LevelSequence::Gemstones => &*GEMSTONES,
             LevelSequence::Vegetables => &*VEGETABLES,
+
+            LevelSequence::Elements => &*ELEMENTS,
+            LevelSequence::FamousQueens => &*QUEENS,
+            LevelSequence::RomanGods => &*ROMAN_GODS,
+            LevelSequence::EgyptianGods => &*EGYPTIAN_GODS,
         };
         levels
     }
@@ -87,6 +98,11 @@ impl LevelSequence {
             LevelSequence::Fruit => "Fruit",
             LevelSequence::Gemstones => "Gemstones",
             LevelSequence::Vegetables => "Vegetables",
+
+            LevelSequence::FamousQueens => "Famous Queens",
+            LevelSequence::RomanGods => "Roman Gods",
+            LevelSequence::EgyptianGods => "Egyptian Gods",
+            LevelSequence::Elements => "Elements",
         }
     }
 }

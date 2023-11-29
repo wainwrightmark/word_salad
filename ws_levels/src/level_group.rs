@@ -30,8 +30,8 @@ impl LevelGroup {
         use LevelSequence::*;
         match self {
             LevelGroup::GlobalLocation => &[USStates, EUCapitals, EUCountries],
-            LevelGroup::HistoryMythology => &[USPresidents, GreekGods],
-            LevelGroup::Science => &[Scientists, Insects, Fruit, Gemstones, Vegetables],
+            LevelGroup::HistoryMythology => &[USPresidents, GreekGods, RomanGods, EgyptianGods, FamousQueens],
+            LevelGroup::Science => &[Scientists, Insects, Fruit, Gemstones, Vegetables, Elements],
         }
     }
 

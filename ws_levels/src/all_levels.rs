@@ -84,6 +84,34 @@ lazy_static! {
             .map(|x| x.unwrap()),
         "Vegetables"
     );
+    pub(crate) static ref ELEMENTS: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/science/elements.tsv")
+            .lines()
+            .map(DesignedLevel::from_tsv_line)
+            .map(|x| x.unwrap()),
+        "Elements"
+    );
+    pub(crate) static ref QUEENS: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/history_and_mythology/famous_queens.tsv")
+            .lines()
+            .map(DesignedLevel::from_tsv_line)
+            .map(|x| x.unwrap()),
+        "Famous Queens"
+    );
+    pub(crate) static ref ROMAN_GODS: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/history_and_mythology/roman_gods.tsv")
+            .lines()
+            .map(DesignedLevel::from_tsv_line)
+            .map(|x| x.unwrap()),
+        "Roman Gods"
+    );
+    pub(crate) static ref EGYPTIAN_GODS: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/history_and_mythology/egyptian_gods.tsv")
+            .lines()
+            .map(DesignedLevel::from_tsv_line)
+            .map(|x| x.unwrap()),
+        "Egyptian Gods"
+    );
 }
 
 pub fn number_levels(
@@ -119,6 +147,11 @@ pub mod tests {
             FRUIT.iter(),
             GEMSTONES.iter(),
             VEGETABLES.iter(),
+            ELEMENTS.iter(),
+            QUEENS.iter(),
+            GREEK_GODS.iter(),
+            EGYPTIAN_GODS.iter(),
+            ROMAN_GODS.iter(),
         ]
         .iter()
         .cloned()
