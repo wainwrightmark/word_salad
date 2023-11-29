@@ -75,7 +75,6 @@ impl MavericNode for WordLine {
 
             let scale = rect.extents.x.abs() * 0.5;
             let initial_width = if should_hide {
-                info!("Word line not visible");
                 commands.transition_value::<SmudParamLens<0>>(
                     -DEFAULT_WIDTH,
                     Some((DEFAULT_WIDTH * 1.2).into()),
