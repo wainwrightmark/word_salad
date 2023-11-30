@@ -4,6 +4,7 @@ pub mod button;
 pub mod button_node;
 pub mod chosen_state;
 pub mod completion;
+pub mod compatibility;
 pub mod congrats_view;
 pub mod constants;
 pub mod current_level;
@@ -11,6 +12,7 @@ pub mod game_grid_view;
 pub mod grid_input;
 pub mod input;
 pub mod level_time;
+pub mod logging;
 pub mod menu;
 pub mod menu_layout;
 pub mod popup;
@@ -37,6 +39,7 @@ pub mod prelude {
     pub use crate::button::*;
     pub use crate::button_node::*;
     pub use crate::chosen_state::*;
+    pub use crate::compatibility::*;
     pub use crate::congrats_view::*;
     pub use crate::constants::*;
     pub use crate::current_level::*;
@@ -54,6 +57,7 @@ pub mod prelude {
     pub use crate::video::*;
     pub use crate::view::*;
     pub use crate::wordline::*;
+    pub use crate::logging::*;
 
     pub use std::array;
 

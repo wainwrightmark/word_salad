@@ -12,3 +12,4 @@ sheet_reader/sheet_reader_data/*.txt
 sheet1.txt
 
 layout_example.svg
+saves/bevy_pkv.redb

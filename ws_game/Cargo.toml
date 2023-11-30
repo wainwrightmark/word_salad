@@ -35,6 +35,8 @@ serde-wasm-bindgen = "0.6.1"
 num-traits = "0.2"
 bevy_smud = {git= "https://github.com/wainwrightmark/bevy_smud/", branch = "params"}
 bitfield-struct = "0.5.5"
+reqwest = { version = "0.11", default-features = false, features = ["json"] }
+
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 js-sys = { version = "0.3" }
@@ -78,4 +80,4 @@ features = [
 ]
 
 [features]
-steam = []
+steam = ["reqwest/native-tls"]
