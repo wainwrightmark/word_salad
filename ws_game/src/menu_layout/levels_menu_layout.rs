@@ -10,23 +10,20 @@ use super::{MENU_BUTTON_FONT_SIZE, MENU_BUTTON_HEIGHT, MENU_BUTTON_WIDTH};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Display)]
 pub enum LevelsMenuLayoutEntity {
-    DailyChallenge,
-    Tutorial,
+    WordSalad,
     AdditionalLevel(LevelGroup),
-    Back,
+
 }
 
 impl LevelsMenuLayoutEntity {
     pub fn index(&self) -> usize {
         match self {
-            LevelsMenuLayoutEntity::DailyChallenge => 0,
-            LevelsMenuLayoutEntity::Tutorial => 1,
-            LevelsMenuLayoutEntity::AdditionalLevel(lg) => (*lg as usize) + 2,
-            LevelsMenuLayoutEntity::Back => LevelGroup::COUNT + 2,
+            LevelsMenuLayoutEntity::WordSalad => 0,
+            LevelsMenuLayoutEntity::AdditionalLevel(lg) => (*lg as usize) + 1,
         }
     }
 
-    pub const COUNT: usize = 3 + LevelGroup::COUNT;
+    pub const COUNT: usize = 1 + LevelGroup::COUNT;
 }
 
 impl LayoutStructure for LevelsMenuLayoutEntity {
@@ -64,12 +61,10 @@ impl LayoutStructure for LevelsMenuLayoutEntity {
 
     fn iter_all(_context: &Self::Context) -> Self::Iterator {
         [
-            Self::DailyChallenge,
-            Self::Tutorial,
+            Self::WordSalad,
             Self::AdditionalLevel(LevelGroup::GlobalLocation),
             Self::AdditionalLevel(LevelGroup::HistoryMythology),
             Self::AdditionalLevel(LevelGroup::Science),
-            Self::Back,
         ]
         .into_iter()
     }
@@ -84,10 +79,9 @@ impl LayoutStructureWithFont for LevelsMenuLayoutEntity {
 impl LayoutStructureWithStaticText for LevelsMenuLayoutEntity {
     fn text(&self, _context: &Self::Context) -> &'static str {
         match self {
-            LevelsMenuLayoutEntity::DailyChallenge => "Word Salad",
-            LevelsMenuLayoutEntity::Tutorial => "Tutorial",
+            LevelsMenuLayoutEntity::WordSalad => "Word Salad",
             LevelsMenuLayoutEntity::AdditionalLevel(levels) => levels.name(),
-            LevelsMenuLayoutEntity::Back => "Back",
+
         }
     }
 }

@@ -3,7 +3,7 @@ use crate::{
     prelude::{
         level_group_layout::LevelGroupLayoutEntity, levels_menu_layout::LevelsMenuLayoutEntity,
         main_menu_layout::MainMenuLayoutEntity, *,
-    },
+    }, menu_layout::main_menu_back_button::MainMenuBackButton,
 };
 use bevy::{prelude::*, window::PrimaryWindow};
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
@@ -78,6 +78,7 @@ impl InteractionEntity {
             return tbi;
         }
 
+
         match menu_state {
             MenuState::Closed => {
                 if is_level_complete {
@@ -121,12 +122,24 @@ impl InteractionEntity {
             }
 
             MenuState::ShowMainMenu => {
+                if let  Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &()){
+                    return Some(back);
+                }
+
                 return Self::try_get_button::<MainMenuLayoutEntity>(position, size, &());
             }
             MenuState::ChooseLevelsPage => {
+                if let  Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &()){
+                    return Some(back);
+                }
+
                 return Self::try_get_button::<LevelsMenuLayoutEntity>(position, size, &());
             }
             MenuState::LevelGroupPage(group) => {
+                if let  Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &()){
+                    return Some(back);
+                }
+
                 return Self::try_get_button::<LevelGroupLayoutEntity>(position, size, &group);
             }
         }

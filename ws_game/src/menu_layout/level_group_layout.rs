@@ -9,7 +9,6 @@ use ws_levels::level_group::LevelGroup;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum LevelGroupLayoutEntity {
     Level { index: usize },
-    Back,
 }
 
 impl LayoutStructure for LevelGroupLayoutEntity {
@@ -36,7 +35,6 @@ impl LayoutStructure for LevelGroupLayoutEntity {
     fn location(&self, context: &Self::Context) -> bevy::prelude::Vec2 {
         let child_index = match self {
             LevelGroupLayoutEntity::Level { index } => *index,
-            LevelGroupLayoutEntity::Back => context.get_sequences().len(),
         };
         Vec2 {
             x: (IDEAL_WIDTH - MENU_BUTTON_WIDTH) / 2.,
@@ -44,7 +42,7 @@ impl LayoutStructure for LevelGroupLayoutEntity {
                 + Spacing::Centre.apply(
                     IDEAL_HEIGHT - TOP_BAR_ICON_SIZE,
                     MENU_BUTTON_HEIGHT * 1.2,
-                    context.get_sequences().len() + 1,
+                    context.get_sequences().len(),
                     child_index,
                 ),
         }
@@ -81,11 +79,7 @@ impl Iterator for LevelGroupLayoutIter {
                 self.next_index += 1;
                 Some(next)
             }
-            std::cmp::Ordering::Equal => {
-                self.next_index += 1;
-                return Some(LevelGroupLayoutEntity::Back);
-            }
-            std::cmp::Ordering::Greater => {
+            std::cmp::Ordering::Equal |std::cmp::Ordering::Greater => {
                 return None;
             }
         }
@@ -100,7 +94,6 @@ impl LayoutStructureWithStaticText for LevelGroupLayoutEntity {
                 .get(*index)
                 .map(|x| x.name())
                 .unwrap_or("Unknown"),
-            LevelGroupLayoutEntity::Back => "Back",
         }
     }
 }

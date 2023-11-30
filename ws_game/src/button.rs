@@ -5,6 +5,7 @@ use ws_core::layout::entities::{CongratsLayoutEntity, LayoutTopBarButton, Layout
 use ws_levels::level_sequence::LevelSequence;
 
 use crate::completion::TotalCompletion;
+use crate::menu_layout::main_menu_back_button::MainMenuBackButton;
 use crate::prelude::level_group_layout::LevelGroupLayoutEntity;
 use crate::prelude::levels_menu_layout::LevelsMenuLayoutEntity;
 use crate::prelude::main_menu_layout::MainMenuLayoutEntity;
@@ -26,9 +27,9 @@ pub struct PressedButton {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, EnumIs)]
-pub enum ButtonPressType{
+pub enum ButtonPressType {
     OnStart,
-    OnEnd
+    OnEnd,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Component, EnumIs)]
@@ -41,20 +42,18 @@ pub enum ButtonInteraction {
     Congrats(CongratsLayoutEntity),
     BuyMoreHints,
     ClosePopups,
+    MenuBackButton,
 }
 
-impl ButtonInteraction{
-    pub fn button_press_type(&self)-> ButtonPressType{
-        if self.is_congrats(){
+impl ButtonInteraction {
+    pub fn button_press_type(&self) -> ButtonPressType {
+        if self.is_congrats() {
             ButtonPressType::OnStart
-        }
-        else{
+        } else {
             ButtonPressType::OnEnd
         }
     }
 }
-
-
 
 impl From<MainMenuLayoutEntity> for ButtonInteraction {
     fn from(val: MainMenuLayoutEntity) -> Self {
@@ -85,6 +84,12 @@ impl From<LayoutTopBarButton> for ButtonInteraction {
 impl From<CongratsLayoutEntity> for ButtonInteraction {
     fn from(val: CongratsLayoutEntity) -> Self {
         ButtonInteraction::Congrats(val)
+    }
+}
+
+impl From<MainMenuBackButton> for ButtonInteraction {
+    fn from(_: MainMenuBackButton) -> Self {
+        ButtonInteraction::MenuBackButton
     }
 }
 
@@ -140,34 +145,26 @@ impl ButtonInteraction {
         video_events: &AsyncEventWriter<VideoEvent>,
     ) {
         match self {
-            ButtonInteraction::MainMenu(MainMenuLayoutEntity::Resume) => {
-                menu_state.close();
+            ButtonInteraction::MenuBackButton => {
+                menu_state.go_back();
             }
-            ButtonInteraction::MainMenu(MainMenuLayoutEntity::ResetLevel) => {
+            ButtonInteraction::MainMenu(MainMenuLayoutEntity::ResetPuzzle) => {
                 *found_words.as_mut() = FoundWordsState::new_from_level(current_level);
                 *chosen_state.as_mut() = ChosenState::default();
                 current_level.set_changed();
                 menu_state.close();
             }
-            ButtonInteraction::MainMenu(MainMenuLayoutEntity::ChooseLevel) => {
+            ButtonInteraction::MainMenu(MainMenuLayoutEntity::Puzzles) => {
                 *menu_state.as_mut() = MenuState::ChooseLevelsPage;
             }
-            ButtonInteraction::MainMenu(MainMenuLayoutEntity::Video) => {
+            ButtonInteraction::MainMenu(MainMenuLayoutEntity::Store) => {
+                //todo do something
+            }
+            ButtonInteraction::MainMenu(MainMenuLayoutEntity::SelfieMode) => {
                 video_state.toggle_video_streaming(video_events.clone());
             }
-            ButtonInteraction::LevelsMenu(LevelsMenuLayoutEntity::Back) => {
-                *menu_state.as_mut() = MenuState::ShowMainMenu;
-            }
-            ButtonInteraction::LevelsMenu(LevelsMenuLayoutEntity::DailyChallenge) => {
-                current_level.to_level(
-                    LevelSequence::DailyChallenge,
-                    total_completion,
-                    found_words,
-                    chosen_state,
-                );
-                menu_state.close();
-            }
-            ButtonInteraction::LevelsMenu(LevelsMenuLayoutEntity::Tutorial) => {
+
+            ButtonInteraction::MainMenu(MainMenuLayoutEntity::Tutorial) => {
                 current_level.to_level(
                     LevelSequence::Tutorial,
                     total_completion,
@@ -176,6 +173,17 @@ impl ButtonInteraction {
                 );
                 menu_state.close();
             }
+
+            ButtonInteraction::LevelsMenu(LevelsMenuLayoutEntity::WordSalad) => {
+                current_level.to_level(
+                    LevelSequence::DailyChallenge,
+                    total_completion,
+                    found_words,
+                    chosen_state,
+                );
+                menu_state.close();
+            }
+
             ButtonInteraction::LevelsMenu(LevelsMenuLayoutEntity::AdditionalLevel(group)) => {
                 *menu_state.as_mut() = MenuState::LevelGroupPage(*group);
             }
@@ -191,9 +199,6 @@ impl ButtonInteraction {
                         );
                         menu_state.close();
                     }
-                }
-                LevelGroupLayoutEntity::Back => {
-                    *menu_state.as_mut() = MenuState::ChooseLevelsPage;
                 }
             },
             ButtonInteraction::WordButton(word) => {

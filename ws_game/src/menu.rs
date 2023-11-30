@@ -10,11 +10,11 @@ use strum::EnumIs;
 use ws_core::{LayoutStructure, LayoutStructureWithFont, LayoutStructureWithStaticText};
 use ws_levels::level_group::LevelGroup;
 
-use crate::prelude::{
+use crate::{prelude::{
     level_group_layout::LevelGroupLayoutEntity, levels_menu_layout::LevelsMenuLayoutEntity,
     main_menu_layout::MainMenuLayoutEntity, ButtonInteraction, ButtonNode2d, SaladWindowSize, Size,
     ViewContext,
-};
+}, menu_layout::main_menu_back_button::MainMenuBackButton};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Resource, EnumIs, MavericContext)]
 pub enum MenuState {
@@ -36,6 +36,16 @@ impl MenuState {
 
     pub fn close(&mut self) {
         *self = MenuState::Closed
+    }
+
+    pub fn go_back(&mut self){
+        use MenuState::*;
+        *self = match self{
+            Closed => Closed,
+            ShowMainMenu => Closed,
+            ChooseLevelsPage => ShowMainMenu,
+            LevelGroupPage(_) => ChooseLevelsPage,
+        }
     }
 }
 
@@ -71,6 +81,9 @@ impl MavericNode for Menu {
                         add_menu_items::<R, LevelGroupLayoutEntity>(&group, commands, size, 300);
                     }
                 }
+
+
+                add_menu_items::<R, MainMenuBackButton>(&(), commands, size, 400);
             });
     }
 }
