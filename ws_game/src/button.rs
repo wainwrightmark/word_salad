@@ -214,11 +214,19 @@ impl ButtonInteraction {
             ButtonInteraction::TopMenuItem(LayoutTopBarButton::MenuBurgerButton) => {
                 menu_state.toggle()
             }
-            ButtonInteraction::TopMenuItem(LayoutTopBarButton::TimeCounter) => {}
+            ButtonInteraction::TopMenuItem(LayoutTopBarButton::WordSaladButton) => {
+                current_level.to_level(
+                    LevelSequence::DailyChallenge,
+                    total_completion,
+                    found_words,
+                    chosen_state,
+                );
+                menu_state.close();
+            }
             ButtonInteraction::Congrats(CongratsLayoutEntity::NextButton) => {
                 current_level.to_next_level(total_completion, found_words, chosen_state);
             }
-            ButtonInteraction::Congrats(CongratsLayoutEntity::TimeCounter) => {}
+
             ButtonInteraction::Congrats(CongratsLayoutEntity::HintsUsed) => {}
             ButtonInteraction::Congrats(CongratsLayoutEntity::ShareButton) => {
                 #[cfg(target_arch = "wasm32")]

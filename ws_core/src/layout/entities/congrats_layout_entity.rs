@@ -9,10 +9,10 @@ use super::consts::*;
     Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter, EnumCount, Display,
 )]
 pub enum CongratsLayoutEntity {
-    TimeCounter = 0,
-    HintsUsed = 1,
-    NextButton = 2,
-    ShareButton = 3,
+    HintsUsed = 0,
+    NextButton = 1,
+    ShareButton = 2,
+    //TODO streak
 }
 
 impl CongratsLayoutEntity {

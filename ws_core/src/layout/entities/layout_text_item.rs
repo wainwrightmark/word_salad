@@ -8,7 +8,7 @@ use super::consts::*;
     Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Display, EnumIter, EnumCount,
 )]
 pub enum LayoutTextItem {
-    PuzzleTitle,
+    Timer,
     PuzzleTheme,
     FoundWordAnimation,
 }
@@ -16,7 +16,7 @@ pub enum LayoutTextItem {
 impl LayoutTextItem {
     pub const fn index(&self) -> usize {
         match self {
-            LayoutTextItem::PuzzleTitle => 0,
+            LayoutTextItem::Timer => 0,
             LayoutTextItem::PuzzleTheme => 1,
             LayoutTextItem::FoundWordAnimation => 2,
         }

@@ -2,7 +2,8 @@ pub const IDEAL_WIDTH: f32 = 320.;
 pub const IDEAL_HEIGHT: f32 = 568.;
 pub const IDEAL_RATIO: f32 = IDEAL_WIDTH as f32 / IDEAL_HEIGHT as f32;
 
-pub const TOP_BAR_ICON_SIZE: f32 = 40.;
+pub const TOP_BAR_ICON_SIZE: f32 = 50.;
+pub const WORD_SALAD_LOGO_WIDTH: f32 = 200.;
 pub const TEXT_ITEM_HEIGHT: f32 = 30.;
 pub const TEXT_ITEM_WIDTH: f32 = 300.;
 

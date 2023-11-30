@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use crate::prelude::*;
 use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
 use ws_core::layout::entities::*;
@@ -44,41 +42,41 @@ impl MavericNode for CongratsView {
                     &(),
                 );
 
-                let time_text = match context.4.as_ref() {
-                    LevelTime::Started(..) => "00:00".to_string(),
-                    LevelTime::Finished { total_seconds } => format_seconds(*total_seconds),
-                };
+                // let time_text = match context.4.as_ref() {
+                //     LevelTime::Started(..) => "00:00".to_string(),
+                //     LevelTime::Finished { total_seconds } => format_seconds(*total_seconds),
+                // };
                 let top_bar_font_size = size.font_size::<LayoutTopBarButton>();
 
-                let time_position_initial = size
-                    .get_rect(&LayoutTopBarButton::TimeCounter, &())
-                    .centre()
-                    .extend(crate::z_indices::TOP_BAR_BUTTON);
+                // let time_position_initial = size
+                //     .get_rect(&LayoutTopBarButton::TimeCounter, &())
+                //     .centre()
+                //     .extend(crate::z_indices::TOP_BAR_BUTTON);
 
-                let time_position_final = size
-                    .get_rect(&CongratsLayoutEntity::TimeCounter, &())
-                    .centre()
-                    .extend(crate::z_indices::TOP_BAR_BUTTON);
+                // let time_position_final = size
+                //     .get_rect(&CongratsLayoutEntity::TimeCounter, &())
+                //     .centre()
+                //     .extend(crate::z_indices::TOP_BAR_BUTTON);
 
-                commands.add_child(
-                    //todo hide this in congrats mode and have a separate timer only in that mode
-                    "TimeCounter",
-                    Text2DNode {
-                        text: time_text,
-                        font_size: top_bar_font_size,
-                        color: palette::BUTTON_TEXT_COLOR.convert_color(),
-                        font: MENU_BUTTON_FONT_PATH,
-                        alignment: TextAlignment::Center,
-                        linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                    }
-                    .with_bundle((TimeCounterMarker,))
-                    .with_transition_in::<TransformTranslationLens>(
-                        time_position_initial,
-                        time_position_final,
-                        Duration::from_millis(500),
-                    ),
-                    &(),
-                );
+                // commands.add_child(
+                //     //todo hide this in congrats mode and have a separate timer only in that mode
+                //     "TimeCounter",
+                //     Text2DNode {
+                //         text: time_text,
+                //         font_size: top_bar_font_size,
+                //         color: palette::BUTTON_TEXT_COLOR.convert_color(),
+                //         font: MENU_BUTTON_FONT_PATH,
+                //         alignment: TextAlignment::Center,
+                //         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                //     }
+                //     .with_bundle((TimeCounterMarker,))
+                //     .with_transition_in::<TransformTranslationLens>(
+                //         time_position_initial,
+                //         time_position_final,
+                //         Duration::from_millis(500),
+                //     ),
+                //     &(),
+                // );
 
                 commands.add_child(
                     "next level",

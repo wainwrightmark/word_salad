@@ -104,6 +104,7 @@ pub const TITLE_FONT_PATH: &str = "fonts/FiraMono-Medium.ttf";
 pub const BUTTONS_FONT_PATH: &str = "fonts/FiraMono-Medium.ttf";
 pub const SOLUTIONS_FONT_PATH: &str = "fonts/MartianMono_SemiCondensed-Regular.ttf";
 pub const MENU_BUTTON_FONT_PATH: &str = "fonts/merged-font.ttf";
+pub const WORD_SALAD_LOGO_FONT_PATH: &str = "fonts/LuckiestGuy.ttf";
 
 pub const ICON_FONT_PATH: &str = "";
 

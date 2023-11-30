@@ -23,31 +23,37 @@ impl MavericNode for UI {
         commands
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
-                let title = context.1.level().name.trim().to_string();
+                let theme = context.1.level().name.trim().to_string();
                 let size = &context.3;
                 let text_font_size = size.font_size::<LayoutTextItem>();
+
+                let time_text = match context.4.as_ref() {
+                    LevelTime::Started(..) => "00:00".to_string(),
+                    LevelTime::Finished { total_seconds } => format_seconds(*total_seconds),
+                };
+
                 commands.add_child(
-                    "title",
+                    "timer",
                     Text2DNode {
-                        text: title,
+                        text: time_text,
                         font_size: text_font_size,
                         color: palette::BUTTON_TEXT_COLOR.convert_color(),
                         font: TITLE_FONT_PATH,
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     }
-                    .with_bundle(Transform::from_translation(
-                        size.get_rect(&LayoutTextItem::PuzzleTitle, &())
+                    .with_bundle((Transform::from_translation(
+                        size.get_rect(&LayoutTextItem::Timer, &())
                             .centre()
                             .extend(crate::z_indices::TEXT_AREA_TEXT),
-                    )),
+                    ), TimeCounterMarker)),
                     &(),
                 );
 
                 commands.add_child(
                     "theme",
                     Text2DNode {
-                        text: "Theme",
+                        text: theme,
                         font_size: text_font_size,
                         color: palette::BUTTON_TEXT_COLOR.convert_color(),
                         font: TITLE_FONT_PATH,
@@ -138,7 +144,6 @@ impl MavericNode for WordNode {
             let centre = node.rect.centre();
 
             let text_translation = centre.extend(crate::z_indices::WORD_TEXT);
-            //let font_size = size.font_size::<LayoutWordTile>();
 
             commands.add_child(
                 "text",
@@ -156,25 +161,6 @@ impl MavericNode for WordNode {
 
             let shape_translation = centre.extend(crate::z_indices::WORD_BACKGROUND);
             let _shape_border_translation = centre.extend(crate::z_indices::WORD_BACKGROUND + 1.0);
-
-            // let e = node.rect.extents * 0.5;
-
-            // let rectangle = shapes::RoundedPolygon {
-            //     points: vec![
-            //         e,
-            //         Vec2 {
-            //             x: e.x,
-            //             y: e.y * -1.0,
-            //         },
-            //         e * -1.0,
-            //         Vec2 {
-            //             x: e.x * -1.0,
-            //             y: e.y,
-            //         },
-            //     ],
-            //     radius: e.y.abs() * 0.5,
-            //     closed: true,
-            // };
 
             let fill_color = node.completion.color();
             let amount_per_second = node
@@ -196,19 +182,6 @@ impl MavericNode for WordNode {
                 .with_transition_to::<SmudColorLens>(*fill_color, amount_per_second.into()),
                 &(),
             );
-
-            // commands.add_child( //todo use a different shader rather than a border
-            //     "shape_border",
-            //     box_border_node(
-            //         node.rect.extents.x.abs(),
-            //         node.rect.extents.y.abs(),
-            //         shape_border_translation,
-            //         palette::WORD_BORDER.convert_color(),
-            //         0.1,
-            //         0.025,
-            //     ),
-            //     &(),
-            // );
         })
     }
 }

@@ -60,34 +60,32 @@ impl MavericNode for TopBar {
                     &(),
                 );
 
-                if context.5.is_closed() && !context.2.is_level_complete() {
-                    let time_text = match context.4.as_ref() {
-                        LevelTime::Started(..) => "00:00".to_string(),
-                        LevelTime::Finished { total_seconds } => format_seconds(*total_seconds),
-                    };
+                commands.add_child(
+                    //todo hide this in congrats mode and have a separate timer only in that mode
+                    "Word Salad Logo text",
+                    Text2DNode {
+                        text: "Word Salad",
+                        font_size: top_bar_font_size * 1.2,
+                        color: palette::BUTTON_TEXT_COLOR.convert_color(),
+                        font: WORD_SALAD_LOGO_FONT_PATH,
+                        alignment: TextAlignment::Center,
+                        linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                    }
+                    .with_bundle((
+                        Transform::from_translation(
+                            size.get_rect(&LayoutTopBarButton::WordSaladButton, &())
+                                .centre()
+                                .extend(crate::z_indices::TOP_BAR_BUTTON),
+                        ),
+                    )),
+                    &(),
+                );
 
-                    commands.add_child(
-                        //todo hide this in congrats mode and have a separate timer only in that mode
-                        "TimeCounter",
-                        Text2DNode {
-                            text: time_text,
-                            font_size: top_bar_font_size,
-                            color: palette::BUTTON_TEXT_COLOR.convert_color(),
-                            font: MENU_BUTTON_FONT_PATH,
-                            alignment: TextAlignment::Center,
-                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                        }
-                        .with_bundle((
-                            Transform::from_translation(
-                                size.get_rect(&LayoutTopBarButton::TimeCounter, &())
-                                    .centre()
-                                    .extend(crate::z_indices::TOP_BAR_BUTTON),
-                            ),
-                            TimeCounterMarker,
-                        )),
-                        &(),
-                    );
-                }
+                // if context.5.is_closed() && !context.2.is_level_complete() {
+
+
+
+                // }
             });
     }
 }
