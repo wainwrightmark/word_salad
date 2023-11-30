@@ -69,7 +69,7 @@ pub mod palette {
 
     pub const GRID_TILE_STROKE: Color = Color::rgb(0.25, 0.25, 0.25);
     pub const GRID_TILE_STROKE_AUTO_HINTED: Color = Color::rgb(0.25, 0.25, 0.25);
-    pub const GRID_TILE_MANUAL_HINTED: Color = Color::rgb(1.0, 0.84, 0.00);
+    //pub const GRID_TILE_MANUAL_HINTED: Color = Color::rgb(1.0, 0.84, 0.00);
 
     // pub const GRID_TILE_FILL_SELECTED: Color = Color::rgb(0.9, 0.9, 1.0);
     // pub const GRID_TILE_FILL_ADVISABLE: Color = Color::rgb(0.7, 0.7, 0.9);

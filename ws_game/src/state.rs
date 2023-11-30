@@ -79,6 +79,7 @@ impl FoundWordsState {
         grid
     }
 
+
     pub fn manual_hint_set(&self, level: &DesignedLevel, solution: &Solution) -> GridSet {
         self.hint_set::<true>(level, solution)
     }
@@ -111,24 +112,35 @@ impl FoundWordsState {
             // hint all solutions starting with this
             for (word, completion) in level.words.iter().zip(self.word_completions.iter()) {
                 let hints = match (completion, MANUAL) {
-                    // (Completion::AutoHinted(hints), false) => hints,
                     (Completion::ManualHinted(hints), true) => hints,
                     _ => {
                         continue;
                     }
                 };
 
-                if hints.get() <= solution.len() {
-                    continue;
-                };
+                if let Some(word_solution) = word.find_solution(&adjusted_grid) {
+                    let len = hints.get().min(solution.len());
 
-                if let Some(solution) = word.find_solution(&adjusted_grid) {
-                    if solution.starts_with(solution.as_slice()) {
-                        if let Some(tile) = solution.get(solution.len()) {
+                    if solution.iter().take(len).eq(word_solution.iter().take(len)){
+                        for tile in word_solution.iter().take(hints.get()){
                             set.set_bit(tile, true)
                         }
                     }
                 }
+
+                // if hints.get() <= solution.len() {
+                //     // if let Some(solution) = word.find_solution(&adjusted_grid) {
+                //     //     if solution.starts_with(solution.as_slice()) {
+                //     //         if let Some(tile) = solution.get(solution.len()) {
+                //     //             set.set_bit(tile, true)
+                //     //         }
+                //     //     }
+                //     // }
+                // }else{
+
+                // }
+
+
             }
         }
         set

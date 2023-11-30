@@ -23,11 +23,12 @@ pub struct GridTile {
 
 impl GridTile {
     fn fill_color(&self) -> Color {
-        match self.hint_status {
-            HintStatus::ManualHinted => palette::GRID_TILE_MANUAL_HINTED.convert_color(),
-            //HintStatus::AutoHinted => palette::GRID_TILE_STROKE_AUTO_HINTED.convert_color(),
-            _ => palette::GRID_TILE_FILL.convert_color(),
-        }
+        palette::GRID_TILE_FILL.convert_color()
+        // match self.hint_status {
+        //     HintStatus::ManualHinted => palette::GRID_TILE_MANUAL_HINTED.convert_color(),
+        //     //HintStatus::AutoHinted => palette::GRID_TILE_STROKE_AUTO_HINTED.convert_color(),
+        //     _ => palette::GRID_TILE_FILL.convert_color(),
+        // }
     }
 
     fn border_color(&self) -> Color {
