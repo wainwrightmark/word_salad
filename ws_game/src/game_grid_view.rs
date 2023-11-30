@@ -128,7 +128,7 @@ impl MavericNode for GridTiles {
             let inadvisable_tiles: GridSet =
                 context.2.calculate_inadvisable_tiles(&solution, level);
 
-            let hint_set = &context.2.manual_hint_set(&level, &solution);
+            let hint_set = &context.2.manual_hint_set(&level, &solution); //TODO this should reveal if a tile is previously hinted
 
             let inadvisable_tiles = inadvisable_tiles.intersect(&hint_set.negate());
             for (tile, character) in context.1.level().grid.enumerate() {
@@ -224,11 +224,7 @@ impl MavericNode for GridTile {
 
             match node.hint_status {
                 HintStatus::ManualHinted => {
-                    let (p0, p1) = if node.hint_status.is_manual_hinted() {
-                        (4.0, 3.0)
-                    } else {
-                        (2.0, 2.0)
-                    };
+                    let (p0, p1) = (4.0, 3.0);
                     let seed = node.tile.inner() as f32 * 123.456;
 
                     commands.add_child(

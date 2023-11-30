@@ -1,5 +1,9 @@
 fn main() {
-    let text = std::fs::read_to_string("sheet1.txt").unwrap();
+    let Ok(text)  = std::fs::read_to_string("sheet1.txt") else {
+        println!("There must be a file called `sheet1.txt`");
+        std::io::stdin().read_line(&mut String::new()).unwrap();
+        return;
+    };
 
     let mut lines = text.lines();
 
@@ -33,6 +37,9 @@ fn main() {
 
         println!("{path}");
     }
+
+    println!("Finished... Press enter");
+    std::io::stdin().read_line(&mut String::new()).unwrap();
 }
 
 struct Category {
