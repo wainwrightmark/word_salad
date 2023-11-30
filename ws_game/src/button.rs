@@ -205,7 +205,7 @@ impl ButtonInteraction {
                 if hint_state.hints_remaining <= 0 {
                     *popup_state.as_mut() = PopupState::BuyMoreHints;
                 } else {
-                    found_words.try_hint_word(&mut hint_state, &current_level, word.0);
+                    found_words.try_hint_word(&mut hint_state, &current_level, word.0, chosen_state);
                 }
             }
             ButtonInteraction::TopMenuItem(LayoutTopBarButton::HintCounter) => {

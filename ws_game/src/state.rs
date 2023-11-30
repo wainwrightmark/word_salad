@@ -79,7 +79,6 @@ impl FoundWordsState {
         grid
     }
 
-
     pub fn manual_hint_set(&self, level: &DesignedLevel, solution: &Solution) -> GridSet {
         self.hint_set::<true>(level, solution)
     }
@@ -121,8 +120,8 @@ impl FoundWordsState {
                 if let Some(word_solution) = word.find_solution(&adjusted_grid) {
                     let len = hints.get().min(solution.len());
 
-                    if solution.iter().take(len).eq(word_solution.iter().take(len)){
-                        for tile in word_solution.iter().take(hints.get()){
+                    if solution.iter().take(len).eq(word_solution.iter().take(len)) {
+                        for tile in word_solution.iter().take(hints.get()) {
                             set.set_bit(tile, true)
                         }
                     }
@@ -139,8 +138,6 @@ impl FoundWordsState {
                 // }else{
 
                 // }
-
-
             }
         }
         set
@@ -162,6 +159,7 @@ impl FoundWordsState {
         hint_state: &mut ResMut<HintState>,
         current_level: &CurrentLevel,
         word_index: usize,
+        chosen_state: &mut ResMut<ChosenState>,
     ) -> bool {
         let level = current_level.level();
 
@@ -176,11 +174,13 @@ impl FoundWordsState {
             return false;
         };
 
-        match completion {
+        let new_count = match completion {
             Completion::Unstarted => {
                 *completion = Completion::ManualHinted(NonZeroUsize::MIN);
                 self.hints_used1 += 1;
                 hint_state.hints_remaining = new_hints;
+
+                1
             }
             Completion::ManualHinted(hints) => {
                 if hints.get() >= word.characters.len() {
@@ -189,9 +189,19 @@ impl FoundWordsState {
                 *hints = hints.saturating_add(1);
                 self.hints_used1 += 1;
                 hint_state.hints_remaining = new_hints;
+
+                hints.get()
             }
             Completion::Complete => return false,
+        };
+
+        if let Some(solution) = word.find_solution(&level.grid){
+            let new_selection: ArrayVec<Tile, 16> = ArrayVec::from_iter(solution.iter().take(new_count).cloned());
+            chosen_state.solution = new_selection;
         }
+
+
+
         return true;
     }
 
