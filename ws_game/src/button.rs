@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
+use strum::EnumIs;
 use ws_core::layout::entities::{CongratsLayoutEntity, LayoutTopBarButton, LayoutWordTile};
 use ws_levels::level_sequence::LevelSequence;
 
@@ -24,7 +25,13 @@ pub struct PressedButton {
     pub interaction: Option<ButtonInteraction>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Component)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, EnumIs)]
+pub enum ButtonPressType{
+    OnStart,
+    OnEnd
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Component, EnumIs)]
 pub enum ButtonInteraction {
     MainMenu(MainMenuLayoutEntity),
     LevelsMenu(LevelsMenuLayoutEntity),
@@ -35,6 +42,19 @@ pub enum ButtonInteraction {
     BuyMoreHints,
     ClosePopups,
 }
+
+impl ButtonInteraction{
+    pub fn button_press_type(&self)-> ButtonPressType{
+        if self.is_congrats(){
+            ButtonPressType::OnStart
+        }
+        else{
+            ButtonPressType::OnEnd
+        }
+    }
+}
+
+
 
 impl From<MainMenuLayoutEntity> for ButtonInteraction {
     fn from(val: MainMenuLayoutEntity) -> Self {

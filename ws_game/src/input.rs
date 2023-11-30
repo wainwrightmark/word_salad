@@ -164,7 +164,23 @@ impl InputType {
                     None,
                 ) {
                     match interaction {
-                        InteractionEntity::Button(button) => Some(button),
+                        InteractionEntity::Button(button) => {
+                            if button.button_press_type().is_on_start() {
+                                button.on_pressed(
+                                    current_level,
+                                    menu_state,
+                                    chosen_state,
+                                    found_words,
+                                    hint_state,
+                                    popup_state,
+                                    total_completion,
+                                    video_state,
+                                    video_events,
+                                );
+                            }
+
+                            Some(button)
+                        }
                         InteractionEntity::Tile(tile) => {
                             input_state.handle_input_start(
                                 chosen_state,
@@ -217,17 +233,19 @@ impl InputType {
                 ) {
                     match interaction {
                         InteractionEntity::Button(button) => {
-                            button.on_pressed(
-                                current_level,
-                                menu_state,
-                                chosen_state,
-                                found_words,
-                                hint_state,
-                                popup_state,
-                                total_completion,
-                                video_state,
-                                video_events,
-                            );
+                            if button.button_press_type().is_on_end() {
+                                button.on_pressed(
+                                    current_level,
+                                    menu_state,
+                                    chosen_state,
+                                    found_words,
+                                    hint_state,
+                                    popup_state,
+                                    total_completion,
+                                    video_state,
+                                    video_events,
+                                );
+                            }
 
                             input_state.handle_input_end_no_location();
                             None
