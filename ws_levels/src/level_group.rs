@@ -26,6 +26,11 @@ pub enum LevelGroup {
 }
 
 impl LevelGroup {
+
+    pub fn total_count(&self)-> usize{
+        self.get_sequences().iter().map(|x|x.level_count()).sum()
+    }
+
     pub fn get_sequences(&self) -> &'static [LevelSequence] {
         use LevelSequence::*;
         match self {

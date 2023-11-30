@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use bevy::prelude::*;
 use maveric::{
     helpers::ChildCommands, node::MavericNode, root::MavericRoot, widgets::text2d_node::Text2DNode,
@@ -9,14 +11,16 @@ use ws_core::{palette, LayoutRectangle};
 use crate::prelude::{box_node, ButtonInteraction, ConvertColor, MENU_BUTTON_FONT_PATH};
 
 #[derive(Debug, PartialEq)]
-pub struct ButtonNode2d {
+pub struct ButtonNode2d<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> {
     pub font_size: f32,
     pub rect: LayoutRectangle,
-    pub text: &'static str,
+    pub text: T,
     pub interaction: ButtonInteraction,
 }
 
-impl MavericNode for ButtonNode2d {
+impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> MavericNode
+    for ButtonNode2d<T>
+{
     type Context = ();
 
     fn set_components(mut commands: maveric::prelude::SetComponentCommands<Self, Self::Context>) {
@@ -41,7 +45,7 @@ impl MavericNode for ButtonNode2d {
                 commands.add_child(
                     "text",
                     Text2DNode {
-                        text: *text,
+                        text: text.clone(),
                         font_size: *font_size,
                         color: palette::MENU_BUTTON_TEXT.convert_color(),
                         font: MENU_BUTTON_FONT_PATH,
@@ -53,7 +57,6 @@ impl MavericNode for ButtonNode2d {
                 );
 
                 let shape_translation = centre.extend(crate::z_indices::MENU_BUTTON_BACKGROUND);
-                //let shape_border_translation = centre.extend(crate::z_indices::MENU_BUTTON_BACKGROUND + 1.0);
                 commands.add_child(
                     "shape_fill",
                     box_node(
@@ -66,20 +69,6 @@ impl MavericNode for ButtonNode2d {
                     .with_bundle(*interaction),
                     &(),
                 );
-
-                // commands.add_child(
-                //     "shape_border",
-                //     box_border_node(
-                //         rect.extents.x.abs(),
-                //         rect.extents.y.abs(),
-                //         shape_border_translation,
-                //         palette::MENU_BUTTON_STROKE.convert_color(),
-                //         0.1,
-                //         0.02,
-                //     )
-                //     .with_bundle(*interaction),
-                //     &(),
-                // );
             })
     }
 }

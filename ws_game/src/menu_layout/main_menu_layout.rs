@@ -5,7 +5,7 @@ use ws_core::{
     LayoutStructure, LayoutStructureWithFont, LayoutStructureWithStaticText, Spacing,
 };
 
-use super::{MENU_BUTTON_FONT_SIZE, MENU_BUTTON_HEIGHT, MENU_BUTTON_WIDTH, MENU_BUTTON_PADDING_RATIO};
+use super::{MENU_BUTTON_FONT_SIZE, MENU_BUTTON_SINGLE_HEIGHT, MENU_BUTTON_WIDTH,  MENU_BUTTON_SPACING};
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter, EnumCount, Display,
@@ -40,7 +40,7 @@ impl LayoutStructure for MainMenuLayoutEntity {
     fn size(&self, _context: &Self::Context) -> Vec2 {
         Vec2 {
             x: MENU_BUTTON_WIDTH,
-            y: MENU_BUTTON_HEIGHT,
+            y: MENU_BUTTON_SINGLE_HEIGHT,
         }
     }
 
@@ -49,8 +49,8 @@ impl LayoutStructure for MainMenuLayoutEntity {
             x: (IDEAL_WIDTH - MENU_BUTTON_WIDTH) / 2.,
             y: TOP_BAR_ICON_SIZE
                 + Spacing::Centre.apply(
-                    IDEAL_HEIGHT - TOP_BAR_ICON_SIZE - (MENU_BUTTON_HEIGHT * MENU_BUTTON_PADDING_RATIO),
-                    MENU_BUTTON_HEIGHT * MENU_BUTTON_PADDING_RATIO,
+                    IDEAL_HEIGHT - TOP_BAR_ICON_SIZE - (MENU_BUTTON_SINGLE_HEIGHT + MENU_BUTTON_SPACING),
+                    MENU_BUTTON_SINGLE_HEIGHT + MENU_BUTTON_SPACING,
                     Self::COUNT,
                     self.index(),
                 ),

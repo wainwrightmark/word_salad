@@ -75,10 +75,10 @@ impl MavericNode for Menu {
                         add_menu_items::<R, MainMenuLayoutEntity>(&(), commands, size, 100);
                     }
                     MenuState::ChooseLevelsPage => {
-                        add_menu_items::<R, LevelsMenuLayoutEntity>(&(), commands, size, 200);
+                        add_menu_items_with_fn::<R, LevelsMenuLayoutEntity>(&(), commands, size, 200, |x| x.get_text(context.7.as_ref()));
                     }
                     MenuState::LevelGroupPage(group) => {
-                        add_menu_items::<R, LevelGroupLayoutEntity>(&group, commands, size, 300);
+                        add_menu_items_with_fn::<R, LevelGroupLayoutEntity>(&group, commands, size, 300, |x|x.get_text(context.7.as_ref(), group));
                     }
                 }
 
@@ -93,7 +93,6 @@ fn add_menu_items<
     L: LayoutStructureWithFont + LayoutStructureWithStaticText + Into<ButtonInteraction>,
 >(
     context: &<L as LayoutStructure>::Context,
-
     commands: &mut UnorderedChildCommands<R>,
     size: &Size,
     key_offset: u32,
@@ -107,6 +106,35 @@ fn add_menu_items<
                 font_size,
                 rect,
                 text: entity.text(context),
+                interaction: entity.into(),
+            },
+            &(),
+        );
+    }
+}
+
+fn add_menu_items_with_fn<
+    R: MavericRoot,
+    L: LayoutStructureWithFont  + Into<ButtonInteraction>,
+
+>(
+    context: &<L as LayoutStructure>::Context,
+    commands: &mut UnorderedChildCommands<R>,
+    size: &Size,
+    key_offset: u32,
+    func: impl Fn(&L)-> String
+) {
+    let font_size = size.font_size::<L>();
+    for (index, entity) in L::iter_all(context).enumerate() {
+        let text = func(&entity);
+
+        let rect = size.get_rect(&entity, context);
+        commands.add_child(
+            (index as u32) + key_offset,
+            ButtonNode2d {
+                font_size,
+                rect,
+                text,
                 interaction: entity.into(),
             },
             &(),

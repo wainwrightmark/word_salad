@@ -5,7 +5,7 @@ use ws_core::{
 };
 
 use super::{
-    MENU_BUTTON_FONT_SIZE, MENU_BUTTON_HEIGHT, MENU_BUTTON_PADDING_RATIO, MENU_BUTTON_WIDTH,
+    MENU_BUTTON_FONT_SIZE, MENU_BUTTON_WIDTH, MENU_BUTTON_SINGLE_HEIGHT, MENU_BUTTON_SPACING,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Default)]
@@ -27,14 +27,14 @@ impl LayoutStructure for MainMenuBackButton {
     fn size(&self, _context: &Self::Context) -> Vec2 {
         Vec2 {
             x: MENU_BUTTON_WIDTH,
-            y: MENU_BUTTON_HEIGHT,
+            y: MENU_BUTTON_SINGLE_HEIGHT,
         }
     }
 
     fn location(&self, _context: &Self::Context) -> Vec2 {
         Vec2 {
             x: (IDEAL_WIDTH - MENU_BUTTON_WIDTH) / 2.,
-            y: IDEAL_HEIGHT - (MENU_BUTTON_HEIGHT * MENU_BUTTON_PADDING_RATIO)
+            y: IDEAL_HEIGHT - (MENU_BUTTON_SINGLE_HEIGHT + MENU_BUTTON_SPACING)
         }
     }
 

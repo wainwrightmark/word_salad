@@ -1,14 +1,41 @@
-use super::{MENU_BUTTON_FONT_SIZE, MENU_BUTTON_HEIGHT, MENU_BUTTON_WIDTH};
+use crate::completion::TotalCompletion;
+
+use super::{
+    MENU_BUTTON_DOUBLE_HEIGHT, MENU_BUTTON_FONT_SIZE, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH,
+};
 use bevy::math::Vec2;
 use ws_core::{
     layout::entities::{IDEAL_HEIGHT, IDEAL_WIDTH, TOP_BAR_ICON_SIZE},
-    LayoutStructure, LayoutStructureWithFont, LayoutStructureWithStaticText, Spacing,
+    LayoutStructure, LayoutStructureWithFont, Spacing,
 };
 use ws_levels::level_group::LevelGroup;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub enum LevelGroupLayoutEntity {
-    Level { index: usize },
+pub struct LevelGroupLayoutEntity {
+    pub index: usize,
+}
+
+impl LevelGroupLayoutEntity {
+    pub fn get_text(&self, completion: &TotalCompletion, group: &LevelGroup) -> String {
+        let name = self.name(group);
+
+        let sequence = group.get_level_sequence(self.index);
+
+        let complete = completion.get_number_complete(&sequence);
+        let total = sequence.level_count();
+
+        let complete = complete.min(total);
+
+        format!("{name}\n{complete:3}/{total:3}")
+    }
+
+    fn name(&self, group: &LevelGroup) -> &'static str {
+        group
+            .get_sequences()
+            .get(self.index)
+            .map(|x| x.name())
+            .unwrap_or("Unknown")
+    }
 }
 
 impl LayoutStructure for LevelGroupLayoutEntity {
@@ -28,22 +55,20 @@ impl LayoutStructure for LevelGroupLayoutEntity {
     fn size(&self, _context: &Self::Context) -> bevy::prelude::Vec2 {
         Vec2 {
             x: MENU_BUTTON_WIDTH,
-            y: super::MENU_BUTTON_HEIGHT,
+            y: super::MENU_BUTTON_DOUBLE_HEIGHT,
         }
     }
 
     fn location(&self, context: &Self::Context) -> bevy::prelude::Vec2 {
-        let child_index = match self {
-            LevelGroupLayoutEntity::Level { index } => *index,
-        };
+
         Vec2 {
             x: (IDEAL_WIDTH - MENU_BUTTON_WIDTH) / 2.,
             y: TOP_BAR_ICON_SIZE
                 + Spacing::Centre.apply(
                     IDEAL_HEIGHT - TOP_BAR_ICON_SIZE,
-                    MENU_BUTTON_HEIGHT * 1.2,
+                    MENU_BUTTON_DOUBLE_HEIGHT + MENU_BUTTON_SPACING,
                     context.get_sequences().len(),
-                    child_index,
+                    self.index,
                 ),
         }
     }
@@ -73,27 +98,13 @@ impl Iterator for LevelGroupLayoutIter {
     fn next(&mut self) -> Option<Self::Item> {
         match self.next_index.cmp(&self.group.get_sequences().len()) {
             std::cmp::Ordering::Less => {
-                let next = LevelGroupLayoutEntity::Level {
-                    index: self.next_index,
-                };
+                let next = LevelGroupLayoutEntity{index: self.next_index};
                 self.next_index += 1;
                 Some(next)
             }
-            std::cmp::Ordering::Equal |std::cmp::Ordering::Greater => {
+            std::cmp::Ordering::Equal | std::cmp::Ordering::Greater => {
                 return None;
             }
-        }
-    }
-}
-
-impl LayoutStructureWithStaticText for LevelGroupLayoutEntity {
-    fn text(&self, context: &Self::Context) -> &'static str {
-        match self {
-            LevelGroupLayoutEntity::Level { index } => context
-                .get_sequences()
-                .get(*index)
-                .map(|x| x.name())
-                .unwrap_or("Unknown"),
         }
     }
 }

@@ -188,7 +188,7 @@ impl ButtonInteraction {
                 *menu_state.as_mut() = MenuState::LevelGroupPage(*group);
             }
             ButtonInteraction::LevelGroupMenu(entity) => match entity {
-                LevelGroupLayoutEntity::Level { index } => {
+                LevelGroupLayoutEntity { index } => {
                     if let MenuState::LevelGroupPage(level_group) = menu_state.as_ref() {
                         let sequence = level_group.get_level_sequence(*index);
                         current_level.to_level(
