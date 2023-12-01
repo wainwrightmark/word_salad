@@ -59,7 +59,7 @@ fn main() {
     if let Some(search) = options.search {
         search::do_search(search);
     } else if options.cluster {
-        do_cluster();
+        do_cluster(options);
     } else {
         do_finder(options);
     }
@@ -68,13 +68,13 @@ fn main() {
     io::stdin().read_line(&mut String::new()).unwrap();
 }
 
-fn do_cluster() {
+fn do_cluster(options: Options) {
     let folder = std::fs::read_dir("grids").unwrap();
 
     let paths: Vec<_> = folder.collect();
 
     let pb: ProgressBar = ProgressBar::new(paths.len() as u64)
-        .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:2}/{len:2}").unwrap())
+        .with_style(ProgressStyle::with_template("{msg:50} {wide_bar} {pos:2}/{len:2}").unwrap())
         .with_message("Data files");
 
     let _ = std::fs::create_dir("clusters");
@@ -87,7 +87,25 @@ fn do_cluster() {
 
         let grid_file_text = std::fs::read_to_string(grid_path.clone()).unwrap();
 
-        let grids = grid_file_text.lines().map(|l|GridResult::from_str(l).unwrap()).collect_vec();
+
+        fn filter_enough_grids(grid: &GridResult, count: &mut usize, enough: usize, filter_below: &mut usize)-> bool{
+            if grid.words.len() < *filter_below{
+                return false;
+            }
+            *count += 1;
+            if *count >= enough{
+                *filter_below = (*filter_below).max(grid.words.len());
+            }
+            true
+        }
+        let mut count = 0;
+        let mut filter_below = 0;
+
+        let grids = grid_file_text.lines().map(|l|GridResult::from_str(l).unwrap())
+        .filter(|x|x.words.len() >= options.minimum as usize)
+        .filter(|x| filter_enough_grids(x, &mut count, options.grids as usize, &mut filter_below))
+        .collect_vec();
+
 
         let all_words = grids
             .iter()
@@ -96,6 +114,8 @@ fn do_cluster() {
             .sorted()
             .dedup()
             .collect_vec();
+
+        info!("{file_name} found {:6} grids with {:3} different words", grids.len(), all_words.len());
 
         let clusters = cluster_words(grids, &all_words, 10);
 
