@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use maveric::helpers::MavericContext;
 use nice_bevy_utils::{async_event_writer::AsyncEventWriter, CanRegisterAsyncEvent};
 
 //use crate::{asynchronous, wasm::JsException};
@@ -22,7 +23,7 @@ pub enum VideoEvent {
     VideoStopped,
 }
 
-#[derive(Default, Resource)]
+#[derive(Default, Resource, MavericContext)]
 pub struct VideoResource {
     pub is_streaming: bool,
 }

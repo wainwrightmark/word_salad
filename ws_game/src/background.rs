@@ -14,13 +14,20 @@ impl Plugin for BackgroundPlugin{
 pub struct Background;
 
 impl MavericRootChildren for Background{
-    type Context = MyWindowSize;
+    type Context = (MyWindowSize, VideoResource);
 
     fn set_children(
         context: &<Self::Context as NodeContext>::Wrapper<'_>,
         commands: &mut impl ChildCommands,
     ) {
-        let scale= context.scaled_width.max(context.scaled_height);
+        if context.1.is_streaming{
+            //Don't show background when video is streaming
+            return;
+        }
+
+        let size = context.0.as_ref();
+
+        let scale= size.scaled_width.max(size.scaled_height);
         let node = SmudShapeNode {
             color: palette::BACKGROUND_COLOR_1.convert_color(),
             sfd: ANYWHERE_SHADER_PATH,
