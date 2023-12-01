@@ -13,7 +13,7 @@ use std::{
     collections::HashSet,
     fs::File,
     io::{self, BufWriter, Write},
-    path::{Path, self}, str::FromStr,
+    path::Path, str::FromStr,
 };
 use ws_core::{
     finder::{counter::FakeCounter, helpers::*, node::GridResult},
@@ -45,6 +45,9 @@ struct Options {
     /// If set, will find clusters for all existing grids rather than finding new grids
     #[arg(short, long, default_value = "false")]
     pub cluster: bool,
+
+    #[arg(long, default_value = "10")]
+    pub max_clusters: u32
 }
 
 fn main() {
@@ -117,7 +120,7 @@ fn do_cluster(options: Options) {
 
         info!("{file_name} found {:6} grids with {:3} different words", grids.len(), all_words.len());
 
-        let clusters = cluster_words(grids, &all_words, 10);
+        let clusters = cluster_words(grids, &all_words, options.max_clusters as usize);
 
         let clusters_write_path = format!("clusters/{file_name}",);
         let clusters_write_path = Path::new(clusters_write_path.as_str());
@@ -198,7 +201,7 @@ fn do_finder(options: Options) {
             .dedup()
             .collect_vec();
 
-        let clusters = cluster_words(grids, &all_words, 10);
+        let clusters = cluster_words(grids, &all_words, options.max_clusters as usize);
 
         let clusters_write_path = format!("clusters/{file_name}",);
         let clusters_write_path = Path::new(clusters_write_path.as_str());
