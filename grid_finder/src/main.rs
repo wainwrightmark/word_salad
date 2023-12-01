@@ -13,7 +13,7 @@ use std::{
     collections::HashSet,
     fs::File,
     io::{self, BufWriter, Write},
-    path::Path,
+    path::{Path, self}, str::FromStr,
 };
 use ws_core::{
     finder::{counter::FakeCounter, helpers::*, node::GridResult},
@@ -42,6 +42,9 @@ struct Options {
     /// search all found grids for a particular word or list of words
     #[arg(long)]
     pub search: Option<String>,
+    /// If set, will find clusters for all existing grids rather than finding new grids
+    #[arg(short, long, default_value = "false")]
+    pub cluster: bool,
 }
 
 fn main() {
@@ -55,12 +58,56 @@ fn main() {
 
     if let Some(search) = options.search {
         search::do_search(search);
+    } else if options.cluster {
+        do_cluster();
     } else {
         do_finder(options);
     }
 
     info!("Finished... Press enter");
     io::stdin().read_line(&mut String::new()).unwrap();
+}
+
+fn do_cluster() {
+    let folder = std::fs::read_dir("grids").unwrap();
+
+    let paths: Vec<_> = folder.collect();
+
+    let pb: ProgressBar = ProgressBar::new(paths.len() as u64)
+        .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:2}/{len:2}").unwrap())
+        .with_message("Data files");
+
+    let _ = std::fs::create_dir("clusters");
+
+    for path in paths{
+        let grid_path = path.as_ref().unwrap().path();
+        let file_name = grid_path.file_name().unwrap().to_string_lossy();
+
+        pb.set_message(file_name.to_string());
+
+        let grid_file_text = std::fs::read_to_string(grid_path.clone()).unwrap();
+
+        let grids = grid_file_text.lines().map(|l|GridResult::from_str(l).unwrap()).collect_vec();
+
+        let all_words = grids
+            .iter()
+            .flat_map(|grid| &grid.words)
+            .cloned()
+            .sorted()
+            .dedup()
+            .collect_vec();
+
+        let clusters = cluster_words(grids, &all_words, 10);
+
+        let clusters_write_path = format!("clusters/{file_name}",);
+        let clusters_write_path = Path::new(clusters_write_path.as_str());
+        let clusters_text = clusters.into_iter().map(|x| x.to_string()).join("\n\n");
+        std::fs::write(clusters_write_path, clusters_text).unwrap();
+
+        pb.inc(1);
+    }
+
+    pb.finish();
 }
 
 fn do_finder(options: Options) {
@@ -77,7 +124,6 @@ fn do_finder(options: Options) {
     let _ = std::fs::create_dir("grids");
     let _ = std::fs::create_dir("clusters");
     let _ = std::fs::create_dir("done");
-
 
     for path in paths.iter() {
         let data_path = path.as_ref().unwrap().path();
@@ -116,7 +162,13 @@ fn do_finder(options: Options) {
         let grids_file =
             std::fs::File::create(grids_write_path).expect("Could not find output folder");
         let grids_writer = BufWriter::new(grids_file);
-        let grids = create_grids(&word_map, &master_words, grids_writer, options.minimum, options.grids);
+        let grids = create_grids(
+            &word_map,
+            &master_words,
+            grids_writer,
+            options.minimum,
+            options.grids,
+        );
 
         let all_words = grids
             .iter()
@@ -148,7 +200,7 @@ fn create_grids(
     exclude_words: &Vec<FinderWord>,
     mut file: BufWriter<File>,
     min_size: u32,
-    max_grids: u32
+    max_grids: u32,
 ) -> Vec<GridResult> {
     let word_letters: Vec<LetterCounts> = all_words.iter().map(|x| x.counts).collect();
     let possible_combinations: Vec<combinations::WordCombination> =
@@ -245,7 +297,7 @@ fn create_grids(
 
         all_solutions.extend(solutions);
 
-        if all_solutions.len() > max_grids as usize{
+        if all_solutions.len() > max_grids as usize {
             return all_solutions;
         }
 
