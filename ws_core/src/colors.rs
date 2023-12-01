@@ -89,4 +89,7 @@ pub mod palette {
 
     pub const POPUP_BOX_BACKGROUND: Color = Color::WHITE;
     pub const POPUP_BOX_BORDER: Color = Color::BLACK;
+
+    pub const BACKGROUND_COLOR_1: Color = Color::rgb(193. / 255., 41. / 255., 46. / 255.);
+    pub const BACKGROUND_COLOR_2: Color = Color::rgb(241. / 255., 211. / 255., 2. / 255.);
 }

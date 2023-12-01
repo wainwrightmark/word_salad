@@ -56,6 +56,7 @@ pub fn go() {
     app.add_plugins(ShapesPlugin);
     app.add_plugins(PopupPlugin);
     app.add_plugins(LogWatchPlugin);
+    app.add_plugins(BackgroundPlugin);
 
     app.register_transition::<BackgroundColorLens>();
     app.register_transition::<TransformRotationYLens>();

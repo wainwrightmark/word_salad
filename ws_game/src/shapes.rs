@@ -34,30 +34,7 @@ impl Plugin for ShapesPlugin {
     }
 }
 
-fn preload_shaders(asset_server: Res<AssetServer>) {
-    //force all shaders to stay loaded
-    for shader in [
-        BOX_SHADER_PATH,
-        BOX_BORDER_SHADER_PATH,
-        WORD_LINE_SHADER_PATH,
-        SIMPLE_FILL_SHADER_PATH,
-        WORD_LINE_FILL_SHADER_PATH,
-        FILL_WITH_OUTLINE_SHADER_PATH,
-        ANYWHERE_SHADER_PATH,
-        SPARKLE_SHADER_PATH,
-    ] {
-        let handle: Handle<Shader> = asset_server.load(shader);
-        match handle {
-            Handle::Strong(s) => {
-                let b = Box::new(s);
-                Box::leak(b); //this is so ugly but it works :)
-            }
-            Handle::Weak(_w) => {
-                warn!("Preloaded asset was weak")
-            }
-        }
-    }
-}
+
 
 #[derive(Debug, PartialEq)]
 pub struct SmudShapeNode {
@@ -108,13 +85,31 @@ impl MavericNode for SmudShapeNode {
     }
 }
 
-// fn box_params(width: f32, height: f32, rounding: f32) -> Vec4 {
-//     Vec4::new(width, height, rounding, 0.0)
-// }
-
-// fn box_border_params(width: f32, height: f32, rounding: f32, border_width: f32) -> Vec4 {
-//     Vec4::new(width, height, rounding, border_width)
-// }
+fn preload_shaders(asset_server: Res<AssetServer>) {
+    //force all shaders to stay loaded
+    for shader in [
+        BOX_SHADER_PATH,
+        BOX_BORDER_SHADER_PATH,
+        WORD_LINE_SHADER_PATH,
+        SIMPLE_FILL_SHADER_PATH,
+        WORD_LINE_FILL_SHADER_PATH,
+        FILL_WITH_OUTLINE_SHADER_PATH,
+        ANYWHERE_SHADER_PATH,
+        SPARKLE_SHADER_PATH,
+        VORONOI_SHADER_PATH,
+    ] {
+        let handle: Handle<Shader> = asset_server.load(shader);
+        match handle {
+            Handle::Strong(s) => {
+                let b = Box::new(s);
+                Box::leak(b); //this is so ugly but it works :)
+            }
+            Handle::Weak(_w) => {
+                warn!("Preloaded asset was weak")
+            }
+        }
+    }
+}
 
 pub const BOX_SHADER_PATH: &'static str = "shaders/sdf/box.wgsl";
 pub const BOX_BORDER_SHADER_PATH: &'static str = "shaders/sdf/box_border.wgsl";
@@ -125,6 +120,7 @@ pub const SIMPLE_FILL_SHADER_PATH: &'static str = "shaders/fill/simple.wgsl";
 pub const FILL_WITH_OUTLINE_SHADER_PATH: &'static str = "shaders/fill/fill_with_outline.wgsl";
 pub const WORD_LINE_FILL_SHADER_PATH: &'static str = "shaders/fill/word_line_fill.wgsl";
 pub const SPARKLE_SHADER_PATH: &'static str = "shaders/fill/sparkle.wgsl";
+pub const VORONOI_SHADER_PATH: &'static str = "shaders/fill/voronoi_gradient.wgsl";
 
 pub fn box_node(
     width: f32,

@@ -1,6 +1,7 @@
 pub mod animated_solutions;
 pub mod asynchronous;
 pub mod button;
+pub mod background;
 pub mod button_node;
 pub mod chosen_state;
 pub mod completion;
@@ -38,6 +39,7 @@ pub mod prelude {
     pub use crate::asynchronous::*;
     pub use crate::button::*;
     pub use crate::button_node::*;
+    pub use crate::background::*;
     pub use crate::chosen_state::*;
     pub use crate::compatibility::*;
     pub use crate::congrats_view::*;

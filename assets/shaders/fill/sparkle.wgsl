@@ -1,6 +1,4 @@
-
 #define_import_path smud::sparkle
-
 #import smud::view_bindings::globals
 
 fn modulo_euclidean(a: f32, b: f32) -> f32 {
