@@ -28,12 +28,18 @@ use crate::{
 #[derive(Parser, Debug)]
 #[command()]
 struct Options {
+    /// Folder to look in for data
     #[arg(short, long, default_value = "data")]
     pub folder: String,
 
-    #[arg(short, long, default_value = "5")]
+    /// Minimum number of words in a grid
+    #[arg(short, long, default_value = "0")]
     pub minimum: u32,
 
+    /// Maximum number of grids to return
+    #[arg(short, long, default_value = "10000")]
+    pub grids: u32,
+    /// search all found grids for a particular word or list of words
     #[arg(long)]
     pub search: Option<String>,
 }
@@ -72,6 +78,7 @@ fn do_finder(options: Options) {
     let _ = std::fs::create_dir("clusters");
     let _ = std::fs::create_dir("done");
 
+
     for path in paths.iter() {
         let data_path = path.as_ref().unwrap().path();
         let file_name = data_path.file_name().unwrap().to_string_lossy();
@@ -109,7 +116,7 @@ fn do_finder(options: Options) {
         let grids_file =
             std::fs::File::create(grids_write_path).expect("Could not find output folder");
         let grids_writer = BufWriter::new(grids_file);
-        let grids = create_grids(&word_map, &master_words, grids_writer, options.minimum);
+        let grids = create_grids(&word_map, &master_words, grids_writer, options.minimum, options.grids);
 
         let all_words = grids
             .iter()
@@ -141,6 +148,7 @@ fn create_grids(
     exclude_words: &Vec<FinderWord>,
     mut file: BufWriter<File>,
     min_size: u32,
+    max_grids: u32
 ) -> Vec<GridResult> {
     let word_letters: Vec<LetterCounts> = all_words.iter().map(|x| x.counts).collect();
     let possible_combinations: Vec<combinations::WordCombination> =
@@ -236,6 +244,11 @@ fn create_grids(
         ));
 
         all_solutions.extend(solutions);
+
+        if all_solutions.len() > max_grids as usize{
+            return all_solutions;
+        }
+
         if next_set.len() > 0 {
             ordered_combinations.push((size.saturating_sub(1), next_set));
         }
