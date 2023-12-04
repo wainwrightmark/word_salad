@@ -48,8 +48,8 @@ impl BasicColor {
 pub mod palette {
     use crate::BasicColor as Color;
 
-    pub const ANIMATED_SOLUTION_NEW: Color = Color::rgb(0., 1.0, 0.0);
-    pub const ANIMATED_SOLUTION_OLD: Color = Color::rgb(1., 1.0, 0.0);
+    pub const ANIMATED_SOLUTION_NEW: Color = Color::rgb(72.0 /255.0,163.0 /255.0,87.0 /255.0);
+    pub const ANIMATED_SOLUTION_OLD: Color = Color::rgb(251.0 /255.,247.0 /255.,159.0 /255.);
 
     pub const BUTTON_TEXT_COLOR: Color = Color::rgb(0.1, 0.1, 0.1);
     pub const BUTTON_BORDER: Color = Color::BLACK;
@@ -90,6 +90,6 @@ pub mod palette {
     pub const POPUP_BOX_BACKGROUND: Color = Color::WHITE;
     pub const POPUP_BOX_BORDER: Color = Color::BLACK;
 
-    pub const BACKGROUND_COLOR_1: Color = Color::rgb(72. / 255., 163. / 255., 87. / 255.);
+    pub const BACKGROUND_COLOR_1: Color = Color::rgb(234. / 255., 177. / 255., 138. / 255.);
     pub const BACKGROUND_COLOR_2: Color = Color::rgb(158. / 255., 216. / 255., 112. / 255.);
 }

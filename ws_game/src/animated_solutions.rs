@@ -32,7 +32,7 @@ pub fn animate_solution(
     };
 
     const SECONDS: f32 = 3.0;
-    const SPACING: f32 = 0.5;
+    const SPACING: f32 = 0.4;
     const MID_SCALE: f32 = 0.75;
     const SPEED_MULTIPLIER: f32 = 25.0;
 
@@ -55,13 +55,11 @@ pub fn animate_solution(
     let font = asset_server.load(SOLUTIONS_FONT_PATH);
     let font_size = size.font_size::<LayoutGridTile>();
 
-    let scale_speed = LinearSpeed {
-        units_per_second: 1.0 / SECONDS,
-    };
     let translation_speed = LinearSpeed {
         units_per_second: word_destination_rect.extents.y.abs() * SPEED_MULTIPLIER,
     };
-    let speed = (translation_speed, scale_speed);
+    let step_one_speed: (LinearSpeed, LinearSpeed) = (translation_speed, (1.0 /SECONDS).into());
+    let step_two_speed: (LinearSpeed, LinearSpeed) = (translation_speed, (3.0/SECONDS).into());
 
     //let right_push = ((mid_destination.x - ((solution.len() as f32 + 0.5) * font_size * SPACING)) + (size.scaled_width * 0.5)).min(0.0);
 
@@ -81,7 +79,7 @@ pub fn animate_solution(
                 word_destination_centre.extend(crate::z_indices::ANIMATED_SOLUTION),
                 Vec3::ZERO,
             ),
-            Some(speed),
+            Some(step_two_speed),
             NextStep::None,
         );
 
@@ -99,7 +97,7 @@ pub fn animate_solution(
                 destination_one.extend(crate::z_indices::ANIMATED_SOLUTION),
                 Vec3::ONE * MID_SCALE,
             ),
-            Some(speed),
+            Some(step_one_speed),
             NextStep::Step(step_two),
         );
 
