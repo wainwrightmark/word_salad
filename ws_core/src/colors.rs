@@ -62,7 +62,7 @@ pub mod palette {
     pub const WORD_BACKGROUND_UNSTARTED: Color = Color::rgb(0.7, 0.7, 0.7);
     pub const WORD_BACKGROUND_MANUAL_HINT: Color = Color::rgb(0.3, 0.3, 0.9);
     pub const WORD_BACKGROUND_AUTO_HINT: Color = Color::SILVER;
-    pub const WORD_BACKGROUND_COMPLETE: Color = Color::GREEN;
+    pub const WORD_BACKGROUND_COMPLETE: Color = Color::rgb(72.0 /255.0,163.0 /255.0,87.0 /255.0);
     //pub const WORD_BORDER: Color = Color::DARK_GRAY;
 
     pub const WORD_LINE_COLOR: Color = Color::rgba(0.9, 0.25, 0.95, 0.9);

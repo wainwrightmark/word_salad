@@ -1,7 +1,9 @@
+use std::time::Duration;
+
 use crate::constants::SaladWindowSize;
 use crate::prelude::*;
 use bevy::prelude::*;
-use maveric::transition::speed::LinearSpeed;
+use maveric::transition::speed::calculate_speed;
 use ws_core::layout::entities::*;
 use ws_core::prelude::*;
 
@@ -31,10 +33,19 @@ pub fn animate_solution(
         palette::ANIMATED_SOLUTION_OLD
     };
 
-    const SECONDS: f32 = 3.0;
+    let time_multiplier = if is_first_time{
+        1.0
+    } else {
+        0.5
+    };
+    const STEP_ONE_SCALE_SECONDS: f32 = 1.0;
+    const STEP_ONE_TRANSLATION_SECONDS: f32 = 0.5;
+    const STEP_TWO_SCALE_SECONDS: f32 = 2.5;
+    const STEP_TWO_TRANSLATION_SECONDS: f32 = 2.0;
+
+    const TOTAL_SECONDS : f32 = STEP_ONE_SCALE_SECONDS + STEP_TWO_TRANSLATION_SECONDS;
     const SPACING: f32 = 0.4;
     const MID_SCALE: f32 = 0.75;
-    const SPEED_MULTIPLIER: f32 = 25.0;
 
     let words = &level.level().words;
 
@@ -55,34 +66,21 @@ pub fn animate_solution(
     let font = asset_server.load(SOLUTIONS_FONT_PATH);
     let font_size = size.font_size::<LayoutGridTile>();
 
-    let translation_speed = LinearSpeed {
-        units_per_second: word_destination_rect.extents.y.abs() * SPEED_MULTIPLIER,
-    };
-    let step_one_speed: (LinearSpeed, LinearSpeed) = (translation_speed, (1.0 /SECONDS).into());
-    let step_two_speed: (LinearSpeed, LinearSpeed) = (translation_speed, (3.0/SECONDS).into());
+    let speed_one_scale = calculate_speed(&Vec3::ONE, &(Vec3::ONE * MID_SCALE), Duration::from_secs_f32(STEP_ONE_SCALE_SECONDS * time_multiplier));
+    let speed_two_scale = calculate_speed(&(Vec3::ONE ), &(Vec3::ONE * MID_SCALE), Duration::from_secs_f32(STEP_TWO_SCALE_SECONDS * time_multiplier));
+
 
     //let right_push = ((mid_destination.x - ((solution.len() as f32 + 0.5) * font_size * SPACING)) + (size.scaled_width * 0.5)).min(0.0);
 
-    for (index, (tile, character)) in solution.iter().zip(word.characters.iter()).enumerate() {
+    for (index, (tile, character)) in solution.iter().zip(word.graphemes.iter().filter(|x|x.is_game_char) ).enumerate() {
         let text = Text::from_section(
-            character.as_char().to_string(),
+            character.grapheme.clone(),
             TextStyle {
                 font_size: font_size,
                 color: color.convert_color(),
                 font: font.clone(),
             },
         );
-        let start_position = size.get_rect(&LayoutGridTile(*tile), &()).centre();
-
-        let step_two = TransitionStep::<(TransformTranslationLens, TransformScaleLens)>::new_arc(
-            (
-                word_destination_centre.extend(crate::z_indices::ANIMATED_SOLUTION),
-                Vec3::ZERO,
-            ),
-            Some(step_two_speed),
-            NextStep::None,
-        );
-
         let offset = (solution.len() as f32 / 2.0) - index as f32;
         let destination_one = mid_destination
             - Vec2 {
@@ -90,20 +88,39 @@ pub fn animate_solution(
                 y: 0.0,
             };
 
-        //let speed_one = calculate_speed(&start_position, &destination_one, core::time::Duration::from_secs_f32(2.0));
+        let destination_two =word_destination_centre - Vec2 {
+            x: ((offset - 0.5) * font_size * SPACING * 0.5),
+            y: 0.0,
+        };
+
+        let start_position = size.get_rect(&LayoutGridTile(*tile), &()).centre();
+        let speed_two_translation = calculate_speed(&destination_two, &destination_one, Duration::from_secs_f32(STEP_TWO_TRANSLATION_SECONDS* time_multiplier));
+
+        let step_two = TransitionStep::<(TransformTranslationLens, TransformScaleLens)>::new_arc(
+            (
+                destination_two.extend(crate::z_indices::ANIMATED_SOLUTION),
+                Vec3::ZERO,
+            ),
+            Some((speed_two_translation, speed_two_scale)),
+            NextStep::None,
+        );
+
+
+
+        let speed_one_translation = calculate_speed(&start_position, &destination_one, core::time::Duration::from_secs_f32(STEP_ONE_TRANSLATION_SECONDS* time_multiplier)) ;
 
         let step_one = TransitionStep::<(TransformTranslationLens, TransformScaleLens)>::new_arc(
             (
                 destination_one.extend(crate::z_indices::ANIMATED_SOLUTION),
                 Vec3::ONE * MID_SCALE,
             ),
-            Some(step_one_speed),
+            Some((speed_one_translation, speed_one_scale)),
             NextStep::Step(step_two),
         );
 
         let components = (
             ScheduledForDeletion {
-                timer: Timer::from_seconds(SECONDS, TimerMode::Once),
+                timer: Timer::from_seconds(TOTAL_SECONDS * time_multiplier, TimerMode::Once),
             },
             Text2dBundle {
                 text,
