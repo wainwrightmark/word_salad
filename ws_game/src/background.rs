@@ -30,6 +30,7 @@ impl MavericRootChildren for Background {
         ShaderParameter::f32(0),
         ShaderParameter::f32(1),
         ShaderParameter::f32(2),
+        ShaderParameter::f32(3),
     ];
 
         let size = context.0.as_ref();
@@ -37,14 +38,14 @@ impl MavericRootChildren for Background {
         let scale = size.scaled_width.max(size.scaled_height);
         let node = SmudShapeNode {
             color: palette::BACKGROUND_COLOR_1.convert_color(),
-            sfd: ANYWHERE_SHADER_PATH,
-            fill: VORONOI_SHADER_PATH,
+            sfd: CIRCLE_SHADER_PATH,
+            fill: GRADIENT_SHADER_PATH,
             frame_size: 1.0,
             f_params: [
+                0.75,
                 palette::BACKGROUND_COLOR_2.red.into(),
                 palette::BACKGROUND_COLOR_2.green.into(),
                 palette::BACKGROUND_COLOR_2.blue.into(),
-                0.0,
                 0.0,
                 0.0,
             ],

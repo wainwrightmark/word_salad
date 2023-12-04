@@ -105,11 +105,13 @@ fn preload_shaders(asset_server: Res<AssetServer>) {
         BOX_BORDER_SHADER_PATH,
         WORD_LINE_SHADER_PATH,
         SIMPLE_FILL_SHADER_PATH,
+        CIRCLE_SHADER_PATH,
         WORD_LINE_FILL_SHADER_PATH,
         FILL_WITH_OUTLINE_SHADER_PATH,
         ANYWHERE_SHADER_PATH,
         SPARKLE_SHADER_PATH,
         VORONOI_SHADER_PATH,
+        GRADIENT_SHADER_PATH,
     ] {
         let handle: Handle<Shader> = asset_server.load(shader);
         match handle {
@@ -128,12 +130,14 @@ pub const BOX_SHADER_PATH: &'static str = "shaders/sdf/box.wgsl";
 pub const BOX_BORDER_SHADER_PATH: &'static str = "shaders/sdf/box_border.wgsl";
 pub const WORD_LINE_SHADER_PATH: &'static str = "shaders/sdf/word_line.wgsl";
 pub const ANYWHERE_SHADER_PATH: &'static str = "shaders/sdf/anywhere.wgsl";
+pub const CIRCLE_SHADER_PATH: &'static str = "shaders/sdf/circle.wgsl";
 
 pub const SIMPLE_FILL_SHADER_PATH: &'static str = "shaders/fill/simple.wgsl";
 pub const FILL_WITH_OUTLINE_SHADER_PATH: &'static str = "shaders/fill/fill_with_outline.wgsl";
 pub const WORD_LINE_FILL_SHADER_PATH: &'static str = "shaders/fill/word_line_fill.wgsl";
 pub const SPARKLE_SHADER_PATH: &'static str = "shaders/fill/sparkle.wgsl";
 pub const VORONOI_SHADER_PATH: &'static str = "shaders/fill/voronoi_gradient.wgsl";
+pub const GRADIENT_SHADER_PATH: &'static str = "shaders/fill/gradient.wgsl";
 
 pub fn box_node(
     width: f32,
