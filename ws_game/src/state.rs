@@ -174,6 +174,8 @@ impl FoundWordsState {
             return false;
         };
 
+        //todo count inevitable letters and hint those for free
+
         let new_count = match completion {
             Completion::Unstarted => {
                 *completion = Completion::ManualHinted(NonZeroUsize::MIN);

@@ -1,7 +1,7 @@
 use crate::{prelude::*, z_indices};
-use bevy_smud::SmudShape;
+use bevy_smud::{ SmudShaders, SmudShape};
 
-use bevy_smud::param_usage::ShaderParamUsage;
+use bevy_smud::param_usage::{ShaderParamUsage, ShaderParameter};
 use bitfield_struct::bitfield;
 use ws_core::layout::entities::*;
 use ws_core::palette::WORD_LINE_COLOR;
@@ -117,36 +117,47 @@ impl MavericNode for WordLine {
             let fill = asset_server.load(WORD_LINE_FILL_SHADER_PATH);
             let sdf = asset_server.load(WORD_LINE_SHADER_PATH);
 
-            let (points1, points2) = solution_to_u32s(&solution);
-            let points1: u32 = points1.into();
-            let points2: u32 = points2.into();
+            let u_params  = solution_to_u32s(&solution);
+            let u_params: [u32; SHAPE_U_PARAMS] = u_params.map(|x|x.into());
             let final_segment_length = final_segment_length as f32;
             let speed = 4.0;
 
             let segment_length = commands
-                .transition_value::<SmudParamLens<3>>(final_segment_length, Some(speed.into()))
+                .transition_value::<SmudParamLens<1>>(final_segment_length, Some(speed.into()))
                 .min(final_segment_length + 1.0) // don't go more than half past the last tile
                 .min(solution.len() as f32) //don't show more tiles than we know
                 .max(final_segment_length - 0.75); //always be relatively close to the end
 
+            const SDF_PARAMETERS: &'static [ShaderParameter] = &[
+                ShaderParameter::f32(0),
+                ShaderParameter::f32(1),
+                ShaderParameter::u32(0),
+                ShaderParameter::u32(1),
+                ShaderParameter::u32(2),
+                ShaderParameter::u32(3),
+
+            ];
+
             commands.insert((
-                SmudShape::<SHAPE_PARAMS> {
+                SmudShape::<SHAPE_F_PARAMS, SHAPE_U_PARAMS> {
                     color: WORD_LINE_COLOR.convert_color(),
-                    fill,
-                    sdf,
+
                     frame: bevy_smud::Frame::Quad(1.0),
 
-                    params: [
-                        initial_width,
-                        u32_tof32(points1),
-                        u32_tof32(points2),
-                        segment_length,
+                    f_params: [
+                        initial_width.into(),
+                        segment_length.into(),
                         0.0,
                         0.0,
                         0.0,
                         0.0,
                     ],
-                    sdf_param_usage: ShaderParamUsage::from_params(&[0, 1, 2, 3]),
+                    u_params
+                },
+                SmudShaders::<SHAPE_F_PARAMS, SHAPE_U_PARAMS> {
+                    fill,
+                    sdf,
+                    sdf_param_usage: ShaderParamUsage(SDF_PARAMETERS),
                     fill_param_usage: ShaderParamUsage::NO_PARAMS,
                 },
                 Transform {
@@ -163,40 +174,38 @@ impl MavericNode for WordLine {
     }
 }
 
-fn solution_to_u32s(solution: &[Tile]) -> (WordLinePoints, WordLinePoints) {
+fn solution_to_u32s(solution: &[Tile]) -> [WordLinePoints; 4] {
     // let first = solution.last()?;
     let mut block1 = WordLinePoints::default();
     let mut block2 = WordLinePoints::default();
+    let mut block3 = WordLinePoints::default();
+    let mut block4 = WordLinePoints::default();
 
     let mut iter = solution
         .iter()
-        .map(|x| x.inner())
-        .chain(std::iter::repeat(1)); //pad with 0b0010 to get around NaN issues
-
-    // master = master.with_p0(iter.next().unwrap_or_default());
-    // master = master.with_p1(iter.next().unwrap_or_default());
+        .map(|x| x.inner());
 
     block1 = block1.with_p0(iter.next().unwrap_or_default());
     block1 = block1.with_p1(iter.next().unwrap_or_default());
     block1 = block1.with_p2(iter.next().unwrap_or_default());
     block1 = block1.with_p3(iter.next().unwrap_or_default());
-    block1 = block1.with_p4(iter.next().unwrap_or_default());
-    block1 = block1.with_p5(iter.next().unwrap_or_default());
-    block1 = block1.with_p6(iter.next().unwrap_or_default());
-    block1 = block1.with_p7(iter.next().unwrap_or_default());
-
     block2 = block2.with_p0(iter.next().unwrap_or_default());
     block2 = block2.with_p1(iter.next().unwrap_or_default());
     block2 = block2.with_p2(iter.next().unwrap_or_default());
     block2 = block2.with_p3(iter.next().unwrap_or_default());
-    block2 = block2.with_p4(iter.next().unwrap_or_default());
-    block2 = block2.with_p5(iter.next().unwrap_or_default());
-    block2 = block2.with_p6(iter.next().unwrap_or_default());
-    block2 = block2.with_p7(iter.next().unwrap_or_default());
+
+    block3 = block3.with_p0(iter.next().unwrap_or_default());
+    block3 = block3.with_p1(iter.next().unwrap_or_default());
+    block3 = block3.with_p2(iter.next().unwrap_or_default());
+    block3 = block3.with_p3(iter.next().unwrap_or_default());
+    block4 = block4.with_p0(iter.next().unwrap_or_default());
+    block4 = block4.with_p1(iter.next().unwrap_or_default());
+    block4 = block4.with_p2(iter.next().unwrap_or_default());
+    block4 = block4.with_p3(iter.next().unwrap_or_default());
 
     //info!("{master:?} {block1:?} {block2:?}");
 
-    (block1, block2)
+    [block1,block2, block3, block4]
 }
 
 #[bitfield(u32, order = Lsb)]
@@ -213,21 +222,18 @@ struct WordLinePoints {
     #[bits(4)]
     p3: u8,
 
-    #[bits(4)]
-    p4: u8,
+    #[bits(16)]
+    buffer: u16
 
-    #[bits(4)]
-    p5: u8,
+    // #[bits(4)]
+    // p4: u8,
 
-    #[bits(4)]
-    p6: u8,
+    // #[bits(4)]
+    // p5: u8,
 
-    #[bits(4)]
-    p7: u8,
-}
+    // #[bits(4)]
+    // p6: u8,
 
-fn u32_tof32(a: u32) -> f32 {
-    let r = f32::from_bits(a);
-    //info!("{r}");
-    r
+    // #[bits(4)]
+    // p7: u8,
 }

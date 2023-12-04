@@ -1,5 +1,6 @@
 use crate::prelude::*;
 use bevy_smud::param_usage::ShaderParamUsage;
+use bevy_smud::param_usage::ShaderParameter;
 use maveric::{
     transition::speed::LinearSpeed, widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle,
 };
@@ -207,12 +208,18 @@ impl MavericNode for GridTile {
                     border_proportion,
                 )
                 .with_transition_to::<SmudColorLens>(fill, 0.1.into())
-                .with_transition_to::<SmudParamLens<4>>(
+                .with_transition_to::<SmudParamLens<2>>(
                     border_proportion,
                     border_proportion.max(1. / 36.).into(),
                 ),
                 &(),
             );
+
+            const FILL_PARAMETERS: &'static [ShaderParameter] = &[
+                ShaderParameter::f32(0),
+                ShaderParameter::f32(1),
+                ShaderParameter::f32(2),
+            ];
 
             commands.add_child(
                 "letter",
@@ -235,9 +242,17 @@ impl MavericNode for GridTile {
                             sfd: ANYWHERE_SHADER_PATH,
                             fill: SPARKLE_SHADER_PATH,
                             frame_size: 1.0,
-                            params: [p0, p1, seed, 0.0, 0.0, 0.0, 0.0, 0.0],
+                            f_params: [
+                                p0.into(),
+                                p1.into(),
+                                seed.into(),
+                                0.0,
+                                0.0,
+                                0.0,
+                            ],
+                            u_params: Default::default(),
                             sdf_param_usage: ShaderParamUsage::NO_PARAMS,
-                            fill_param_usage: ShaderParamUsage::from_params(&[0, 1, 2]),
+                            fill_param_usage: ShaderParamUsage(FILL_PARAMETERS),
                         }
                         .with_bundle(Transform {
                             translation: Vec3::Z * 100.0,

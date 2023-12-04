@@ -1,21 +1,10 @@
 #define_import_path shaders::word_line
 
-fn sdf(p: vec2<f32>, line_width: f32, f_points1: f32, f_points2: f32, segments: f32) -> f32 {
-
-    let points1: u32 = bitcast<u32>(f_points1);
-    let points2: u32 = bitcast<u32>(f_points2);
-
-
-
-    return grid_sdf(p, line_width, points1,points2, segments);
-
-}
-
 fn sd_circle(p: vec2<f32>, r: f32) -> f32 {
     return length(p) - r;
 }
 
-fn grid_sdf(p: vec2<f32>, line_width: f32, points1: u32, points2: u32, segments: f32) -> f32 {
+fn sdf(p: vec2<f32>, line_width: f32, segments: f32, points1: u32, points2: u32, points3: u32, points4: u32) -> f32 {
     var result = 1.0;
     var segments_remaining = segments;
     if segments_remaining <= 0.0{
@@ -28,7 +17,7 @@ fn grid_sdf(p: vec2<f32>, line_width: f32, points1: u32, points2: u32, segments:
     segments_remaining -= 1.0;
 
     var divisor: u32 = 16u;
-    for (var index: u32 = 1u; index < 8u; index ++) {
+    for (var index: u32 = 1u; index < 4u; index ++) {
         if segments_remaining <= 0.0{
             return result;
         }
@@ -41,11 +30,37 @@ fn grid_sdf(p: vec2<f32>, line_width: f32, points1: u32, points2: u32, segments:
     }
 
     divisor = 1u;
-    for (var index: u32 = 0u; index < 8u; index ++) {
+    for (var index: u32 = 0u; index < 4u; index ++) {
         if segments_remaining <= 0.0{
             return result;
         }
         let next = get_position2(points2, divisor);
+        let line =  line(p, current, next, line_width, min(segments_remaining, 1.0));
+        result = min(result, line);
+        current = next;
+        segments_remaining -= 1.0;
+        divisor = divisor * 16u;
+    }
+
+    divisor = 1u;
+    for (var index: u32 = 0u; index < 4u; index ++) {
+        if segments_remaining <= 0.0{
+            return result;
+        }
+        let next = get_position2(points3, divisor);
+        let line =  line(p, current, next, line_width, min(segments_remaining, 1.0));
+        result = min(result, line);
+        current = next;
+        segments_remaining -= 1.0;
+        divisor = divisor * 16u;
+    }
+
+    divisor = 1u;
+    for (var index: u32 = 0u; index < 4u; index ++) {
+        if segments_remaining <= 0.0{
+            return result;
+        }
+        let next = get_position2(points4, divisor);
         let line =  line(p, current, next, line_width, min(segments_remaining, 1.0));
         result = min(result, line);
         current = next;

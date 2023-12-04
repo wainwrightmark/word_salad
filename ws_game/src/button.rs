@@ -113,7 +113,7 @@ fn track_pressed_button(
         if let Some((entity, _)) = query.iter_mut().filter(|x| x.1 == &prev_interaction).next() {
             commands
                 .entity(entity)
-                .insert(Transition::<SmudParamLens<2>>::new(
+                .insert(Transition::<SmudParamLens<1>>::new(
                     TransitionStep::new_arc(0.1, Some(0.1.into()), NextStep::None),
                 ));
         }
@@ -123,7 +123,7 @@ fn track_pressed_button(
         if let Some((entity, _)) = query.iter_mut().filter(|x| x.1 == &interaction).next() {
             commands
                 .entity(entity)
-                .insert(Transition::<SmudParamLens<2>>::new(
+                .insert(Transition::<SmudParamLens<1>>::new(
                     TransitionStep::new_arc(0.15, Some(0.5.into()), NextStep::None),
                 ));
         }
