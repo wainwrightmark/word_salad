@@ -33,8 +33,6 @@ impl BasicColor {
     /// <div style="background-color:rgb(100%, 84%, 0%); width: 10px; padding: 10px; border: 1px solid;"></div>
     pub(crate) const GOLD: BasicColor = BasicColor::rgb(1.0, 0.84, 0.0);
 
-    /// <div style="background-color:rgb(0%, 100%, 0%); width: 10px; padding: 10px; border: 1px solid;"></div>
-    pub(crate) const GREEN: BasicColor = BasicColor::rgb(0.0, 1.0, 0.0);
 
     /// <div style="background-color:rgb(75%, 75%, 75%); width: 10px; padding: 10px; border: 1px solid;"></div>
     pub(crate) const SILVER: BasicColor = BasicColor::rgb(0.75, 0.75, 0.75);

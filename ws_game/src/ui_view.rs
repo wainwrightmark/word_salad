@@ -25,7 +25,6 @@ impl MavericNode for UI {
             .unordered_children_with_context(|context, commands| {
                 let theme = context.1.level().name.trim().to_string();
                 let size = &context.3;
-                let text_font_size = size.font_size::<LayoutTextItem>();
 
                 let time_text = match context.4.as_ref() {
                     LevelTime::Started(..) => "00:00".to_string(),
@@ -36,7 +35,7 @@ impl MavericNode for UI {
                     "timer",
                     Text2DNode {
                         text: time_text,
-                        font_size: text_font_size,
+                        font_size: size.font_size::<LayoutTextItem>(&LayoutTextItem::Timer),
                         color: palette::BUTTON_TEXT_COLOR.convert_color(),
                         font: TITLE_FONT_PATH,
                         alignment: TextAlignment::Center,
@@ -54,7 +53,7 @@ impl MavericNode for UI {
                     "theme",
                     Text2DNode {
                         text: theme,
-                        font_size: text_font_size,
+                        font_size: size.font_size::<LayoutTextItem>(&LayoutTextItem::PuzzleTheme),
                         color: palette::BUTTON_TEXT_COLOR.convert_color(),
                         font: TITLE_FONT_PATH,
                         alignment: TextAlignment::Center,
@@ -91,10 +90,12 @@ impl MavericNode for WordsNode {
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
                 let words = &context.1.level().words;
-                let font_size = context.3.font_size::<LayoutWordTile>();
+
                 for (index, word) in words.iter().enumerate() {
+
                     let completion = context.2.get_completion(index);
                     let tile = LayoutWordTile(index);
+                    let font_size = context.3.font_size::<LayoutWordTile>(&tile);
                     let rect = context.3.get_rect(&tile, words);
                     commands.add_child(
                         index as u32,

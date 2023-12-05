@@ -62,7 +62,12 @@ impl LayoutStructure for LayoutTextItem {
 }
 
 impl LayoutStructureWithFont for LayoutTextItem {
-    fn font_size() -> f32 {
-        32.0
+    fn font_size(&self) -> f32 {
+        match self{
+            LayoutTextItem::Timer => 24.0,
+            LayoutTextItem::PuzzleTheme => 32.0,
+            LayoutTextItem::FoundWordAnimation => 32.0,
+        }
+
     }
 }

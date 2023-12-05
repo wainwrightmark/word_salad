@@ -62,7 +62,7 @@ impl LayoutStructure for LayoutTopBarButton {
             LayoutTopBarButton::WordSaladButton => {
                 Vec2{
                     x: (IDEAL_WIDTH - WORD_SALAD_LOGO_WIDTH) / 2.,
-                    y: 0.0
+                    y: 5.0
                 }
             },
         }
@@ -76,7 +76,13 @@ impl LayoutStructure for LayoutTopBarButton {
 }
 
 impl LayoutStructureWithFont for LayoutTopBarButton {
-    fn font_size() -> f32 {
-        28.0
+    fn font_size(&self) -> f32 {
+
+        match self{
+            LayoutTopBarButton::MenuBurgerButton => 40.0,
+            LayoutTopBarButton::WordSaladButton => 36.0,
+            LayoutTopBarButton::HintCounter => 40.0,
+        }
+
     }
 }

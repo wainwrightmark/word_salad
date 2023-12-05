@@ -97,8 +97,9 @@ fn add_menu_items<
     size: &Size,
     key_offset: u32,
 ) {
-    let font_size = size.font_size::<L>();
+
     for (index, entity) in L::iter_all(context).enumerate() {
+        let font_size = size.font_size::<L>(&entity);
         let rect = size.get_rect(&entity, context);
         commands.add_child(
             (index as u32) + key_offset,
@@ -124,8 +125,8 @@ fn add_menu_items_with_fn<
     key_offset: u32,
     func: impl Fn(&L)-> String
 ) {
-    let font_size = size.font_size::<L>();
     for (index, entity) in L::iter_all(context).enumerate() {
+        let font_size = size.font_size::<L>(&entity);
         let text = func(&entity);
 
         let rect = size.get_rect(&entity, context);

@@ -55,7 +55,7 @@ pub fn animate_solution(
     //info!("Animate to {mid_destination}, then {word_destination_centre}", );
 
     let font = asset_server.load(SOLUTIONS_FONT_PATH);
-    let font_size = size.font_size::<LayoutGridTile>();
+    let font_size = size.font_size::<LayoutGridTile>(&LayoutGridTile::default());
 
     let speed_one_scale = calculate_speed(&Vec3::ONE, &(Vec3::ONE * MID_SCALE), Duration::from_secs_f32(STEP_ONE_SCALE_SECONDS * time_multiplier));
     let speed_two_scale = calculate_speed(&(Vec3::ONE ), &(Vec3::ONE * MID_SCALE), Duration::from_secs_f32(STEP_TWO_SCALE_SECONDS * time_multiplier));

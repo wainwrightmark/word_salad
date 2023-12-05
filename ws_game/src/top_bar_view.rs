@@ -23,12 +23,12 @@ impl MavericNode for TopBar {
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
                 let size = &context.3;
-                let top_bar_font_size = size.font_size::<LayoutTopBarButton>();
+
                 commands.add_child(
                     "Burger",
                     Text2DNode {
                         text: "\u{f0c9}",
-                        font_size: top_bar_font_size,
+                        font_size: size.font_size::<LayoutTopBarButton>(&LayoutTopBarButton::WordSaladButton),
                         color: palette::BUTTON_TEXT_COLOR.convert_color(),
                         font: MENU_BUTTON_FONT_PATH,
                         alignment: TextAlignment::Center,
@@ -46,7 +46,7 @@ impl MavericNode for TopBar {
                     "hints",
                     Text2DNode {
                         text: context.6.hints_remaining.to_string(),
-                        font_size: top_bar_font_size,
+                        font_size: size.font_size::<LayoutTopBarButton>(&LayoutTopBarButton::WordSaladButton),
                         color: palette::BUTTON_TEXT_COLOR.convert_color(),
                         font: BUTTONS_FONT_PATH,
                         alignment: TextAlignment::Center,
@@ -65,7 +65,7 @@ impl MavericNode for TopBar {
                     "Word Salad Logo text",
                     Text2DNode {
                         text: "Word Salad",
-                        font_size: top_bar_font_size * 1.2,
+                        font_size: size.font_size::<LayoutTopBarButton>(&LayoutTopBarButton::WordSaladButton),
                         color: palette::BUTTON_TEXT_COLOR.convert_color(),
                         font: WORD_SALAD_LOGO_FONT_PATH,
                         alignment: TextAlignment::Center,

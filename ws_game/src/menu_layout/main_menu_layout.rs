@@ -63,7 +63,7 @@ impl LayoutStructure for MainMenuLayoutEntity {
 }
 
 impl LayoutStructureWithFont for MainMenuLayoutEntity {
-    fn font_size() -> f32 {
+    fn font_size(&self) -> f32 {
         MENU_BUTTON_FONT_SIZE
     }
 }

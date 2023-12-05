@@ -41,7 +41,7 @@ impl MavericRootChildren for PopupStateRoot {
         match context.1.as_ref() {
             PopupState::None => {}
             PopupState::BuyMoreHints => {
-                let font_size = size.font_size::<BuyMoreHintsLayoutEntity>();
+
 
                 commands.add_child(
                     "grey out",
@@ -63,6 +63,7 @@ impl MavericRootChildren for PopupStateRoot {
                 );
 
                 for item in BuyMoreHintsLayoutEntity::iter() {
+                    let font_size = size.font_size::<BuyMoreHintsLayoutEntity>(&item);
                     let rect: LayoutRectangle = size.get_rect(&item, &());
                     match item {
                         BuyMoreHintsLayoutEntity::Title => {
@@ -233,7 +234,7 @@ impl LayoutStructure for BuyMoreHintsLayoutEntity {
 }
 
 impl LayoutStructureWithFont for BuyMoreHintsLayoutEntity {
-    fn font_size() -> f32 {
+    fn font_size(&self) -> f32 {
         MENU_BUTTON_FONT_SIZE
     }
 }

@@ -49,7 +49,7 @@ impl LayoutStructure for LayoutGridTile {
 }
 
 impl LayoutStructureWithFont for LayoutGridTile {
-    fn font_size() -> f32 {
+    fn font_size(&self) -> f32 {
         60.0
     }
 }

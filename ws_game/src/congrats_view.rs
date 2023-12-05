@@ -16,7 +16,7 @@ impl MavericNode for CongratsView {
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
                 let size = &context.3;
-                let font_size = size.font_size::<CongratsLayoutEntity>();
+
 
                 let hints_used_text = match context.2.hints_used1 {
                     0 => "No hints used".to_string(),
@@ -28,7 +28,7 @@ impl MavericNode for CongratsView {
                     "hints used",
                     Text2DNode {
                         text: hints_used_text,
-                        font_size,
+                        font_size: size.font_size(&CongratsLayoutEntity::HintsUsed),
                         color: palette::BUTTON_TEXT_COLOR.convert_color(),
                         font: BUTTONS_FONT_PATH,
                         alignment: TextAlignment::Center,
@@ -46,7 +46,7 @@ impl MavericNode for CongratsView {
                     "next level",
                     Text2DNode {
                         text: "Next",
-                        font_size,
+                        font_size: size.font_size(&CongratsLayoutEntity::NextButton),
                         color: palette::BUTTON_TEXT_COLOR.convert_color(),
                         font: BUTTONS_FONT_PATH,
                         alignment: TextAlignment::Center,
@@ -66,7 +66,7 @@ impl MavericNode for CongratsView {
                         "share",
                         Text2DNode {
                             text: "Share",
-                            font_size,
+                            font_size: size.font_size(&CongratsLayoutEntity::ShareButton),
                             color: palette::BUTTON_TEXT_COLOR.convert_color(),
                             font: BUTTONS_FONT_PATH,
                             alignment: TextAlignment::Center,

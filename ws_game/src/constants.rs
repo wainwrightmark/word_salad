@@ -28,7 +28,7 @@ impl Breakpoints for SaladWindowBreakPoints {
 pub trait SaladWindowSize {
     fn scale(&self) -> f32;
 
-    fn font_size<T: LayoutStructureWithFont>(&self) -> f32;
+    fn font_size<T: LayoutStructureWithFont>(&self, entity: &T) -> f32;
     fn tile_size(&self) -> f32;
 
     fn get_rect<T: LayoutStructure>(&self, entity: &T, context: &T::Context) -> LayoutRectangle;
@@ -84,8 +84,8 @@ impl SaladWindowSize for Size {
         (self.scaled_width / 4.0).min(self.scaled_height / 8.0)
     }
 
-    fn font_size<T: LayoutStructureWithFont>(&self) -> f32 {
-        layout(self).font_size::<T>()
+    fn font_size<T: LayoutStructureWithFont>(&self, entity: &T) -> f32 {
+        layout(self).font_size(entity)
     }
 
     fn tile_size(&self) -> f32 {
