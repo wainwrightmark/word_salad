@@ -112,6 +112,7 @@ fn preload_shaders(asset_server: Res<AssetServer>) {
         SPARKLE_SHADER_PATH,
         VORONOI_SHADER_PATH,
         GRADIENT_SHADER_PATH,
+        HORIZONTAL_GRADIENT_SHADER_PATH,
     ] {
         let handle: Handle<Shader> = asset_server.load(shader);
         match handle {
@@ -138,6 +139,7 @@ pub const WORD_LINE_FILL_SHADER_PATH: &'static str = "shaders/fill/word_line_fil
 pub const SPARKLE_SHADER_PATH: &'static str = "shaders/fill/sparkle.wgsl";
 pub const VORONOI_SHADER_PATH: &'static str = "shaders/fill/voronoi_gradient.wgsl";
 pub const GRADIENT_SHADER_PATH: &'static str = "shaders/fill/gradient.wgsl";
+pub const HORIZONTAL_GRADIENT_SHADER_PATH: &'static str = "shaders/fill/horizontal_gradient.wgsl";
 
 pub fn box_node(
     width: f32,

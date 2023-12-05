@@ -1,5 +1,8 @@
-use crate::prelude::*;
-
+use std::time::Duration;
+use crate::{prelude::*, z_indices};
+use bevy_smud::param_usage::{ShaderParamUsage, ShaderParameter};
+use bevy_smud::{ShapeBundle, SmudShaders, SmudShape};
+use maveric::transition::speed::calculate_speed;
 use maveric::widgets::text2d_node::Text2DNode;
 use maveric::with_bundle::CanWithBundle;
 use ws_core::layout::entities::*;
@@ -41,11 +44,14 @@ impl MavericNode for UI {
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     }
-                    .with_bundle((Transform::from_translation(
-                        size.get_rect(&LayoutTextItem::Timer, &())
-                            .centre()
-                            .extend(crate::z_indices::TEXT_AREA_TEXT),
-                    ), TimeCounterMarker)),
+                    .with_bundle((
+                        Transform::from_translation(
+                            size.get_rect(&LayoutTextItem::Timer, &())
+                                .centre()
+                                .extend(crate::z_indices::TEXT_AREA_TEXT),
+                        ),
+                        TimeCounterMarker,
+                    )),
                     &(),
                 );
 
@@ -92,7 +98,6 @@ impl MavericNode for WordsNode {
                 let words = &context.1.level().words;
 
                 for (index, word) in words.iter().enumerate() {
-
                     let completion = context.2.get_completion(index);
                     let tile = LayoutWordTile(index);
                     let font_size = context.3.font_size::<LayoutWordTile>(&tile);
@@ -167,8 +172,8 @@ impl MavericNode for WordNode {
             let amount_per_second = node
                 .completion
                 .is_unstarted()
-                .then_some(10.0)
-                .unwrap_or(1.0);
+                .then_some(100.0)
+                .unwrap_or(0.1);
 
             commands.add_child(
                 "shape_fill",
@@ -184,5 +189,91 @@ impl MavericNode for WordNode {
                 &(),
             );
         })
+    }
+
+    fn on_changed(
+        &self,
+        previous: &Self,
+        _context: &<Self::Context as NodeContext>::Wrapper<'_>,
+        world: &World,
+        entity_commands: &mut bevy::ecs::system::EntityCommands,
+    ) {
+        if !self.completion.is_complete() || previous.completion.is_complete() {
+            return; //this effect is just for newly completed words
+        }
+
+        let Some(asset_server) = world.get_resource::<AssetServer>() else {
+            return;
+        };
+
+        let scale = self.rect.width();
+        let translation = self.rect.centre().extend(z_indices::WORD_BACKGROUND + 1.0);
+        let rounding = 0.1;
+        let height = self.rect.height();
+
+        let duration = 3.0;
+        let from = 1.5;
+        let to = -0.5;
+
+        const SDF_PARAMETERS: &'static [ShaderParameter] =
+            &[ShaderParameter::f32(0), ShaderParameter::f32(1)];
+        const FILL_PARAMETERS: &'static [ShaderParameter] = &[
+            ShaderParameter::f32(2),
+            ShaderParameter::f32(3),
+            ShaderParameter::f32(4),
+            ShaderParameter::f32(5),
+        ];
+
+        let color2 = previous.completion.color().clone();
+        let color1 = self.completion.color().clone();
+
+        let bundle = ShapeBundle::<SHAPE_F_PARAMS, SHAPE_U_PARAMS> {
+            shape: SmudShape {
+                //color: Completion::Complete.color().clone(),
+                color: color1,
+                frame: bevy_smud::Frame::Quad(1.0),
+                f_params: [
+                    (height / scale).into(),
+                    rounding.into(),
+                    from,
+                    color2.r(),
+                    color2.g(),
+                    color2.b(),
+                ],
+                u_params: [0; SHAPE_U_PARAMS],
+            },
+            shaders: SmudShaders {
+                sdf: asset_server.load(BOX_SHADER_PATH),
+                fill: asset_server.load(HORIZONTAL_GRADIENT_SHADER_PATH),
+                sdf_param_usage: ShaderParamUsage(SDF_PARAMETERS),
+                fill_param_usage: ShaderParamUsage(FILL_PARAMETERS),
+            },
+            transform: Transform {
+                translation,
+                scale: Vec3::ONE * scale * 0.5,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        let bundle = (
+            bundle,
+            Transition::<SmudParamLens<2>>::new(TransitionStep::new_arc(
+                to,
+                Some(calculate_speed::<f32>(
+                    &from,
+                    &to,
+                    Duration::from_secs_f32(duration),
+                )),
+                NextStep::None,
+            )),
+            ScheduledForDeletion {
+                timer: Timer::from_seconds(duration, TimerMode::Once),
+            },
+        );
+
+        entity_commands.with_children(|x| {
+            x.spawn(bundle);
+        });
     }
 }
