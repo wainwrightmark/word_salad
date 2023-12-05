@@ -51,7 +51,7 @@ impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> Maveri
                     Text2DNode {
                         text: text.clone(),
                         font_size: *font_size,
-                        color: text_color.clone(),
+                        color: *text_color,
                         font: MENU_BUTTON_FONT_PATH,
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -67,7 +67,7 @@ impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> Maveri
                         rect.extents.x.abs(),
                         rect.extents.y.abs(),
                         shape_translation,
-                        fill_color.clone(),
+                        *fill_color,
                         0.1,
                     )
                     .with_bundle(*interaction),

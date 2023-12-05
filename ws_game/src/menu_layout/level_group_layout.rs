@@ -44,12 +44,7 @@ impl LayoutStructure for LevelGroupLayoutEntity {
     type Iterator = LevelGroupLayoutIter;
 
     fn pick(point: bevy::prelude::Vec2, context: &Self::Context) -> Option<Self> {
-        for x in Self::iter_all(context) {
-            if x.rect(context).contains(point) {
-                return Some(x);
-            }
-        }
-        return None;
+        Self::iter_all(context).find(|&x| x.rect(context).contains(point))
     }
 
     fn size(&self, _context: &Self::Context) -> bevy::prelude::Vec2 {
@@ -103,7 +98,7 @@ impl Iterator for LevelGroupLayoutIter {
                 Some(next)
             }
             std::cmp::Ordering::Equal | std::cmp::Ordering::Greater => {
-                return None;
+                None
             }
         }
     }

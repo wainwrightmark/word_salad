@@ -178,12 +178,7 @@ impl LayoutStructure for BuyMoreHintsLayoutEntity {
     type Iterator = <Self as IntoEnumIterator>::Iterator;
 
     fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
-        for x in Self::iter() {
-            if x.rect(context).contains(point) {
-                return Some(x);
-            }
-        }
-        return None;
+        Self::iter().find(|&x| x.rect(context).contains(point))
     }
 
     fn size(&self, _context: &Self::Context) -> Vec2 {

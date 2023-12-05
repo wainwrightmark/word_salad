@@ -85,7 +85,7 @@ impl MavericNode for TopBar {
                     &(),
                 );
 
-                const SPARKLE_FILL_PARAMETERS: &'static [ShaderParameter] = &[
+                const SPARKLE_FILL_PARAMETERS: &[ShaderParameter] = &[
                     ShaderParameter::f32(0),
                     ShaderParameter::f32(1),
                     ShaderParameter::f32(2),

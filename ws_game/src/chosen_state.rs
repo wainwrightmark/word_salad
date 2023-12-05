@@ -37,14 +37,12 @@ impl ChosenState {
             if completion.is_complete() {
                 continue;
             }
-            if word.characters.get(0) == chars.get(0) {
-                if Self::lev_distance_one_or_less(&chars, &word.characters) {
-                    return true;
-                }
+            if word.characters.get(0) == chars.get(0) && Self::lev_distance_one_or_less(&chars, &word.characters) {
+                return true;
             }
         }
 
-        return false;
+        false
     }
 
     fn lev_distance_one_or_less(l_chars: &CharsArray, r_chars: &CharsArray) -> bool {
@@ -97,7 +95,7 @@ impl ChosenState {
             return false;
         }
 
-        return true;
+        true
     }
 }
 

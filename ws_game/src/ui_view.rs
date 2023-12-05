@@ -169,11 +169,9 @@ impl MavericNode for WordNode {
             let _shape_border_translation = centre.extend(crate::z_indices::WORD_BACKGROUND + 1.0);
 
             let fill_color = node.completion.color();
-            let amount_per_second = node
+            let amount_per_second = if node
                 .completion
-                .is_unstarted()
-                .then_some(100.0)
-                .unwrap_or(0.1);
+                .is_unstarted() { 100.0 } else { 0.1 };
 
             commands.add_child(
                 "shape_fill",
@@ -215,17 +213,17 @@ impl MavericNode for WordNode {
         let from = 1.5;
         let to = -0.5;
 
-        const SDF_PARAMETERS: &'static [ShaderParameter] =
+        const SDF_PARAMETERS: &[ShaderParameter] =
             &[ShaderParameter::f32(0), ShaderParameter::f32(1)];
-        const FILL_PARAMETERS: &'static [ShaderParameter] = &[
+        const FILL_PARAMETERS: &[ShaderParameter] = &[
             ShaderParameter::f32(2),
             ShaderParameter::f32(3),
             ShaderParameter::f32(4),
             ShaderParameter::f32(5),
         ];
 
-        let color2 = previous.completion.color().clone();
-        let color1 = self.completion.color().clone();
+        let color2 = *previous.completion.color();
+        let color1 = *self.completion.color();
 
         let bundle = ShapeBundle::<SHAPE_F_PARAMS, SHAPE_U_PARAMS> {
             shape: SmudShape {
@@ -233,8 +231,8 @@ impl MavericNode for WordNode {
                 color: color1,
                 frame: bevy_smud::Frame::Quad(1.0),
                 f_params: [
-                    (height / scale).into(),
-                    rounding.into(),
+                    (height / scale),
+                    rounding,
                     from,
                     color2.r(),
                     color2.g(),

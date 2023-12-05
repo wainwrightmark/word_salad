@@ -88,7 +88,7 @@ impl MavericNode for Menu {
                     }
                     MenuState::LevelGroupPage(group) => {
                         add_menu_items_with_fn::<R, LevelGroupLayoutEntity>(
-                            &group,
+                            group,
                             commands,
                             size,
                             300,

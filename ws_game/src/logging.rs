@@ -342,7 +342,7 @@ impl LoggableEvent {
 
         let message = EventLog {
             event,
-            device_id: device_id.into(),
+            device_id,
             resent: false,
             severity,
         };

@@ -102,15 +102,15 @@ fn track_pressed_button(
     if !pressed_button.is_changed() {
         return;
     }
-    let previous = prev.clone();
-    *prev = pressed_button.clone();
+    let previous = *prev;
+    *prev = *pressed_button;
 
     if let Some(prev_interaction) = previous.interaction {
         if Some(prev_interaction) == pressed_button.interaction {
             return;
         }
 
-        if let Some((entity, _)) = query.iter_mut().filter(|x| x.1 == &prev_interaction).next() {
+        if let Some((entity, _)) = query.iter_mut().find(|x| x.1 == &prev_interaction) {
             commands
                 .entity(entity)
                 .insert(Transition::<SmudParamLens<1>>::new(
@@ -120,7 +120,7 @@ fn track_pressed_button(
     }
 
     if let Some(interaction) = pressed_button.as_ref().interaction {
-        if let Some((entity, _)) = query.iter_mut().filter(|x| x.1 == &interaction).next() {
+        if let Some((entity, _)) = query.iter_mut().find(|x| x.1 == &interaction) {
             commands
                 .entity(entity)
                 .insert(Transition::<SmudParamLens<1>>::new(
@@ -137,7 +137,7 @@ impl ButtonInteraction {
         menu_state: &mut ResMut<MenuState>,
         chosen_state: &mut ResMut<ChosenState>,
         found_words: &mut ResMut<FoundWordsState>,
-        mut hint_state: &mut ResMut<HintState>,
+        hint_state: &mut ResMut<HintState>,
         popup_state: &mut ResMut<PopupState>,
 
         total_completion: &TotalCompletion,
@@ -202,10 +202,10 @@ impl ButtonInteraction {
                 }
             },
             ButtonInteraction::WordButton(word) => {
-                if hint_state.hints_remaining <= 0 {
+                if hint_state.hints_remaining == 0 {
                     *popup_state.as_mut() = PopupState::BuyMoreHints;
                 } else {
-                    found_words.try_hint_word(&mut hint_state, &current_level, word.0, chosen_state);
+                    found_words.try_hint_word(hint_state, current_level, word.0, chosen_state);
                 }
             }
             ButtonInteraction::TopMenuItem(LayoutTopBarButton::HintCounter) => {

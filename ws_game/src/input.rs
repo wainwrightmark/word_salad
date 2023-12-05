@@ -40,9 +40,9 @@ impl InteractionEntity {
         size: &Size,
         context: &T::Context,
     ) -> Option<Self> {
-        return size
+        size
             .try_pick::<T>(*position, context)
-            .map(|x| InteractionEntity::Button(x.into()));
+            .map(|x| InteractionEntity::Button(x.into()))
     }
 
     pub fn try_find(
@@ -90,14 +90,14 @@ impl InteractionEntity {
                 };
                 match layout_entity {
                     GameLayoutEntity::TopBar => {
-                        return Self::try_get_button::<LayoutTopBarButton>(position, size, &());
+                        Self::try_get_button::<LayoutTopBarButton>(position, size, &())
                     }
                     GameLayoutEntity::TextArea => {
-                        return None;
+                        None
                     }
                     GameLayoutEntity::Grid => match grid_tolerance {
                         Some(tolerance) => {
-                            return size
+                            size
                                 .try_pick_with_tolerance::<LayoutGridTile>(
                                     *position,
                                     tolerance,
@@ -106,7 +106,7 @@ impl InteractionEntity {
                                 .map(|t| Self::Tile(t.0))
                         }
                         None => {
-                            return size
+                            size
                                 .try_pick::<LayoutGridTile>(*position, &())
                                 .map(|t| Self::Tile(t.0))
                         }
@@ -126,21 +126,21 @@ impl InteractionEntity {
                     return Some(back);
                 }
 
-                return Self::try_get_button::<MainMenuLayoutEntity>(position, size, &());
+                Self::try_get_button::<MainMenuLayoutEntity>(position, size, &())
             }
             MenuState::ChooseLevelsPage => {
                 if let  Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &()){
                     return Some(back);
                 }
 
-                return Self::try_get_button::<LevelsMenuLayoutEntity>(position, size, &());
+                Self::try_get_button::<LevelsMenuLayoutEntity>(position, size, &())
             }
             MenuState::LevelGroupPage(group) => {
                 if let  Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &()){
                     return Some(back);
                 }
 
-                return Self::try_get_button::<LevelGroupLayoutEntity>(position, size, &group);
+                Self::try_get_button::<LevelGroupLayoutEntity>(position, size, group)
             }
         }
     }
@@ -171,7 +171,7 @@ impl InputType {
                     position,
                     size,
                     menu_state,
-                    &popup_state,
+                    popup_state,
                     current_level,
                     is_level_complete,
                     None,
@@ -213,7 +213,7 @@ impl InputType {
                     position,
                     size,
                     menu_state,
-                    &popup_state,
+                    popup_state,
                     current_level,
                     is_level_complete,
                     Some(MOVE_TOLERANCE),
@@ -239,7 +239,7 @@ impl InputType {
                     position,
                     size,
                     menu_state,
-                    &popup_state,
+                    popup_state,
                     current_level,
                     is_level_complete,
                     None,

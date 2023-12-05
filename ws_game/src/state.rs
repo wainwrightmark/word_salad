@@ -148,10 +148,9 @@ impl FoundWordsState {
     }
 
     pub fn get_completion(&self, word_index: usize) -> Completion {
-        self.word_completions
+        *self.word_completions
             .get(word_index)
             .unwrap_or(&Completion::Complete)
-            .clone()
     }
 
     pub fn try_hint_word(
@@ -204,7 +203,7 @@ impl FoundWordsState {
 
 
 
-        return true;
+        true
     }
 
     pub fn try_hint(
@@ -265,9 +264,9 @@ pub enum Completion {
 
 impl Completion {
     pub fn color(&self) -> &'static Color {
-        const UNSTARTED: &'static Color = &convert_color_const(palette::WORD_BACKGROUND_UNSTARTED);
-        const MANUAL: &'static Color = &convert_color_const(palette::WORD_BACKGROUND_MANUAL_HINT);
-        const COMPLETE: &'static Color = &convert_color_const(palette::WORD_BACKGROUND_COMPLETE);
+        const UNSTARTED: &Color = &convert_color_const(palette::WORD_BACKGROUND_UNSTARTED);
+        const MANUAL: &Color = &convert_color_const(palette::WORD_BACKGROUND_MANUAL_HINT);
+        const COMPLETE: &Color = &convert_color_const(palette::WORD_BACKGROUND_COMPLETE);
         // const AUTO: &'static Color = &palette::WORD_BACKGROUND_AUTO_HINT.convert_color();
 
         match self {
@@ -278,12 +277,12 @@ impl Completion {
         }
     }
 
-    pub fn known_characters<'a, 'w>(&'a self, word: &'w DisplayWord) -> Option<&'w [Character]> {
+    pub fn known_characters<'w>(&self, word: &'w DisplayWord) -> Option<&'w [Character]> {
         match self {
             Completion::Unstarted => None,
             Completion::Complete => Some(&word.characters),
             Completion::ManualHinted(hints) => Some(
-                &word
+                word
                     .characters
                     .split_at(hints.get().min(word.characters.len()))
                     .0,
@@ -403,14 +402,12 @@ impl FoundWordsState {
 
             let mut successor: Option<Character> = None;
 
-            if let Some(slice) = slices.peek() {
-                if let Some(slice) = slice {
-                    if !could_precede(&chosen_characters, slice) {
-                        continue;
-                    }
-                    if slice.starts_with(&chosen_characters) {
-                        successor = slice.iter().skip(chosen_characters.len()).cloned().next();
-                    }
+            if let Some(Some(slice)) = slices.peek() {
+                if !could_precede(&chosen_characters, slice) {
+                    continue;
+                }
+                if slice.starts_with(&chosen_characters) {
+                    successor = slice.iter().skip(chosen_characters.len()).cloned().next();
                 }
             }
             if predecessor.is_none() && successor.is_none() {
@@ -558,7 +555,7 @@ fn count_hints(
     let next_remaining_letters = match remaining_letters
         .get()
         .checked_sub(1)
-        .and_then(|x| NonZeroUsize::new(x))
+        .and_then(NonZeroUsize::new)
     {
         Some(r) => r,
         None => {
@@ -586,7 +583,7 @@ fn count_hints(
         Err(error) => {
             if error.count() == 0 {
                 //no possible children
-                return None;
+                None
             } else {
                 //multiple children so this is as far as it goes
                 Some(NonZeroUsize::MIN)

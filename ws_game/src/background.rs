@@ -26,7 +26,7 @@ impl MavericRootChildren for Background {
         }
 
 
-    const FILL_PARAMETERS: &'static [ShaderParameter] = &[
+    const FILL_PARAMETERS: &[ShaderParameter] = &[
         ShaderParameter::f32(0),
         ShaderParameter::f32(1),
         ShaderParameter::f32(2),
@@ -43,9 +43,9 @@ impl MavericRootChildren for Background {
             frame_size: 1.0,
             f_params: [
                 0.75,
-                palette::BACKGROUND_COLOR_2.red.into(),
-                palette::BACKGROUND_COLOR_2.green.into(),
-                palette::BACKGROUND_COLOR_2.blue.into(),
+                palette::BACKGROUND_COLOR_2.red,
+                palette::BACKGROUND_COLOR_2.green,
+                palette::BACKGROUND_COLOR_2.blue,
                 0.0,
                 0.0,
             ],

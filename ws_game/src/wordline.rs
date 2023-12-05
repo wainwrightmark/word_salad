@@ -30,7 +30,7 @@ impl MavericNode for WordLine {
             let should_hide: bool;
             let final_segment_length: usize;
 
-            if args.node.solution.len() > 0 {
+            if !args.node.solution.is_empty() {
                 {
                     should_hide = args.node.should_hide;
                     final_segment_length = args.node.solution.len();
@@ -117,7 +117,7 @@ impl MavericNode for WordLine {
             let fill = asset_server.load(WORD_LINE_FILL_SHADER_PATH);
             let sdf = asset_server.load(WORD_LINE_SHADER_PATH);
 
-            let u_params  = solution_to_u32s(&solution);
+            let u_params  = solution_to_u32s(solution);
             let u_params: [u32; SHAPE_U_PARAMS] = u_params.map(|x|x.into());
             let final_segment_length = final_segment_length as f32;
             let speed = 4.0;
@@ -128,7 +128,7 @@ impl MavericNode for WordLine {
                 .min(solution.len() as f32) //don't show more tiles than we know
                 .max(final_segment_length - 0.75); //always be relatively close to the end
 
-            const SDF_PARAMETERS: &'static [ShaderParameter] = &[
+            const SDF_PARAMETERS: &[ShaderParameter] = &[
                 ShaderParameter::f32(0),
                 ShaderParameter::f32(1),
                 ShaderParameter::u32(0),
@@ -145,8 +145,8 @@ impl MavericNode for WordLine {
                     frame: bevy_smud::Frame::Quad(1.0),
 
                     f_params: [
-                        initial_width.into(),
-                        segment_length.into(),
+                        initial_width,
+                        segment_length,
                         0.0,
                         0.0,
                         0.0,

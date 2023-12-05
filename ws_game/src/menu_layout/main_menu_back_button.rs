@@ -16,12 +16,7 @@ impl LayoutStructure for MainMenuBackButton {
     type Iterator = std::iter::Once<Self>;
 
     fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
-        for x in Self::iter_all(context) {
-            if x.rect(context).contains(point) {
-                return Some(x);
-            }
-        }
-        return None;
+        Self::iter_all(context).find(|&x| x.rect(context).contains(point))
     }
 
     fn size(&self, _context: &Self::Context) -> Vec2 {

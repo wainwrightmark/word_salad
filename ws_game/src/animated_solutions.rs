@@ -67,7 +67,7 @@ pub fn animate_solution(
         let text = Text::from_section(
             character.grapheme.clone(),
             TextStyle {
-                font_size: font_size,
+                font_size,
                 color: color.convert_color(),
                 font: font.clone(),
             },

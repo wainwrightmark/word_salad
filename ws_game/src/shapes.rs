@@ -127,19 +127,19 @@ fn preload_shaders(asset_server: Res<AssetServer>) {
     }
 }
 
-pub const BOX_SHADER_PATH: &'static str = "shaders/sdf/box.wgsl";
-pub const BOX_BORDER_SHADER_PATH: &'static str = "shaders/sdf/box_border.wgsl";
-pub const WORD_LINE_SHADER_PATH: &'static str = "shaders/sdf/word_line.wgsl";
-pub const ANYWHERE_SHADER_PATH: &'static str = "shaders/sdf/anywhere.wgsl";
-pub const CIRCLE_SHADER_PATH: &'static str = "shaders/sdf/circle.wgsl";
+pub const BOX_SHADER_PATH: &str = "shaders/sdf/box.wgsl";
+pub const BOX_BORDER_SHADER_PATH: &str = "shaders/sdf/box_border.wgsl";
+pub const WORD_LINE_SHADER_PATH: &str = "shaders/sdf/word_line.wgsl";
+pub const ANYWHERE_SHADER_PATH: &str = "shaders/sdf/anywhere.wgsl";
+pub const CIRCLE_SHADER_PATH: &str = "shaders/sdf/circle.wgsl";
 
-pub const SIMPLE_FILL_SHADER_PATH: &'static str = "shaders/fill/simple.wgsl";
-pub const FILL_WITH_OUTLINE_SHADER_PATH: &'static str = "shaders/fill/fill_with_outline.wgsl";
-pub const WORD_LINE_FILL_SHADER_PATH: &'static str = "shaders/fill/word_line_fill.wgsl";
-pub const SPARKLE_SHADER_PATH: &'static str = "shaders/fill/sparkle.wgsl";
-pub const VORONOI_SHADER_PATH: &'static str = "shaders/fill/voronoi_gradient.wgsl";
-pub const GRADIENT_SHADER_PATH: &'static str = "shaders/fill/gradient.wgsl";
-pub const HORIZONTAL_GRADIENT_SHADER_PATH: &'static str = "shaders/fill/horizontal_gradient.wgsl";
+pub const SIMPLE_FILL_SHADER_PATH: &str = "shaders/fill/simple.wgsl";
+pub const FILL_WITH_OUTLINE_SHADER_PATH: &str = "shaders/fill/fill_with_outline.wgsl";
+pub const WORD_LINE_FILL_SHADER_PATH: &str = "shaders/fill/word_line_fill.wgsl";
+pub const SPARKLE_SHADER_PATH: &str = "shaders/fill/sparkle.wgsl";
+pub const VORONOI_SHADER_PATH: &str = "shaders/fill/voronoi_gradient.wgsl";
+pub const GRADIENT_SHADER_PATH: &str = "shaders/fill/gradient.wgsl";
+pub const HORIZONTAL_GRADIENT_SHADER_PATH: &str = "shaders/fill/horizontal_gradient.wgsl";
 
 pub fn box_node(
     width: f32,
@@ -148,7 +148,7 @@ pub fn box_node(
     color: Color,
     rounding: f32,
 ) -> impl MavericNode<Context = ()> {
-    const SDF_PARAMETERS: &'static [ShaderParameter] =
+    const SDF_PARAMETERS: &[ShaderParameter] =
         &[ShaderParameter::f32(0), ShaderParameter::f32(1)];
 
     let scale = width;
@@ -158,9 +158,9 @@ pub fn box_node(
         fill: SIMPLE_FILL_SHADER_PATH,
         frame_size: (1.0f32).max(height / scale),
         f_params: [
-            (height / scale).into(),
-            rounding.into(),
-            rounding.into(),
+            (height / scale),
+            rounding,
+            rounding,
             0.0,
             0.0,
             0.0,
@@ -184,7 +184,7 @@ pub fn box_border_node(
     rounding: f32,
     border_proportion: f32,
 ) -> impl MavericNode<Context = ()> {
-    const PARAMETERS: &'static [ShaderParameter] = &[
+    const PARAMETERS: &[ShaderParameter] = &[
         ShaderParameter::f32(0),
         ShaderParameter::f32(1),
         ShaderParameter::f32(2),
@@ -199,10 +199,10 @@ pub fn box_border_node(
         frame_size: 1.0,
 
         f_params: [
-            (width / scale).into(),
-            (height / scale).into(),
-            rounding.into(),
-            border_proportion.into(),
+            (width / scale),
+            (height / scale),
+            rounding,
+            border_proportion,
             0.0,
             0.0,
         ],
@@ -226,10 +226,10 @@ pub fn box_with_border_node(
     rounding: f32,
     border_proportion: f32,
 ) -> impl MavericNode<Context = ()> {
-    const SDF_PARAMETERS: &'static [ShaderParameter] =
+    const SDF_PARAMETERS: &[ShaderParameter] =
         &[ShaderParameter::f32(0), ShaderParameter::f32(1)];
 
-    const FILL_PARAMETERS: &'static [ShaderParameter] = &[
+    const FILL_PARAMETERS: &[ShaderParameter] = &[
         ShaderParameter::f32(2),
         ShaderParameter::f32(3),
         ShaderParameter::f32(4),
@@ -244,12 +244,12 @@ pub fn box_with_border_node(
         frame_size: (1.0f32).max(height / scale),
 
         f_params: [
-            (height / scale).into(),
-            rounding.into(),
-            border_proportion.into(),
-            border_color.r().into(),
-            border_color.g().into(),
-            border_color.b().into(),
+            (height / scale),
+            rounding,
+            border_proportion,
+            border_color.r(),
+            border_color.g(),
+            border_color.b(),
         ],
         u_params: Default::default(),
         sdf_param_usage: ShaderParamUsage(SDF_PARAMETERS),

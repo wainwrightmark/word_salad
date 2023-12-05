@@ -49,7 +49,7 @@ impl CurrentLevel {
             level_index,
             sequence,
         };
-        *found_words = FoundWordsState::new_from_level(&self);
+        *found_words = FoundWordsState::new_from_level(self);
         *chosen_state = ChosenState::default();
     }
 

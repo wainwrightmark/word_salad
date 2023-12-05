@@ -91,7 +91,7 @@ impl HintStatus {
     ) -> Self {
         use HintStatus::*;
         if manual_hints.get_bit(&tile) {
-            return ManualHinted;
+            ManualHinted
         } else if inadvisable.get_bit(&tile) {
             return Inadvisable;
         } else if selectability.is_selectable() && !inadvisable.is_empty() {
@@ -128,9 +128,9 @@ impl MavericNode for GridTiles {
 
             let level = context.1.level();
             let inadvisable_tiles: GridSet =
-                context.2.calculate_inadvisable_tiles(&solution, level);
+                context.2.calculate_inadvisable_tiles(solution, level);
 
-            let hint_set = &context.2.manual_hint_set(&level, &solution); //TODO this should reveal if a tile is previously hinted
+            let hint_set = &context.2.manual_hint_set(level, solution); //TODO this should reveal if a tile is previously hinted
 
             let inadvisable_tiles = inadvisable_tiles.intersect(&hint_set.negate());
             for (tile, character) in context.1.level().grid.enumerate() {
@@ -215,7 +215,7 @@ impl MavericNode for GridTile {
                 &(),
             );
 
-            const SPARKLE_FILL_PARAMETERS: &'static [ShaderParameter] = &[
+            const SPARKLE_FILL_PARAMETERS: &[ShaderParameter] = &[
                 ShaderParameter::f32(0),
                 ShaderParameter::f32(1),
                 ShaderParameter::f32(2),
@@ -230,39 +230,36 @@ impl MavericNode for GridTile {
                 context,
             );
 
-            match node.hint_status {
-                HintStatus::ManualHinted => {
-                    let (p0, p1) = (4.0, 3.0);
-                    let seed = node.tile.inner() as f32 * 123.456;
+            if let HintStatus::ManualHinted = node.hint_status {
+                let (p0, p1) = (4.0, 3.0);
+                let seed = node.tile.inner() as f32 * 123.456;
 
-                    commands.add_child(
-                        "sparkle",
-                        SmudShapeNode {
-                            color: Color::PINK,
-                            sfd: ANYWHERE_SHADER_PATH,
-                            fill: SPARKLE_SHADER_PATH,
-                            frame_size: 1.0,
-                            f_params: [
-                                p0.into(),
-                                p1.into(),
-                                seed.into(),
-                                0.0,
-                                0.0,
-                                0.0,
-                            ],
-                            u_params: Default::default(),
-                            sdf_param_usage: ShaderParamUsage::NO_PARAMS,
-                            fill_param_usage: ShaderParamUsage(SPARKLE_FILL_PARAMETERS),
-                        }
-                        .with_bundle(Transform {
-                            translation: Vec3::Z * 100.0,
-                            scale: Vec3::ONE * tile_size * 0.5,
-                            ..default()
-                        }),
-                        context,
-                    );
-                }
-                _ => {}
+                commands.add_child(
+                    "sparkle",
+                    SmudShapeNode {
+                        color: Color::PINK,
+                        sfd: ANYWHERE_SHADER_PATH,
+                        fill: SPARKLE_SHADER_PATH,
+                        frame_size: 1.0,
+                        f_params: [
+                            p0,
+                            p1,
+                            seed,
+                            0.0,
+                            0.0,
+                            0.0,
+                        ],
+                        u_params: Default::default(),
+                        sdf_param_usage: ShaderParamUsage::NO_PARAMS,
+                        fill_param_usage: ShaderParamUsage(SPARKLE_FILL_PARAMETERS),
+                    }
+                    .with_bundle(Transform {
+                        translation: Vec3::Z * 100.0,
+                        scale: Vec3::ONE * tile_size * 0.5,
+                        ..default()
+                    }),
+                    context,
+                );
             }
         })
     }
