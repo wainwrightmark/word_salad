@@ -7,15 +7,6 @@ use maveric::transition::speed::calculate_speed;
 use ws_core::layout::entities::*;
 use ws_core::prelude::*;
 
-pub struct AnimatedSolutionPlugin;
-
-impl Plugin for AnimatedSolutionPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(Update, handle_scheduled_for_removal);
-
-        //app.register_transition::<StyleTopLens>();
-    }
-}
 
 pub fn animate_solution(
     commands: &mut Commands,
@@ -133,24 +124,5 @@ pub fn animate_solution(
         );
 
         commands.spawn(components);
-    }
-}
-
-#[derive(Debug, Component)]
-pub(crate) struct ScheduledForDeletion {
-    pub timer: Timer,
-}
-
-#[allow(clippy::needless_pass_by_value)]
-fn handle_scheduled_for_removal(
-    mut commands: Commands,
-    time: Res<Time>,
-    mut query: Query<(Entity, &mut ScheduledForDeletion)>,
-) {
-    for (entity, mut schedule) in query.iter_mut() {
-        schedule.timer.tick(time.delta());
-        if schedule.timer.finished() {
-            commands.entity(entity).despawn_recursive();
-        }
     }
 }

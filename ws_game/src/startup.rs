@@ -51,7 +51,6 @@ pub fn go() {
 
     app.register_maveric::<ViewRoot>();
     app.add_plugins(StatePlugin);
-    app.add_plugins(AnimatedSolutionPlugin);
     app.add_plugins(LevelTimePlugin);
     app.add_plugins(ShapesPlugin);
     app.add_plugins(PopupPlugin);
