@@ -19,6 +19,10 @@ fn Hash31(p: vec3<f32>) -> f32 {
 
 fn fill(d: f32, color1: vec4<f32>, uv: vec2<f32>, count1: f32, count2: f32, seed: f32) -> vec4<f32> {
 
+    if d > 0.0{
+        return vec4(0.0);
+    }
+
     var color = vec3(0.0);
     let time: f32 = globals.time;
     var alpha = 0.0;

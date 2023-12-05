@@ -215,7 +215,7 @@ impl MavericNode for GridTile {
                 &(),
             );
 
-            const FILL_PARAMETERS: &'static [ShaderParameter] = &[
+            const SPARKLE_FILL_PARAMETERS: &'static [ShaderParameter] = &[
                 ShaderParameter::f32(0),
                 ShaderParameter::f32(1),
                 ShaderParameter::f32(2),
@@ -252,7 +252,7 @@ impl MavericNode for GridTile {
                             ],
                             u_params: Default::default(),
                             sdf_param_usage: ShaderParamUsage::NO_PARAMS,
-                            fill_param_usage: ShaderParamUsage(FILL_PARAMETERS),
+                            fill_param_usage: ShaderParamUsage(SPARKLE_FILL_PARAMETERS),
                         }
                         .with_bundle(Transform {
                             translation: Vec3::Z * 100.0,

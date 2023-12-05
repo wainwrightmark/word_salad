@@ -86,4 +86,6 @@ pub mod palette {
 
     pub const BACKGROUND_COLOR_1: Color = Color::rgb(234. / 255., 177. / 255., 138. / 255.);
     pub const BACKGROUND_COLOR_2: Color = Color::rgb(158. / 255., 216. / 255., 112. / 255.);
+
+    pub const HINT_COUNTER_COLOR: Color = Color::rgb(51. / 255., 138. / 255., 225. / 255.);
 }
