@@ -1,0 +1,12 @@
+{
+  "imports": {
+    "@capacitor/app": "./@capacitor/app.js",
+    "@capacitor/core": "./@capacitor/core.js",
+    "@capacitor/device": "./@capacitor/device.js",
+    "@capacitor/haptics": "./@capacitor/haptics.js",
+    "@capacitor/share": "./@capacitor/share.js",
+    "@capacitor/status-bar": "./@capacitor/status-bar.js",
+    "@openforge/capacitor-game-connect": "./@openforge/capacitor-game-connect.js",
+    "capacitor-rate-app": "./capacitor-rate-app.js"
+  }
+}

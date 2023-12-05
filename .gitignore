@@ -13,3 +13,8 @@ sheet1.txt
 
 layout_example.svg
 saves/bevy_pkv.redb
+
+## Node
+node_modules
+package-lock.json
+package.json

@@ -6,14 +6,14 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ws_core = {path= "../ws_core"}
-ws_levels = {path= "../ws_levels"}
+ws_core = { path = "../ws_core" }
+ws_levels = { path = "../ws_levels" }
 rand = "0.8.5"
 itertools = "0.12"
 # bevy_prototype_lyon = { version = "0.10" }
 strum = { version = "0.25", features = ["derive"] }
 chrono = { version = "0.4", features = ["serde", "wasmbind"] }
-bevy_pkv = { version = "0.9"}
+bevy_pkv = { version = "0.9" }
 serde = { version = "1", features = ["derive", "rc"] }
 anyhow = "1"
 base64 = "0.21"
@@ -23,9 +23,14 @@ serde_with = "3"
 lazy_static = "1.4"
 serde_yaml = "0.9"
 maveric = { git = 'https://github.com/wainwrightmark/maveric', features = [
-  "widgets","derive"
+  "widgets",
+  "derive",
 ] }
-nice_bevy_utils = { git = "https://github.com/wainwrightmark/nice_bevy_utils", features = ["async-channel", "bevy_pkv", "bevy_ui"]}
+nice_bevy_utils = { git = "https://github.com/wainwrightmark/nice_bevy_utils", features = [
+  "async-channel",
+  "bevy_pkv",
+  "bevy_ui",
+] }
 serde_repr = "0.1"
 enumset = { version = "1", features = ["serde"] }
 arrayvec = { version = "0.7.4", features = ["serde"] }
@@ -33,9 +38,13 @@ bevy_embedded_assets = "0.9"
 wasm-bindgen-futures = "0.4.38"
 serde-wasm-bindgen = "0.6.1"
 num-traits = "0.2"
-bevy_smud = {git= "https://github.com/wainwrightmark/bevy_smud/", branch = "params"}
+bevy_smud = { git = "https://github.com/wainwrightmark/bevy_smud/", branch = "params" }
 bitfield-struct = "0.5.5"
 reqwest = { version = "0.11", default-features = false, features = ["json"] }
+capacitor_bindings = { version = "0.10.0", features = [
+  "game_plugin",
+  "rate_plugin",
+] }
 
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
@@ -48,7 +57,7 @@ web-sys = { version = "0.3", features = [
   'UrlSearchParams',
 
   'Navigator',
-  'ShareData'
+  'ShareData',
 ] }
 console_error_panic_hook = "0.1"
 
@@ -81,3 +90,6 @@ features = [
 
 [features]
 steam = ["reqwest/native-tls"]
+web = ["capacitor_bindings/web"]
+android = ["capacitor_bindings/android"]
+ios = ["capacitor_bindings/ios"]

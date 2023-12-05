@@ -1,0 +1,8 @@
+{
+  "appId": "com.wordsalad.app",
+  "appName": "Word Salad",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}

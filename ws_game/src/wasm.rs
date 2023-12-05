@@ -4,6 +4,8 @@ use bevy::window::PrimaryWindow;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::JsValue;
 use web_sys::ShareData;
+use capacitor_bindings::{device::Device, share::ShareOptions};
+use web_sys::UrlSearchParams;
 
 pub struct WasmPlugin;
 
@@ -96,6 +98,76 @@ extern "C" {
     pub fn stop_video();
 }
 
+pub async fn application_start() -> LoggableEvent {
+    let search_params = get_url_search_params().await;
+
+    let ref_param = search_params.clone().and_then(|x| x.get("ref"));
+    let gclid = search_params.and_then(|x| x.get("gclid"));
+    let referrer = get_referrer();
+
+    //info!("{:?}",event);
+    LoggableEvent::ApplicationStart {
+        ref_param,
+        referrer,
+        gclid,
+    }
+}
+
+pub async fn new_user_async() -> LoggableEvent {
+    let search_params = get_url_search_params().await;
+
+    let ref_param = search_params.clone().and_then(|x| x.get("ref"));
+    let gclid = search_params.and_then(|x| x.get("gclid"));
+    let referrer = get_referrer();
+
+    let language = Device::get_language_tag().await.map(|x| x.value).ok();
+    let device = Device::get_info().await.map(|x| x.into()).ok();
+
+    let app = LogAppInfo::try_get_async().await;
+
+    LoggableEvent::NewUser {
+        ref_param,
+        referrer,
+        gclid,
+        language,
+        device,
+        app,
+        platform: Platform::CURRENT,
+    }
+}
+
+fn get_referrer() -> Option<String> {
+    let window = web_sys::window()?;
+    let document = window.document()?;
+    let referrer = document.referrer();
+    if referrer.is_empty() {
+        return None;
+    }
+    Some(referrer)
+}
+
+async fn get_url_search_params() -> Option<UrlSearchParams> {
+    #[cfg(any(feature = "android", feature = "ios"))]
+    {
+        let url = capacitor_bindings::app::App::get_launch_url()
+            .await
+            .ok()??;
+
+        let url = web_sys::Url::new(&url.url).ok()?;
+        let params = url.search_params();
+        return Some(params);
+    }
+
+    #[cfg(not(any(feature = "android", feature = "ios")))]
+    {
+        use web_sys::window;
+        let window = window()?;
+        let search = window.location().search().ok()?;
+        let params = UrlSearchParams::new_with_str(search.as_str()).ok()?;
+        Some(params)
+    }
+}
+
 /// An exception thrown by a javascript function
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", default)]
@@ -116,3 +188,5 @@ impl TryFrom<JsValue> for JsException {
         }
     }
 }
+
+
