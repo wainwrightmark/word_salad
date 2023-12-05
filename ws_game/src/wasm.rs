@@ -3,7 +3,6 @@ use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::JsValue;
-use web_sys::ShareData;
 use capacitor_bindings::{device::Device, share::ShareOptions};
 use web_sys::UrlSearchParams;
 
@@ -60,26 +59,47 @@ fn resizer(
     }
 }
 
-pub fn share() {
+pub fn share(data: String) {
     asynchronous::spawn_and_run(async {
-        let Some(window) = web_sys::window() else {
-            return;
-        };
-        let navigator = window.navigator();
-        let mut share_data = ShareData::new();
-        share_data.title("Word Salad");
-        share_data.url("wordsalad.online"); //TODO pipe in time
-        let result =
-            wasm_bindgen_futures::JsFuture::from(navigator.share_with_data(&share_data)).await;
-        match result {
-            Ok(_) => {}
-            Err(err) => match JsException::try_from(err) {
-                Ok(e) => error!("{}", e.message),
-                Err(_) => error!("Error whilst sharing"),
-            },
-        }
+        share_game_async(data).await;
     });
 }
+
+async fn share_game_async(data: String) {
+    let device_id = capacitor_bindings::device::Device::get_id()
+        .await
+        .unwrap_or_else(|_| capacitor_bindings::device::DeviceId {
+            identifier: "unknown".to_string(),
+        });
+
+    LoggableEvent::ClickShare
+        .try_log_async1(device_id.clone().into())
+        .await;
+
+    let url = "https://wordsalad.online";
+    let result = capacitor_bindings::share::Share::share(
+        ShareOptions::builder()
+            .title("Word Salad")
+            .text(data)
+            .url(url)
+            .build(),
+    )
+    .await;
+
+    match result {
+        Ok(share_result) => {
+            if let Some(platform) = share_result.activity_type {
+                LoggableEvent::ShareOn { platform }
+                    .try_log_async1(device_id.into())
+                    .await;
+            }
+
+            bevy::log::info!("Share succeeded: {url}")
+        }
+        Err(_) => info!("Share failed: {url}"),
+    }
+}
+
 
 pub fn get_game_from_location() -> Option<DesignedLevel> {
     let window = web_sys::window()?;

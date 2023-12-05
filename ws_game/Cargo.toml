@@ -57,7 +57,6 @@ web-sys = { version = "0.3", features = [
   'UrlSearchParams',
 
   'Navigator',
-  'ShareData',
 ] }
 console_error_panic_hook = "0.1"
 

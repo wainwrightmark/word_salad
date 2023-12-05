@@ -82,10 +82,8 @@ pub fn go() {
         app.insert_resource(bevy_pkv::PkvStore::new("bleppo", "word_salad"));
     }
 
-    // #[cfg(debug_assertions)]
-    // {
-    //     app.add_systems(Update, draw_gizmos);
-    // }
+    app.add_systems(Startup, hide_splash);
+    app.add_systems(Startup, set_status_bar.after(hide_splash));
 
     app.run();
 }
@@ -121,3 +119,43 @@ fn choose_level_on_game_load(
         }
     }
 }
+
+fn hide_splash() {
+    #[cfg(any(feature = "android", feature = "ios"))]
+    {
+        do_or_report_error(capacitor_bindings::splash_screen::SplashScreen::hide(
+            2000.0,
+        ));
+    }
+}
+
+
+fn set_status_bar() {
+    #[cfg(any(feature = "android", feature = "ios"))]
+    {
+        use capacitor_bindings::status_bar::*;
+
+        do_or_report_error(StatusBar::set_style(Style::Dark));
+        #[cfg(feature = "android")]
+        do_or_report_error(StatusBar::set_background_color("#5B8BE2"));
+    }
+}
+
+// async fn disable_back_async<'a>() {
+//     #[cfg(feature = "android")]
+//     {
+//         let result = capacitor_bindings::app::App::add_back_button_listener(|_| {
+//             //todo minimize app??
+//         })
+//         .await;
+
+//         match result {
+//             Ok(handle) => {
+//                 handle.leak();
+//             }
+//             Err(err) => {
+//                 crate::logging::try_log_error_message(format!("{err}"));
+//             }
+//         }
+//     }
+// }

@@ -231,7 +231,7 @@ impl ButtonInteraction {
             ButtonInteraction::Congrats(CongratsLayoutEntity::ShareButton) => {
                 #[cfg(target_arch = "wasm32")]
                 {
-                    crate::wasm::share();
+                    crate::wasm::share("Hello World".to_string());
                 }
             }
             ButtonInteraction::BuyMoreHints => {
