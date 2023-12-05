@@ -17,12 +17,13 @@ impl MavericNode for CongratsView {
             .unordered_children_with_context(|context, commands| {
                 let size = &context.3;
 
-
                 let hints_used_text = match context.2.hints_used1 {
                     0 => "No hints used".to_string(),
                     1 => "1 hint used".to_string(),
                     n => format!("{n} hints used"),
                 };
+
+                //let full_rect = size.get_rect(GameLayoutEntity::, context)
 
                 commands.add_child(
                     "hints used",
@@ -44,19 +45,14 @@ impl MavericNode for CongratsView {
 
                 commands.add_child(
                     "next level",
-                    Text2DNode {
+                    ButtonNode2d {
                         text: "Next",
                         font_size: size.font_size(&CongratsLayoutEntity::NextButton),
-                        color: palette::BUTTON_TEXT_COLOR.convert_color(),
-                        font: BUTTONS_FONT_PATH,
-                        alignment: TextAlignment::Center,
-                        linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                    }
-                    .with_bundle(Transform::from_translation(
-                        size.get_rect(&CongratsLayoutEntity::NextButton, &())
-                            .centre()
-                            .extend(crate::z_indices::CONGRATS_BUTTON),
-                    )),
+                        rect: size.get_rect(&CongratsLayoutEntity::NextButton, &()),
+                        interaction: ButtonInteraction::Congrats(CongratsLayoutEntity::NextButton),
+                        text_color: palette::CONGRATS_BUTTON_TEXT.convert_color(),
+                        fill_color: palette::CONGRATS_BUTTON_FILL.convert_color(),
+                    },
                     &(),
                 );
 
@@ -64,19 +60,16 @@ impl MavericNode for CongratsView {
                 {
                     commands.add_child(
                         "share",
-                        Text2DNode {
+                        ButtonNode2d {
                             text: "Share",
                             font_size: size.font_size(&CongratsLayoutEntity::ShareButton),
-                            color: palette::BUTTON_TEXT_COLOR.convert_color(),
-                            font: BUTTONS_FONT_PATH,
-                            alignment: TextAlignment::Center,
-                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                        }
-                        .with_bundle(Transform::from_translation(
-                            size.get_rect(&CongratsLayoutEntity::ShareButton, &())
-                                .centre()
-                                .extend(crate::z_indices::CONGRATS_BUTTON),
-                        )),
+                            rect: size.get_rect(&CongratsLayoutEntity::ShareButton, &()),
+                            interaction: ButtonInteraction::Congrats(
+                                CongratsLayoutEntity::ShareButton,
+                            ),
+                            text_color: palette::CONGRATS_BUTTON_TEXT.convert_color(),
+                            fill_color: palette::CONGRATS_BUTTON_FILL.convert_color(),
+                        },
                         &(),
                     );
                 }

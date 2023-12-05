@@ -7,14 +7,17 @@ use maveric::{
 };
 use strum::EnumIs;
 
-use ws_core::{LayoutStructure, LayoutStructureWithFont, LayoutStructureWithStaticText};
+use ws_core::{palette, LayoutStructure, LayoutStructureWithFont, LayoutStructureWithStaticText};
 use ws_levels::level_group::LevelGroup;
 
-use crate::{prelude::{
-    level_group_layout::LevelGroupLayoutEntity, levels_menu_layout::LevelsMenuLayoutEntity,
-    main_menu_layout::MainMenuLayoutEntity, ButtonInteraction, ButtonNode2d, SaladWindowSize, Size,
-    ViewContext,
-}, menu_layout::main_menu_back_button::MainMenuBackButton};
+use crate::{
+    menu_layout::main_menu_back_button::MainMenuBackButton,
+    prelude::{
+        level_group_layout::LevelGroupLayoutEntity, levels_menu_layout::LevelsMenuLayoutEntity,
+        main_menu_layout::MainMenuLayoutEntity, ButtonInteraction, ButtonNode2d, ConvertColor,
+        SaladWindowSize, Size, ViewContext,
+    },
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Resource, EnumIs, MavericContext)]
 pub enum MenuState {
@@ -38,9 +41,9 @@ impl MenuState {
         *self = MenuState::Closed
     }
 
-    pub fn go_back(&mut self){
+    pub fn go_back(&mut self) {
         use MenuState::*;
-        *self = match self{
+        *self = match self {
             Closed => Closed,
             ShowMainMenu => Closed,
             ChooseLevelsPage => ShowMainMenu,
@@ -75,13 +78,24 @@ impl MavericNode for Menu {
                         add_menu_items::<R, MainMenuLayoutEntity>(&(), commands, size, 100);
                     }
                     MenuState::ChooseLevelsPage => {
-                        add_menu_items_with_fn::<R, LevelsMenuLayoutEntity>(&(), commands, size, 200, |x| x.get_text(context.7.as_ref()));
+                        add_menu_items_with_fn::<R, LevelsMenuLayoutEntity>(
+                            &(),
+                            commands,
+                            size,
+                            200,
+                            |x| x.get_text(context.7.as_ref()),
+                        );
                     }
                     MenuState::LevelGroupPage(group) => {
-                        add_menu_items_with_fn::<R, LevelGroupLayoutEntity>(&group, commands, size, 300, |x|x.get_text(context.7.as_ref(), group));
+                        add_menu_items_with_fn::<R, LevelGroupLayoutEntity>(
+                            &group,
+                            commands,
+                            size,
+                            300,
+                            |x| x.get_text(context.7.as_ref(), group),
+                        );
                     }
                 }
-
 
                 add_menu_items::<R, MainMenuBackButton>(&(), commands, size, 400);
             });
@@ -97,7 +111,6 @@ fn add_menu_items<
     size: &Size,
     key_offset: u32,
 ) {
-
     for (index, entity) in L::iter_all(context).enumerate() {
         let font_size = size.font_size::<L>(&entity);
         let rect = size.get_rect(&entity, context);
@@ -108,22 +121,20 @@ fn add_menu_items<
                 rect,
                 text: entity.text(context),
                 interaction: entity.into(),
+                text_color: palette::MENU_BUTTON_TEXT.convert_color(),
+                fill_color: palette::MENU_BUTTON_FILL.convert_color(),
             },
             &(),
         );
     }
 }
 
-fn add_menu_items_with_fn<
-    R: MavericRoot,
-    L: LayoutStructureWithFont  + Into<ButtonInteraction>,
-
->(
+fn add_menu_items_with_fn<R: MavericRoot, L: LayoutStructureWithFont + Into<ButtonInteraction>>(
     context: &<L as LayoutStructure>::Context,
     commands: &mut UnorderedChildCommands<R>,
     size: &Size,
     key_offset: u32,
-    func: impl Fn(&L)-> String
+    func: impl Fn(&L) -> String,
 ) {
     for (index, entity) in L::iter_all(context).enumerate() {
         let font_size = size.font_size::<L>(&entity);
@@ -137,6 +148,8 @@ fn add_menu_items_with_fn<
                 rect,
                 text,
                 interaction: entity.into(),
+                text_color: palette::MENU_BUTTON_TEXT.convert_color(),
+                fill_color: palette::MENU_BUTTON_FILL.convert_color(),
             },
             &(),
         );

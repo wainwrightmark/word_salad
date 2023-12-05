@@ -6,9 +6,9 @@ use maveric::{
     with_bundle::CanWithBundle,
 };
 
-use ws_core::{palette, LayoutRectangle};
+use ws_core::{ LayoutRectangle};
 
-use crate::prelude::{box_node, ButtonInteraction, ConvertColor, MENU_BUTTON_FONT_PATH};
+use crate::prelude::{box_node, ButtonInteraction, MENU_BUTTON_FONT_PATH};
 
 #[derive(Debug, PartialEq)]
 pub struct ButtonNode2d<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> {
@@ -16,6 +16,8 @@ pub struct ButtonNode2d<T: Into<String> + PartialEq + Debug + Send + Sync + Clon
     pub rect: LayoutRectangle,
     pub text: T,
     pub interaction: ButtonInteraction,
+    pub fill_color: Color,
+    pub text_color: Color,
 }
 
 impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> MavericNode
@@ -38,6 +40,8 @@ impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> Maveri
                     rect,
                     text,
                     interaction,
+                    fill_color,
+                    text_color,
                 } = node;
                 let centre = rect.centre();
                 let text_translation = centre.extend(crate::z_indices::MENU_BUTTON_TEXT);
@@ -47,7 +51,7 @@ impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> Maveri
                     Text2DNode {
                         text: text.clone(),
                         font_size: *font_size,
-                        color: palette::MENU_BUTTON_TEXT.convert_color(),
+                        color: text_color.clone(),
                         font: MENU_BUTTON_FONT_PATH,
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -63,7 +67,7 @@ impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> Maveri
                         rect.extents.x.abs(),
                         rect.extents.y.abs(),
                         shape_translation,
-                        palette::MENU_BUTTON_FILL.convert_color(),
+                        fill_color.clone(),
                         0.1,
                     )
                     .with_bundle(*interaction),
