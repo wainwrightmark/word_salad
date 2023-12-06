@@ -33,7 +33,7 @@ struct Options {
     pub folder: String,
 
     /// Minimum number of words in a grid
-    #[arg(short, long, default_value = "0")]
+    #[arg(short, long, default_value = "5")]
     pub minimum: u32,
 
     /// Maximum number of grids to return
