@@ -20,6 +20,8 @@ export async function startVideo() {
     media_stream = await media_promise;
 
     const video = document.querySelector("#videoElement");
+
+    video.style.visibility = "visible";
     video.srcObject = media_stream;
     video.onloadedmetadata = () => {
         video.play();
@@ -52,6 +54,7 @@ export function stopVideo() {
         media_stream = null;
 
         const video = document.querySelector("#videoElement");
+        video.style.visibility = "hidden";
         video.srcObject = null;
 
     }

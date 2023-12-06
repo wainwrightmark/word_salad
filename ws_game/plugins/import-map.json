@@ -5,6 +5,7 @@
     "@capacitor/device": "./@capacitor/device.js",
     "@capacitor/haptics": "./@capacitor/haptics.js",
     "@capacitor/share": "./@capacitor/share.js",
+    "@capacitor/splash-screen": "./@capacitor/splash-screen.js",
     "@capacitor/status-bar": "./@capacitor/status-bar.js",
     "@openforge/capacitor-game-connect": "./@openforge/capacitor-game-connect.js",
     "capacitor-rate-app": "./capacitor-rate-app.js"
