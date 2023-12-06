@@ -6,8 +6,8 @@ export async function startVideo() {
     const constraints = {
         audio: false,
         video: {
-            // width: { max: window.innerWidth },
-            // height: { max: window.innerHeight },
+            // width: { ideal: window.innerWidth },
+             height: { max: window.innerHeight },
             aspect_ratio: { exact: aspect_ratio },
             resizeMode: "crop-and-scale",
             facingMode: "user"
