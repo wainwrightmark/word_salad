@@ -69,11 +69,10 @@ pub mod palette {
 
     pub const WORD_LINE_COLOR: Color = Color::rgba(0.9, 0.25, 0.95, 0.9);
 
-    pub const GRID_TILE_STROKE: Color = Color::rgb(0.25, 0.25, 0.25);
-    pub const GRID_TILE_STROKE_AUTO_HINTED: Color = Color::rgb(0.25, 0.25, 0.25);
-    pub const GRID_TILE_FILL: Color = Color::rgb(0.7, 0.7, 0.7);
+    pub const GRID_TILE_STROKE: Color = Color::rgba(0.25, 0.25, 0.25, 0.7);
+    pub const GRID_TILE_FILL: Color = Color::rgba(0.7, 0.7, 0.7, 0.49);
 
-    pub const GRID_LETTER: Color = Color::DARK_GRAY;
+    pub const GRID_LETTER: Color = Color::rgba(0.25, 0.25, 0.25, 0.85);
 
     pub const MANUAL_HINT_GLOW: Color = Color::GOLD;
 

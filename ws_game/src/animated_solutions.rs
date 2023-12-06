@@ -7,6 +7,13 @@ use maveric::transition::speed::calculate_speed;
 use ws_core::layout::entities::*;
 use ws_core::prelude::*;
 
+const STEP_ONE_SCALE_SECONDS: f32 = 1.0;
+const STEP_ONE_TRANSLATION_SECONDS: f32 = 0.5;
+const STEP_TWO_SCALE_SECONDS: f32 = 2.5;
+const STEP_TWO_TRANSLATION_SECONDS: f32 = 1.0;
+
+pub const TOTAL_SECONDS : f32 = STEP_ONE_SCALE_SECONDS + STEP_TWO_TRANSLATION_SECONDS;
+
 
 pub fn animate_solution(
     commands: &mut Commands,
@@ -29,12 +36,7 @@ pub fn animate_solution(
     } else {
         0.5
     };
-    const STEP_ONE_SCALE_SECONDS: f32 = 1.0;
-    const STEP_ONE_TRANSLATION_SECONDS: f32 = 0.5;
-    const STEP_TWO_SCALE_SECONDS: f32 = 2.5;
-    const STEP_TWO_TRANSLATION_SECONDS: f32 = 2.0;
 
-    const TOTAL_SECONDS : f32 = STEP_ONE_SCALE_SECONDS + STEP_TWO_TRANSLATION_SECONDS;
     const SPACING: f32 = 0.4;
     const MID_SCALE: f32 = 0.75;
 

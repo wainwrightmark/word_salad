@@ -24,7 +24,7 @@ pub struct GridTile {
 
 impl GridTile {
     fn fill_color(&self) -> Color {
-        palette::GRID_TILE_FILL.convert_color().with_a(0.7)
+        palette::GRID_TILE_FILL.convert_color()
         // match self.hint_status {
         //     HintStatus::ManualHinted => palette::GRID_TILE_MANUAL_HINTED.convert_color(),
         //     //HintStatus::AutoHinted => palette::GRID_TILE_STROKE_AUTO_HINTED.convert_color(),

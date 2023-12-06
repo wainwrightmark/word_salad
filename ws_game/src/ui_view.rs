@@ -1,5 +1,5 @@
 use std::time::Duration;
-use crate::{prelude::*, z_indices};
+use crate::{prelude::*, z_indices, animated_solutions};
 use bevy_smud::param_usage::{ShaderParamUsage, ShaderParameter};
 use bevy_smud::{ShapeBundle, SmudShaders, SmudShape};
 use maveric::transition::speed::calculate_speed;
@@ -209,7 +209,7 @@ impl MavericNode for WordNode {
         let rounding = 0.1;
         let height = self.rect.height();
 
-        let duration = 3.0;
+
         let from = 1.5;
         let to = -0.5;
 
@@ -261,12 +261,12 @@ impl MavericNode for WordNode {
                 Some(calculate_speed::<f32>(
                     &from,
                     &to,
-                    Duration::from_secs_f32(duration),
+                    Duration::from_secs_f32(animated_solutions::TOTAL_SECONDS),
                 )),
                 NextStep::None,
             )),
             ScheduledForDeletion {
-                timer: Timer::from_seconds(duration, TimerMode::Once),
+                timer: Timer::from_seconds(animated_solutions::TOTAL_SECONDS, TimerMode::Once),
             },
         );
 
