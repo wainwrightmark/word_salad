@@ -110,6 +110,7 @@ fn preload_shaders(asset_server: Res<AssetServer>) {
         FILL_WITH_OUTLINE_SHADER_PATH,
         ANYWHERE_SHADER_PATH,
         SPARKLE_SHADER_PATH,
+        FIREWORKS_SHADER_PATH,
         VORONOI_SHADER_PATH,
         GRADIENT_SHADER_PATH,
         HORIZONTAL_GRADIENT_SHADER_PATH,
@@ -137,9 +138,11 @@ pub const SIMPLE_FILL_SHADER_PATH: &str = "shaders/fill/simple.wgsl";
 pub const FILL_WITH_OUTLINE_SHADER_PATH: &str = "shaders/fill/fill_with_outline.wgsl";
 pub const WORD_LINE_FILL_SHADER_PATH: &str = "shaders/fill/word_line_fill.wgsl";
 pub const SPARKLE_SHADER_PATH: &str = "shaders/fill/sparkle.wgsl";
+pub const FIREWORKS_SHADER_PATH: &str = "shaders/fill/fireworks.wgsl";
 pub const VORONOI_SHADER_PATH: &str = "shaders/fill/voronoi_gradient.wgsl";
 pub const GRADIENT_SHADER_PATH: &str = "shaders/fill/gradient.wgsl";
 pub const HORIZONTAL_GRADIENT_SHADER_PATH: &str = "shaders/fill/horizontal_gradient.wgsl";
+
 
 pub fn box_node(
     width: f32,
