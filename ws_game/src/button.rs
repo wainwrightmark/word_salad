@@ -162,6 +162,7 @@ impl ButtonInteraction {
             }
             ButtonInteraction::MainMenu(MainMenuLayoutEntity::SelfieMode) => {
                 video_state.toggle_video_streaming(video_events.clone());
+                menu_state.close();
             }
 
             ButtonInteraction::MainMenu(MainMenuLayoutEntity::Tutorial) => {

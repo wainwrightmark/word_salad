@@ -44,7 +44,7 @@ impl VideoResource {
     pub fn toggle_video_streaming(&self, writer: AsyncEventWriter<VideoEvent>) {
         #[cfg(target_arch = "wasm32")]
         {
-            if self.is_streaming {
+            if self.is_selfie_mode {
                 crate::wasm::stop_video();
                 writer.send_blocking(VideoEvent::VideoStopped).unwrap();
             } else {

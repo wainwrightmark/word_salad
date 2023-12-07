@@ -4,6 +4,7 @@ use bevy_smud::{
     ShapeBundle, SmudShaders, SmudShape,
 };
 use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
+use num_traits::Zero;
 use rand::{rngs::ThreadRng, Rng};
 use ws_core::layout::entities::*;
 #[derive(Debug, Clone, PartialEq)]
@@ -12,7 +13,7 @@ pub struct CongratsView;
 fn create_firework(cb: &mut ChildBuilder, rng: &mut impl Rng, total_seconds: f32, size: &Size, sdf: Handle<Shader>, fill: Handle<Shader>, no_delay: bool) {
     let rect = size.get_rect(&ws_core::layout::entities::GameLayoutEntity::Grid, &());
 
-    let delay = if no_delay{ 0.0} else{rng.gen_range(-4.0..=0.0)};
+    let delay = if no_delay{ 0.0} else{rng.gen_range(0.0..(total_seconds - 1.0))};
     let color = Color::hsl(rng.gen_range(0.0..=360.0), 1.0, 0.75);
 
     let position = rect.top_left + Vec2{
@@ -23,7 +24,7 @@ fn create_firework(cb: &mut ChildBuilder, rng: &mut impl Rng, total_seconds: f32
     let shape = SmudShape {
         color,
         frame: bevy_smud::Frame::Quad(1.0),
-        f_params: [delay, 0.0, 0.0, 0.0, 0.0, 0.0],
+        f_params: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
         u_params: Default::default(),
     };
 
@@ -52,7 +53,7 @@ fn create_firework(cb: &mut ChildBuilder, rng: &mut impl Rng, total_seconds: f32
     let bundle = (
         bundle,
         ScheduledForDeletion {
-            timer: Timer::from_seconds(total_seconds, TimerMode::Once),
+            timer: Timer::from_seconds(1.0, TimerMode::Once),
         },
         Transition::new(TransitionStep::<SmudParamLens<0>>::new_arc(
             1.0,
@@ -61,7 +62,15 @@ fn create_firework(cb: &mut ChildBuilder, rng: &mut impl Rng, total_seconds: f32
         )),
     );
 
-    cb.spawn(bundle);
+    if delay.is_zero(){
+        cb.spawn(bundle);
+    }else{
+        cb.spawn(ScheduledChange{
+            timer: Timer::from_seconds(1.0, TimerMode::Once),
+            boxed_change: Box::new(move |ec| {ec.insert(bundle);})
+        });
+    }
+
 }
 
 impl MavericNode for CongratsView {
@@ -77,11 +86,16 @@ impl MavericNode for CongratsView {
         world: &World,
         entity_commands: &mut bevy::ecs::system::EntityCommands,
     ) {
+
+        if !context.2.is_changed() || context.2.is_added(){
+            return;
+        }
+
         //SHOW FIREWORKS
         let size = &context.3;
 
         const SECONDS: f32 = 5.0;
-        const NUM_FIREWORKS: usize = 30;
+        const NUM_FIREWORKS: usize = 5;
 
         let Some(asset_server) = world.get_resource::<AssetServer>() else {
             return;

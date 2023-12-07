@@ -28,6 +28,7 @@ pub mod view;
 pub mod wasm;
 pub mod wordline;
 pub mod z_indices;
+pub mod scheduled_component;
 
 fn main() {
     crate::startup::go();
@@ -60,6 +61,7 @@ pub mod prelude {
     pub use crate::view::*;
     pub use crate::wordline::*;
     pub use crate::logging::*;
+    pub use crate::scheduled_component::*;
 
     pub use std::array;
 

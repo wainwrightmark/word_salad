@@ -1,7 +1,7 @@
 use crate::input::InputPlugin;
 pub use crate::prelude::*;
 use bevy::log::LogPlugin;
-use nice_bevy_utils::window_size::WindowSizePlugin;
+use nice_bevy_utils::{window_size::WindowSizePlugin, async_event_writer, CanRegisterAsyncEvent};
 use ws_core::layout::entities::*;
 
 const CLEAR_COLOR: Color = {
@@ -56,12 +56,14 @@ pub fn go() {
     app.add_plugins(PopupPlugin);
     app.add_plugins(LogWatchPlugin);
     app.add_plugins(BackgroundPlugin);
+    app.add_plugins(ScheduledComponentPlugin);
 
     app.register_transition::<BackgroundColorLens>();
     app.register_transition::<TransformRotationYLens>();
     app.register_transition::<TransformTranslationLens>();
     app.register_transition::<TransformScaleLens>();
     app.register_transition::<(TransformTranslationLens, TransformScaleLens)>();
+
 
     app.add_plugins(InputPlugin);
 
@@ -83,6 +85,10 @@ pub fn go() {
     }
 
     app.add_systems(Startup, hide_splash);
+
+    app.register_async_event::<AppLifeCycleEvent>();
+    app.add_systems(Startup, begin_lifecycle);
+    app.add_systems(Update, watch_lifecycle);
     app.add_systems(Startup, set_status_bar.after(hide_splash));
 
     app.run();
@@ -91,12 +97,6 @@ pub fn go() {
 fn setup_system(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
-
-// fn draw_gizmos(size: Res<Size>, mut gizmos: Gizmos) {
-//     let grid_rect = size.get_rect(LayoutEntity::Grid);
-
-//     gizmos.rect_2d(grid_rect.centre(), 0.0, grid_rect.extents, Color::RED);
-// }
 
 #[allow(unused_variables, unused_mut)]
 fn choose_level_on_game_load(
@@ -141,21 +141,74 @@ fn set_status_bar() {
     }
 }
 
-// async fn disable_back_async<'a>() {
-//     #[cfg(feature = "android")]
-//     {
-//         let result = capacitor_bindings::app::App::add_back_button_listener(|_| {
-//             //todo minimize app??
-//         })
-//         .await;
+fn watch_lifecycle(mut events: EventReader<AppLifeCycleEvent>, mut video: ResMut<VideoResource>, mut menu: ResMut<MenuState>){
+    for event in events.read(){
+        match event{
+            AppLifeCycleEvent::StateChange { is_active } => {
+                //info!("State change is_active {is_active}");
+                if *is_active && video.is_selfie_mode{
+                    video.is_selfie_mode = false;
+                }
+            },
+            AppLifeCycleEvent::BackPressed => {
+                //info!("State change Back Pressed");
+                if !menu.is_closed(){
+                    menu.close();
+                }
+            },
+        }
+    }
+}
 
-//         match result {
-//             Ok(handle) => {
-//                 handle.leak();
-//             }
-//             Err(err) => {
-//                 crate::logging::try_log_error_message(format!("{err}"));
-//             }
-//         }
-//     }
-// }
+fn begin_lifecycle(writer: async_event_writer::AsyncEventWriter<AppLifeCycleEvent>) {
+    spawn_and_run(disable_back_async(writer.clone()));
+    spawn_and_run(on_resume(writer));
+}
+
+async fn disable_back_async<'a>(writer: async_event_writer::AsyncEventWriter<AppLifeCycleEvent>) {
+    #[cfg(feature = "android")]
+    {
+        info!("Disabling back");
+        let result = capacitor_bindings::app::App::add_back_button_listener(move |_| {
+            //info!("Sending back event");
+            writer.send_blocking(AppLifeCycleEvent::BackPressed).unwrap();
+        })
+        .await;
+
+        match result {
+            Ok(handle) => {
+                //info!("Leading back button");
+                handle.leak();
+            }
+            Err(err) => {
+                crate::logging::try_log_error_message(format!("{err}"));
+            }
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, Event, PartialEq)]
+enum AppLifeCycleEvent{
+    StateChange{is_active: bool},
+    BackPressed
+}
+
+async fn on_resume(writer: async_event_writer::AsyncEventWriter<AppLifeCycleEvent>){
+    #[cfg(any(feature = "android",feature = "ios"))]
+    {
+        //info!("Setting on_resume");
+        let result = capacitor_bindings::app::App::add_state_change_listener(move |x|{
+            writer.send_blocking(AppLifeCycleEvent::StateChange { is_active: x.is_active }).unwrap();
+        }).await;
+
+        match result {
+            Ok(handle) => {
+                handle.leak();
+            }
+            Err(err) => {
+                crate::logging::try_log_error_message(format!("{err}"));
+            }
+        }
+    }
+
+}

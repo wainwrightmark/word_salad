@@ -1,7 +1,7 @@
 #define_import_path fill::fireworks
 #import smud::view_bindings::globals
 
-const NUM_PARTICLES =  75.;
+const NUM_PARTICLES =  50.;
 
 
 
@@ -31,7 +31,7 @@ fn Explosion(uv: vec2<f32>, t: f32) -> f32 {
 }
 
 fn fill(d: f32, color1: vec4<f32>, point: vec2<f32>, fract: f32) -> vec4<f32> {
-    if d >= 0.0 || fract < 0.0 {
+    if d >= 0.0  {
         return vec4<f32>(0.0);
     }
 
