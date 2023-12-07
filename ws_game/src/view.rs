@@ -8,7 +8,8 @@ pub type ViewContext = (
     LevelTime,
     MenuState,
     HintState,
-    TotalCompletion
+    TotalCompletion,
+    VideoResource
 );
 #[derive(MavericRoot)]
 pub struct ViewRoot;

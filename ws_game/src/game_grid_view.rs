@@ -23,17 +23,21 @@ pub struct GridTile {
 }
 
 impl GridTile {
-    fn fill_color(&self) -> Color {
-        palette::GRID_TILE_FILL.convert_color()
-        // match self.hint_status {
-        //     HintStatus::ManualHinted => palette::GRID_TILE_MANUAL_HINTED.convert_color(),
-        //     //HintStatus::AutoHinted => palette::GRID_TILE_STROKE_AUTO_HINTED.convert_color(),
-        //     _ => palette::GRID_TILE_FILL.convert_color(),
-        // }
+    fn fill_color(&self, video: &VideoResource) -> Color {
+        if video.is_selfie_mode{
+            palette::GRID_TILE_FILL_SELFIE.convert_color()
+        }else{
+            palette::GRID_TILE_FILL_NORMAL.convert_color()
+        }
     }
 
-    fn border_color(&self) -> Color {
-        palette::GRID_TILE_STROKE.convert_color()
+    fn border_color(&self, video: &VideoResource) -> Color {
+        if video.is_selfie_mode{
+            palette::GRID_TILE_STROKE_SELFIE.convert_color()
+        }else{
+            palette::GRID_TILE_STROKE_NORMAL.convert_color()
+        }
+
     }
 
     fn border_proportion(&self) -> f32 {
@@ -163,7 +167,7 @@ impl MavericNode for GridTiles {
                         centre,
                         hint_status,
                     },
-                    &(),
+                    &context.8,
                 );
             }
         });
@@ -171,7 +175,7 @@ impl MavericNode for GridTiles {
 }
 
 impl MavericNode for GridTile {
-    type Context = ();
+    type Context = VideoResource;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
@@ -192,8 +196,8 @@ impl MavericNode for GridTile {
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
             let tile_size = node.tile_size;
-            let fill = node.fill_color();
-            let border_color = node.border_color();
+            let fill = node.fill_color(context.as_ref());
+            let border_color = node.border_color(context.as_ref());
             let border_proportion = node.border_proportion();
 
             commands.add_child(
@@ -227,7 +231,7 @@ impl MavericNode for GridTile {
                     character: node.character,
                     font_size: node.font_size,
                 },
-                context,
+                &context
             );
 
             if let HintStatus::ManualHinted = node.hint_status {
@@ -258,7 +262,7 @@ impl MavericNode for GridTile {
                         scale: Vec3::ONE * tile_size * 0.5,
                         ..default()
                     }),
-                    context,
+                    &()
                 );
             }
         })
@@ -279,7 +283,7 @@ pub struct GridLetter {
 }
 
 impl MavericNode for GridLetter {
-    type Context = ();
+    type Context = VideoResource;
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
             .ignore_context()
@@ -289,14 +293,16 @@ impl MavericNode for GridLetter {
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
-        commands.unordered_children_with_node(|args, commands| {
+        commands.unordered_children_with_node_and_context(|args, context, commands| {
+            let color = if context.is_selfie_mode { palette::GRID_LETTER_SELFIE} else{ palette::GRID_LETTER_NORMAL}.convert_color();
+
             commands.add_child(
                 0,
                 Text2DNode {
                     text: args.character.to_tile_string(),
                     font: TILE_FONT_PATH,
                     font_size: args.font_size,
-                    color: palette::GRID_LETTER.convert_color(),
+                    color,
                     alignment: TextAlignment::Center,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                 }

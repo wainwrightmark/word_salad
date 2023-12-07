@@ -1,4 +1,4 @@
-use crate::{prelude, Character, Grid};
+use crate::{prelude, Character, Grid, Solution};
 use itertools::Itertools;
 use std::{
     cell::{Cell, RefCell},
@@ -7,7 +7,7 @@ use std::{
 };
 
 use super::{
-    counter::Counter,
+    counter::{Counter, SolutionCollector},
     helpers::{FinderWord, LetterCounts},
     partial_grid::{NodeMap, PartialGrid},
 };
@@ -69,17 +69,18 @@ impl std::fmt::Display for GridResult {
     }
 }
 
-pub fn try_make_grid_with_blank_filling(
+pub fn try_make_grid_with_blank_filling<Collector: SolutionCollector<GridResult>>(
     letters: LetterCounts,
     words: &Vec<FinderWord>,
     exclude_words: &Vec<FinderWord>,
     first_blank_replacement: Character,
     counter: &mut impl Counter,
-) -> Option<GridResult> {
-    let result = try_make_grid(letters, words, exclude_words, counter);
-    //println!("{} tries", result.tries);
-    if result.is_some() {
-        return result;
+    collector: &mut Collector,
+) {
+    try_make_grid(letters, words, exclude_words, counter, collector);
+
+    if collector.is_full() {
+        return;
     }
 
     if letters.contains(Character::Blank) {
@@ -104,20 +105,19 @@ pub fn try_make_grid_with_blank_filling(
                 .try_insert(replacement)
                 .expect("prime bag error");
 
-            let result = try_make_grid_with_blank_filling(
+            try_make_grid_with_blank_filling(
                 new_letters,
                 words,
                 exclude_words,
                 replacement,
                 counter,
+                collector,
             );
-            if result.is_some() {
-                return result;
+            if collector.is_full() {
+                return;
             }
         }
     }
-
-    None
 }
 
 struct WordUniquenessHelper {
@@ -187,12 +187,13 @@ enum WordLetterResult<'a> {
     DuplicateLetter(Character, &'a Vec<NodeBuilder>),
 }
 
-pub fn try_make_grid(
+pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
     letters: LetterCounts,
     words: &Vec<FinderWord>,
     exclude_words: &Vec<FinderWord>,
     counter: &mut impl Counter,
-) -> Option<GridResult> {
+    collector: &mut Collector,
+) {
     //println!("Try to make grid: {l:?} : {w:?}", l= crate::get_raw_text(&letters), w= crate::write_words(words) );
     let mut nodes_map: BTreeMap<Character, Vec<NodeBuilder>> = Default::default();
 
@@ -276,16 +277,6 @@ pub fn try_make_grid(
 
     //todo check that a grid is actually possible with the given constraint multiplicities
 
-    // #[cfg(test)]
-    // {
-    //     for (_, nodes) in nodes_map.iter() {
-    //         for node in nodes {
-    //             let node: Node = node.clone().into();
-    //             println!("{}: {} constraints", node.character, node.constraint_count);
-    //         }
-    //     }
-    // }
-
     let mut grid: PartialGrid = Default::default();
 
     let mut nodes_by_id: BTreeMap<NodeId, Node> = nodes_map
@@ -300,16 +291,30 @@ pub fn try_make_grid(
             .unwrap_or_else(|| NodeBuilder::new(tile, Character::Blank).into())
     });
 
-    let Some(solution) = grid.solve_recursive(counter, &nodes, 0, words, exclude_words) else {
-        return None;
-    };
+    let mut mapped_collector = Collector::Mapped::default();
+    grid.solve_recursive(
+        counter,
+        &mut mapped_collector,
+        &nodes,
+        0,
+        words,
+        exclude_words,
+    );
 
-    let solution_grid = solution.to_grid(&nodes);
-    Some(GridResult {
-        grid: solution_grid,
-        letters,
-        words: words.clone(),
+    collector.collect_mapped(mapped_collector, |solution| {
+        let solution_grid = solution.to_grid(&nodes);
+        GridResult {
+            grid: solution_grid,
+            letters,
+            words: words.clone(),
+        }
     })
+
+    // let Some(solution) =  solution else {
+    //     return None;
+    // };
+
+    //
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -497,12 +502,14 @@ mod tests {
             current: 0,
         };
         let exclude_words = vec![];
-        let solution = try_make_grid_with_blank_filling(
+        let mut solution = None;
+        try_make_grid_with_blank_filling(
             letters,
             &words,
             &exclude_words,
             Character::E,
             &mut counter,
+            &mut solution,
         );
         println!("{:?}", now.elapsed());
         match solution {
@@ -511,6 +518,76 @@ mod tests {
                 println!("{grid}");
             }
             None => panic!("No Solution found after {} tries", counter.current),
+        }
+    }
+
+
+    #[test_case("Bishop\npawn\nKing\nKnight\nQueen")]
+    pub fn test_try_make_many_grids(input: &'static str) {
+        let words = crate::finder::helpers::make_words_vec_from_file(input);
+
+        let mut letters = LetterCounts::default();
+        for word in words.iter() {
+            letters = letters
+                .try_union(&word.counts)
+                .expect("Should be able to combine letters");
+        }
+        let letter_count = letters.into_iter().count();
+        println!("{} letters {}", letter_count, letters.into_iter().join(""));
+
+        if letter_count > 16 {
+            panic!("Too many letters");
+        }
+
+        let mut blanks_to_add = 16usize.saturating_sub(letter_count);
+        while blanks_to_add > 0 {
+            match letters.try_insert(Character::Blank) {
+                Some(n) => letters = n,
+                None => {
+                    println!("Prime bag wont accept more blanks")
+                }
+            }
+            blanks_to_add -= 1;
+        }
+
+        let mut counter = RealCounter {
+            max: 1000000000,
+            current: 0,
+        };
+        let exclude_words = vec![];
+        let mut solutions = vec![];
+        try_make_grid_with_blank_filling(
+            letters,
+            &words,
+            &exclude_words,
+            Character::E,
+            &mut counter,
+            &mut solutions,
+        );
+
+        assert!(!solutions.is_empty());
+
+        for mut s in solutions.iter_mut() {
+            crate::finder::orientation::optimize_orientation(&mut s);
+        }
+
+        // for grid in solutions{
+        //     if let Some(word) = orientation::find_single_row_word(&grid){
+        //         println!("{word}\n{}\n\n", grid.grid);
+        //     }
+        // }
+
+        for (grid, (word, score)) in solutions
+            .into_iter()
+            .map(|grid| {
+                let q = orientation::calculate_best_word(&grid);
+                (grid, q)
+
+            })
+            .sorted_by_key(|x| x.1 .1)
+            .rev()
+        {
+            println!("{word} {score}\n{}\n\n", grid.grid);
         }
     }
 }

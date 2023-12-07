@@ -6,7 +6,7 @@ use ws_core::{
 
 pub fn criterion_benchmark(c: &mut Criterion) {
     let words = ws_core::finder::helpers::make_words_vec_from_file(
-        "CROATIA, ROMANIA, IRELAND, LATVIA, POLAND, FRANCE, MALTA",
+        "Croatia\nRomania\nIreland\nLatvia\nPoland\nFrance\nMalta",
     );
 
     let mut letters = LetterCounts::default();
@@ -36,12 +36,14 @@ pub fn criterion_benchmark(c: &mut Criterion) {
 
     c.bench_function("EU Countries", |b| {
         b.iter(|| {
+            let mut solution = None;
             try_make_grid_with_blank_filling(
                 letters,
                 &words,
                 &exclude_words,
                 Character::E,
                 &mut FakeCounter,
+                &mut solution
             )
         })
     });

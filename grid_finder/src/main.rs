@@ -1,6 +1,5 @@
 pub mod clustering;
 pub mod combinations;
-pub mod orientation;
 pub mod search;
 
 use clap::Parser;
@@ -272,12 +271,15 @@ fn create_grids(
                     .cloned()
                     .collect_vec();
 
-                let result = ws_core::finder::node::try_make_grid_with_blank_filling(
+                let mut result = None;
+
+                ws_core::finder::node::try_make_grid_with_blank_filling(
                     set.letter_counts,
                     &finder_words,
                     &exclude_words,
                     Character::E,
                     &mut counter,
+                    &mut result
                 );
 
                 pb.inc(1);
@@ -294,7 +296,7 @@ fn create_grids(
         for (combination, result) in results.into_iter() {
             if let Some(mut solution) = result {
                 solved_sets.push(combination.word_indexes);
-                orientation::optimize_orientation(&mut solution);
+                ws_core::finder::orientation::optimize_orientation(&mut solution);
                 solutions.push(solution);
             } else {
                 for new_set in combinations::shrink_bit_sets(&combination.word_indexes) {

@@ -2,6 +2,7 @@ pub mod counter;
 pub mod helpers;
 pub mod node;
 pub mod partial_grid;
+pub mod orientation;
 
 pub type Tile = geometrid::tile::Tile<4, 4>;
 pub type NodeId = geometrid::tile::Tile<16, 1>;

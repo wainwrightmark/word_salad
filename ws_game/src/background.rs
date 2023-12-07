@@ -20,7 +20,7 @@ impl MavericRootChildren for Background {
         context: &<Self::Context as NodeContext>::Wrapper<'_>,
         commands: &mut impl ChildCommands,
     ) {
-        if context.1.is_streaming {
+        if context.1.is_selfie_mode {
             //Don't show background when video is streaming
             return;
         }

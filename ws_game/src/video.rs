@@ -25,7 +25,7 @@ pub enum VideoEvent {
 
 #[derive(Default, Resource, MavericContext)]
 pub struct VideoResource {
-    pub is_streaming: bool,
+    pub is_selfie_mode: bool,
 }
 
 #[allow(unused_variables)]
@@ -33,8 +33,8 @@ pub struct VideoResource {
 fn handle_video_event(mut res: ResMut<VideoResource>, mut events: EventReader<VideoEvent>) {
     for ev in events.read() {
         match ev {
-            VideoEvent::VideoStarted => res.is_streaming = true,
-            VideoEvent::VideoStopped => res.is_streaming = false,
+            VideoEvent::VideoStarted => res.is_selfie_mode = true,
+            VideoEvent::VideoStopped => res.is_selfie_mode = false,
         }
     }
 }

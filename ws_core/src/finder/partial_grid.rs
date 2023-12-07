@@ -2,7 +2,7 @@ use crate::finder::node::*;
 use crate::finder::*;
 use crate::{find_solution, Character, Grid, GridSet};
 
-use super::counter::Counter;
+use super::counter::{Counter, SolutionCollector};
 use super::helpers::FinderWord;
 
 pub type NodeMap = geometrid::tile_map::TileMap<Node, 16, 1, 16>;
@@ -62,16 +62,15 @@ impl PartialGrid {
     pub fn solve_recursive(
         &mut self,
         counter: &mut impl Counter,
+        collector: &mut impl SolutionCollector<Self>,
         all_nodes: &NodeMap,
         level: usize,
         words: &Vec<FinderWord>,
         exclude_words: &Vec<FinderWord>,
-    ) -> Option<Self> {
+    ) {
         if !counter.try_increment() {
-            return None;
+            return;
         }
-
-        //println!("{g}\n\n", g = self.to_grid(all_nodes));
 
         let Some((node, potential_locations)) = self
             .nodes_to_add
@@ -81,12 +80,6 @@ impl PartialGrid {
                 let set = self.potential_locations(node);
                 (node, set)
             })
-            // .inspect(|f| {
-            //     #[cfg(test)]
-            //     if level == 0 {
-            //         println!("{} possible locations:\n{}", f.0.character, f.1)
-            //     }
-            // })
             .min_by(|a, b| {
                 a.1.count()
                     .cmp(&b.1.count())
@@ -95,41 +88,10 @@ impl PartialGrid {
         else {
             //run out of options
             if self.check_matches(all_nodes, words, exclude_words) {
-                return Some(self.clone());
-            } else {
-                return None;
+                collector.collect_solution(self.clone());
             }
+            return;
         };
-
-        lazy_static::lazy_static! {
-            static ref TOP_LOCATIONS: GridSet = GridSet::from_fn(|t| matches!((t.x(), t.y()), (0,0) | (1,1) | (0,1)) );
-
-            static ref TOP_RIGHT_LOCATIONS: GridSet = GridSet::from_fn(|t| t.x() >= t.y());
-
-            static ref ORDERED_GOOD_LOCATIONS: [Tile; 16] = [
-                //centre
-                Tile::new_const::<1,1>(),
-                Tile::new_const::<1,2>(),
-                Tile::new_const::<2,1>(),
-                Tile::new_const::<2,2>(),
-                //edges
-                Tile::new_const::<0,1>(),
-                Tile::new_const::<0,2>(),
-                Tile::new_const::<1,0>(),
-                Tile::new_const::<2,0>(),
-
-                Tile::new_const::<3,1>(),
-                Tile::new_const::<3,2>(),
-                Tile::new_const::<1,3>(),
-                Tile::new_const::<2,3>(),
-
-                //corners
-                Tile::new_const::<0,0>(),
-                Tile::new_const::<0,3>(),
-                Tile::new_const::<3,0>(),
-                Tile::new_const::<3,3>(),
-            ];
-        }
 
         let potential_locations = if level == 0 {
             potential_locations.intersect(&TOP_LOCATIONS)
@@ -139,18 +101,8 @@ impl PartialGrid {
             potential_locations
         };
 
-        // #[cfg(test)]
-        // {
-        //     println!("{}", node.character);
-        //     println!("{}", potential_locations);
-        // }
-
         if potential_locations == GridSet::EMPTY {
-            // #[cfg(test)]
-            // {
-            //     println!("Nowhere to place {}", node.character);
-            // }
-            return None;
+            return;
         }
 
         for tile in ORDERED_GOOD_LOCATIONS
@@ -159,30 +111,17 @@ impl PartialGrid {
         {
             self.place_node(node, *tile);
 
-            if let Some(result) =
-                self.solve_recursive(counter, all_nodes, level + 1, words, exclude_words)
-            {
-                return Some(result);
+            self.solve_recursive(counter, collector, all_nodes, level + 1, words, exclude_words);
+            if collector.is_full(){
+                return;
             }
 
             self.remove_node(node.id, *tile);
         }
-        // #[cfg(test)]
-        // {
-        //     println!("No solution for placing {}", node.character);
-        // }
-
-        None
     }
 
     pub fn potential_locations(&self, node: &Node) -> GridSet {
         let mut allowed = self.used_grid.negate();
-
-        lazy_static::lazy_static! {
-            /// This is an example for using doc comment attributes
-            static ref NOT_CORNERS: GridSet = GridSet::from_fn(|t|!t.is_corner());
-            static ref INNER_TILES: GridSet = GridSet::from_fn(|t|!t.is_edge());
-        }
 
         match node.constraint_count {
             ..=3 => {}
@@ -228,6 +167,45 @@ impl PartialGrid {
         self.used_grid.set_bit(&tile, true);
         self.nodes_to_add.set_bit(&node.id, false);
     }
+}
+
+const ORDERED_GOOD_LOCATIONS: [Tile; 16] = [
+    //centre
+    Tile::new_const::<1, 1>(),
+    Tile::new_const::<1, 2>(),
+    Tile::new_const::<2, 1>(),
+    Tile::new_const::<2, 2>(),
+    //edges
+    Tile::new_const::<0, 1>(),
+    Tile::new_const::<0, 2>(),
+    Tile::new_const::<1, 0>(),
+    Tile::new_const::<2, 0>(),
+    Tile::new_const::<3, 1>(),
+    Tile::new_const::<3, 2>(),
+    Tile::new_const::<1, 3>(),
+    Tile::new_const::<2, 3>(),
+    //corners
+    Tile::new_const::<0, 0>(),
+    Tile::new_const::<0, 3>(),
+    Tile::new_const::<3, 0>(),
+    Tile::new_const::<3, 3>(),
+];
+
+const TOP_LOCATIONS: GridSet = {
+    let set = GridSet::EMPTY;
+    let set = set.with_bit_set(&Tile::new_const::<0, 0>(), true);
+    let set = set.with_bit_set(&Tile::new_const::<0, 1>(), true);
+    let set = set.with_bit_set(&Tile::new_const::<1, 1>(), true);
+
+    set
+};
+
+lazy_static::lazy_static! {
+
+    static ref NOT_CORNERS: GridSet = GridSet::from_fn(|t|!t.is_corner());
+    static ref INNER_TILES: GridSet = GridSet::from_fn(|t|!t.is_edge());
+
+     static ref TOP_RIGHT_LOCATIONS: GridSet = GridSet::from_fn(|t| t.x() >= t.y());
 }
 
 #[cfg(test)]

@@ -42,17 +42,39 @@ impl LayoutStructure for CongratsLayoutEntity {
     }
 
     fn location(&self, _context: &Self::Context) -> Vec2 {
-        Vec2 {
-            x: (IDEAL_WIDTH - CONGRATS_ENTITY_WIDTH) / 2.,
-            y: TOP_BAR_ICON_SIZE
-                + TEXT_AREA_HEIGHT
-                + Spacing::Centre.apply(
-                    GRID_SIZE,
-                    CONGRATS_ENTITY_HEIGHT,
-                    Self::COUNT,
-                    self.index(),
-                ),
+
+        match self{
+            CongratsLayoutEntity::HintsUsed => {
+                Vec2 {
+                    x: (IDEAL_WIDTH - CONGRATS_ENTITY_WIDTH) / 2.,
+                    y: TOP_BAR_ICON_SIZE
+                        + TEXT_AREA_HEIGHT
+                        + Spacing::Centre.apply(
+                            GRID_SIZE,
+                            CONGRATS_ENTITY_HEIGHT * 1.2,
+                            2,
+                            0,
+                        ),
+                }
+            },
+            CongratsLayoutEntity::NextButton | CongratsLayoutEntity::ShareButton => {
+                {
+                    let num_children = if cfg!(target_arch = "wasm32"){2} else {1};
+                    Vec2{
+                    x: Spacing::SpaceAround.apply(GRID_SIZE, CONGRATS_ENTITY_WIDTH * 1.2,  num_children, self.index() - 1),
+                    y: TOP_BAR_ICON_SIZE
+                        + TEXT_AREA_HEIGHT
+                        + Spacing::Centre.apply(
+                            GRID_SIZE,
+                            CONGRATS_ENTITY_HEIGHT * 1.2,
+                            2,
+                            1,
+                        ),
+                }}
+            },
+
         }
+
     }
 
     fn iter_all(_context: &Self::Context) -> Self::Iterator {

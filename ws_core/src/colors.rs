@@ -28,8 +28,6 @@ impl BasicColor {
     pub(crate) const ALICE_BLUE: BasicColor = BasicColor::rgb(0.94, 0.97, 1.0);
     /// <div style="background-color:rgb(0%, 0%, 0%); width: 10px; padding: 10px; border: 1px solid;"></div>
     pub(crate) const BLACK: BasicColor = BasicColor::rgb(0.0, 0.0, 0.0);
-    /// <div style="background-color:rgb(25%, 25%, 25%); width: 10px; padding: 10px; border: 1px solid;"></div>
-    pub(crate) const DARK_GRAY: BasicColor = BasicColor::rgb(0.25, 0.25, 0.25);
     /// <div style="background-color:rgb(100%, 84%, 0%); width: 10px; padding: 10px; border: 1px solid;"></div>
     pub(crate) const GOLD: BasicColor = BasicColor::rgb(1.0, 0.84, 0.0);
 
@@ -69,10 +67,13 @@ pub mod palette {
 
     pub const WORD_LINE_COLOR: Color = Color::rgba(0.9, 0.25, 0.95, 0.9);
 
-    pub const GRID_TILE_STROKE: Color = Color::rgba(0.25, 0.25, 0.25, 0.7);
-    pub const GRID_TILE_FILL: Color = Color::rgba(0.7, 0.7, 0.7, 0.49);
+    pub const GRID_TILE_STROKE_NORMAL: Color = Color::rgba(0.25, 0.25, 0.25, 0.7);
+    pub const GRID_TILE_FILL_NORMAL: Color = Color::rgba(0.7, 0.7, 0.7, 0.9);
+    pub const GRID_LETTER_NORMAL: Color = Color::rgba(0.25, 0.25, 0.25, 0.85);
 
-    pub const GRID_LETTER: Color = Color::rgba(0.25, 0.25, 0.25, 0.85);
+    pub const GRID_TILE_STROKE_SELFIE: Color = Color::rgba(0.25, 0.25, 0.25, 0.95);
+    pub const GRID_TILE_FILL_SELFIE: Color = Color::rgba(0.7, 0.7, 0.7, 0.7);
+    pub const GRID_LETTER_SELFIE: Color = Color::rgba(0.25, 0.25, 0.25, 0.95);
 
     pub const MANUAL_HINT_GLOW: Color = Color::GOLD;
 

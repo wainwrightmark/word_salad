@@ -1,8 +1,8 @@
-use itertools::Itertools;
-use ws_core::{
+use crate::{
     finder::{helpers::FinderWord, node::GridResult},
     prelude::*,
 };
+use itertools::Itertools;
 
 pub fn optimize_orientation(grid_result: &mut GridResult) {
     let flips = [FlipAxes::None, FlipAxes::Horizontal];
@@ -27,6 +27,29 @@ pub fn optimize_orientation(grid_result: &mut GridResult) {
 
     grid_result.grid.rotate(quarter_turns);
     grid_result.grid.flip(axes);
+}
+
+pub fn calculate_best_word(grid_result: &GridResult) -> (FinderWord, i32) {
+    grid_result
+        .words
+        .iter()
+        .map(|word| (word, calculate_score(word, &grid_result.grid)))
+        .max_by_key(|x| x.1)
+        .map(|x| (x.0.clone(), x.1))
+        .unwrap()
+}
+
+pub fn find_single_row_word(grid_result: &GridResult) -> Option<FinderWord> {
+    for word in grid_result.words.iter() {
+        if word.array.len() == 4 {
+            for s in find_solutions(&word.array, &grid_result.grid) {
+                if s.iter().map(|t| t.x()).all_equal() || s.iter().map(|t| t.y()).all_equal() {
+                    return Some(word.clone());
+                }
+            }
+        }
+    }
+    return None;
 }
 
 fn calculate_max_score(grid: &Grid, words: &[FinderWord]) -> i32 {
@@ -88,9 +111,9 @@ fn score_solution(solution: &ArrayVec<Tile, 16>) -> i32 {
 pub mod tests {
     use std::str::FromStr;
 
+    use crate::finder::node::GridResult;
     use itertools::Itertools;
     use test_case::test_case;
-    use ws_core::finder::node::GridResult;
 
     use super::optimize_orientation;
 
