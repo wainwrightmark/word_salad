@@ -1,9 +1,68 @@
 use crate::{prelude::*, z_indices};
-use bevy_smud::{param_usage::ShaderParamUsage, ShapeBundle, SmudShaders, SmudShape};
+use bevy_smud::{
+    param_usage::{ShaderParamUsage, ShaderParameter},
+    ShapeBundle, SmudShaders, SmudShape,
+};
 use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
+use rand::{rngs::ThreadRng, Rng};
 use ws_core::layout::entities::*;
 #[derive(Debug, Clone, PartialEq)]
 pub struct CongratsView;
+
+fn create_firework(cb: &mut ChildBuilder, rng: &mut impl Rng, total_seconds: f32, size: &Size, sdf: Handle<Shader>, fill: Handle<Shader>, no_delay: bool) {
+    let rect = size.get_rect(&ws_core::layout::entities::GameLayoutEntity::Grid, &());
+
+    let delay = if no_delay{ 0.0} else{rng.gen_range(-4.0..=0.0)};
+    let color = Color::hsl(rng.gen_range(0.0..=360.0), 1.0, 0.75);
+
+    let position = rect.top_left + Vec2{
+        x: rng.gen_range(0.0..=(rect.extents.x.abs())),
+        y: rng.gen_range(rect.extents.y..=0.0),
+    };
+
+    let shape = SmudShape {
+        color,
+        frame: bevy_smud::Frame::Quad(1.0),
+        f_params: [delay, 0.0, 0.0, 0.0, 0.0, 0.0],
+        u_params: Default::default(),
+    };
+
+    const SHADER_PARAMETERS: &'static [ShaderParameter] = &[ShaderParameter::f32(0)];
+
+    let shaders = SmudShaders {
+        sdf,
+        fill,
+        sdf_param_usage: ShaderParamUsage::NO_PARAMS,
+        fill_param_usage: ShaderParamUsage(SHADER_PARAMETERS),
+    };
+
+    let bundle = ShapeBundle::<SHAPE_F_PARAMS, SHAPE_U_PARAMS> {
+        shape,
+        shaders,
+        transform: Transform {
+            translation: position.extend(z_indices::FIREWORKS),
+
+            scale: Vec3::ONE * rect.extents.x.max(rect.extents.y),
+            ..default()
+        },
+
+        ..default()
+    };
+
+    let bundle = (
+        bundle,
+        ScheduledForDeletion {
+            timer: Timer::from_seconds(total_seconds, TimerMode::Once),
+        },
+        Transition::new(TransitionStep::<SmudParamLens<0>>::new_arc(
+            1.0,
+            Some(1.0.into()),
+            NextStep::None,
+        )),
+    );
+
+    cb.spawn(bundle);
+}
 
 impl MavericNode for CongratsView {
     type Context = ViewContext;
@@ -18,9 +77,11 @@ impl MavericNode for CongratsView {
         world: &World,
         entity_commands: &mut bevy::ecs::system::EntityCommands,
     ) {
+        //SHOW FIREWORKS
         let size = &context.3;
 
         const SECONDS: f32 = 5.0;
+        const NUM_FIREWORKS: usize = 30;
 
         let Some(asset_server) = world.get_resource::<AssetServer>() else {
             return;
@@ -28,43 +89,11 @@ impl MavericNode for CongratsView {
         let sdf = asset_server.load(crate::shapes::ANYWHERE_SHADER_PATH);
         let fill = asset_server.load(crate::shapes::FIREWORKS_SHADER_PATH);
 
-        let rect = size.get_rect(&ws_core::layout::entities::GameLayoutEntity::Grid, &());
-
-        let shape = SmudShape {
-            color: Color::WHITE,
-            frame: bevy_smud::Frame::Quad(1.0),
-            f_params: Default::default(),
-            u_params: Default::default(),
-        };
-
-        let shaders = SmudShaders {
-            sdf,
-            fill,
-            sdf_param_usage: ShaderParamUsage::NO_PARAMS,
-            fill_param_usage: ShaderParamUsage::NO_PARAMS,
-        };
-
-        let bundle = ShapeBundle::<SHAPE_F_PARAMS, SHAPE_U_PARAMS> {
-            shape,
-            shaders,
-            transform: Transform {
-                translation: rect.centre().extend(z_indices::FIREWORKS),
-
-                scale: Vec3::ONE * rect.extents.x.max(rect.extents.y),
-                ..default()
-            },
-            ..default()
-        };
-
-        let bundle = (
-            bundle,
-            ScheduledForDeletion {
-                timer: Timer::from_seconds(SECONDS, TimerMode::Once),
-            },
-        );
-
-        entity_commands.with_children(|x| {
-            x.spawn(bundle);
+        entity_commands.with_children(|cb| {
+            let mut rng = ThreadRng::default();
+            for i in 0..NUM_FIREWORKS {
+                create_firework(cb, &mut rng, SECONDS, size.as_ref(), sdf.clone(), fill.clone(), i <= 1);
+            }
         });
     }
 
