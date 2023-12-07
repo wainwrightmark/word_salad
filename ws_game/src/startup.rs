@@ -1,7 +1,7 @@
 use crate::input::InputPlugin;
 pub use crate::prelude::*;
 use bevy::log::LogPlugin;
-use nice_bevy_utils::{window_size::WindowSizePlugin, async_event_writer, CanRegisterAsyncEvent};
+use nice_bevy_utils::{async_event_writer, window_size::WindowSizePlugin, CanRegisterAsyncEvent};
 use ws_core::layout::entities::*;
 
 const CLEAR_COLOR: Color = {
@@ -63,7 +63,6 @@ pub fn go() {
     app.register_transition::<TransformTranslationLens>();
     app.register_transition::<TransformScaleLens>();
     app.register_transition::<(TransformTranslationLens, TransformScaleLens)>();
-
 
     app.add_plugins(InputPlugin);
 
@@ -129,7 +128,6 @@ fn hide_splash() {
     }
 }
 
-
 fn set_status_bar() {
     #[cfg(any(feature = "android", feature = "ios"))]
     {
@@ -141,21 +139,25 @@ fn set_status_bar() {
     }
 }
 
-fn watch_lifecycle(mut events: EventReader<AppLifeCycleEvent>, mut video: ResMut<VideoResource>, mut menu: ResMut<MenuState>){
-    for event in events.read(){
-        match event{
+fn watch_lifecycle(
+    mut events: EventReader<AppLifeCycleEvent>,
+    mut video: ResMut<VideoResource>,
+    mut menu: ResMut<MenuState>,
+) {
+    for event in events.read() {
+        match event {
             AppLifeCycleEvent::StateChange { is_active } => {
                 //info!("State change is_active {is_active}");
-                if *is_active && video.is_selfie_mode{
+                if *is_active && video.is_selfie_mode {
                     video.is_selfie_mode = false;
                 }
-            },
+            }
             AppLifeCycleEvent::BackPressed => {
                 //info!("State change Back Pressed");
-                if !menu.is_closed(){
+                if !menu.is_closed() {
                     menu.close();
                 }
-            },
+            }
         }
     }
 }
@@ -165,13 +167,15 @@ fn begin_lifecycle(writer: async_event_writer::AsyncEventWriter<AppLifeCycleEven
     spawn_and_run(on_resume(writer));
 }
 
-async fn disable_back_async<'a>(writer: async_event_writer::AsyncEventWriter<AppLifeCycleEvent>) {
+async fn disable_back_async<'a>(_writer: async_event_writer::AsyncEventWriter<AppLifeCycleEvent>) {
     #[cfg(feature = "android")]
     {
         info!("Disabling back");
         let result = capacitor_bindings::app::App::add_back_button_listener(move |_| {
             //info!("Sending back event");
-            writer.send_blocking(AppLifeCycleEvent::BackPressed).unwrap();
+            writer
+                .send_blocking(AppLifeCycleEvent::BackPressed)
+                .unwrap();
         })
         .await;
 
@@ -188,18 +192,23 @@ async fn disable_back_async<'a>(writer: async_event_writer::AsyncEventWriter<App
 }
 
 #[derive(Debug, Clone, Copy, Event, PartialEq)]
-enum AppLifeCycleEvent{
-    StateChange{is_active: bool},
-    BackPressed
+enum AppLifeCycleEvent {
+    StateChange { is_active: bool },
+    BackPressed,
 }
 
-async fn on_resume(writer: async_event_writer::AsyncEventWriter<AppLifeCycleEvent>){
-    #[cfg(any(feature = "android",feature = "ios"))]
+async fn on_resume(_writer: async_event_writer::AsyncEventWriter<AppLifeCycleEvent>) {
+    #[cfg(any(feature = "android", feature = "ios"))]
     {
         //info!("Setting on_resume");
-        let result = capacitor_bindings::app::App::add_state_change_listener(move |x|{
-            writer.send_blocking(AppLifeCycleEvent::StateChange { is_active: x.is_active }).unwrap();
-        }).await;
+        let result = capacitor_bindings::app::App::add_state_change_listener(move |x| {
+            writer
+                .send_blocking(AppLifeCycleEvent::StateChange {
+                    is_active: x.is_active,
+                })
+                .unwrap();
+        })
+        .await;
 
         match result {
             Ok(handle) => {
@@ -210,5 +219,4 @@ async fn on_resume(writer: async_event_writer::AsyncEventWriter<AppLifeCycleEven
             }
         }
     }
-
 }

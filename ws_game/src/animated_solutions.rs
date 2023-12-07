@@ -12,8 +12,7 @@ const STEP_ONE_TRANSLATION_SECONDS: f32 = 0.5;
 const STEP_TWO_SCALE_SECONDS: f32 = 2.5;
 const STEP_TWO_TRANSLATION_SECONDS: f32 = 1.0;
 
-pub const TOTAL_SECONDS : f32 = STEP_ONE_SCALE_SECONDS + STEP_TWO_TRANSLATION_SECONDS;
-
+pub const TOTAL_SECONDS: f32 = STEP_ONE_SCALE_SECONDS + STEP_TWO_TRANSLATION_SECONDS;
 
 pub fn animate_solution(
     commands: &mut Commands,
@@ -31,11 +30,7 @@ pub fn animate_solution(
         palette::ANIMATED_SOLUTION_OLD
     };
 
-    let time_multiplier = if is_first_time{
-        1.0
-    } else {
-        0.5
-    };
+    let time_multiplier = if is_first_time { 1.0 } else { 0.5 };
 
     const SPACING: f32 = 0.4;
     const MID_SCALE: f32 = 0.75;
@@ -59,13 +54,24 @@ pub fn animate_solution(
     let font = asset_server.load(SOLUTIONS_FONT_PATH);
     let font_size = size.font_size::<LayoutGridTile>(&LayoutGridTile::default());
 
-    let speed_one_scale = calculate_speed(&Vec3::ONE, &(Vec3::ONE * MID_SCALE), Duration::from_secs_f32(STEP_ONE_SCALE_SECONDS * time_multiplier));
-    let speed_two_scale = calculate_speed(&(Vec3::ONE ), &(Vec3::ONE * MID_SCALE), Duration::from_secs_f32(STEP_TWO_SCALE_SECONDS * time_multiplier));
-
+    let speed_one_scale = calculate_speed(
+        &Vec3::ONE,
+        &(Vec3::ONE * MID_SCALE),
+        Duration::from_secs_f32(STEP_ONE_SCALE_SECONDS * time_multiplier),
+    );
+    let speed_two_scale = calculate_speed(
+        &(Vec3::ONE),
+        &(Vec3::ONE * MID_SCALE),
+        Duration::from_secs_f32(STEP_TWO_SCALE_SECONDS * time_multiplier),
+    );
 
     //let right_push = ((mid_destination.x - ((solution.len() as f32 + 0.5) * font_size * SPACING)) + (size.scaled_width * 0.5)).min(0.0);
 
-    for (index, (tile, character)) in solution.iter().zip(word.graphemes.iter().filter(|x|x.is_game_char) ).enumerate() {
+    for (index, (tile, character)) in solution
+        .iter()
+        .zip(word.graphemes.iter().filter(|x| x.is_game_char))
+        .enumerate()
+    {
         let text = Text::from_section(
             character.grapheme.clone(),
             TextStyle {
@@ -81,13 +87,18 @@ pub fn animate_solution(
                 y: 0.0,
             };
 
-        let destination_two =word_destination_centre - Vec2 {
-            x: ((offset - 0.5) * font_size * SPACING * 0.5),
-            y: 0.0,
-        };
+        let destination_two = word_destination_centre
+            - Vec2 {
+                x: ((offset - 0.5) * font_size * SPACING * 0.5),
+                y: 0.0,
+            };
 
         let start_position = size.get_rect(&LayoutGridTile(*tile), &()).centre();
-        let speed_two_translation = calculate_speed(&destination_two, &destination_one, Duration::from_secs_f32(STEP_TWO_TRANSLATION_SECONDS* time_multiplier));
+        let speed_two_translation = calculate_speed(
+            &destination_two,
+            &destination_one,
+            Duration::from_secs_f32(STEP_TWO_TRANSLATION_SECONDS * time_multiplier),
+        );
 
         let step_two = TransitionStep::<(TransformTranslationLens, TransformScaleLens)>::new_arc(
             (
@@ -98,9 +109,11 @@ pub fn animate_solution(
             NextStep::None,
         );
 
-
-
-        let speed_one_translation = calculate_speed(&start_position, &destination_one, core::time::Duration::from_secs_f32(STEP_ONE_TRANSLATION_SECONDS* time_multiplier)) ;
+        let speed_one_translation = calculate_speed(
+            &start_position,
+            &destination_one,
+            core::time::Duration::from_secs_f32(STEP_ONE_TRANSLATION_SECONDS * time_multiplier),
+        );
 
         let step_one = TransitionStep::<(TransformTranslationLens, TransformScaleLens)>::new_arc(
             (

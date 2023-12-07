@@ -55,7 +55,6 @@ impl LayoutStructure for LevelGroupLayoutEntity {
     }
 
     fn location(&self, context: &Self::Context) -> bevy::prelude::Vec2 {
-
         Vec2 {
             x: (IDEAL_WIDTH - MENU_BUTTON_WIDTH) / 2.,
             y: TOP_BAR_ICON_SIZE
@@ -93,13 +92,13 @@ impl Iterator for LevelGroupLayoutIter {
     fn next(&mut self) -> Option<Self::Item> {
         match self.next_index.cmp(&self.group.get_sequences().len()) {
             std::cmp::Ordering::Less => {
-                let next = LevelGroupLayoutEntity{index: self.next_index};
+                let next = LevelGroupLayoutEntity {
+                    index: self.next_index,
+                };
                 self.next_index += 1;
                 Some(next)
             }
-            std::cmp::Ordering::Equal | std::cmp::Ordering::Greater => {
-                None
-            }
+            std::cmp::Ordering::Equal | std::cmp::Ordering::Greater => None,
         }
     }
 }

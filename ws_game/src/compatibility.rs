@@ -30,12 +30,16 @@ impl DeviceIdentifier {
         identifier: String::new(),
     };
 
-    pub fn unknown()-> Self{
-        Self { identifier: "unknown".to_string() }
+    pub fn unknown() -> Self {
+        Self {
+            identifier: "unknown".to_string(),
+        }
     }
 
-    pub fn steam()-> Self{
-        Self { identifier: "Steam".to_string() }
+    pub fn steam() -> Self {
+        Self {
+            identifier: "Steam".to_string(),
+        }
     }
 }
 
@@ -62,7 +66,6 @@ impl From<capacitor_bindings::device::DeviceId> for DeviceIdentifier {
         }
     }
 }
-
 
 #[skip_serializing_none]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -158,7 +161,7 @@ pub struct LogAppInfo {
 }
 
 #[cfg(any(feature = "android", feature = "ios", feature = "web"))]
-impl From<capacitor_bindings::app:: AppInfo> for LogAppInfo {
+impl From<capacitor_bindings::app::AppInfo> for LogAppInfo {
     fn from(value: capacitor_bindings::app::AppInfo) -> Self {
         Self {
             build: value.build,

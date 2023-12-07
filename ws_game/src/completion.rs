@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use maveric::helpers::MavericContext;
 use nice_bevy_utils::TrackableResource;
 use serde::{Deserialize, Serialize};
-use ws_levels::{level_sequence::LevelSequence, level_group::LevelGroup};
+use ws_levels::{level_group::LevelGroup, level_sequence::LevelSequence};
 
 use crate::{
     prelude::{CurrentLevel, FoundWordsState},
@@ -54,16 +54,21 @@ impl TotalCompletion {
         self.completions.get(index).cloned().unwrap_or_default()
     }
 
-    pub fn get_number_complete(&self, sequence: &LevelSequence)-> usize{
+    pub fn get_number_complete(&self, sequence: &LevelSequence) -> usize {
         let sequence_index = *sequence as usize;
-        self.completions.get(sequence_index).cloned().unwrap_or_default()
+        self.completions
+            .get(sequence_index)
+            .cloned()
+            .unwrap_or_default()
     }
 
-    pub fn get_number_complete_group(&self, group: &LevelGroup)-> usize{
-        group.get_sequences().iter().map(|x| self.get_number_complete(x)).sum()
+    pub fn get_number_complete_group(&self, group: &LevelGroup) -> usize {
+        group
+            .get_sequences()
+            .iter()
+            .map(|x| self.get_number_complete(x))
+            .sum()
     }
-
-
 }
 
 pub fn track_level_completion(

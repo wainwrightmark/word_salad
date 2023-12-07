@@ -37,7 +37,9 @@ impl ChosenState {
             if completion.is_complete() {
                 continue;
             }
-            if word.characters.get(0) == chars.get(0) && Self::lev_distance_one_or_less(&chars, &word.characters) {
+            if word.characters.get(0) == chars.get(0)
+                && Self::lev_distance_one_or_less(&chars, &word.characters)
+            {
                 return true;
             }
         }

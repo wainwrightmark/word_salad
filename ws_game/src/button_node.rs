@@ -6,7 +6,7 @@ use maveric::{
     with_bundle::CanWithBundle,
 };
 
-use ws_core::{ LayoutRectangle};
+use ws_core::LayoutRectangle;
 
 use crate::prelude::{box_node, ButtonInteraction, MENU_BUTTON_FONT_PATH};
 

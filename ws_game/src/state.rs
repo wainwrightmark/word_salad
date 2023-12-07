@@ -148,7 +148,8 @@ impl FoundWordsState {
     }
 
     pub fn get_completion(&self, word_index: usize) -> Completion {
-        *self.word_completions
+        *self
+            .word_completions
             .get(word_index)
             .unwrap_or(&Completion::Complete)
     }
@@ -196,12 +197,11 @@ impl FoundWordsState {
             Completion::Complete => return false,
         };
 
-        if let Some(solution) = word.find_solution(&level.grid){
-            let new_selection: ArrayVec<Tile, 16> = ArrayVec::from_iter(solution.iter().take(new_count).cloned());
+        if let Some(solution) = word.find_solution(&level.grid) {
+            let new_selection: ArrayVec<Tile, 16> =
+                ArrayVec::from_iter(solution.iter().take(new_count).cloned());
             chosen_state.solution = new_selection;
         }
-
-
 
         true
     }
@@ -282,8 +282,7 @@ impl Completion {
             Completion::Unstarted => None,
             Completion::Complete => Some(&word.characters),
             Completion::ManualHinted(hints) => Some(
-                word
-                    .characters
+                word.characters
                     .split_at(hints.get().min(word.characters.len()))
                     .0,
             ),

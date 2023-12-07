@@ -5,7 +5,9 @@ use ws_core::{
     LayoutStructure, LayoutStructureWithFont, LayoutStructureWithStaticText, Spacing,
 };
 
-use super::{MENU_BUTTON_FONT_SIZE, MENU_BUTTON_SINGLE_HEIGHT, MENU_BUTTON_WIDTH,  MENU_BUTTON_SPACING};
+use super::{
+    MENU_BUTTON_FONT_SIZE, MENU_BUTTON_SINGLE_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH,
+};
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter, EnumCount, Display,
@@ -15,7 +17,7 @@ pub enum MainMenuLayoutEntity {
     Store = 1,
     SelfieMode = 2,
     Tutorial = 3,
-    ResetPuzzle = 4
+    ResetPuzzle = 4,
 }
 
 impl MainMenuLayoutEntity {
@@ -44,7 +46,9 @@ impl LayoutStructure for MainMenuLayoutEntity {
             x: (IDEAL_WIDTH - MENU_BUTTON_WIDTH) / 2.,
             y: TOP_BAR_ICON_SIZE
                 + Spacing::Centre.apply(
-                    IDEAL_HEIGHT - TOP_BAR_ICON_SIZE - (MENU_BUTTON_SINGLE_HEIGHT + MENU_BUTTON_SPACING),
+                    IDEAL_HEIGHT
+                        - TOP_BAR_ICON_SIZE
+                        - (MENU_BUTTON_SINGLE_HEIGHT + MENU_BUTTON_SPACING),
                     MENU_BUTTON_SINGLE_HEIGHT + MENU_BUTTON_SPACING,
                     Self::COUNT,
                     self.index(),
@@ -67,13 +71,12 @@ impl LayoutStructureWithStaticText for MainMenuLayoutEntity {
     fn text(&self, _context: &Self::Context) -> &'static str {
         use MainMenuLayoutEntity::*;
 
-        match self{
+        match self {
             Puzzles => "Puzzles",
             Store => "Store",
             SelfieMode => "Selfie Mode",
             Tutorial => "Tutorial",
             ResetPuzzle => "Reset Puzzle",
         }
-
     }
 }

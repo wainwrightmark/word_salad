@@ -1,5 +1,5 @@
 use crate::{prelude::*, z_indices};
-use bevy_smud::{ SmudShaders, SmudShape};
+use bevy_smud::{SmudShaders, SmudShape};
 
 use bevy_smud::param_usage::{ShaderParamUsage, ShaderParameter};
 use bitfield_struct::bitfield;
@@ -117,8 +117,8 @@ impl MavericNode for WordLine {
             let fill = asset_server.load(WORD_LINE_FILL_SHADER_PATH);
             let sdf = asset_server.load(WORD_LINE_SHADER_PATH);
 
-            let u_params  = solution_to_u32s(solution);
-            let u_params: [u32; SHAPE_U_PARAMS] = u_params.map(|x|x.into());
+            let u_params = solution_to_u32s(solution);
+            let u_params: [u32; SHAPE_U_PARAMS] = u_params.map(|x| x.into());
             let final_segment_length = final_segment_length as f32;
             let speed = 4.0;
 
@@ -135,7 +135,6 @@ impl MavericNode for WordLine {
                 ShaderParameter::u32(1),
                 ShaderParameter::u32(2),
                 ShaderParameter::u32(3),
-
             ];
 
             commands.insert((
@@ -144,15 +143,8 @@ impl MavericNode for WordLine {
 
                     frame: bevy_smud::Frame::Quad(1.0),
 
-                    f_params: [
-                        initial_width,
-                        segment_length,
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0,
-                    ],
-                    u_params
+                    f_params: [initial_width, segment_length, 0.0, 0.0, 0.0, 0.0],
+                    u_params,
                 },
                 SmudShaders::<SHAPE_F_PARAMS, SHAPE_U_PARAMS> {
                     fill,
@@ -181,9 +173,7 @@ fn solution_to_u32s(solution: &[Tile]) -> [WordLinePoints; 4] {
     let mut block3 = WordLinePoints::default();
     let mut block4 = WordLinePoints::default();
 
-    let mut iter = solution
-        .iter()
-        .map(|x| x.inner());
+    let mut iter = solution.iter().map(|x| x.inner());
 
     block1 = block1.with_p0(iter.next().unwrap_or_default());
     block1 = block1.with_p1(iter.next().unwrap_or_default());
@@ -205,7 +195,7 @@ fn solution_to_u32s(solution: &[Tile]) -> [WordLinePoints; 4] {
 
     //info!("{master:?} {block1:?} {block2:?}");
 
-    [block1,block2, block3, block4]
+    [block1, block2, block3, block4]
 }
 
 #[bitfield(u32, order = Lsb)]
@@ -223,17 +213,15 @@ struct WordLinePoints {
     p3: u8,
 
     #[bits(16)]
-    buffer: u16
+    buffer: u16, // #[bits(4)]
+                 // p4: u8,
 
-    // #[bits(4)]
-    // p4: u8,
+                 // #[bits(4)]
+                 // p5: u8,
 
-    // #[bits(4)]
-    // p5: u8,
+                 // #[bits(4)]
+                 // p6: u8,
 
-    // #[bits(4)]
-    // p6: u8,
-
-    // #[bits(4)]
-    // p7: u8,
+                 // #[bits(4)]
+                 // p7: u8,
 }

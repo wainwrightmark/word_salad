@@ -1,9 +1,9 @@
 use crate::{asynchronous, prelude::*};
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
+use capacitor_bindings::{device::Device, share::ShareOptions};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::JsValue;
-use capacitor_bindings::{device::Device, share::ShareOptions};
 use web_sys::UrlSearchParams;
 
 pub struct WasmPlugin;
@@ -99,7 +99,6 @@ async fn share_game_async(data: String) {
         Err(_) => info!("Share failed: {url}"),
     }
 }
-
 
 pub fn get_game_from_location() -> Option<DesignedLevel> {
     let window = web_sys::window()?;
@@ -208,5 +207,3 @@ impl TryFrom<JsValue> for JsException {
         }
     }
 }
-
-

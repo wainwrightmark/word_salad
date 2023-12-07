@@ -11,7 +11,6 @@ pub struct LogWatchPlugin;
 
 impl Plugin for LogWatchPlugin {
     fn build(&self, app: &mut App) {
-
         //info!("Log watch plugin");
         app.add_systems(Update, watch_level_changes);
         app.add_systems(Update, watch_level_completion);
@@ -401,7 +400,8 @@ impl EventLog {
     }
 
     async fn try_log<T: Serialize>(data: &T) -> Result<(), reqwest::Error> {
-        if !cfg!(debug_assertions) { //todo make this work properly on steam
+        if !cfg!(debug_assertions) {
+            //todo make this work properly on steam
             let client = reqwest::Client::new();
             let res = client
                 .post("https://api.axiom.co/v1/datasets/word_salad/ingest")

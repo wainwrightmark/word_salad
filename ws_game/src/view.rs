@@ -1,4 +1,4 @@
-use crate::{prelude::*, completion::TotalCompletion};
+use crate::{completion::TotalCompletion, prelude::*};
 
 pub type ViewContext = (
     ChosenState,
@@ -9,7 +9,7 @@ pub type ViewContext = (
     MenuState,
     HintState,
     TotalCompletion,
-    VideoResource
+    VideoResource,
 );
 #[derive(MavericRoot)]
 pub struct ViewRoot;

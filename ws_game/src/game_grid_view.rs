@@ -24,20 +24,19 @@ pub struct GridTile {
 
 impl GridTile {
     fn fill_color(&self, video: &VideoResource) -> Color {
-        if video.is_selfie_mode{
+        if video.is_selfie_mode {
             palette::GRID_TILE_FILL_SELFIE.convert_color()
-        }else{
+        } else {
             palette::GRID_TILE_FILL_NORMAL.convert_color()
         }
     }
 
     fn border_color(&self, video: &VideoResource) -> Color {
-        if video.is_selfie_mode{
+        if video.is_selfie_mode {
             palette::GRID_TILE_STROKE_SELFIE.convert_color()
-        }else{
+        } else {
             palette::GRID_TILE_STROKE_NORMAL.convert_color()
         }
-
     }
 
     fn border_proportion(&self) -> f32 {
@@ -131,8 +130,7 @@ impl MavericNode for GridTiles {
             let selected_tile: Option<&geometrid::prelude::Tile<4, 4>> = solution.last();
 
             let level = context.1.level();
-            let inadvisable_tiles: GridSet =
-                context.2.calculate_inadvisable_tiles(solution, level);
+            let inadvisable_tiles: GridSet = context.2.calculate_inadvisable_tiles(solution, level);
 
             let hint_set = &context.2.manual_hint_set(level, solution); //TODO this should reveal if a tile is previously hinted
 
@@ -231,7 +229,7 @@ impl MavericNode for GridTile {
                     character: node.character,
                     font_size: node.font_size,
                 },
-                &context
+                &context,
             );
 
             if let HintStatus::ManualHinted = node.hint_status {
@@ -245,14 +243,7 @@ impl MavericNode for GridTile {
                         sfd: ANYWHERE_SHADER_PATH,
                         fill: SPARKLE_SHADER_PATH,
                         frame_size: 1.0,
-                        f_params: [
-                            p0,
-                            p1,
-                            seed,
-                            0.0,
-                            0.0,
-                            0.0,
-                        ],
+                        f_params: [p0, p1, seed, 0.0, 0.0, 0.0],
                         u_params: Default::default(),
                         sdf_param_usage: ShaderParamUsage::NO_PARAMS,
                         fill_param_usage: ShaderParamUsage(SPARKLE_FILL_PARAMETERS),
@@ -262,7 +253,7 @@ impl MavericNode for GridTile {
                         scale: Vec3::ONE * tile_size * 0.5,
                         ..default()
                     }),
-                    &()
+                    &(),
                 );
             }
         })
@@ -294,7 +285,12 @@ impl MavericNode for GridLetter {
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node_and_context(|args, context, commands| {
-            let color = if context.is_selfie_mode { palette::GRID_LETTER_SELFIE} else{ palette::GRID_LETTER_NORMAL}.convert_color();
+            let color = if context.is_selfie_mode {
+                palette::GRID_LETTER_SELFIE
+            } else {
+                palette::GRID_LETTER_NORMAL
+            }
+            .convert_color();
 
             commands.add_child(
                 0,

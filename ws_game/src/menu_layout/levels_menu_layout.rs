@@ -28,11 +28,14 @@ impl LevelsMenuLayoutEntity {
 
     pub const COUNT: usize = 1 + LevelGroup::COUNT;
 
-    pub fn get_text(&self, completion: &TotalCompletion)-> String{
-        let name =self.name();
+    pub fn get_text(&self, completion: &TotalCompletion) -> String {
+        let name = self.name();
         let complete = match self {
-            LevelsMenuLayoutEntity::WordSalad => completion.get_number_complete(&ws_levels::level_sequence::LevelSequence::DailyChallenge),
-            LevelsMenuLayoutEntity::AdditionalLevel(group) => completion.get_number_complete_group(group),
+            LevelsMenuLayoutEntity::WordSalad => completion
+                .get_number_complete(&ws_levels::level_sequence::LevelSequence::DailyChallenge),
+            LevelsMenuLayoutEntity::AdditionalLevel(group) => {
+                completion.get_number_complete_group(group)
+            }
         };
         let total = match self {
             LevelsMenuLayoutEntity::WordSalad => LevelSequence::DailyChallenge.level_count(),
@@ -48,7 +51,6 @@ impl LevelsMenuLayoutEntity {
         match self {
             LevelsMenuLayoutEntity::WordSalad => "Word Salad",
             LevelsMenuLayoutEntity::AdditionalLevel(levels) => levels.name(),
-
         }
     }
 }
@@ -97,5 +99,3 @@ impl LayoutStructureWithFont for LevelsMenuLayoutEntity {
         MENU_BUTTON_FONT_SIZE
     }
 }
-
-

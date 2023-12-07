@@ -1,4 +1,4 @@
-use crate::{prelude, Character, Grid, Solution};
+use crate::{prelude, Character, Grid};
 use itertools::Itertools;
 use std::{
     cell::{Cell, RefCell},

@@ -10,16 +10,29 @@ use ws_core::layout::entities::*;
 #[derive(Debug, Clone, PartialEq)]
 pub struct CongratsView;
 
-fn create_firework(cb: &mut ChildBuilder, rng: &mut impl Rng, total_seconds: f32, size: &Size, sdf: Handle<Shader>, fill: Handle<Shader>, no_delay: bool) {
+fn create_firework(
+    cb: &mut ChildBuilder,
+    rng: &mut impl Rng,
+    total_seconds: f32,
+    size: &Size,
+    sdf: Handle<Shader>,
+    fill: Handle<Shader>,
+    no_delay: bool,
+) {
     let rect = size.get_rect(&ws_core::layout::entities::GameLayoutEntity::Grid, &());
 
-    let delay = if no_delay{ 0.0} else{rng.gen_range(0.0..(total_seconds - 1.0))};
+    let delay = if no_delay {
+        0.0
+    } else {
+        rng.gen_range(0.0..(total_seconds - 1.0))
+    };
     let color = Color::hsl(rng.gen_range(0.0..=360.0), 1.0, 0.75);
 
-    let position = rect.top_left + Vec2{
-        x: rng.gen_range(0.0..=(rect.extents.x.abs())),
-        y: rng.gen_range(rect.extents.y..=0.0),
-    };
+    let position = rect.top_left
+        + Vec2 {
+            x: rng.gen_range(0.0..=(rect.extents.x.abs())),
+            y: rng.gen_range(rect.extents.y..=0.0),
+        };
 
     let shape = SmudShape {
         color,
@@ -62,15 +75,16 @@ fn create_firework(cb: &mut ChildBuilder, rng: &mut impl Rng, total_seconds: f32
         )),
     );
 
-    if delay.is_zero(){
+    if delay.is_zero() {
         cb.spawn(bundle);
-    }else{
-        cb.spawn(ScheduledChange{
+    } else {
+        cb.spawn(ScheduledChange {
             timer: Timer::from_seconds(1.0, TimerMode::Once),
-            boxed_change: Box::new(move |ec| {ec.insert(bundle);})
+            boxed_change: Box::new(move |ec| {
+                ec.insert(bundle);
+            }),
         });
     }
-
 }
 
 impl MavericNode for CongratsView {
@@ -86,8 +100,7 @@ impl MavericNode for CongratsView {
         world: &World,
         entity_commands: &mut bevy::ecs::system::EntityCommands,
     ) {
-
-        if !context.2.is_changed() || context.2.is_added(){
+        if !context.2.is_changed() || context.2.is_added() {
             return;
         }
 
@@ -106,7 +119,15 @@ impl MavericNode for CongratsView {
         entity_commands.with_children(|cb| {
             let mut rng = ThreadRng::default();
             for i in 0..NUM_FIREWORKS {
-                create_firework(cb, &mut rng, SECONDS, size.as_ref(), sdf.clone(), fill.clone(), i <= 1);
+                create_firework(
+                    cb,
+                    &mut rng,
+                    SECONDS,
+                    size.as_ref(),
+                    sdf.clone(),
+                    fill.clone(),
+                    i <= 1,
+                );
             }
         });
     }

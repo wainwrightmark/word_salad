@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use bevy_smud::{param_usage::{ShaderParamUsage, ShaderParameter}};
+use bevy_smud::param_usage::{ShaderParamUsage, ShaderParameter};
 use maveric::{prelude::*, with_bundle::CanWithBundle};
 
 pub struct BackgroundPlugin;
@@ -25,13 +25,12 @@ impl MavericRootChildren for Background {
             return;
         }
 
-
-    const FILL_PARAMETERS: &[ShaderParameter] = &[
-        ShaderParameter::f32(0),
-        ShaderParameter::f32(1),
-        ShaderParameter::f32(2),
-        ShaderParameter::f32(3),
-    ];
+        const FILL_PARAMETERS: &[ShaderParameter] = &[
+            ShaderParameter::f32(0),
+            ShaderParameter::f32(1),
+            ShaderParameter::f32(2),
+            ShaderParameter::f32(3),
+        ];
 
         let size = context.0.as_ref();
 

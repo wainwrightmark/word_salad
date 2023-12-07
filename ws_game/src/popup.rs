@@ -41,8 +41,6 @@ impl MavericRootChildren for PopupStateRoot {
         match context.1.as_ref() {
             PopupState::None => {}
             PopupState::BuyMoreHints => {
-
-
                 commands.add_child(
                     "grey out",
                     shapes::box_node(

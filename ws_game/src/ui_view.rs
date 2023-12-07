@@ -1,10 +1,10 @@
-use std::time::Duration;
-use crate::{prelude::*, z_indices, animated_solutions};
+use crate::{animated_solutions, prelude::*, z_indices};
 use bevy_smud::param_usage::{ShaderParamUsage, ShaderParameter};
 use bevy_smud::{ShapeBundle, SmudShaders, SmudShape};
 use maveric::transition::speed::calculate_speed;
 use maveric::widgets::text2d_node::Text2DNode;
 use maveric::with_bundle::CanWithBundle;
+use std::time::Duration;
 use ws_core::layout::entities::*;
 use ws_core::prelude::*;
 
@@ -169,9 +169,11 @@ impl MavericNode for WordNode {
             let _shape_border_translation = centre.extend(crate::z_indices::WORD_BACKGROUND + 1.0);
 
             let fill_color = node.completion.color();
-            let amount_per_second = if node
-                .completion
-                .is_unstarted() { 100.0 } else { 0.1 };
+            let amount_per_second = if node.completion.is_unstarted() {
+                100.0
+            } else {
+                0.1
+            };
 
             commands.add_child(
                 "shape_fill",
@@ -208,7 +210,6 @@ impl MavericNode for WordNode {
         let translation = self.rect.centre().extend(z_indices::WORD_BACKGROUND + 1.0);
         let rounding = 0.1;
         let height = self.rect.height();
-
 
         let from = 1.5;
         let to = -0.5;

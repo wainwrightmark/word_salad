@@ -143,7 +143,6 @@ pub const VORONOI_SHADER_PATH: &str = "shaders/fill/voronoi_gradient.wgsl";
 pub const GRADIENT_SHADER_PATH: &str = "shaders/fill/gradient.wgsl";
 pub const HORIZONTAL_GRADIENT_SHADER_PATH: &str = "shaders/fill/horizontal_gradient.wgsl";
 
-
 pub fn box_node(
     width: f32,
     height: f32,
@@ -151,8 +150,7 @@ pub fn box_node(
     color: Color,
     rounding: f32,
 ) -> impl MavericNode<Context = ()> {
-    const SDF_PARAMETERS: &[ShaderParameter] =
-        &[ShaderParameter::f32(0), ShaderParameter::f32(1)];
+    const SDF_PARAMETERS: &[ShaderParameter] = &[ShaderParameter::f32(0), ShaderParameter::f32(1)];
 
     let scale = width;
     SmudShapeNode {
@@ -160,14 +158,7 @@ pub fn box_node(
         sfd: BOX_SHADER_PATH,
         fill: SIMPLE_FILL_SHADER_PATH,
         frame_size: (1.0f32).max(height / scale),
-        f_params: [
-            (height / scale),
-            rounding,
-            rounding,
-            0.0,
-            0.0,
-            0.0,
-        ],
+        f_params: [(height / scale), rounding, rounding, 0.0, 0.0, 0.0],
         u_params: Default::default(),
         sdf_param_usage: ShaderParamUsage(SDF_PARAMETERS),
         fill_param_usage: ShaderParamUsage::NO_PARAMS,
@@ -229,8 +220,7 @@ pub fn box_with_border_node(
     rounding: f32,
     border_proportion: f32,
 ) -> impl MavericNode<Context = ()> {
-    const SDF_PARAMETERS: &[ShaderParameter] =
-        &[ShaderParameter::f32(0), ShaderParameter::f32(1)];
+    const SDF_PARAMETERS: &[ShaderParameter] = &[ShaderParameter::f32(0), ShaderParameter::f32(1)];
 
     const FILL_PARAMETERS: &[ShaderParameter] = &[
         ShaderParameter::f32(2),

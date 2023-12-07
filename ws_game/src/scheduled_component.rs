@@ -26,11 +26,11 @@ fn handle_scheduled_components(
             let mut ec = commands.entity(entity);
             ec.remove::<ScheduledChange>();
 
-            let mut f:  Box<dyn FnOnce(&mut EntityCommands) + 'static + Sync + Send>  = Box::new(|_|{});
+            let mut f: Box<dyn FnOnce(&mut EntityCommands) + 'static + Sync + Send> =
+                Box::new(|_| {});
 
             std::mem::swap(&mut f, &mut schedule.boxed_change);
             f(&mut ec);
-
         }
     }
 }

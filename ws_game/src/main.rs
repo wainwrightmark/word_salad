@@ -1,11 +1,11 @@
 pub mod animated_solutions;
 pub mod asynchronous;
-pub mod button;
 pub mod background;
+pub mod button;
 pub mod button_node;
 pub mod chosen_state;
-pub mod completion;
 pub mod compatibility;
+pub mod completion;
 pub mod congrats_view;
 pub mod constants;
 pub mod current_level;
@@ -17,6 +17,7 @@ pub mod logging;
 pub mod menu;
 pub mod menu_layout;
 pub mod popup;
+pub mod scheduled_component;
 pub mod shapes;
 pub mod startup;
 pub mod state;
@@ -28,7 +29,6 @@ pub mod view;
 pub mod wasm;
 pub mod wordline;
 pub mod z_indices;
-pub mod scheduled_component;
 
 fn main() {
     crate::startup::go();
@@ -38,9 +38,9 @@ pub mod prelude {
 
     pub use crate::animated_solutions::*;
     pub use crate::asynchronous::*;
+    pub use crate::background::*;
     pub use crate::button::*;
     pub use crate::button_node::*;
-    pub use crate::background::*;
     pub use crate::chosen_state::*;
     pub use crate::compatibility::*;
     pub use crate::congrats_view::*;
@@ -49,9 +49,11 @@ pub mod prelude {
     pub use crate::game_grid_view::*;
     pub use crate::grid_input::*;
     pub use crate::level_time::*;
+    pub use crate::logging::*;
     pub use crate::menu::*;
     pub use crate::menu_layout::*;
     pub use crate::popup::*;
+    pub use crate::scheduled_component::*;
     pub use crate::shapes::*;
     pub use crate::state::*;
     pub use crate::top_bar_view::*;
@@ -60,8 +62,6 @@ pub mod prelude {
     pub use crate::video::*;
     pub use crate::view::*;
     pub use crate::wordline::*;
-    pub use crate::logging::*;
-    pub use crate::scheduled_component::*;
 
     pub use std::array;
 

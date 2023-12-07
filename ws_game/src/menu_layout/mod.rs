@@ -1,7 +1,7 @@
 pub mod level_group_layout;
 pub mod levels_menu_layout;
-pub mod main_menu_layout;
 pub mod main_menu_back_button;
+pub mod main_menu_layout;
 
 pub const MENU_BUTTON_SINGLE_HEIGHT: f32 = 40.0;
 pub const MENU_BUTTON_DOUBLE_HEIGHT: f32 = 80.0;
