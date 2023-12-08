@@ -16,7 +16,12 @@ pub const CONGRATS_BUTTON: f32 = 50.0;
 pub const CONGRATS_BUTTON_TEXT: f32 = 55.0;
 pub const TEXT_AREA_TEXT: f32 = 50.0;
 
-pub const POPUP_BOX_GREY_OUT: f32 = 390.0;
-pub const POPUP_BOX_BACKGROUND: f32 = 400.0;
-pub const POPUP_BOX_BUTTON: f32 = 450.0;
-pub const POPUP_BOX_TEXT: f32 = 500.0;
+
+pub const TUTORIAL_POPUP_BOX_BACKGROUND: f32 = 400.0;
+pub const TUTORIAL_POPUP_BOX_TEXT: f32 = 450.0;
+
+
+pub const POPUP_BOX_GREY_OUT: f32 = 490.0;
+pub const POPUP_BOX_BACKGROUND: f32 = 500.0;
+pub const POPUP_BOX_BUTTON: f32 = 550.0;
+pub const POPUP_BOX_TEXT: f32 = 560.0;

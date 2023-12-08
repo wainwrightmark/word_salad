@@ -46,8 +46,15 @@ impl MavericRootChildren for ViewRoot {
             } else {
                 // commands.add_child("hints", HintGlows, context);
             }
+
+            if let Some(text) = TutorialText::try_create(&context.1, &context.2){
+                commands.add_child("tutorial", TutorialNode{text}, &context.3);
+            }
+
         } else {
             commands.add_child("menu", Menu, context);
         }
+
+
     }
 }

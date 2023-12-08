@@ -180,7 +180,7 @@ impl MavericNode for GridTile {
             .ignore_context()
             .map_node(|x| &x.centre)
             .insert_with_node(|n| {
-                TransformBundle::from_transform(Transform::from_translation(n.extend(0.0)))
+                TransformBundle::from_transform(Transform::from_translation(n.extend(crate::z_indices::GRID_TILE)))
             })
             .ignore_node()
             .advanced(|args, commands| {

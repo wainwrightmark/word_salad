@@ -22,6 +22,7 @@ pub mod shapes;
 pub mod startup;
 pub mod state;
 pub mod top_bar_view;
+pub mod tutorial;
 pub mod ui_view;
 pub mod video;
 pub mod view;
@@ -63,6 +64,7 @@ pub mod prelude {
     pub use crate::video::*;
     pub use crate::view::*;
     pub use crate::wordline::*;
+    pub use crate::tutorial::*;
     pub use crate::hints_view::*;
 
     pub use std::array;
