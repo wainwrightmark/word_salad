@@ -1,10 +1,19 @@
-NEMUXONIDAROCUBG	11	Argon   	Barium  	Boron   	Bromine 	Carbon  	Curium  	Iron    	Neon    	Radon   	Uranium 	Xenon   
-CALKRDECOSINIMUZ	9	Arsenic 	Calcium 	Cesium  	Iodine  	Lead    	Nickel  	Radium  	Sodium  	Zinc    
-OBAPCNLTUIIEMSHT	6	Cobalt  	Helium  	Lithium 	Platinum	Silicon 	Titanium
-CBGEARONHLIMDCUM	9	Argon   	Barium  	Bromine 	Calcium 	Carbon  	Chlorine	Chromium	Gold    	Iron    
-HSUMELIOANFRGMUC	6	Aluminum	Curium  	Fluorine	Helium  	Magnesium	Sulfur  
-ZABODIRUUONCMISE	11	Barium  	Boron   	Bromine 	Cesium  	Curium  	Iodine  	Iron    	Radium  	Radon   	Sodium  	Zinc    
+TIUMPTNILAROCUBO	8	Barium  	Boron   	Carbon  	Curium  	Iron    	Platinum	Titanium	Uranium
+SULMMIUFNORCEABH	8	Barium  	Bromine 	Chromium	Curium  	Fluorine	Iron    	Sulfur  	Uranium
+AGONRDLCUIEIMSHT	8	Argon   	Cesium  	Gold    	Helium  	Lithium 	Radium  	Radon   	Silicon
+SIV_RELTBANIDOCZ	8	Arsenic 	Carbon  	Cobalt  	Lead    	Radon   	Silicon 	Silver  	Zinc
+HEACKRLDUCIUMNMZ	8	Aluminum	Calcium 	Curium  	Helium  	Lead    	Nickel  	Radium  	Zinc
+MAGLRDENOSICIMUZ	8	Arsenic 	Cesium  	Iodine  	Lead    	Magnesium	Radium  	Sodium  	Zinc
+BRMZAOIUCLCNTHEK	8	Barium  	Bromine 	Calcium 	Chlorine	Cobalt  	Helium  	Nickel  	Zinc
 ALTIDRONYGONHXEB	8	Argon   	Boron   	Gold    	Hydrogen	Neon    	Nitrogen	Oxygen  	Xenon   
-SIV_RELTBANIDOCZ	8	Arsenic 	Carbon  	Cobalt  	Lead    	Radon   	Silicon 	Silver  	Zinc    
-NDKHAELCGONIXYRT	8	Chlorine	Gold    	Iron    	Lead    	Neon    	Nickel  	Nitrogen	Oxygen  
-IODASINRULEUMVFH	8	Helium  	Iodine  	Radium  	Radon   	Silver  	Sodium  	Sulfur  	Uranium 
+RAMMGNDUAOEINESX	8	Argon   	Magnesium	Manganese	Neon    	Radium  	Radon   	Sodium  	Xenon
+ECHTSILIURACMBON	8	Barium  	Calcium 	Carbon  	Cesium  	Cobalt  	Iron    	Lithium 	Silicon
+CFLMUHOUBRINOMAE	8	Boron   	Bromine 	Chlorine	Chromium	Curium  	Fluorine	Iron    	Uranium
+NILGCEDOKASI_RUM	8	Arsenic 	Cesium  	Gold    	Iodine  	Lead    	Nickel  	Radium  	Sodium
+IODASINRULEUMVFH	8	Helium  	Iodine  	Radium  	Radon   	Silver  	Sodium  	Sulfur  	Uranium
+FLUTADONIRGINETS	8	Argon   	Fluorine	Gold    	Iodine  	Iron    	Nitrogen	Radon   	Tungsten
+NEN_XOGILYRTCHDA	8	Argon   	Chlorine	Hydrogen	Iron    	Neon    	Nitrogen	Oxygen  	Xenon
+COBONURAMITLZMUP	8	Aluminum	Barium  	Boron   	Cobalt  	Curium  	Iron    	Platinum	Zinc
+CALKRSECBOINNDMU	8	Arsenic 	Bromine 	Calcium 	Carbon  	Cesium  	Neon    	Nickel  	Sodium
+BOLAXGRDYEONPPNC	8	Argon   	Boron   	Copper  	Gold    	Neon    	Oxygen  	Radon   	Xenon
+NEMNUIOUMRLCBAHF	8	Aluminum	Barium  	Bromine 	Chlorine	Chromium	Fluorine	Iron    	Neon
