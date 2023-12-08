@@ -104,8 +104,12 @@ impl MavericNode for TutorialPopupNode {
                 rect.height(),
                 rect.centre()
                     .extend(crate::z_indices::TUTORIAL_POPUP_BOX_BACKGROUND),
-                ws_core::palette::POPUP_BOX_BACKGROUND.convert_color(),
-                ws_core::palette::POPUP_BOX_BORDER.convert_color(),
+                ws_core::palette::POPUP_BOX_BACKGROUND
+                    .convert_color()
+                    .with_a(0.8),
+                ws_core::palette::POPUP_BOX_BORDER
+                    .convert_color()
+                    .with_a(0.8),
                 0.1,
                 0.01,
             );
@@ -186,7 +190,8 @@ impl TutorialText {
                 2 => Self {
                     top: Some(
                         "\
-                        Find the final three words\n\
+                        Find the final three\n\
+                        Chess Pieces\n\
                         to finish the puzzle",
                     ),
                     bottom: Some(
@@ -198,7 +203,8 @@ impl TutorialText {
                 3 => Self {
                     top: Some(
                         "\
-                        Find the final two words\n\
+                        Find the final two\n\
+                        Chess Pieces\n\
                         to finish the puzzle",
                     ),
                     bottom: Some(
@@ -208,7 +214,10 @@ impl TutorialText {
                     ),
                 },
                 4 => Self {
-                    top: Some("Just one word left!"),
+                    top: Some(
+                        "\
+                        Just one Chess Piece left",
+                    ),
                     bottom: Some(
                         "\
                         Labels are listed alphabetically\n\
@@ -225,9 +234,11 @@ impl TutorialText {
                             Word Salad\n\
                             You've earned two hints",
                         ),
-                        bottom: Some("\
+                        bottom: Some(
+                            "\
                         Hints reveal a letter\n\
-                        from a word of your choosing"),
+                        from a word of your choosing",
+                        ),
                     }
                 }
             }
@@ -235,38 +246,48 @@ impl TutorialText {
             //Planets
             match completed_words {
                 0 => Self {
-                    top: Some("\
+                    top: Some(
+                        "\
                     Your line can cross\n\
                     over itself\n\
-                    Find 'Mars'"),
+                    Find 'Mars'",
+                    ),
                     bottom: None,
                 },
                 1..=3 => Self {
                     top: Some("Find the other planets"),
-                    bottom: Some("\
+                    bottom: Some(
+                        "\
                     To use a hint\n\
-                     click a word you haven't found yet"),
+                     click a word you haven't found yet",
+                    ),
                 },
                 4 => Self {
                     top: Some("Find the other planets"),
-                    bottom: Some("\
+                    bottom: Some(
+                        "\
                     You can hint a word more than once\n\
-                    to reveal more letters"),
+                    to reveal more letters",
+                    ),
                 },
                 5 => Self {
                     top: Some("You're a Word Salad expert"),
-                    bottom: Some("\
+                    bottom: Some(
+                        "\
                     You can hint a word more than once\n\
-                    to reveal more letters"),
+                    to reveal more letters",
+                    ),
                 },
                 _ => {
                     //Completed
-                    Self{
-                        top: Some("\
+                    Self {
+                        top: Some(
+                            "\
                         Want to film yourself playing Word Salad?\n\
                         Go to the menu and turn on Selfie Mode\n\
-                        Then use your device's Screen Recorder"),
-                        bottom: Some("Remember to tag us in any posts")
+                        Then use your device's Screen Recorder",
+                        ),
+                        bottom: Some("Remember to tag us in any posts"),
                     }
                 }
             }
@@ -317,10 +338,9 @@ impl LayoutStructure for TutorialLayoutEntity {
 
 impl LayoutStructureWithFont for TutorialLayoutEntity {
     fn font_size(&self) -> f32 {
-        match self{
+        match self {
             TutorialLayoutEntity::Top => 20.0,
             TutorialLayoutEntity::Bottom => 16.0,
         }
-
     }
 }

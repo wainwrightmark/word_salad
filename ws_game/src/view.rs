@@ -24,10 +24,11 @@ impl MavericRootChildren for ViewRoot {
         commands.add_child("Top Bar", TopBar, context);
 
         if context.5.is_closed() {
-            commands.add_child("ui", UI, context);
+
             let level_complete = context.2.is_level_complete();
 
             commands.add_child("cells", GridTiles { level_complete }, context);
+            commands.add_child("words", WordsNode, context);
 
             let close_to_solution = context
                 .0
@@ -49,6 +50,9 @@ impl MavericRootChildren for ViewRoot {
 
             if let Some(text) = TutorialText::try_create(&context.1, &context.2){
                 commands.add_child("tutorial", TutorialNode{text}, &context.3);
+            }
+            else{
+                commands.add_child("ui", UI, context);
             }
 
         } else {

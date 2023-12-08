@@ -2597,7 +2597,7 @@ dependencies = [
 [[package]]
 name = "maveric"
 version = "0.1.0"
-source = "git+https://github.com/wainwrightmark/maveric#4d6d07a01057b90d7731105b4b1c148456c5d90c"
+source = "git+https://github.com/wainwrightmark/maveric#ef621f34d1d44e57910054502290f0dad0e123a5"
 dependencies = [
  "bevy",
  "maveric-macro",
@@ -2606,7 +2606,7 @@ dependencies = [
 [[package]]
 name = "maveric-macro"
 version = "0.1.0"
-source = "git+https://github.com/wainwrightmark/maveric#4d6d07a01057b90d7731105b4b1c148456c5d90c"
+source = "git+https://github.com/wainwrightmark/maveric#ef621f34d1d44e57910054502290f0dad0e123a5"
 dependencies = [
  "proc-macro2",
  "quote",

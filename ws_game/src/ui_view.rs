@@ -74,7 +74,7 @@ impl MavericNode for UI {
                     &(),
                 );
 
-                commands.add_child("words", WordsNode, context);
+
             });
     }
 }

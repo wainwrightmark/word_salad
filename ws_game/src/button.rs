@@ -166,9 +166,9 @@ impl ButtonInteraction {
             }
 
             ButtonInteraction::MainMenu(MainMenuLayoutEntity::Tutorial) => {
-                current_level.to_level(
+                current_level.to_level_with_index(
                     LevelSequence::Tutorial,
-                    total_completion,
+                    0,
                     found_words,
                     chosen_state,
                 );
