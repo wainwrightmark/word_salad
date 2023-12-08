@@ -11,7 +11,15 @@ use crate::{
 
 #[derive(Debug, PartialEq, Resource, Serialize, Deserialize, Default, Clone, MavericContext)]
 pub struct TotalCompletion {
-    completions: Vec<usize>,
+    completions: Vec<LevelCompletion>,
+}
+
+#[derive(Debug, PartialEq, Resource, Serialize, Deserialize, Default, Clone)]
+pub struct LevelCompletion{
+    #[serde(rename = "t")]
+    pub total_complete: usize,
+    #[serde(rename  = "s")]
+    pub current_index: usize
 }
 
 impl TrackableResource for TotalCompletion {
@@ -32,12 +40,13 @@ impl TotalCompletion {
                 let number_complete = level_index + 1;
                 let sequence_index = *sequence as usize;
                 while total_completion.completions.len() <= sequence_index {
-                    total_completion.completions.push(0);
+                    total_completion.completions.push(LevelCompletion::default());
                 }
 
-                let completion = total_completion.completions[sequence_index];
-                if completion < number_complete {
-                    total_completion.completions[sequence_index] = number_complete;
+                let completion = &mut total_completion.completions[sequence_index];
+                completion.current_index = (completion.current_index + 1) % sequence.level_count();
+                if completion.total_complete < number_complete {
+                    total_completion.completions[sequence_index].total_complete = number_complete;
 
                     if number_complete <= sequence.level_count() {
                         hints_state.hints_remaining += 2;
@@ -52,7 +61,7 @@ impl TotalCompletion {
     pub fn next_level(&self, sequence: LevelSequence) -> usize {
         let index = sequence as usize;
 
-        self.completions.get(index).cloned().unwrap_or_default()
+        self.completions.get(index).cloned().unwrap_or_default().current_index
     }
 
     pub fn get_number_complete(&self, sequence: &LevelSequence) -> usize {
@@ -60,7 +69,7 @@ impl TotalCompletion {
         self.completions
             .get(sequence_index)
             .cloned()
-            .unwrap_or_default()
+            .unwrap_or_default().total_complete
     }
 
     pub fn get_number_complete_group(&self, group: &LevelGroup) -> usize {

@@ -60,7 +60,6 @@ impl CurrentLevel {
         found_words: &mut FoundWordsState,
         chosen_state: &mut ChosenState,
     ) {
-
         *self = CurrentLevel::Fixed {
             level_index,
             sequence,
