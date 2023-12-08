@@ -1,5 +1,6 @@
 use crate::all_levels::*;
 use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumCount, EnumIs, EnumIter};
 use ws_core::DesignedLevel;
@@ -21,10 +22,12 @@ use ws_core::DesignedLevel;
     Deserialize,
     Hash,
     FromPrimitive,
+    Default
 )]
 
 pub enum LevelSequence {
     //DO NOT CHANGE THESE NUMBERS - THEY ARE USED FOR COMPLETION TRACKING
+    #[default]
     Tutorial = 0,
     DailyChallenge = 1,
     EUCapitals = 2,
@@ -46,6 +49,14 @@ pub enum LevelSequence {
 }
 
 impl LevelSequence {
+
+    pub fn get_next(&self)-> Self{
+        let current_index = *self as usize;
+        let next_index = (current_index  + 1 ) % Self::COUNT;
+
+        FromPrimitive::from_usize(next_index).unwrap_or_default()
+    }
+
     pub fn get_level(&self, index: usize) -> &DesignedLevel {
         let levels = self.levels();
 

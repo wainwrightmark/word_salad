@@ -79,6 +79,14 @@ impl CurrentLevel {
             CurrentLevel::Custom(_) => LevelSequence::DailyChallenge,
         };
 
-        self.to_level(sequence, total_completion, found_words, chosen_state);
+        if total_completion.next_level(sequence) == 0{
+            //Switch to the next level sequence
+            self.to_level(sequence.get_next(), total_completion, found_words, chosen_state);
+        }
+        else{
+            self.to_level(sequence, total_completion, found_words, chosen_state);
+        }
+
+
     }
 }
