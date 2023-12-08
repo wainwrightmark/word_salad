@@ -75,14 +75,14 @@ impl MavericNode for Menu {
                 match context.5.as_ref() {
                     MenuState::Closed => {}
                     MenuState::ShowMainMenu => {
-                        add_menu_items::<R, MainMenuLayoutEntity>(&(), commands, size, 100);
+                        add_menu_items::<R, MainMenuLayoutEntity>(&(), commands, size, 0);
                     }
                     MenuState::ChooseLevelsPage => {
                         add_menu_items_with_fn::<R, LevelsMenuLayoutEntity>(
                             &(),
                             commands,
                             size,
-                            200,
+                            1,
                             |x| x.get_text(context.7.as_ref()),
                         );
                     }
@@ -91,7 +91,7 @@ impl MavericNode for Menu {
                             group,
                             commands,
                             size,
-                            300,
+                            2,
                             |x| x.get_text(context.7.as_ref(), group),
                         );
                     }
@@ -109,13 +109,13 @@ fn add_menu_items<
     context: &<L as LayoutStructure>::Context,
     commands: &mut UnorderedChildCommands<R>,
     size: &Size,
-    key_offset: u32,
+    page: u16,
 ) {
     for (index, entity) in L::iter_all(context).enumerate() {
         let font_size = size.font_size::<L>(&entity);
         let rect = size.get_rect(&entity, context);
         commands.add_child(
-            (index as u32) + key_offset,
+            (index as u16, page),
             ButtonNode2d {
                 font_size,
                 rect,
@@ -133,7 +133,7 @@ fn add_menu_items_with_fn<R: MavericRoot, L: LayoutStructureWithFont + Into<Butt
     context: &<L as LayoutStructure>::Context,
     commands: &mut UnorderedChildCommands<R>,
     size: &Size,
-    key_offset: u32,
+    page: u16,
     func: impl Fn(&L) -> String,
 ) {
     for (index, entity) in L::iter_all(context).enumerate() {
@@ -142,7 +142,7 @@ fn add_menu_items_with_fn<R: MavericRoot, L: LayoutStructureWithFont + Into<Butt
 
         let rect = size.get_rect(&entity, context);
         commands.add_child(
-            (index as u32) + key_offset,
+            (index as u16, page),
             ButtonNode2d {
                 font_size,
                 rect,

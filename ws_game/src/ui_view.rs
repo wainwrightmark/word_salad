@@ -4,6 +4,7 @@ use bevy_smud::{ShapeBundle, SmudShaders, SmudShape};
 use maveric::transition::speed::calculate_speed;
 use maveric::widgets::text2d_node::Text2DNode;
 use maveric::with_bundle::CanWithBundle;
+use std::sync::Arc;
 use std::time::Duration;
 use ws_core::layout::entities::*;
 use ws_core::prelude::*;
@@ -102,8 +103,12 @@ impl MavericNode for WordsNode {
                     let tile = LayoutWordTile(index);
                     let font_size = context.3.font_size::<LayoutWordTile>(&tile);
                     let rect = context.3.get_rect(&tile, words);
+                    let level_index = match context.1.as_ref(){
+                        CurrentLevel::Fixed { level_index, .. } => *level_index as u16,
+                        CurrentLevel::Custom(_) => 0u16,
+                    };
                     commands.add_child(
-                        index as u32,
+                        (index as u16, level_index),
                         WordNode {
                             word: word.clone(),
                             tile,
