@@ -173,7 +173,7 @@ async fn disable_back_async<'a>(_writer: async_event_writer::AsyncEventWriter<Ap
         info!("Disabling back");
         let result = capacitor_bindings::app::App::add_back_button_listener(move |_| {
             //info!("Sending back event");
-            writer
+            _writer
                 .send_blocking(AppLifeCycleEvent::BackPressed)
                 .unwrap();
         })
@@ -202,7 +202,7 @@ async fn on_resume(_writer: async_event_writer::AsyncEventWriter<AppLifeCycleEve
     {
         //info!("Setting on_resume");
         let result = capacitor_bindings::app::App::add_state_change_listener(move |x| {
-            writer
+            _writer
                 .send_blocking(AppLifeCycleEvent::StateChange {
                     is_active: x.is_active,
                 })
