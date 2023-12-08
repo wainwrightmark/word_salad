@@ -22,6 +22,9 @@ pub const WORD_MAIN_PAD: f32 = 10.;
 pub const WORD_CROSS_PAD: f32 = 10.;
 pub const WORD_ROW_PAD: f32 = 20.;
 
+
+/// Extra top offset while streaming.
+pub const STREAMING_TOP_OFFSET:f32 = 100.0;
 pub const CONGRATS_ENTITY_HEIGHT: f32 = 40.0;
 pub const CONGRATS_ENTITY_WIDTH: f32 = 80.0;
 

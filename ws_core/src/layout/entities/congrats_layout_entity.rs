@@ -21,8 +21,11 @@ impl CongratsLayoutEntity {
     }
 }
 
+#[derive(Debug, PartialEq)]
+pub struct SelfieMode(pub bool);
+
 impl LayoutStructure for CongratsLayoutEntity {
-    type Context = ();
+    type Context = SelfieMode;
     type Iterator = <Self as IntoEnumIterator>::Iterator;
 
     fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
@@ -41,14 +44,20 @@ impl LayoutStructure for CongratsLayoutEntity {
         }
     }
 
-    fn location(&self, _context: &Self::Context) -> Vec2 {
+    fn location(&self, context: &Self::Context) -> Vec2 {
+
+        let top_offset = if context.0{
+            TEXT_AREA_HEIGHT + STREAMING_TOP_OFFSET
+        }else{
+            TEXT_AREA_HEIGHT
+        };
 
         match self{
             CongratsLayoutEntity::HintsUsed => {
                 Vec2 {
                     x: (IDEAL_WIDTH - CONGRATS_ENTITY_WIDTH) / 2.,
                     y: TOP_BAR_ICON_SIZE
-                        + TEXT_AREA_HEIGHT
+                        + top_offset
                         + Spacing::Centre.apply(
                             GRID_SIZE,
                             CONGRATS_ENTITY_HEIGHT * 1.2,
@@ -63,7 +72,7 @@ impl LayoutStructure for CongratsLayoutEntity {
                     Vec2{
                     x: Spacing::SpaceAround.apply(GRID_SIZE, CONGRATS_ENTITY_WIDTH * 1.2,  num_children, self.index() - 1),
                     y: TOP_BAR_ICON_SIZE
-                        + TEXT_AREA_HEIGHT
+                        + top_offset
                         + Spacing::Centre.apply(
                             GRID_SIZE,
                             CONGRATS_ENTITY_HEIGHT * 1.2,

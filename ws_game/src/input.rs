@@ -51,6 +51,7 @@ impl InteractionEntity {
         menu_state: &MenuState,
         popup_state: &PopupState,
         current_level: &CurrentLevel,
+        video_resource: &VideoResource,
         is_level_complete: bool,
         grid_tolerance: Option<f32>,
     ) -> Option<Self> {
@@ -81,7 +82,7 @@ impl InteractionEntity {
         match menu_state {
             MenuState::Closed => {
                 if is_level_complete {
-                    return Self::try_get_button::<CongratsLayoutEntity>(position, size, &());
+                    return Self::try_get_button::<CongratsLayoutEntity>(position, size, &SelfieMode(video_resource.is_selfie_mode));
                 }
 
                 let Some(layout_entity) = size.try_pick::<GameLayoutEntity>(*position, &()) else {
@@ -152,7 +153,7 @@ impl InputType {
         pressed_button: &mut ResMut<PressedButton>,
         hint_state: &mut ResMut<HintState>,
         popup_state: &mut ResMut<PopupState>,
-        video_state: &VideoResource,
+        video_resource: &VideoResource,
         video_events: &AsyncEventWriter<VideoEvent>,
     ) {
         let is_level_complete = found_words.is_level_complete();
@@ -165,6 +166,7 @@ impl InputType {
                     menu_state,
                     popup_state,
                     current_level,
+                    video_resource,
                     is_level_complete,
                     None,
                 ) {
@@ -179,7 +181,7 @@ impl InputType {
                                     hint_state,
                                     popup_state,
                                     total_completion,
-                                    video_state,
+                                    video_resource,
                                     video_events,
                                 );
                             }
@@ -207,6 +209,7 @@ impl InputType {
                     menu_state,
                     popup_state,
                     current_level,
+                    video_resource,
                     is_level_complete,
                     Some(MOVE_TOLERANCE),
                 ) {
@@ -233,6 +236,7 @@ impl InputType {
                     menu_state,
                     popup_state,
                     current_level,
+                    video_resource,
                     is_level_complete,
                     None,
                 ) {
@@ -247,7 +251,7 @@ impl InputType {
                                     hint_state,
                                     popup_state,
                                     total_completion,
-                                    video_state,
+                                    video_resource,
                                     video_events,
                                 );
                             }

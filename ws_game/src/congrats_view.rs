@@ -143,6 +143,7 @@ impl MavericNode for CongratsView {
                     1 => "1 hint used".to_string(),
                     n => format!("{n} hints used"),
                 };
+                let selfie_mode = SelfieMode(context.8.is_selfie_mode);
 
                 //let full_rect = size.get_rect(GameLayoutEntity::, context)
 
@@ -157,7 +158,7 @@ impl MavericNode for CongratsView {
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     }
                     .with_bundle(Transform::from_translation(
-                        size.get_rect(&CongratsLayoutEntity::HintsUsed, &())
+                        size.get_rect(&CongratsLayoutEntity::HintsUsed, &selfie_mode)
                             .centre()
                             .extend(crate::z_indices::CONGRATS_BUTTON),
                     )),
@@ -169,7 +170,7 @@ impl MavericNode for CongratsView {
                     ButtonNode2d {
                         text: "Next",
                         font_size: size.font_size(&CongratsLayoutEntity::NextButton),
-                        rect: size.get_rect(&CongratsLayoutEntity::NextButton, &()),
+                        rect: size.get_rect(&CongratsLayoutEntity::NextButton, &selfie_mode),
                         interaction: ButtonInteraction::Congrats(CongratsLayoutEntity::NextButton),
                         text_color: palette::CONGRATS_BUTTON_TEXT.convert_color(),
                         fill_color: palette::CONGRATS_BUTTON_FILL.convert_color(),
@@ -184,7 +185,7 @@ impl MavericNode for CongratsView {
                         ButtonNode2d {
                             text: "Share",
                             font_size: size.font_size(&CongratsLayoutEntity::ShareButton),
-                            rect: size.get_rect(&CongratsLayoutEntity::ShareButton, &()),
+                            rect: size.get_rect(&CongratsLayoutEntity::ShareButton, &selfie_mode),
                             interaction: ButtonInteraction::Congrats(
                                 CongratsLayoutEntity::ShareButton,
                             ),

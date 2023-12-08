@@ -4,7 +4,6 @@ use bevy_smud::{ShapeBundle, SmudShaders, SmudShape};
 use maveric::transition::speed::calculate_speed;
 use maveric::widgets::text2d_node::Text2DNode;
 use maveric::with_bundle::CanWithBundle;
-use std::sync::Arc;
 use std::time::Duration;
 use ws_core::layout::entities::*;
 use ws_core::prelude::*;
