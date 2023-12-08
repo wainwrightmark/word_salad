@@ -50,6 +50,24 @@ impl MavericNode for TutorialNode {
                     &(),
                 );
             }
+             if let Some(text) = node.text.middle {
+                let rect = context.get_rect(&TutorialLayoutEntity::Middle, &());
+                let font_size = context.font_size(&TutorialLayoutEntity::Middle);
+                commands.add_child(
+                    "middle",
+                    TutorialPopupNode {
+                        text,
+                        rect,
+                        font_size,
+                    }
+                    .with_transition_in::<TransformScaleLens>(
+                        Vec3::ZERO,
+                        Vec3::ONE,
+                        Duration::from_secs_f32(0.5),
+                    ),
+                    &(),
+                );
+            }
             if let Some(text) = node.text.bottom {
                 let rect = context.get_rect(&TutorialLayoutEntity::Bottom, &());
                 let font_size = context.font_size(&TutorialLayoutEntity::Bottom);
@@ -137,6 +155,7 @@ impl MavericNode for TutorialPopupNode {
 #[derive(Debug, PartialEq)]
 pub struct TutorialText {
     top: Option<&'static str>,
+    middle: Option<&'static str>,
     bottom: Option<&'static str>,
 }
 
@@ -173,6 +192,7 @@ impl TutorialText {
                         Tap or swipe adjacent tiles\n\
                         to make the word",
                     ),
+                    middle: None,
                     bottom: None,
                 },
                 1 => Self {
@@ -181,6 +201,7 @@ impl TutorialText {
                         Words can be made diagonally\n\
                         Like 'Queen'",
                     ),
+                    middle: None,
                     bottom: Some(
                         "\
                         These labels show the word lengths\n\
@@ -194,6 +215,7 @@ impl TutorialText {
                         Chess Pieces\n\
                         to finish the puzzle",
                     ),
+                    middle: None,
                     bottom: Some(
                         "\
                         Labels are listed alphabetically\n\
@@ -207,6 +229,7 @@ impl TutorialText {
                         Chess Pieces\n\
                         to finish the puzzle",
                     ),
+                    middle: None,
                     bottom: Some(
                         "\
                         Labels are listed alphabetically\n\
@@ -218,6 +241,7 @@ impl TutorialText {
                         "\
                         Just one Chess Piece left",
                     ),
+                    middle: None,
                     bottom: Some(
                         "\
                         Labels are listed alphabetically\n\
@@ -228,17 +252,16 @@ impl TutorialText {
                 _ => {
                     //Completed
                     Self {
-                        top: Some(
+                        top: None,
+                        middle: Some(
                             "\
                             You completed your first\n\
                             Word Salad\n\
-                            You've earned two hints",
+                            You've earned two hints\n\
+                            Hints reveal a letter\n\
+                            from a word of your choosing",
                         ),
-                        bottom: Some(
-                            "\
-                        Hints reveal a letter\n\
-                        from a word of your choosing",
-                        ),
+                        bottom: None,
                     }
                 }
             }
@@ -252,10 +275,12 @@ impl TutorialText {
                     over itself\n\
                     Find 'Mars'",
                     ),
+                    middle: None,
                     bottom: None,
                 },
                 1..=3 => Self {
                     top: Some("Find the other planets"),
+                    middle: None,
                     bottom: Some(
                         "\
                     To use a hint\n\
@@ -264,6 +289,7 @@ impl TutorialText {
                 },
                 4 => Self {
                     top: Some("Find the other planets"),
+                    middle: None,
                     bottom: Some(
                         "\
                     You can hint a word more than once\n\
@@ -272,6 +298,7 @@ impl TutorialText {
                 },
                 5 => Self {
                     top: Some("You're a Word Salad expert"),
+                    middle: None,
                     bottom: Some(
                         "\
                     You can hint a word more than once\n\
@@ -281,13 +308,17 @@ impl TutorialText {
                 _ => {
                     //Completed
                     Self {
-                        top: Some(
+                        top: None,
+                        middle: Some(
                             "\
-                        Want to film yourself playing Word Salad?\n\
-                        Go to the menu and turn on Selfie Mode\n\
-                        Then use your device's Screen Recorder",
+                        Wanna film yourself playing?\n\
+                        Use Selfie Mode in the menu\n\
+                        Then use your device's\n\
+                        Screen Recorder\n\
+                        Remember to tag us!",
                         ),
-                        bottom: Some("Remember to tag us in any posts"),
+
+                        bottom: None,
                     }
                 }
             }
@@ -300,6 +331,7 @@ impl TutorialText {
 #[derive(Debug, EnumCount, EnumIter, PartialEq, Clone, Copy)]
 enum TutorialLayoutEntity {
     Top,
+    Middle,
     Bottom,
 }
 
@@ -320,6 +352,7 @@ impl LayoutStructure for TutorialLayoutEntity {
     fn size(&self, _context: &Self::Context) -> bevy::prelude::Vec2 {
         match self {
             TutorialLayoutEntity::Top => Vec2 { x: 300.0, y: 100.0 },
+            TutorialLayoutEntity::Middle => Vec2 { x: 300.0, y: 140.0 },
             TutorialLayoutEntity::Bottom => Vec2 { x: 300.0, y: 40.0 },
         }
     }
@@ -327,6 +360,7 @@ impl LayoutStructure for TutorialLayoutEntity {
     fn location(&self, _context: &Self::Context) -> bevy::prelude::Vec2 {
         match self {
             TutorialLayoutEntity::Top => Vec2 { x: 10.0, y: 50.0 },
+            TutorialLayoutEntity::Middle => Vec2 { x: 10.0, y: 50.0 },
             TutorialLayoutEntity::Bottom => Vec2 { x: 10.0, y: 528.0 },
         }
     }
@@ -340,6 +374,7 @@ impl LayoutStructureWithFont for TutorialLayoutEntity {
     fn font_size(&self) -> f32 {
         match self {
             TutorialLayoutEntity::Top => 20.0,
+            TutorialLayoutEntity::Middle => 20.0,
             TutorialLayoutEntity::Bottom => 16.0,
         }
     }
