@@ -45,7 +45,7 @@ impl Plugin for ShapesPlugin {
 #[derive(Debug, PartialEq)]
 pub struct SmudShapeNode {
     pub color: Color,
-    pub sfd: &'static str,
+    pub sdf: &'static str,
     pub fill: &'static str,
     pub frame_size: f32,
     pub f_params: [f32; SHAPE_F_PARAMS],
@@ -69,7 +69,7 @@ impl MavericNode for SmudShapeNode {
                 .expect("SmudShapeNode should be able to get asset server");
 
             let node = args.node;
-            let sdf = asset_server.load(node.sfd);
+            let sdf = asset_server.load(node.sdf);
             let fill = asset_server.load(node.fill);
 
             let shaders = SmudShaders::<SHAPE_F_PARAMS, SHAPE_U_PARAMS> {
@@ -155,7 +155,7 @@ pub fn box_node(
     let scale = width;
     SmudShapeNode {
         color,
-        sfd: BOX_SHADER_PATH,
+        sdf: BOX_SHADER_PATH,
         fill: SIMPLE_FILL_SHADER_PATH,
         frame_size: (1.0f32).max(height / scale),
         f_params: [(height / scale), rounding, rounding, 0.0, 0.0, 0.0],
@@ -188,7 +188,7 @@ pub fn box_border_node(
     let scale = width.max(height);
     SmudShapeNode {
         color,
-        sfd: BOX_BORDER_SHADER_PATH,
+        sdf: BOX_BORDER_SHADER_PATH,
         fill: SIMPLE_FILL_SHADER_PATH,
         frame_size: 1.0,
 
@@ -232,7 +232,7 @@ pub fn box_with_border_node(
     let scale = width;
     SmudShapeNode {
         color,
-        sfd: BOX_SHADER_PATH,
+        sdf: BOX_SHADER_PATH,
         fill: FILL_WITH_OUTLINE_SHADER_PATH,
         frame_size: (1.0f32).max(height / scale),
 

@@ -37,7 +37,7 @@ impl MavericRootChildren for Background {
         let scale = size.scaled_width.max(size.scaled_height);
         let node = SmudShapeNode {
             color: palette::BACKGROUND_COLOR_1.convert_color(),
-            sfd: CIRCLE_SHADER_PATH,
+            sdf: CIRCLE_SHADER_PATH,
             fill: GRADIENT_SHADER_PATH,
             frame_size: 1.0,
             f_params: [

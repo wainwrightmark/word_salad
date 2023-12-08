@@ -237,6 +237,7 @@ impl ButtonInteraction {
             }
             ButtonInteraction::BuyMoreHints => {
                 hint_state.hints_remaining += 3; //TODO actually make them buy them!
+                hint_state.total_bought_hints += 3;
                 *popup_state.as_mut() = PopupState::None;
             }
             ButtonInteraction::ClosePopups => {

@@ -74,11 +74,11 @@ pub fn go() {
 
     app.add_systems(PostStartup, choose_level_on_game_load);
 
-    #[cfg(feature = "steam")]
+    #[cfg(not(target_arch = "wasm32"))]
     {
         app.insert_resource(bevy_pkv::PkvStore::new_in_dir("saves"));
     }
-    #[cfg(not(feature = "steam"))]
+    #[cfg(target_arch = "wasm32")]
     {
         app.insert_resource(bevy_pkv::PkvStore::new("bleppo", "word_salad"));
     }

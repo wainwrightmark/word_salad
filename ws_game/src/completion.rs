@@ -41,6 +41,7 @@ impl TotalCompletion {
 
                     if number_complete <= sequence.level_count() {
                         hints_state.hints_remaining += 2;
+                        hints_state.total_earned_hints += 2;
                     }
                 }
             }

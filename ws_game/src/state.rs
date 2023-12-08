@@ -26,14 +26,20 @@ impl Plugin for StatePlugin {
     }
 }
 
-#[derive(Debug, Clone, Resource, Serialize, Deserialize, MavericContext)]
+#[derive(Debug, Clone, Resource, Serialize, Deserialize, MavericContext, PartialEq)]
 pub struct HintState {
     pub hints_remaining: usize,
+    pub total_earned_hints: usize,
+    pub total_bought_hints: usize,
 }
 
 impl Default for HintState {
     fn default() -> Self {
-        Self { hints_remaining: 3 }
+        Self {
+            hints_remaining: 3,
+            total_earned_hints: 0,
+            total_bought_hints: 0,
+        }
     }
 }
 
@@ -83,10 +89,6 @@ impl FoundWordsState {
         self.hint_set::<true>(level, solution)
     }
 
-    // pub fn auto_hint_set(&self, level: &DesignedLevel, solution: &Solution) -> GridSet {
-    //     self.hint_set::<false>(level, solution)
-    // }
-
     fn hint_set<const MANUAL: bool>(&self, level: &DesignedLevel, solution: &Solution) -> GridSet {
         let mut set = GridSet::default();
         let adjusted_grid = self.adjusted_grid(level);
@@ -126,18 +128,6 @@ impl FoundWordsState {
                         }
                     }
                 }
-
-                // if hints.get() <= solution.len() {
-                //     // if let Some(solution) = word.find_solution(&adjusted_grid) {
-                //     //     if solution.starts_with(solution.as_slice()) {
-                //     //         if let Some(tile) = solution.get(solution.len()) {
-                //     //             set.set_bit(tile, true)
-                //     //         }
-                //     //     }
-                //     // }
-                // }else{
-
-                // }
             }
         }
         set
@@ -208,8 +198,7 @@ impl FoundWordsState {
                 chosen_state.solution.clear();
                 chosen_state.is_just_finished = false;
             }
-        }
-        else {
+        } else {
             warn!("Could not find solution during hint");
         }
 
@@ -644,6 +633,8 @@ pub mod tests {
         let mut found_words = FoundWordsState::new_from_level(&current_level);
         let mut hint_state = HintState {
             hints_remaining: 10,
+            total_earned_hints: 0,
+            total_bought_hints: 0,
         };
         let mut chosen_state = ChosenState::default();
         let hinted =

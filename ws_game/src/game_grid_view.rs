@@ -240,7 +240,7 @@ impl MavericNode for GridTile {
                     "sparkle",
                     SmudShapeNode {
                         color: Color::PINK,
-                        sfd: ANYWHERE_SHADER_PATH,
+                        sdf: ANYWHERE_SHADER_PATH,
                         fill: SPARKLE_SHADER_PATH,
                         frame_size: 1.0,
                         f_params: [p0, p1, seed, 0.0, 0.0, 0.0],
