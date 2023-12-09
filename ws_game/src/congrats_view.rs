@@ -100,7 +100,7 @@ impl MavericNode for CongratsView {
         world: &World,
         entity_commands: &mut bevy::ecs::system::EntityCommands,
     ) {
-        if !context.2.is_changed() {
+        if !context.2.is_changed() || context.2.is_added() {
             return;
         }
 
