@@ -29,3 +29,4 @@ indicatif-log-bridge = "0.2.2"
 
 [dev-dependencies]
 test-case = "3.2.1"
+insta = "1"

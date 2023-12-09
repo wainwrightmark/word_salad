@@ -1,15 +1,19 @@
-use std::{collections::{BTreeMap, HashSet}, cmp::Reverse};
+use std::{
+    cmp::Reverse,
+    collections::{BTreeMap, HashSet},
+};
 
 use itertools::Itertools;
 use ws_core::{
     finder::{helpers::FinderWord, node::GridResult},
     CharsArray,
 };
+
+use crate::cluster_ordering;
 type WordsSet = geometrid::tile_set::TileSet128<128, 1, 128>;
 
-
 #[derive(Debug, Clone, Copy, Eq, PartialEq, PartialOrd, Ord)]
-pub struct ClusterScore{
+pub struct ClusterScore {
     /// The maximum overlap between two elements.
     /// Lower is better
     pub max_overlap: std::cmp::Reverse<u32>,
@@ -18,17 +22,17 @@ pub struct ClusterScore{
     pub total_overlap: std::cmp::Reverse<u32>,
     /// The total sum of the item count of all elements
     /// Higher is better
-    pub total_element_items: u32
+    pub total_element_items: u32,
+
+
 }
 
-impl ClusterScore
-{
-
-    pub fn increment(&self, original_cluster: &[WordsSet], new_item: &WordsSet)-> Self{
+impl ClusterScore {
+    pub fn increment(&self, original_cluster: &[WordsSet], new_item: &WordsSet) -> Self {
         let mut result = self.clone();
         result.total_element_items += new_item.count();
 
-        for item in original_cluster{
+        for item in original_cluster {
             let overlap = item.intersect(new_item).count();
             result.max_overlap = result.max_overlap.max(Reverse(overlap));
             result.total_overlap = Reverse(result.total_overlap.0 + overlap);
@@ -37,52 +41,81 @@ impl ClusterScore
         result
     }
 
-
-    pub fn calculate<'a>(cluster: &'a [WordsSet])-> Self{
-
-        let total_element_items = cluster.iter().map(|x|x.count()).sum();
+    pub fn calculate<'a>(cluster: &'a [WordsSet]) -> Self {
+        let total_element_items = cluster.iter().map(|x| x.count()).sum();
         let mut max_overlap = 0;
         let mut total_overlap = 0;
 
-        for (a,b) in cluster.iter().tuple_combinations(){
+        for (a, b) in cluster.iter().tuple_combinations() {
             let overlap = a.intersect(&b).count();
             total_overlap += overlap;
             max_overlap = max_overlap.max(overlap);
         }
 
-        ClusterScore { max_overlap: Reverse(max_overlap), total_overlap : Reverse(total_overlap), total_element_items }
+        ClusterScore {
+            max_overlap: Reverse(max_overlap),
+            total_overlap: Reverse(total_overlap),
+            total_element_items,
+        }
     }
 }
 
-impl<'a> From<&'a  [WordsSet]> for ClusterScore{
+impl<'a> From<&'a [WordsSet]> for ClusterScore {
     fn from(cluster: &'a [WordsSet]) -> Self {
-        let total_element_items = cluster.iter().map(|x|x.count()).sum();
+        let total_element_items = cluster.iter().map(|x| x.count()).sum();
         let mut max_overlap = 0;
         let mut total_overlap = 0;
 
-        for (a,b) in cluster.iter().tuple_combinations(){
+        for (a, b) in cluster.iter().tuple_combinations() {
             let overlap = a.intersect(b).count();
             total_overlap += overlap;
             max_overlap = max_overlap.max(overlap);
         }
 
-        ClusterScore { max_overlap: Reverse(max_overlap), total_overlap : Reverse(total_overlap), total_element_items }
+        ClusterScore {
+            max_overlap: Reverse(max_overlap),
+            total_overlap: Reverse(total_overlap),
+            total_element_items,
+        }
     }
 }
+#[derive(Debug, Clone, Copy,  PartialEq)]
+pub struct AdjacencyScore{
+    pub max_adjacent: u32,
+    pub mean_adjacency: f32
+}
 
+impl AdjacencyScore{
+    pub fn calculate(slice: &[WordsSet])-> Self{
+        let mut max = 0u32;
+        let mut total = 0f32;
+        let mut count = 0f32;
+        for (a,b) in slice.iter().tuple_windows(){
+            count += 1.0;
+            let overlap = a.intersect(b).count();
+            max  = max.max(overlap);
+            total += overlap as f32;
+        }
+
+
+
+        Self { max_adjacent: max, mean_adjacency: total / count }
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct Cluster {
     pub grids: Vec<GridResult>,
-    pub score: ClusterScore
-    //pub score: f32,
+    pub score: ClusterScore,
+    pub adjacency_score: AdjacencyScore
 }
 
 impl Cluster {
-    pub fn new(points: &[WordsSet], map: &BTreeMap<WordsSet, GridResult>) -> Self {
-        //let distance: u32 = calculate_set_distance(points);
+    pub fn new(points: Vec<WordsSet>, map: &BTreeMap<WordsSet, GridResult>) -> Self {
+        let points = cluster_ordering::order_cluster(points);
+        let score: ClusterScore = ClusterScore::calculate(points.as_slice());
+        let adjacency_score = AdjacencyScore::calculate(&points.as_slice());
 
-        let score = ClusterScore::calculate(points);
 
         let grids = points
             .iter()
@@ -90,26 +123,32 @@ impl Cluster {
             .cloned()
             .collect_vec();
 
-        Self { grids, score }
+        Self { grids, score, adjacency_score }
     }
-
-
 }
 
 impl std::fmt::Display for Cluster {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let grid_words = self.grids.iter().join("\n");
 
-
-        let average_overlap = self.score.total_overlap.0 as f32 / (2.0 * (binomial_coefficient(self.grids.len(), 2) as f32));
-        let distinct_items = self.grids.iter().flat_map(|x|x.words.iter()).sorted().dedup().count();
+        let average_overlap = self.score.total_overlap.0 as f32
+            / (2.0 * (binomial_coefficient(self.grids.len(), 2) as f32));
+        let distinct_items = self
+            .grids
+            .iter()
+            .flat_map(|x| x.words.iter())
+            .sorted()
+            .dedup()
+            .count();
 
         write!(
             f,
-            "Grids: {l:2}\tMax overlap: {max_overlap:2}\tMean overlap: {average_overlap:2.2}\tMean items: {mean_items:2.2}\tDistinct items: {distinct_items:3}\n{grid_words}",
+            "Grids: {l:2}\tMax overlap: {max_overlap:2}\tMean overlap: {average_overlap:2.2}\tMean items: {mean_items:2.2}\tDistinct items: {distinct_items:3}\tMax adjacent {max_adj:2}\tMean adjacent {mean_adj:2.2}\n{grid_words}",
             l = self.grids.len(),
             max_overlap = self.score.max_overlap.0,
-            mean_items = self.score.total_element_items as f32 / self.grids.len() as f32
+            mean_items = self.score.total_element_items as f32 / self.grids.len() as f32,
+            max_adj = self.adjacency_score.max_adjacent,
+            mean_adj = self.adjacency_score.mean_adjacency,
         )
     }
 }
@@ -147,14 +186,14 @@ pub fn cluster_words(
         .iter()
         .cloned()
         .tuple_combinations()
-        .max_by_key(|(a, b)|ClusterScore::calculate(&[*a,*b]))
+        .max_by_key(|(a, b)| ClusterScore::calculate(&[*a, *b]))
     else {
         println!("Must be at least two groups to find clusters");
         return results;
     };
 
     let mut chosen_points: Vec<WordsSet> = vec![point1, point2];
-    results.push(Cluster::new(&chosen_points, &map));
+    results.push(Cluster::new(chosen_points.clone(), &map));
 
     while chosen_points.len() < clusters {
         let point_to_add = find_best_point_to_add(chosen_points.as_slice(), all_points.as_slice());
@@ -185,9 +224,7 @@ pub fn cluster_words(
                 break 'inner;
             }
         }
-        //println!("{swaps} swaps");
-        //report_set(&chosen_points, &map);
-        results.push(Cluster::new(&chosen_points, &map));
+        results.push(Cluster::new(chosen_points.clone(), &map));
     }
 
     results
@@ -201,28 +238,13 @@ fn binomial_coefficient(n: usize, k: usize) -> usize {
     res
 }
 
-// fn calculate_distance(set1: WordsSet, set2: WordsSet) -> u32 {
-//     let unique_elements = std::ops::BitXor::bitxor(set1.into_inner(), set2.into_inner());
-//     unique_elements.count_ones()
-// }
-
-// fn calculate_set_distance(points: &[WordsSet]) -> u32 {
-//     points
-//         .iter()
-//         .tuple_combinations()
-//         .map(|(a, b)| calculate_distance(*a, *b))
-//         .sum()
-// }
-
 fn find_best_point_to_add(chosen_points: &[WordsSet], all_points: &[WordsSet]) -> WordsSet {
     let original_score = ClusterScore::calculate(chosen_points);
 
     *all_points
         .iter()
         .filter(|p| !chosen_points.contains(p))
-        .max_by_key(|point| {
-            original_score.increment(chosen_points, &point)
-        })
+        .max_by_key(|point| original_score.increment(chosen_points, &point))
         .unwrap()
 }
 
@@ -262,10 +284,8 @@ pub mod test {
         let clusters = cluster_words(grs, &all_words, 10);
 
         assert_eq!(clusters.len(), 9);
-
-        for cluster in clusters {
-            println!("{cluster}");
-        }
+        let text = clusters.into_iter().join("\n");
+        insta::assert_snapshot!(text);
     }
 
     fn get_words_vectors(file: &str, min_words: usize) -> Vec<Vec<FinderWord>> {
@@ -282,27 +302,3 @@ pub mod test {
             .collect_vec()
     }
 }
-
-// fn calculate_total_cost(centroid1 : WordsSet, centroids: &[WordsSet], all_points: &[WordsSet]) -> u32 {
-//     let total: u32 = all_points
-//         .iter()
-//         .map(|point| {
-//             centroids
-//                 .iter().chain([centroid1])
-//                 .map(|centroid| calculate_distance(point, centroid))
-//                 .min()
-//                 .unwrap_or_default()
-//         })
-//         .sum();
-//     total
-// }
-
-// fn find_new_centroid(centroids: &[WordsSet], all_points: &[WordsSet]) -> WordsSet {
-//     all_points
-//         .iter()
-//         .filter(|point| !centroids.contains(point))
-//         .min_by_key(|new_centroid| {
-
-//             calculate_total_cost(new_centroid, centroids, all_points);
-//         })
-// }

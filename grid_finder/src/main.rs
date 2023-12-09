@@ -1,4 +1,5 @@
 pub mod clustering;
+pub mod cluster_ordering;
 pub mod combinations;
 pub mod search;
 
@@ -200,7 +201,7 @@ fn do_finder(options: Options) {
             .dedup()
             .collect_vec();
 
-        let clusters = cluster_words(grids, &all_words, options.max_clusters as usize);
+        let clusters: Vec<clustering::Cluster> = cluster_words(grids, &all_words, options.max_clusters as usize);
 
         let clusters_write_path = format!("clusters/{file_name}",);
         let clusters_write_path = Path::new(clusters_write_path.as_str());

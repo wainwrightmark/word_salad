@@ -2098,6 +2098,7 @@ dependencies = [
  "geometrid",
  "indicatif",
  "indicatif-log-bridge",
+ "insta",
  "itertools 0.12.0",
  "lazy_static",
  "log",
