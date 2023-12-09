@@ -1,9 +1,4 @@
 #define_import_path shaders::box
-
-// params.x is width ratio
-// params.y is height ratio
-// params.z is rounding ratio for all four corners
-// params.w is unused
 fn sdf(p: vec2<f32>, height: f32, rounding: f32) -> f32 {
     return sd_rounded_box(p, vec2<f32>(1.0, height), vec4<f32>(rounding));
 }

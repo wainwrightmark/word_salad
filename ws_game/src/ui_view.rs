@@ -34,11 +34,12 @@ impl MavericNode for UI {
                     LevelTime::Finished { total_seconds } => format_seconds(*total_seconds),
                 };
 
+                let timer_font_size = size.font_size(&GameLayoutEntity::Timer);
                 commands.add_child(
                     "timer",
                     Text2DNode {
                         text: time_text,
-                        font_size: size.font_size::<LayoutTextItem>(&LayoutTextItem::Timer),
+                        font_size: timer_font_size,
                         color: palette::BUTTON_TEXT_COLOR.convert_color(),
                         font: TITLE_FONT_PATH,
                         alignment: TextAlignment::Center,
@@ -46,29 +47,31 @@ impl MavericNode for UI {
                     }
                     .with_bundle((
                         Transform::from_translation(
-                            size.get_rect(&LayoutTextItem::Timer, &())
+                            size.get_rect(&GameLayoutEntity::Timer, &())
                                 .centre()
-                                .extend(crate::z_indices::TEXT_AREA_TEXT),
+                                .extend(crate::z_indices::TIMER),
                         ),
                         TimeCounterMarker,
                     )),
                     &(),
                 );
 
+                let theme_font_size = size.font_size(&GameLayoutEntity::Theme);
+
                 commands.add_child(
                     "theme",
                     Text2DNode {
                         text: theme,
-                        font_size: size.font_size::<LayoutTextItem>(&LayoutTextItem::PuzzleTheme),
+                        font_size: theme_font_size,
                         color: palette::BUTTON_TEXT_COLOR.convert_color(),
                         font: TITLE_FONT_PATH,
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     }
                     .with_bundle(Transform::from_translation(
-                        size.get_rect(&LayoutTextItem::PuzzleTheme, &())
+                        size.get_rect(&GameLayoutEntity::Theme, &())
                             .centre()
-                            .extend(crate::z_indices::TEXT_AREA_TEXT),
+                            .extend(crate::z_indices::THEME),
                     )),
                     &(),
                 );

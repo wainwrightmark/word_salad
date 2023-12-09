@@ -9,9 +9,10 @@ use super::consts::*;
 )]
 pub enum GameLayoutEntity {
     TopBar,
-    TextArea,
+    Theme,
     Grid,
     WordList,
+    Timer,
 }
 
 impl LayoutStructure for GameLayoutEntity {
@@ -39,18 +40,22 @@ impl LayoutStructure for GameLayoutEntity {
                 x: IDEAL_WIDTH,
                 y: TOP_BAR_ICON_SIZE,
             },
-            GameLayoutEntity::TextArea => Vec2 {
-                x: IDEAL_WIDTH,
-                y: TEXT_AREA_HEIGHT,
+            GameLayoutEntity::Theme => Vec2 {
+                x: THEME_WIDTH,
+                y: THEME_HEIGHT,
             },
             GameLayoutEntity::Grid => Vec2 {
-                x: IDEAL_WIDTH,
-                y: IDEAL_WIDTH,
+                x: GRID_SIZE,
+                y: GRID_SIZE,
             },
 
             GameLayoutEntity::WordList => Vec2 {
                 x: WORD_LIST_WIDTH,
                 y: WORD_LIST_HEIGHT,
+            },
+            GameLayoutEntity::Timer => Vec2 {
+                x: TIMER_WIDTH,
+                y: TIMER_HEIGHT,
             },
         }
     }
@@ -58,18 +63,34 @@ impl LayoutStructure for GameLayoutEntity {
         match self {
             GameLayoutEntity::TopBar => Vec2::ZERO,
 
-            GameLayoutEntity::TextArea => Vec2 {
-                x: 0.,
+            GameLayoutEntity::Theme => Vec2 {
+                x: (IDEAL_WIDTH - THEME_WIDTH) * 0.5,
                 y: TOP_BAR_ICON_SIZE,
             },
             GameLayoutEntity::Grid => Vec2 {
-                x: 0.,
-                y: TOP_BAR_ICON_SIZE + TEXT_AREA_HEIGHT,
+                x: (IDEAL_WIDTH - GRID_SIZE) * 0.5,
+                y: TOP_BAR_ICON_SIZE + THEME_HEIGHT + (GRID_TILE_SIZE * 0.5),
             },
             GameLayoutEntity::WordList => Vec2 {
                 x: (IDEAL_WIDTH - WORD_LIST_WIDTH) / 2.,
-                y: TOP_BAR_ICON_SIZE + TEXT_AREA_HEIGHT + GRID_SIZE,
+                y: TOP_BAR_ICON_SIZE + THEME_HEIGHT + GRID_SIZE + GRID_TILE_SIZE,
             },
+            GameLayoutEntity::Timer => Vec2 {
+                x: (IDEAL_WIDTH - TIMER_WIDTH) * 0.5,
+                y: IDEAL_HEIGHT - TIMER_HEIGHT,
+            },
+        }
+    }
+}
+
+impl LayoutStructureWithFont for GameLayoutEntity {
+    fn font_size(&self) -> f32 {
+        match self {
+            GameLayoutEntity::TopBar => f32::NAN,
+            GameLayoutEntity::Theme => 32.0,
+            GameLayoutEntity::Grid => f32::NAN,
+            GameLayoutEntity::WordList => f32::NAN,
+            GameLayoutEntity::Timer => 20.0,
         }
     }
 }

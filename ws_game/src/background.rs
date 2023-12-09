@@ -6,7 +6,7 @@ pub struct BackgroundPlugin;
 
 impl Plugin for BackgroundPlugin {
     fn build(&self, app: &mut App) {
-        app.register_maveric::<Background>();
+        //app.register_maveric::<Background>();
     }
 }
 

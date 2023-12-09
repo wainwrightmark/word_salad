@@ -15,7 +15,7 @@ pub struct HintsViewNode {
     pub hint_state: HintState,
 }
 
-const CIRCLE_SCALE: f32 = 0.4;
+const CIRCLE_SCALE: f32 = 0.3;
 
 impl MavericNode for HintsViewNode {
     type Context = MyWindowSize;
@@ -107,7 +107,7 @@ impl MavericNode for HintsViewNode {
             let size = context.as_ref();
             let hints_rect = size.get_rect(&LayoutTopBarButton::HintCounter, &());
             let hint_font_size =
-                size.font_size::<LayoutTopBarButton>(&LayoutTopBarButton::WordSaladButton);
+                size.font_size::<LayoutTopBarButton>(&LayoutTopBarButton::HintCounter);
 
             commands.add_child(
                 "hints",
@@ -167,7 +167,7 @@ impl MavericNode for HintsViewNode {
                 .with_bundle(Transform {
                     translation: (hints_rect.centre() + (Vec2::X * hint_font_size * 0.03))
                         .extend(crate::z_indices::TOP_BAR_BUTTON - 0.5),
-                    scale: Vec3::ONE * hints_rect.width() * 0.4,
+                    scale: Vec3::ONE * hints_rect.width() * CIRCLE_SCALE,
                     rotation: Default::default(),
                 }),
                 &(),

@@ -11,10 +11,12 @@ pub const WORD_BACKGROUND: f32 = 250.0;
 pub const MENU_BUTTON_TEXT: f32 = 300.0;
 pub const MENU_BUTTON_BACKGROUND: f32 = 250.0;
 
+pub const TOP_BAR_BACKGROUND: f32 = 25.0;
 pub const TOP_BAR_BUTTON: f32 = 50.0;
 pub const CONGRATS_BUTTON: f32 = 50.0;
 pub const CONGRATS_BUTTON_TEXT: f32 = 55.0;
-pub const TEXT_AREA_TEXT: f32 = 50.0;
+pub const THEME: f32 = 50.0;
+pub const TIMER: f32 = 50.0;
 
 
 pub const TUTORIAL_POPUP_BOX_BACKGROUND: f32 = 400.0;

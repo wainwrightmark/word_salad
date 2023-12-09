@@ -98,11 +98,10 @@ pub const DEFAULT_WINDOW_HEIGHT: f32 = 800f32;
 
 pub const TILE_MULTIPLIER: f32 = 0.9;
 
-pub const TILE_FONT_PATH: &str = "fonts/MartianMono_SemiExpanded-Bold.ttf";
-pub const CURRENT_STRING_FONT_PATH: &str = "fonts/MartianMono_SemiExpanded-Bold.ttf";
+pub const TILE_FONT_PATH: &str = "fonts/Sono-SemiBold.ttf";
 pub const TITLE_FONT_PATH: &str = "fonts/FiraMono-Medium.ttf";
 pub const BUTTONS_FONT_PATH: &str = "fonts/FiraMono-Medium.ttf";
-pub const SOLUTIONS_FONT_PATH: &str = "fonts/MartianMono_SemiCondensed-Regular.ttf";
+pub const SOLUTIONS_FONT_PATH: &str = "fonts/Sono-Regular.ttf";
 pub const MENU_BUTTON_FONT_PATH: &str = "fonts/merged-font.ttf";
 pub const WORD_SALAD_LOGO_FONT_PATH: &str = "fonts/LuckiestGuy.ttf";
 

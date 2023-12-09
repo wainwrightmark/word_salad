@@ -47,9 +47,9 @@ impl LayoutStructure for CongratsLayoutEntity {
     fn location(&self, context: &Self::Context) -> Vec2 {
 
         let top_offset = if context.0{
-            TEXT_AREA_HEIGHT + STREAMING_TOP_OFFSET
+            THEME_HEIGHT + GRID_TILE_SIZE + STREAMING_TOP_OFFSET
         }else{
-            TEXT_AREA_HEIGHT
+            THEME_HEIGHT + GRID_TILE_SIZE
         };
 
         match self{

@@ -29,7 +29,7 @@ mod tests {
     fn test_picking_all() {
         test_picking::<GameLayoutEntity>(&());
         test_picking::<LayoutTopBarButton>(&());
-        test_picking::<LayoutTextItem>(&());
+        // test_picking::<LayoutPuzzleTheme>(&());
         test_picking::<LayoutGridTile>(&());
         //test_picking::<LayoutWordTile>(&()); //TODO test this
     }
@@ -73,11 +73,12 @@ mod tests {
             let color = match layout_entity {
                 GameLayoutEntity::TopBar => "blue",
 
-                GameLayoutEntity::TextArea => "coral",
+                GameLayoutEntity::Theme => "coral",
 
                 GameLayoutEntity::Grid => "indigo",
 
                 GameLayoutEntity::WordList => "mediumblue",
+                GameLayoutEntity::Timer => "pink",
             };
 
             let id = layout_entity.to_string();
@@ -89,5 +90,6 @@ mod tests {
         svg.push_str("</svg>");
 
         println!("{svg}");
+        //TODO test with insta
     }
 }
