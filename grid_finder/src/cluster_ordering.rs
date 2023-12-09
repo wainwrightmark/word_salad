@@ -2,36 +2,38 @@ use std::cmp::Reverse;
 
 use crate::combinations::WordSet;
 
-pub fn order_cluster(mut cluster: Vec<WordSet>) -> Vec<WordSet> {
-    let mut new_ordering = Vec::with_capacity(cluster.len());
-
+pub fn order_cluster(cluster: &mut Vec<WordSet>) {
     let Some((first_index, _)) = cluster
         .iter()
         .enumerate()
         .max_by_key(|x| OrderingScore::calculate(x.1, &cluster))
     else {
-        return new_ordering;
+        return;
     };
 
-    let first_set = cluster.remove(first_index);
-
-    new_ordering.push(first_set);
+    cluster.swap(0, first_index);
+    let mut number_ordered = 1usize;
 
     loop {
-        let prev = new_ordering.last().unwrap();
+        let Some(prev)  = cluster.get(number_ordered.saturating_sub(1usize)) else{return;};
 
-        let Some((index, _)) = cluster.iter().enumerate().min_by_key(|(_, x)| {
-            (
-                x.intersect(prev).count(),
-                Reverse(OrderingScore::calculate(x, &cluster)),
-            )
-        }) else {
-            return new_ordering;
+        let Some((index, _)) =
+            cluster
+                .iter()
+                .enumerate()
+                .skip(number_ordered)
+                .min_by_key(|(_, x)| {
+                    (
+                        x.intersect(prev).count(),
+                        Reverse(OrderingScore::calculate(x, &cluster)),
+                    )
+                })
+        else {
+            return;
         };
 
-        let next_set = cluster.remove(index);
-
-        new_ordering.push(next_set);
+        cluster.swap(number_ordered, index);
+        number_ordered += 1;
     }
 }
 

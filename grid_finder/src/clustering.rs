@@ -111,8 +111,8 @@ pub struct Cluster {
 }
 
 impl Cluster {
-    pub fn new(points: Vec<WordsSet>, map: &BTreeMap<WordsSet, GridResult>) -> Self {
-        let points = cluster_ordering::order_cluster(points);
+    pub fn new(mut points: Vec<WordsSet>, map: &BTreeMap<WordsSet, GridResult>) -> Self {
+        cluster_ordering::order_cluster(&mut points);
         let score: ClusterScore = ClusterScore::calculate(points.as_slice());
         let adjacency_score = AdjacencyScore::calculate(&points.as_slice());
 

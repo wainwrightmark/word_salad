@@ -51,9 +51,9 @@ ________________	5	Earth   	Mars    	Mercury 	Uranus  	Venus
 ________________	5	Jupiter 	Neptune 	Pluto   	Saturn  	Uranus  
 ________________	5	Earth   	Mars    	Mercury 	Neptune 	Venus   
 ________________	5	Jupiter 	Pluto   	Saturn  	Uranus  	Venus   
-________________	5	Earth   	Mars    	Mercury 	Pluto   	Uranus  
-________________	5	Jupiter 	Neptune 	Pluto   	Saturn  	Venus   
 ________________	5	Earth   	Jupiter 	Mars    	Mercury 	Uranus  
+________________	5	Jupiter 	Neptune 	Pluto   	Saturn  	Venus   
+________________	5	Earth   	Mars    	Mercury 	Pluto   	Uranus  
 Grids: 10	Max overlap:  4	Mean overlap: 1.28	Mean items: 5.00	Distinct items:   9	Max adjacent  2	Mean adjacent 1.11
 ________________	5	Jupiter 	Mars    	Neptune 	Pluto   	Venus   
 ________________	5	Earth   	Mercury 	Saturn  	Uranus  	Venus   
