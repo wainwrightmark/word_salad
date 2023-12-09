@@ -70,7 +70,7 @@ impl LayoutStructure for CongratsLayoutEntity {
                 {
                     let num_children = if cfg!(target_arch = "wasm32"){2} else {1};
                     Vec2{
-                    x: Spacing::SpaceAround.apply(GRID_SIZE, CONGRATS_ENTITY_WIDTH * 1.2,  num_children, self.index() - 1),
+                    x: Spacing::SpaceAround.apply(IDEAL_WIDTH, CONGRATS_ENTITY_WIDTH * 1.2,  num_children, self.index() - 1),
                     y: TOP_BAR_ICON_SIZE
                         + top_offset
                         + Spacing::Centre.apply(

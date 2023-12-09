@@ -67,9 +67,9 @@ pub mod palette {
 
     pub const WORD_LINE_COLOR: Color = Color::rgba(0.9, 0.25, 0.95, 0.9);
 
-    pub const GRID_TILE_STROKE_NORMAL: Color = Color::rgba(0.25, 0.25, 0.25, 0.7);
-    pub const GRID_TILE_FILL_NORMAL: Color = Color::rgba(0.7, 0.7, 0.7, 0.9);
-    pub const GRID_LETTER_NORMAL: Color = Color::rgba(0.25, 0.25, 0.25, 0.85);
+    pub const GRID_TILE_STROKE_NORMAL: Color = Color::rgba(0.25, 0.25, 0.25, 1.0);
+    pub const GRID_TILE_FILL_NORMAL: Color = Color::rgba(0.7, 0.7, 0.7, 1.0);
+    pub const GRID_LETTER_NORMAL: Color = Color::rgba(0.9, 0.9, 0.9, 1.0);
 
     pub const GRID_TILE_STROKE_SELFIE: Color = Color::rgba(0.25, 0.25, 0.25, 0.95);
     pub const GRID_TILE_FILL_SELFIE: Color = Color::rgba(0.7, 0.7, 0.7, 0.7);
