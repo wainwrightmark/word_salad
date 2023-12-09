@@ -36,7 +36,7 @@ fn create_firework(
 
     let shape = SmudShape {
         color,
-        frame: bevy_smud::Frame::Quad(1.0),
+        frame: bevy_smud::Frame::Quad(0.25),
         f_params: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
         u_params: Default::default(),
     };
@@ -79,7 +79,7 @@ fn create_firework(
         cb.spawn(bundle);
     } else {
         cb.spawn(ScheduledChange {
-            timer: Timer::from_seconds(1.0, TimerMode::Once),
+            timer: Timer::from_seconds(delay, TimerMode::Once),
             boxed_change: Box::new(move |ec| {
                 ec.insert(bundle);
             }),
@@ -100,7 +100,7 @@ impl MavericNode for CongratsView {
         world: &World,
         entity_commands: &mut bevy::ecs::system::EntityCommands,
     ) {
-        if !context.2.is_changed() || context.2.is_added() {
+        if !context.2.is_changed() {
             return;
         }
 
@@ -108,7 +108,7 @@ impl MavericNode for CongratsView {
         let size = &context.3;
 
         const SECONDS: f32 = 5.0;
-        const NUM_FIREWORKS: usize = 5;
+        const NUM_FIREWORKS: usize = 25;
 
         let Some(asset_server) = world.get_resource::<AssetServer>() else {
             return;

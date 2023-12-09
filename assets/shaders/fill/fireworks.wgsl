@@ -35,15 +35,10 @@ fn fill(d: f32, color1: vec4<f32>, point: vec2<f32>, fract: f32) -> vec4<f32> {
         return vec4<f32>(0.0);
     }
 
-    var col = vec3(0.0);
-
-
     var color = color1.rgb;
+    let explosion = Explosion(point, fract);
+    let a = smoothstep(0.1, 0.5, explosion);
+    let col = explosion * color * 2.;
 
-    col += Explosion(point, fract) * color;
-
-    col *= 2.;
-
-    let a = max(max(col.x, col.y), col.z);
     return vec4(col, a);
 }
