@@ -264,17 +264,13 @@ impl MavericNode for WordNode {
 
         let bundle = (
             bundle,
-            Transition::<SmudParamLens<2>>::new(TransitionStep::new_arc(
-                to,
-                Some(calculate_speed::<f32>(
-                    &from,
-                    &to,
-                    Duration::from_secs_f32(animated_solutions::TOTAL_SECONDS),
-                )),
-                NextStep::None,
-            )),
+            TransitionBuilder::<SmudParamLens<2>>::default().then_tween(to, calculate_speed::<f32>(
+                &from,
+                &to,
+                Duration::from_secs_f32(animated_solutions::TOTAL_SECONDS),
+            )).build(),
             ScheduledForDeletion {
-                timer: Timer::from_seconds(animated_solutions::TOTAL_SECONDS, TimerMode::Once),
+                remaining: Duration::from_secs_f32(animated_solutions::TOTAL_SECONDS),
             },
         );
 

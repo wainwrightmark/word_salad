@@ -77,35 +77,30 @@ impl MavericNode for WordLine {
             let initial_width = if should_hide {
                 commands.transition_value::<SmudParamLens<0>>(
                     -DEFAULT_WIDTH,
-                    Some((DEFAULT_WIDTH * 1.2).into()),
+                    (DEFAULT_WIDTH * 1.2).into(),
                 )
             } else if args
                 .previous
                 .is_some_and(|x| !x.solution.is_empty() && !x.should_hide)
             {
                 if args.node.close_to_solution {
-                    commands.insert(Transition::<SmudParamLens<0>>::new(
-                        TransitionStep::new_cycle(
-                            [
-                                (DEFAULT_WIDTH * 1.05, 0.03.into()),
-                                (DEFAULT_WIDTH, 0.03.into()),
-                            ]
-                            .into_iter(),
-                        ),
-                    ))
+                    let cycle = TransitionBuilder::<SmudParamLens<0>>::default()
+                        .then_tween(DEFAULT_WIDTH * 1.05, 0.03.into())
+                        .then_tween(DEFAULT_WIDTH, 0.03.into())
+                        .build_loop();
+
+                    commands.insert(cycle)
                 } else {
                     commands.remove::<Transition<SmudParamLens<0>>>();
                 }
                 DEFAULT_WIDTH
             } else {
                 //info!("Word line newly visible");
-                commands.insert(Transition::<SmudParamLens<0>>::new(
-                    TransitionStep::new_arc(
-                        DEFAULT_WIDTH,
-                        Some((DEFAULT_WIDTH * 4.0).into()),
-                        NextStep::None,
-                    ),
-                ));
+                commands.insert(
+                    TransitionBuilder::<SmudParamLens<0>>::default()
+                        .then_tween(DEFAULT_WIDTH, (DEFAULT_WIDTH * 4.0).into())
+                        .build(),
+                );
 
                 DEFAULT_WIDTH * 0.25
             };
@@ -123,7 +118,7 @@ impl MavericNode for WordLine {
             let speed = 4.0;
 
             let segment_length = commands
-                .transition_value::<SmudParamLens<1>>(final_segment_length, Some(speed.into()))
+                .transition_value::<SmudParamLens<1>>(final_segment_length, speed.into())
                 .min(final_segment_length + 1.0) // don't go more than half past the last tile
                 .min(solution.len() as f32) //don't show more tiles than we know
                 .max(final_segment_length - 0.75); //always be relatively close to the end

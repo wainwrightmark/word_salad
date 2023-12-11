@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::{prelude::*, z_indices};
 use bevy_smud::{
     param_usage::{ShaderParamUsage, ShaderParameter},
@@ -66,20 +68,16 @@ fn create_firework(
     let bundle = (
         bundle,
         ScheduledForDeletion {
-            timer: Timer::from_seconds(1.0, TimerMode::Once),
+            remaining: Duration::from_secs_f32(1.0),
         },
-        Transition::new(TransitionStep::<SmudParamLens<0>>::new_arc(
-            1.0,
-            Some(1.0.into()),
-            NextStep::None,
-        )),
+        TransitionBuilder::<SmudParamLens<0>>::default().then_tween(1.0, 1.0.into()).build()
     );
 
     if delay.is_zero() {
         cb.spawn(bundle);
     } else {
         cb.spawn(ScheduledChange {
-            timer: Timer::from_seconds(delay, TimerMode::Once),
+            remaining: Duration::from_secs_f32(delay),
             boxed_change: Box::new(move |ec| {
                 ec.insert(bundle);
             }),

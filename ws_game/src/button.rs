@@ -111,21 +111,21 @@ fn track_pressed_button(
         }
 
         if let Some((entity, _)) = query.iter_mut().find(|x| x.1 == &prev_interaction) {
-            commands
-                .entity(entity)
-                .insert(Transition::<SmudParamLens<1>>::new(
-                    TransitionStep::new_arc(0.1, Some(0.1.into()), NextStep::None),
-                ));
+            commands.entity(entity).insert(
+                TransitionBuilder::<SmudParamLens<1>>::default()
+                    .then_tween(0.1, 0.1.into())
+                    .build(),
+            );
         }
     }
 
     if let Some(interaction) = pressed_button.as_ref().interaction {
         if let Some((entity, _)) = query.iter_mut().find(|x| x.1 == &interaction) {
-            commands
-                .entity(entity)
-                .insert(Transition::<SmudParamLens<1>>::new(
-                    TransitionStep::new_arc(0.15, Some(0.5.into()), NextStep::None),
-                ));
+            commands.entity(entity).insert(
+                TransitionBuilder::<SmudParamLens<1>>::default()
+                    .then_tween(0.15, 0.5.into())
+                    .build(),
+            );
         }
     }
 }

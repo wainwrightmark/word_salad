@@ -80,13 +80,11 @@ impl MavericNode for HintsViewNode {
         let bundle = (
             bundle,
             ScheduledForDeletion {
-                timer: Timer::from_seconds(SECONDS, TimerMode::Once),
+                remaining: Duration::from_secs_f32(SECONDS),
             },
-            Transition::<TransformTranslationLens>::new(TransitionStep::new_arc(
-                final_translation,
-                Some(speed),
-                NextStep::None,
-            )),
+            TransitionBuilder::<TransformTranslationLens>::default()
+                .then_tween(final_translation, speed)
+                .build(),
         );
 
         entity_commands.with_children(|x| {

@@ -1,9 +1,7 @@
 use crate::prelude::*;
 use bevy_smud::param_usage::ShaderParamUsage;
 use bevy_smud::param_usage::ShaderParameter;
-use maveric::{
-    transition::speed::LinearSpeed, widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle,
-};
+use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
 use strum::EnumIs;
 
 use std::time::Duration;
@@ -180,7 +178,9 @@ impl MavericNode for GridTile {
             .ignore_context()
             .map_node(|x| &x.centre)
             .insert_with_node(|n| {
-                TransformBundle::from_transform(Transform::from_translation(n.extend(crate::z_indices::GRID_TILE)))
+                TransformBundle::from_transform(Transform::from_translation(
+                    n.extend(crate::z_indices::GRID_TILE),
+                ))
             })
             .ignore_node()
             .advanced(|args, commands| {
@@ -260,9 +260,11 @@ impl MavericNode for GridTile {
     }
 
     fn on_deleted(&self, commands: &mut ComponentCommands) -> DeletionPolicy {
-        commands.insert(Transition::<TransformScaleLens>::new(
-            TransitionStep::new_arc(Vec3::ZERO, Some(LinearSpeed::new(1.0)), NextStep::None),
-        ));
+        commands.insert(
+            TransitionBuilder::<TransformScaleLens>::default()
+                .then_tween(Vec3::ZERO, 1.0.into())
+                .build(),
+        );
         DeletionPolicy::Linger(Duration::from_secs(1))
     }
 }

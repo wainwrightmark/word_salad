@@ -114,18 +114,14 @@ pub fn animate_solution(
             core::time::Duration::from_secs_f32(STEP_ONE_TRANSLATION_SECONDS * time_multiplier),
         );
 
-        let step_one = TransitionStep::<(TransformTranslationLens, TransformScaleLens)>::new_arc(
-            (
-                destination_two.extend(crate::z_indices::ANIMATED_SOLUTION),
-                Vec3::ONE * MID_SCALE,
-            ),
-            Some((speed_one_translation, speed_one_scale)),
-            NextStep::None,
-        );
+        let transition = TransitionBuilder::<(TransformTranslationLens, TransformScaleLens)>::default().then_tween((
+            destination_two.extend(crate::z_indices::ANIMATED_SOLUTION),
+            Vec3::ONE * MID_SCALE,
+        ), (speed_one_translation, speed_one_scale)).build();
 
         let components = (
             ScheduledForDeletion {
-                timer: Timer::from_seconds(TOTAL_SECONDS * time_multiplier, TimerMode::Once),
+                remaining: Duration::from_secs_f32(TOTAL_SECONDS * time_multiplier),
             },
             Text2dBundle {
                 text,
@@ -134,7 +130,7 @@ pub fn animate_solution(
                 ),
                 ..Default::default()
             },
-            Transition::new(step_one),
+            transition,
         );
 
         commands.spawn(components);
