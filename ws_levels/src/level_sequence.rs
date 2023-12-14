@@ -22,14 +22,10 @@ use ws_core::DesignedLevel;
     Deserialize,
     Hash,
     FromPrimitive,
-    Default
 )]
 
 pub enum LevelSequence {
     //DO NOT CHANGE THESE NUMBERS - THEY ARE USED FOR COMPLETION TRACKING
-    #[default]
-    Tutorial = 0,
-    DailyChallenge = 1,
     EUCapitals = 2,
     EUCountries = 3,
     USStates = 4,
@@ -45,37 +41,31 @@ pub enum LevelSequence {
     FamousQueens = 13,
 
     RomanGods = 14,
-    EgyptianGods = 15
+    EgyptianGods = 15,
 }
 
 impl LevelSequence {
+    pub fn get_next(self) -> Option<Self> {
+        let current_index = self as usize;
+        let next_index = (current_index + 1) % Self::COUNT;
 
-    pub fn get_next(&self)-> Self{
-        let current_index = *self as usize;
-        let next_index = (current_index  + 1 ) % Self::COUNT;
-
-        FromPrimitive::from_usize(next_index).unwrap_or_default()
+        FromPrimitive::from_usize(next_index)
     }
 
-    pub fn get_level(&self, index: usize) -> &DesignedLevel {
+    pub fn get_level(self, index: usize) -> Option<&'static DesignedLevel> {
         let levels = self.levels();
 
-        let index = index % levels.len();
-
-        levels
-            .get(index)
-            .expect("All level sequences should have at least one level")
+        let index = index;
+        levels.get(index)
     }
 
-    pub fn level_count(&self) -> usize {
+    pub fn level_count(self) -> usize {
         let levels = self.levels();
         levels.len()
     }
 
-    fn levels(&self) -> &Vec<DesignedLevel> {
+    fn levels(self) -> &'static Vec<DesignedLevel> {
         let levels = match self {
-            LevelSequence::Tutorial => &*TUTORIAL,
-            LevelSequence::DailyChallenge => &*DAILY_CHALLENGE,
             LevelSequence::EUCapitals => &*EU_CAPITALS,
             LevelSequence::EUCountries => &*EU_COUNTRIES,
             LevelSequence::USStates => &*US_STATES,
@@ -95,10 +85,8 @@ impl LevelSequence {
         levels
     }
 
-    pub fn name(&self) -> &'static str {
+    pub fn name(self) -> &'static str {
         match self {
-            LevelSequence::Tutorial => "Tutorial",
-            LevelSequence::DailyChallenge => "Word Salad",
             LevelSequence::EUCapitals => "EU Capitals",
             LevelSequence::EUCountries => "EU Countries",
             LevelSequence::USStates => "US States",

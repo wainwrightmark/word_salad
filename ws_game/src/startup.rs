@@ -56,6 +56,7 @@ pub fn go() {
     app.add_plugins(PopupPlugin);
     app.add_plugins(LogWatchPlugin);
     app.add_plugins(BackgroundPlugin);
+    app.add_plugins(DailyChallengePlugin);
 
     app.register_transition::<BackgroundColorLens>();
     app.register_transition::<TransformRotationYLens>();
@@ -89,6 +90,14 @@ pub fn go() {
     app.add_systems(Update, watch_lifecycle);
     app.add_systems(Startup, set_status_bar.after(hide_splash));
 
+    app.insert_resource(bevy::winit::WinitSettings {
+        return_from_run: false,
+        focused_mode: bevy::winit::UpdateMode::Continuous,
+        unfocused_mode: bevy::winit::UpdateMode::Reactive {
+            wait: std::time::Duration::from_secs(60),
+        },
+    });
+
     app.run();
 }
 
@@ -99,17 +108,14 @@ fn setup_system(mut commands: Commands) {
 #[allow(unused_variables, unused_mut)]
 fn choose_level_on_game_load(
     mut current_level: ResMut<CurrentLevel>,
-    mut found_words: ResMut<FoundWordsState>,
-    mut chosen_state: ResMut<ChosenState>,
     mut timer: ResMut<crate::level_time::LevelTime>,
 ) {
     #[cfg(target_arch = "wasm32")]
     {
         match crate::wasm::get_game_from_location() {
             Some(level) => {
-                *current_level = CurrentLevel::Custom(level);
-                *found_words = FoundWordsState::new_from_level(current_level.as_ref());
-                *chosen_state = ChosenState::default();
+                CUSTOM_LEVEL.set(level);
+                *current_level = CurrentLevel::Custom;
                 *timer = LevelTime::default();
                 return;
             }

@@ -68,7 +68,6 @@ impl MavericNode for TopBar {
                 );
 
                 commands.add_child(
-                    //todo hide this in congrats mode and have a separate timer only in that mode
                     "Word Salad Logo text",
                     Text2DNode {
                         text: "Word Salad",
@@ -86,10 +85,6 @@ impl MavericNode for TopBar {
                     ),)),
                     &(),
                 );
-
-                // if context.5.is_closed() && !context.2.is_level_complete() {
-
-                // }
             });
     }
 }

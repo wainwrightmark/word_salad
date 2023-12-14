@@ -22,7 +22,27 @@ impl Plugin for StatePlugin {
 
         app.add_systems(Update, track_found_words);
         app.add_systems(Update, track_level_completion);
-        // app.add_systems(Update, track_level_change);
+        app.add_systems(Update, update_state_on_level_change);
+    }
+}
+
+fn update_state_on_level_change(
+    current_level: Res<CurrentLevel>,
+    daily_challenges: Res<DailyChallenges>,
+    mut found_words: ResMut<FoundWordsState>,
+    mut chosen: ResMut<ChosenState>,
+) {
+    if current_level.is_changed() {
+        match current_level.level(daily_challenges.as_ref()) {
+            Some(level) => {
+                *found_words = FoundWordsState::new_from_level(level);
+            }
+            None => {
+                *found_words = FoundWordsState::default();
+            }
+        }
+
+        *chosen = ChosenState::default();
     }
 }
 
@@ -47,17 +67,11 @@ impl TrackableResource for HintState {
     const KEY: &'static str = "HintState";
 }
 
-#[derive(Debug, Clone, Resource, Serialize, Deserialize, MavericContext)]
+#[derive(Debug, Clone, Resource, Serialize, Deserialize, MavericContext, Default)]
 pub struct FoundWordsState {
     pub unneeded_tiles: GridSet,
     pub word_completions: Vec<Completion>,
     pub hints_used1: usize,
-}
-
-impl Default for FoundWordsState {
-    fn default() -> Self {
-        Self::new_from_level(&CurrentLevel::default())
-    }
 }
 
 impl TrackableResource for FoundWordsState {
@@ -65,8 +79,7 @@ impl TrackableResource for FoundWordsState {
 }
 
 impl FoundWordsState {
-    pub fn new_from_level(current_level: &CurrentLevel) -> Self {
-        let level = current_level.level();
+    pub fn new_from_level(level: &DesignedLevel) -> Self {
         Self {
             unneeded_tiles: GridSet::EMPTY,
             word_completions: vec![Completion::Unstarted; level.words.len()],
@@ -147,17 +160,15 @@ impl FoundWordsState {
     pub fn try_hint_word(
         &mut self,
         hint_state: &mut HintState,
-        current_level: &CurrentLevel,
+        level: &DesignedLevel,
         word_index: usize,
         chosen_state: &mut ChosenState,
     ) -> bool {
-        let level = current_level.level();
-
         let Some(new_hints) = hint_state.hints_remaining.checked_sub(1) else {
             return false;
         };
 
-        let c = self.count_inevitable_characters(current_level, word_index);
+        let c = self.count_inevitable_characters(level, word_index);
 
         let Some(completion) = self.word_completions.get_mut(word_index) else {
             return false;
@@ -249,14 +260,17 @@ fn track_found_words(
     mut found_words: ResMut<FoundWordsState>,
     asset_server: Res<AssetServer>,
     size: Res<Size>,
+    daily_challenges: Res<DailyChallenges>,
 ) {
     if !chosen.is_changed() || chosen.is_just_finished {
         return;
     }
-    let grid = current_level.level().grid;
+    let Some(level) = current_level.level(&daily_challenges) else {
+        return;
+    };
+    let grid = level.grid;
     let chars: CharsArray = chosen.solution.iter().map(|t| grid[*t]).collect();
 
-    let level = current_level.level();
     let Some((word_index, word)) = level
         .words
         .iter()
@@ -284,7 +298,7 @@ fn track_found_words(
         is_first_time,
         &asset_server,
         &size,
-        &current_level,
+        &level,
     );
 
     // found_words.calculate_auto_hints(&current_level);
@@ -389,13 +403,7 @@ impl FoundWordsState {
         inadvisable
     }
 
-    fn count_inevitable_characters(
-        &self,
-        current_level: &CurrentLevel,
-        word_index: usize,
-    ) -> usize {
-        let level = current_level.level();
-
+    fn count_inevitable_characters(&self, level: &DesignedLevel, word_index: usize) -> usize {
         if let Some(completion) = self.word_completions.get(word_index) {
             let prefix_characters = match completion {
                 Completion::Unstarted => 0,
@@ -578,7 +586,7 @@ pub mod tests {
 
     use crate::{
         chosen_state::ChosenState,
-        prelude::{Completion, CurrentLevel, DesignedLevel, FoundWordsState},
+        prelude::{Completion, DesignedLevel, FoundWordsState},
         state::HintState,
     };
 
@@ -593,11 +601,11 @@ pub mod tests {
             "DNGLHUAOSTRPAIYC	Europe Countries 2	Austria 	Croatia 	Cyprus  	Hungary 	Poland  	Portugal",
         )
         .unwrap();
-        let cl = CurrentLevel::Custom(level);
-        let mut found_words = FoundWordsState::new_from_level(&cl);
+
+        let mut found_words = FoundWordsState::new_from_level(&level);
 
         for index in 0..found_words.word_completions.len() {
-            let characters = found_words.count_inevitable_characters(&cl, index);
+            let characters = found_words.count_inevitable_characters(&level, index);
 
             assert_eq!(characters, 0);
         }
@@ -615,9 +623,9 @@ pub mod tests {
             }
         }
 
-        found_words.update_unneeded_tiles(cl.level());
+        found_words.update_unneeded_tiles(&level);
 
-        let c = found_words.count_inevitable_characters(&cl, 1);
+        let c = found_words.count_inevitable_characters(&level, 1);
 
         assert_eq!(c, 2);
     }
@@ -629,16 +637,15 @@ pub mod tests {
             "SWEDLVNEOMAI_RKA	5	Denmark 	Romania 	Slovakia	Slovenia	Sweden",
         )
         .unwrap();
-        let current_level = CurrentLevel::Custom(level);
-        let mut found_words = FoundWordsState::new_from_level(&current_level);
+
+        let mut found_words = FoundWordsState::new_from_level(&level);
         let mut hint_state = HintState {
             hints_remaining: 10,
             total_earned_hints: 0,
             total_bought_hints: 0,
         };
         let mut chosen_state = ChosenState::default();
-        let hinted =
-            found_words.try_hint_word(&mut hint_state, &current_level, 4, &mut chosen_state);
+        let hinted = found_words.try_hint_word(&mut hint_state, &level, 4, &mut chosen_state);
 
         assert!(hinted);
         assert_eq!(hint_state.hints_remaining, 9);

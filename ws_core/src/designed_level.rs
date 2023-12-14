@@ -65,10 +65,10 @@ impl DesignedLevel {
             return None;
         }
 
-        if path.to_ascii_lowercase().starts_with("/game") {
+        if path.to_ascii_lowercase().starts_with("/game/") {
             //info!("Path starts with game");
             let data = path[6..].to_string();
-            //info!("{data}");
+            //bevy::log::info!("{data}");
 
             use base64::Engine;
 
@@ -77,7 +77,7 @@ impl DesignedLevel {
                 .ok()?;
 
             let data = String::from_utf8(data).ok()?;
-            //info!("{data}");
+            //bevy::log::info!("{data}");
 
             DesignedLevel::from_tsv_line(&data).ok()
         } else {

@@ -83,7 +83,7 @@ impl MavericNode for Menu {
                             commands,
                             size,
                             1,
-                            |x| x.get_text(context.7.as_ref()),
+                            |x| x.get_text(context.7.as_ref(), context.9.as_ref()),
                         );
                     }
                     MenuState::LevelGroupPage(group) => {

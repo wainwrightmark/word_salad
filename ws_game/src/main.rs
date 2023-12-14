@@ -31,6 +31,7 @@ pub mod wasm;
 pub mod wordline;
 pub mod z_indices;
 pub mod hints_view;
+pub mod daily_challenge;
 
 fn main() {
     crate::startup::go();
@@ -48,6 +49,7 @@ pub mod prelude {
     pub use crate::congrats_view::*;
     pub use crate::constants::*;
     pub use crate::current_level::*;
+    pub use crate::daily_challenge::*;
     pub use crate::game_grid_view::*;
     pub use crate::grid_input::*;
     pub use crate::level_time::*;
@@ -66,6 +68,7 @@ pub mod prelude {
     pub use crate::wordline::*;
     pub use crate::tutorial::*;
     pub use crate::hints_view::*;
+    pub use crate::daily_challenge::*;
 
     pub use std::array;
 

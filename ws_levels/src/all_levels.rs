@@ -8,12 +8,7 @@ lazy_static! {
         .map(DesignedLevel::from_tsv_line)
         .map(|x| x.unwrap())
         .collect_vec();
-    pub(crate) static ref DAILY_CHALLENGE: Vec<DesignedLevel> =
-        include_str!("levels/daily_challenge.tsv")
-            .lines()
-            .map(DesignedLevel::from_tsv_line)
-            .map(|x| x.unwrap())
-            .collect_vec();
+
     pub(crate) static ref EU_CAPITALS: Vec<DesignedLevel> = number_levels(
         include_str!("levels/global_location/eu_capitals.tsv")
             .lines()
@@ -129,6 +124,10 @@ pub fn number_levels(
     r
 }
 
+pub fn get_tutorial_level(index: usize)-> Option<&'static DesignedLevel>{
+    TUTORIAL.get(index)
+}
+
 #[cfg(test)]
 pub mod tests {
 
@@ -136,7 +135,6 @@ pub mod tests {
     pub fn get_all_levels() -> Vec<DesignedLevel> {
         [
             TUTORIAL.iter(),
-            DAILY_CHALLENGE.iter(),
             EU_CAPITALS.iter(),
             EU_COUNTRIES.iter(),
             US_STATES.iter(),

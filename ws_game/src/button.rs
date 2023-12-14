@@ -2,7 +2,6 @@ use bevy::prelude::*;
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
 use strum::EnumIs;
 use ws_core::layout::entities::{CongratsLayoutEntity, LayoutTopBarButton, LayoutWordTile};
-use ws_levels::level_sequence::LevelSequence;
 
 use crate::completion::TotalCompletion;
 use crate::menu_layout::main_menu_back_button::MainMenuBackButton;
@@ -143,16 +142,15 @@ impl ButtonInteraction {
         total_completion: &TotalCompletion,
         video_state: &VideoResource,
         video_events: &AsyncEventWriter<VideoEvent>,
+        daily_challenges: &DailyChallenges
     ) {
         match self {
             ButtonInteraction::MenuBackButton => {
                 menu_state.go_back();
             }
             ButtonInteraction::MainMenu(MainMenuLayoutEntity::ResetPuzzle) => {
-                *found_words.as_mut() = FoundWordsState::new_from_level(current_level);
-                *chosen_state.as_mut() = ChosenState::default();
+
                 current_level.set_changed();
-                menu_state.close();
             }
             ButtonInteraction::MainMenu(MainMenuLayoutEntity::Puzzles) => {
                 *menu_state.as_mut() = MenuState::ChooseLevelsPage;
@@ -166,22 +164,14 @@ impl ButtonInteraction {
             }
 
             ButtonInteraction::MainMenu(MainMenuLayoutEntity::Tutorial) => {
-                current_level.to_level_with_index(
-                    LevelSequence::Tutorial,
-                    0,
-                    found_words,
-                    chosen_state,
-                );
+                *current_level.as_mut() = CurrentLevel::Tutorial { index: 0 };
                 menu_state.close();
             }
 
             ButtonInteraction::LevelsMenu(LevelsMenuLayoutEntity::WordSalad) => {
-                current_level.to_level(
-                    LevelSequence::DailyChallenge,
-                    total_completion,
-                    found_words,
-                    chosen_state,
-                );
+                if let Some(index) =  total_completion.get_next_incomplete_daily_challenge_from_today(){
+                    *current_level.as_mut() = CurrentLevel::DailyChallenge { index };
+                }
                 menu_state.close();
             }
 
@@ -192,12 +182,18 @@ impl ButtonInteraction {
                 LevelGroupLayoutEntity { index } => {
                     if let MenuState::LevelGroupPage(level_group) = menu_state.as_ref() {
                         let sequence = level_group.get_level_sequence(*index);
-                        current_level.to_level(
-                            sequence,
-                            total_completion,
-                            found_words,
-                            chosen_state,
-                        );
+
+                        if let Some(index)  = total_completion.get_next_level_index(sequence){
+                            info!("Changing level to {sequence} {index}");
+                            *current_level.as_mut() = CurrentLevel::Fixed { level_index: index, sequence };
+                        }
+                        else{
+                            *current_level.as_mut() = CurrentLevel::Unknown;
+                        }
+
+
+
+
                         menu_state.close();
                     }
                 }
@@ -206,7 +202,10 @@ impl ButtonInteraction {
                 if hint_state.hints_remaining == 0 {
                     *popup_state.as_mut() = PopupState::BuyMoreHints;
                 } else {
-                    found_words.try_hint_word(hint_state, current_level, word.0, chosen_state);
+                    if let Some(level) = current_level.level(daily_challenges){
+                        found_words.try_hint_word(hint_state, level, word.0, chosen_state);
+                    }
+
                 }
             }
             ButtonInteraction::TopMenuItem(LayoutTopBarButton::HintCounter) => {
@@ -216,16 +215,14 @@ impl ButtonInteraction {
                 menu_state.toggle()
             }
             ButtonInteraction::TopMenuItem(LayoutTopBarButton::WordSaladButton) => {
-                current_level.to_level(
-                    LevelSequence::DailyChallenge,
-                    total_completion,
-                    found_words,
-                    chosen_state,
-                );
+                if let Some(index) =  total_completion.get_next_incomplete_daily_challenge_from_today(){
+                    *current_level.as_mut() = CurrentLevel::DailyChallenge { index };
+                }
                 menu_state.close();
             }
             ButtonInteraction::Congrats(CongratsLayoutEntity::NextButton) => {
-                current_level.to_next_level(total_completion, found_words, chosen_state);
+                let next_level =current_level.get_next_level(total_completion);
+                *current_level.as_mut() = next_level;
             }
 
             ButtonInteraction::Congrats(CongratsLayoutEntity::HintsUsed) => {}

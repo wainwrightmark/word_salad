@@ -20,7 +20,7 @@ pub fn animate_solution(
     is_first_time: bool,
     asset_server: &AssetServer,
     size: &Size,
-    level: &CurrentLevel,
+    level: &DesignedLevel,
 ) {
     //info!("Animate solution");
     let color = if is_first_time {
@@ -34,7 +34,7 @@ pub fn animate_solution(
     const SPACING: f32 = 0.4;
     const MID_SCALE: f32 = 0.75;
 
-    let words = &level.level().words;
+    let words = &level.words;
 
     let Some(layout_word_tile) = words.iter().position(|x| x == word).map(LayoutWordTile) else {
         return;

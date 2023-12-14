@@ -162,19 +162,12 @@ pub struct TutorialText {
 impl TutorialText {
     pub fn try_create(current_level: &CurrentLevel, found_words: &FoundWordsState) -> Option<Self> {
         let level_index = match current_level {
-            CurrentLevel::Fixed {
-                level_index,
-                sequence,
+            CurrentLevel::Tutorial {
+                index,
             } => {
-                if sequence.is_tutorial() {
-                    *level_index % 2
-                } else {
-                    return None;
-                }
+                *index % 2
             }
-            CurrentLevel::Custom(_) => {
-                return None;
-            }
+            _=> {return None;}
         };
 
         let completed_words = found_words

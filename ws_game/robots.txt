@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://wordsalad.online
+Sitemap: https://wordsalad.online/sitemap.txt

@@ -18,12 +18,15 @@ impl Plugin for LogWatchPlugin {
     }
 }
 
-fn watch_level_changes(current_level: Res<CurrentLevel>) {
+fn watch_level_changes(current_level: Res<CurrentLevel>, daily_challenges: Res<DailyChallenges>) {
     if current_level.is_changed() {
         //info!("Logging level changed");
-        let event: LoggableEvent = LoggableEvent::StartLevel {
-            level: current_level.level().name.to_string(),
-        };
+        let level = current_level.level(&daily_challenges);
+        let level = level
+            .map(|x| x.name.clone())
+            .unwrap_or_else(|| "Unknown".to_string());
+
+        let event: LoggableEvent = LoggableEvent::StartLevel { level };
         event.try_log1();
     }
 }
@@ -32,6 +35,7 @@ fn watch_level_completion(
     state: Res<FoundWordsState>,
     current_level: Res<CurrentLevel>,
     timer: Res<LevelTime>,
+    daily_challenges: Res<DailyChallenges>,
 ) {
     if !state.is_changed() || state.is_added() {
         return;
@@ -47,8 +51,13 @@ fn watch_level_completion(
             LevelTime::Finished { total_seconds } => *total_seconds,
         };
 
+        let level = current_level.level(&daily_challenges);
+        let level = level
+            .map(|x| x.name.clone())
+            .unwrap_or_else(|| "Unknown".to_string());
+
         let event = LoggableEvent::FinishLevel {
-            level: current_level.level().name.to_string(),
+            level,
             seconds,
             hints_used: state.hints_used1,
         };

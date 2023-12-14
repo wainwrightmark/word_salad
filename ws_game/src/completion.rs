@@ -1,25 +1,27 @@
 use bevy::prelude::*;
+use fixedbitset::FixedBitSet;
 use maveric::helpers::MavericContext;
 use nice_bevy_utils::TrackableResource;
 use serde::{Deserialize, Serialize};
 use ws_levels::{level_group::LevelGroup, level_sequence::LevelSequence};
 
 use crate::{
-    prelude::{CurrentLevel, FoundWordsState},
+    prelude::{CurrentLevel, DailyChallenges, FoundWordsState},
     state::HintState,
 };
 
 #[derive(Debug, PartialEq, Resource, Serialize, Deserialize, Default, Clone, MavericContext)]
 pub struct TotalCompletion {
     completions: Vec<LevelCompletion>,
+    daily_challenge_completion: FixedBitSet,
 }
 
 #[derive(Debug, PartialEq, Resource, Serialize, Deserialize, Default, Clone)]
-pub struct LevelCompletion{
+pub struct LevelCompletion {
     #[serde(rename = "t")]
     pub total_complete: usize,
-    #[serde(rename  = "s")]
-    pub current_index: usize
+    #[serde(rename = "s")]
+    pub current_index: usize,
 }
 
 impl TrackableResource for TotalCompletion {
@@ -40,7 +42,9 @@ impl TotalCompletion {
                 let number_complete = level_index + 1;
                 let sequence_index = *sequence as usize;
                 while total_completion.completions.len() <= sequence_index {
-                    total_completion.completions.push(LevelCompletion::default());
+                    total_completion
+                        .completions
+                        .push(LevelCompletion::default());
                 }
 
                 let completion = &mut total_completion.completions[sequence_index];
@@ -54,22 +58,44 @@ impl TotalCompletion {
                     }
                 }
             }
-            CurrentLevel::Custom(_) => {}
+            CurrentLevel::Custom => {}
+            CurrentLevel::Tutorial { .. } => {
+                // No need to track tutorial completion
+            }
+            CurrentLevel::DailyChallenge { index } => {
+                if !total_completion.daily_challenge_completion.contains(*index) {
+                    total_completion.daily_challenge_completion.grow(index.saturating_add(1));
+                    total_completion.daily_challenge_completion.insert(*index);
+                    hints_state.hints_remaining += 2;
+                    hints_state.total_earned_hints += 2;
+                }
+            }
+            CurrentLevel::Unknown => {
+
+            },
         }
     }
 
-    pub fn next_level(&self, sequence: LevelSequence) -> usize {
-        let index = sequence as usize;
+    pub fn get_next_level_index(&self, sequence: LevelSequence) -> Option<usize> {
+        let sequence_index = sequence as usize;
 
-        self.completions.get(index).cloned().unwrap_or_default().current_index
+        let index = self.completions
+            .get(sequence_index)
+            .map(|x| x.current_index)
+            .unwrap_or_default();
+
+        if index >= sequence.level_count(){
+            return None;
+        }
+        return Some(index);
     }
 
     pub fn get_number_complete(&self, sequence: &LevelSequence) -> usize {
         let sequence_index = *sequence as usize;
         self.completions
             .get(sequence_index)
-            .cloned()
-            .unwrap_or_default().total_complete
+            .map(|x| x.total_complete)
+            .unwrap_or_default()
     }
 
     pub fn get_number_complete_group(&self, group: &LevelGroup) -> usize {
@@ -78,6 +104,26 @@ impl TotalCompletion {
             .iter()
             .map(|x| self.get_number_complete(x))
             .sum()
+    }
+
+    pub fn get_next_incomplete_daily_challenge_from_today(&self) -> Option<usize> {
+        let today_date_index = DailyChallenges::get_today_index()?;
+        self.get_next_incomplete_daily_challenge(today_date_index)
+    }
+
+    pub fn get_next_incomplete_daily_challenge(&self, today_date_index: usize) -> Option<usize> {
+        if !self.daily_challenge_completion.contains(today_date_index){
+            return Some(today_date_index);
+        }
+
+        let mut set = self.daily_challenge_completion.clone();
+        set.toggle_range(..);
+
+        set.ones().take(today_date_index).last()
+    }
+
+    pub fn get_daily_challenges_complete(&self) -> usize {
+        self.daily_challenge_completion.count_ones(..)
     }
 }
 
@@ -96,4 +142,27 @@ pub fn track_level_completion(
         &mut hints_state,
         current_level.as_ref(),
     );
+}
+
+#[cfg(test)]
+pub mod test {
+    use super::TotalCompletion;
+
+    #[test]
+    pub fn go() {
+        let mut completion = TotalCompletion::default();
+        completion.daily_challenge_completion.grow(4);
+
+        assert_eq!(Some(3), completion.get_next_incomplete_daily_challenge(3));
+
+        completion.daily_challenge_completion.set(3, true);
+        completion.daily_challenge_completion.set(2, true);
+
+        assert_eq!(Some(1), completion.get_next_incomplete_daily_challenge(3));
+
+        completion.daily_challenge_completion.set(1, true);
+        completion.daily_challenge_completion.set(0, true);
+
+        assert_eq!(None, completion.get_next_incomplete_daily_challenge(3));
+    }
 }

@@ -9,10 +9,12 @@ use ws_core::layout::entities::*;
 use ws_core::prelude::*;
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct UI;
+pub struct UITimer {
+    pub time_text: String,
+}
 
-impl MavericNode for UI {
-    type Context = ViewContext;
+impl MavericNode for UITimer {
+    type Context = MyWindowSize;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
@@ -23,61 +25,72 @@ impl MavericNode for UI {
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
-        commands
-            .ignore_node()
-            .unordered_children_with_context(|context, commands| {
-                let theme = context.1.level().name.trim().to_string();
-                let size = &context.3;
-
-                let time_text = match context.4.as_ref() {
-                    LevelTime::Started(..) => "00:00".to_string(),
-                    LevelTime::Finished { total_seconds } => format_seconds(*total_seconds),
-                };
-
-                let timer_font_size = size.font_size(&GameLayoutEntity::Timer);
-                commands.add_child(
-                    "timer",
-                    Text2DNode {
-                        text: time_text,
-                        font_size: timer_font_size,
-                        color: palette::BUTTON_TEXT_COLOR.convert_color(),
-                        font: TITLE_FONT_PATH,
-                        alignment: TextAlignment::Center,
-                        linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                    }
-                    .with_bundle((
-                        Transform::from_translation(
-                            size.get_rect(&GameLayoutEntity::Timer, &())
-                                .centre()
-                                .extend(crate::z_indices::TIMER),
-                        ),
-                        TimeCounterMarker,
-                    )),
-                    &(),
-                );
-
-                let theme_font_size = size.font_size(&GameLayoutEntity::Theme);
-
-                commands.add_child(
-                    "theme",
-                    Text2DNode {
-                        text: theme,
-                        font_size: theme_font_size,
-                        color: palette::BUTTON_TEXT_COLOR.convert_color(),
-                        font: TITLE_FONT_PATH,
-                        alignment: TextAlignment::Center,
-                        linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                    }
-                    .with_bundle(Transform::from_translation(
-                        size.get_rect(&GameLayoutEntity::Theme, &())
+        commands.unordered_children_with_node_and_context(|node, context, commands| {
+            let timer_font_size = context.font_size(&GameLayoutEntity::Timer);
+            commands.add_child(
+                "timer",
+                Text2DNode {
+                    text: node.time_text.clone(),
+                    font_size: timer_font_size,
+                    color: palette::BUTTON_TEXT_COLOR.convert_color(),
+                    font: TITLE_FONT_PATH,
+                    alignment: TextAlignment::Center,
+                    linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                }
+                .with_bundle((
+                    Transform::from_translation(
+                        context
+                            .get_rect(&GameLayoutEntity::Timer, &())
                             .centre()
-                            .extend(crate::z_indices::THEME),
-                    )),
-                    &(),
-                );
+                            .extend(crate::z_indices::TIMER),
+                    ),
+                    TimeCounterMarker,
+                )),
+                &(),
+            );
+        });
+    }
+}
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct UITheme {
+    pub theme: String,
+}
 
-            });
+impl MavericNode for UITheme {
+    type Context = MyWindowSize;
+
+    fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
+        commands
+            .ignore_context()
+            .ignore_node()
+            .insert(SpatialBundle::default())
+            .finish()
+    }
+
+    fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
+        commands.unordered_children_with_node_and_context(|node, context, commands| {
+            let theme_font_size = context.font_size(&GameLayoutEntity::Theme);
+
+            commands.add_child(
+                "theme",
+                Text2DNode {
+                    text: node.theme.clone(),
+                    font_size: theme_font_size,
+                    color: palette::BUTTON_TEXT_COLOR.convert_color(),
+                    font: TITLE_FONT_PATH,
+                    alignment: TextAlignment::Center,
+                    linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                }
+                .with_bundle(Transform::from_translation(
+                    context
+                        .get_rect(&GameLayoutEntity::Theme, &())
+                        .centre()
+                        .extend(crate::z_indices::THEME),
+                )),
+                &(),
+            );
+        });
     }
 }
 
@@ -98,19 +111,25 @@ impl MavericNode for WordsNode {
         commands
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
-                let words = &context.1.level().words;
+                let Some(level) = context.1.level(&context.9) else {
+                    return;
+                };
+                let words = &level.words;
 
                 for (index, word) in words.iter().enumerate() {
                     let completion = context.2.get_completion(index);
                     let tile = LayoutWordTile(index);
                     let font_size = context.3.font_size::<LayoutWordTile>(&tile);
                     let rect = context.3.get_rect(&tile, words);
-                    let level_index = match context.1.as_ref(){
-                        CurrentLevel::Fixed { level_index, .. } => *level_index as u16,
-                        CurrentLevel::Custom(_) => 0u16,
+                    let level_indices: (u16, u16) = match context.1.as_ref() {
+                        CurrentLevel::Fixed { level_index, .. } => (0, *level_index as u16),
+                        CurrentLevel::Custom => (1, 0),
+                        CurrentLevel::Tutorial { index } => (2, *index as u16),
+                        CurrentLevel::DailyChallenge { index } => (3, *index as u16),
+                        CurrentLevel::Unknown => (4, 0),
                     };
                     commands.add_child(
-                        (index as u16, level_index),
+                        (index as u16, level_indices.0, level_indices.1),
                         WordNode {
                             word: word.clone(),
                             tile,
@@ -264,11 +283,16 @@ impl MavericNode for WordNode {
 
         let bundle = (
             bundle,
-            TransitionBuilder::<SmudParamLens<2>>::default().then_tween(to, calculate_speed::<f32>(
-                &from,
-                &to,
-                Duration::from_secs_f32(animated_solutions::TOTAL_SECONDS),
-            )).build(),
+            TransitionBuilder::<SmudParamLens<2>>::default()
+                .then_tween(
+                    to,
+                    calculate_speed::<f32>(
+                        &from,
+                        &to,
+                        Duration::from_secs_f32(animated_solutions::TOTAL_SECONDS),
+                    ),
+                )
+                .build(),
             ScheduledForDeletion {
                 remaining: Duration::from_secs_f32(animated_solutions::TOTAL_SECONDS),
             },

@@ -4,7 +4,7 @@ use crate::{
     prelude::{
         level_group_layout::LevelGroupLayoutEntity, levels_menu_layout::LevelsMenuLayoutEntity,
         main_menu_layout::MainMenuLayoutEntity, *,
-    },
+    }, daily_challenge,
 };
 use bevy::{prelude::*, window::PrimaryWindow};
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
@@ -51,6 +51,7 @@ impl InteractionEntity {
         menu_state: &MenuState,
         popup_state: &PopupState,
         current_level: &CurrentLevel,
+        daily_challenges: &DailyChallenges,
         video_resource: &VideoResource,
         is_level_complete: bool,
         grid_tolerance: Option<f32>,
@@ -102,10 +103,13 @@ impl InteractionEntity {
                             .map(|t| Self::Tile(t.0)),
                     },
                     GameLayoutEntity::WordList => {
+
+                        let level = &current_level.level(daily_challenges)?;
+
                         return Self::try_get_button::<LayoutWordTile>(
                             position,
                             size,
-                            &current_level.level().words,
+                            &level.words,
                         );
                     }
                     GameLayoutEntity::Timer => None,
@@ -155,9 +159,11 @@ impl InputType {
         hint_state: &mut ResMut<HintState>,
         popup_state: &mut ResMut<PopupState>,
         video_resource: &VideoResource,
+        daily_challenges: &DailyChallenges,
         video_events: &AsyncEventWriter<VideoEvent>,
     ) {
         let is_level_complete = found_words.is_level_complete();
+
 
         let button_interaction: Option<ButtonInteraction> = match self {
             InputType::Start(position) => {
@@ -167,6 +173,7 @@ impl InputType {
                     menu_state,
                     popup_state,
                     current_level,
+                    daily_challenges,
                     video_resource,
                     is_level_complete,
                     None,
@@ -184,16 +191,18 @@ impl InputType {
                                     total_completion,
                                     video_resource,
                                     video_events,
+                                    daily_challenges,
                                 );
                             }
 
                             Some(button)
                         }
                         InteractionEntity::Tile(tile) => {
+                            let Some(level) = current_level.level(daily_challenges) else {return;};
                             input_state.handle_input_start(
                                 chosen_state,
                                 tile,
-                                &current_level.level().grid,
+                                &level.grid,
                                 found_words,
                             );
                             None
@@ -210,6 +219,7 @@ impl InputType {
                     menu_state,
                     popup_state,
                     current_level,
+                    daily_challenges,
                     video_resource,
                     is_level_complete,
                     Some(MOVE_TOLERANCE),
@@ -217,10 +227,11 @@ impl InputType {
                     match interaction {
                         InteractionEntity::Button(button) => Some(button),
                         InteractionEntity::Tile(tile) => {
+                            let Some(level) = current_level.level(daily_challenges) else {return;};
                             input_state.handle_input_move(
                                 chosen_state,
                                 tile,
-                                &current_level.level().grid,
+                                &level.grid,
                                 found_words,
                             );
                             None
@@ -237,6 +248,7 @@ impl InputType {
                     menu_state,
                     popup_state,
                     current_level,
+                    daily_challenges,
                     video_resource,
                     is_level_complete,
                     None,
@@ -252,8 +264,10 @@ impl InputType {
                                     hint_state,
                                     popup_state,
                                     total_completion,
+
                                     video_resource,
                                     video_events,
+                                    daily_challenges,
                                 );
                             }
 
@@ -294,6 +308,7 @@ fn handle_mouse_input(
     mut hint_state: ResMut<HintState>,
     mut popup_state: ResMut<PopupState>,
     video_state: Res<VideoResource>,
+    daily_challenges: Res<DailyChallenges>,
     video_events: AsyncEventWriter<VideoEvent>,
     total_completion: Res<TotalCompletion>,
 ) {
@@ -326,6 +341,7 @@ fn handle_mouse_input(
         &mut hint_state,
         &mut popup_state,
         &video_state,
+        &daily_challenges,
         &video_events,
     );
 }
@@ -346,6 +362,7 @@ fn handle_touch_input(
     video_state: Res<VideoResource>,
     video_events: AsyncEventWriter<VideoEvent>,
     total_completion: Res<TotalCompletion>,
+    daily_challenges: Res<DailyChallenges>,
 ) {
     for ev in touch_events.read() {
         let input_type = match ev.phase {
@@ -380,6 +397,7 @@ fn handle_touch_input(
             &mut hint_state,
             &mut popup_state,
             &video_state,
+            &daily_challenges,
             &video_events,
         );
     }

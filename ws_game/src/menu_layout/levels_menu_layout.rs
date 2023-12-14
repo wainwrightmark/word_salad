@@ -4,9 +4,9 @@ use ws_core::{
     layout::entities::{IDEAL_HEIGHT, IDEAL_WIDTH, TOP_BAR_ICON_SIZE},
     LayoutStructure, LayoutStructureWithFont, Spacing,
 };
-use ws_levels::{level_group::LevelGroup, level_sequence::LevelSequence};
+use ws_levels::level_group::LevelGroup;
 
-use crate::completion::TotalCompletion;
+use crate::{completion::TotalCompletion, prelude::DailyChallenges};
 
 use super::{
     MENU_BUTTON_DOUBLE_HEIGHT, MENU_BUTTON_FONT_SIZE, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH,
@@ -28,17 +28,16 @@ impl LevelsMenuLayoutEntity {
 
     pub const COUNT: usize = 1 + LevelGroup::COUNT;
 
-    pub fn get_text(&self, completion: &TotalCompletion) -> String {
+    pub fn get_text(&self, completion: &TotalCompletion, daily_challenges: &DailyChallenges) -> String {
         let name = self.name();
         let complete = match self {
-            LevelsMenuLayoutEntity::WordSalad => completion
-                .get_number_complete(&ws_levels::level_sequence::LevelSequence::DailyChallenge),
+            LevelsMenuLayoutEntity::WordSalad => completion.get_daily_challenges_complete(),
             LevelsMenuLayoutEntity::AdditionalLevel(group) => {
                 completion.get_number_complete_group(group)
             }
         };
         let total = match self {
-            LevelsMenuLayoutEntity::WordSalad => LevelSequence::DailyChallenge.level_count(),
+            LevelsMenuLayoutEntity::WordSalad => daily_challenges.total_levels(),
             LevelsMenuLayoutEntity::AdditionalLevel(group) => group.total_count(),
         };
 
