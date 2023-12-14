@@ -13,6 +13,12 @@ environment = { NETLIFY_EXPERIMENTAL_BUILD_RUST_SOURCE = "true" }
 
 [[headers]]
 # Define which paths this specific [[headers]] block will cover.
-for = "/daily_challenge.tsv"
+for = "/daily.tsv"
+[headers.values]
+Access-Control-Allow-Origin = "*"
+
+[[headers]]
+# Define which paths this specific [[headers]] block will cover.
+for = "/news.yaml"
 [headers.values]
 Access-Control-Allow-Origin = "*"
