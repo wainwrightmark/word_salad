@@ -5,6 +5,7 @@ pub mod game_grid;
 pub mod hints;
 pub mod words;
 pub mod top_bar;
+pub mod level_name;
 pub mod menu;
 pub mod popup;
 pub mod tutorial;
@@ -18,6 +19,7 @@ pub use game_grid::*;
 pub use hints::*;
 pub use words::*;
 pub use top_bar::*;
+pub use level_name::*;
 pub use menu::*;
 pub use popup::*;
 pub use tutorial::*;
@@ -78,7 +80,7 @@ impl MavericRootChildren for ViewRoot {
                         commands.add_child("tutorial", TutorialNode { text }, &context.3);
                     } else {
                         let theme = level.name.clone();
-                        commands.add_child("ui_theme", UITheme { theme }, &context.3);
+                        commands.add_child("ui_theme", LevelName { theme }, &context.3);
 
                         let time_text = match context.4.as_ref() {
                             LevelTime::Started(..) => "00:00".to_string(),

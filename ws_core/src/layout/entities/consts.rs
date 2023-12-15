@@ -6,7 +6,7 @@ pub const TOP_BAR_ICON_SIZE: f32 = 50.;
 pub const WORD_SALAD_LOGO_WIDTH: f32 = 200.;
 
 pub const THEME_HEIGHT: f32 = 40.;
-pub const THEME_WIDTH: f32 = 200.;
+pub const THEME_WIDTH: f32 = 260.;
 
 pub const TIMER_HEIGHT: f32 = 20.;
 pub const TIMER_WIDTH: f32 = 100.;

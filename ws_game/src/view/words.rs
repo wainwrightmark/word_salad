@@ -10,47 +10,6 @@ use ws_core::layout::entities::*;
 use ws_core::prelude::*;
 
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct UITheme {
-    pub theme: String,
-}
-
-impl MavericNode for UITheme {
-    type Context = MyWindowSize;
-
-    fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
-        commands
-            .ignore_context()
-            .ignore_node()
-            .insert(SpatialBundle::default())
-            .finish()
-    }
-
-    fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
-        commands.unordered_children_with_node_and_context(|node, context, commands| {
-            let theme_font_size = context.font_size(&GameLayoutEntity::Theme);
-
-            commands.add_child(
-                "theme",
-                Text2DNode {
-                    text: node.theme.clone(),
-                    font_size: theme_font_size,
-                    color: palette::BUTTON_TEXT_COLOR.convert_color(),
-                    font: TITLE_FONT_PATH,
-                    alignment: TextAlignment::Center,
-                    linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                }
-                .with_bundle(Transform::from_translation(
-                    context
-                        .get_rect(&GameLayoutEntity::Theme, &())
-                        .centre()
-                        .extend(crate::z_indices::THEME),
-                )),
-                &(),
-            );
-        });
-    }
-}
 
 #[derive(Debug, PartialEq)]
 pub struct WordsNode;

@@ -36,8 +36,8 @@ impl LayoutStructure for LayoutGridTile {
     fn location(&self, context: &Self::Context) -> Vec2 {
         GameLayoutEntity::Grid.location(context).add(tile_offset(
             self.0,
-            Spacing::SpaceAround,
-            Spacing::SpaceAround,
+            Spacing::SpaceBetween,
+            Spacing::SpaceBetween,
             GameLayoutEntity::Grid.size(context),
             self.size(context),
         ))

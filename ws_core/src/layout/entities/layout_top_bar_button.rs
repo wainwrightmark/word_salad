@@ -81,7 +81,7 @@ impl LayoutStructureWithFont for LayoutTopBarButton {
         match self{
             LayoutTopBarButton::MenuBurgerButton => 40.0,
             LayoutTopBarButton::WordSaladButton => 36.0,
-            LayoutTopBarButton::HintCounter => 24.0,
+            LayoutTopBarButton::HintCounter => 20.0,
         }
 
     }

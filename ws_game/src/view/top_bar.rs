@@ -24,21 +24,21 @@ impl MavericNode for TopBar {
             .unordered_children_with_context(|context, commands| {
                 let size = &context.3;
 
-                let top_bar_rect = size.get_rect(&GameLayoutEntity::TopBar, &());
+                // let top_bar_rect = size.get_rect(&GameLayoutEntity::TopBar, &());
 
-                commands.add_child(
-                    "TopBar",
-                    box_node(
-                        size.scaled_width,
-                        top_bar_rect.height(),
-                        top_bar_rect
-                            .centre()
-                            .extend(crate::z_indices::TOP_BAR_BACKGROUND),
-                        palette::TOP_BAR_COLOR.convert_color(),
-                        0.0,
-                    ),
-                    &(),
-                );
+                // commands.add_child(
+                //     "TopBar",
+                //     box_node(
+                //         size.scaled_width,
+                //         top_bar_rect.height(),
+                //         top_bar_rect
+                //             .centre()
+                //             .extend(crate::z_indices::TOP_BAR_BACKGROUND),
+                //         palette::TOP_BAR_COLOR.convert_color(),
+                //         0.0,
+                //     ),
+                //     &(),
+                // );
 
                 commands.add_child(
                     "Burger",

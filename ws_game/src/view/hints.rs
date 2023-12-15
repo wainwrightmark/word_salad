@@ -15,7 +15,7 @@ pub struct HintsViewNode {
     pub hint_state: HintState,
 }
 
-const CIRCLE_SCALE: f32 = 0.3;
+const CIRCLE_SCALE: f32 = 0.25;
 
 impl MavericNode for HintsViewNode {
     type Context = MyWindowSize;
@@ -144,32 +144,32 @@ impl MavericNode for HintsViewNode {
                 &(),
             );
 
-            const SPARKLE_FILL_PARAMETERS: &[ShaderParameter] = &[
-                ShaderParameter::f32(0),
-                ShaderParameter::f32(1),
-                ShaderParameter::f32(2),
-            ];
+            // const SPARKLE_FILL_PARAMETERS: &[ShaderParameter] = &[
+            //     ShaderParameter::f32(0),
+            //     ShaderParameter::f32(1),
+            //     ShaderParameter::f32(2),
+            // ];
 
-            commands.add_child(
-                "hints_sparkle",
-                SmudShapeNode {
-                    color: palette::HINT_COUNTER_COLOR.convert_color(),
-                    sdf: CIRCLE_SHADER_PATH,
-                    fill: SPARKLE_SHADER_PATH,
-                    frame_size: 0.9,
-                    f_params: [3.0, 2.0, 56789.0, 0.0, 0.0, 0.0],
-                    u_params: [0; SHAPE_U_PARAMS],
-                    sdf_param_usage: ShaderParamUsage::NO_PARAMS,
-                    fill_param_usage: ShaderParamUsage(SPARKLE_FILL_PARAMETERS),
-                }
-                .with_bundle(Transform {
-                    translation: (hints_rect.centre() + (Vec2::X * hint_font_size * 0.03))
-                        .extend(crate::z_indices::TOP_BAR_BUTTON - 0.5),
-                    scale: Vec3::ONE * hints_rect.width() * CIRCLE_SCALE,
-                    rotation: Default::default(),
-                }),
-                &(),
-            );
+            // commands.add_child(
+            //     "hints_sparkle",
+            //     SmudShapeNode {
+            //         color: palette::HINT_COUNTER_COLOR.convert_color(),
+            //         sdf: CIRCLE_SHADER_PATH,
+            //         fill: SPARKLE_SHADER_PATH,
+            //         frame_size: 0.9,
+            //         f_params: [3.0, 2.0, 56789.0, 0.0, 0.0, 0.0],
+            //         u_params: [0; SHAPE_U_PARAMS],
+            //         sdf_param_usage: ShaderParamUsage::NO_PARAMS,
+            //         fill_param_usage: ShaderParamUsage(SPARKLE_FILL_PARAMETERS),
+            //     }
+            //     .with_bundle(Transform {
+            //         translation: (hints_rect.centre() + (Vec2::X * hint_font_size * 0.03))
+            //             .extend(crate::z_indices::TOP_BAR_BUTTON - 0.5),
+            //         scale: Vec3::ONE * hints_rect.width() * CIRCLE_SCALE,
+            //         rotation: Default::default(),
+            //     }),
+            //     &(),
+            // );
         });
     }
 }
