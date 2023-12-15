@@ -108,16 +108,24 @@ fn setup_system(mut commands: Commands) {
 #[allow(unused_variables, unused_mut)]
 fn choose_level_on_game_load(
     mut current_level: ResMut<CurrentLevel>,
+    mut found_words: ResMut<FoundWordsState>,
     mut timer: ResMut<crate::level_time::LevelTime>,
 ) {
     #[cfg(target_arch = "wasm32")]
     {
         match crate::wasm::get_game_from_location() {
             Some(level) => {
+                if !current_level.as_ref().eq(&CurrentLevel::Custom){
+                    *current_level = CurrentLevel::Custom;
+                    *found_words = FoundWordsState::new_from_level(&level);
+                }
+
                 if let Err(err) = CUSTOM_LEVEL.set(level){
                     error!("{err}");
                 }
-                *current_level = CurrentLevel::Custom;
+
+
+
                 *timer = LevelTime::default();
                 return;
             }
