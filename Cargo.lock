@@ -3162,8 +3162,9 @@ checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 
 [[package]]
 name = "prime_bag"
-version = "0.1.0"
-source = "git+https://github.com/wainwrightmark/prime-bag#767174751f5a40c64e91fe89e1979cae019653af"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dbc06a0db33c02b059e4bf309043ca0d90b52452dd3c58c48923f8085ad08e6d"
 dependencies = [
  "gcd",
  "static_assertions",
@@ -4892,7 +4893,6 @@ dependencies = [
  "lazy_static",
  "num-derive",
  "num-traits",
- "prime_bag",
  "rand",
  "serde",
  "serde_repr",

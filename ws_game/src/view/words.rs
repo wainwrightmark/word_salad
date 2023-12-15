@@ -158,7 +158,7 @@ impl MavericNode for WordNode {
 
         let scale = self.rect.width();
         let translation = self.rect.centre().extend(z_indices::WORD_BACKGROUND + 1.0);
-        let rounding = 0.1;
+
         let height = self.rect.height();
 
         let from = 1.5;
@@ -183,7 +183,7 @@ impl MavericNode for WordNode {
                 frame: bevy_smud::Frame::Quad(1.0),
                 f_params: [
                     (height / scale),
-                    rounding,
+                    WORD_ROUNDING * (height / scale),
                     from,
                     color2.r(),
                     color2.g(),

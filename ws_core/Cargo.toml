@@ -15,7 +15,7 @@ anyhow = "1"
 base64 = "0.21"
 geometrid = { version = "0.6", features = ["glam", "serde"] }
 glam = "0.24"
-prime_bag = { git = 'https://github.com/wainwrightmark/prime-bag'}
+prime_bag = { version = "0.2.0"}
 serde_with = "3"
 lazy_static = "1.4"
 serde_yaml = "0.9"

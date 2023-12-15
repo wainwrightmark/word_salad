@@ -1,5 +1,5 @@
 use arrayvec::ArrayVec;
-use prime_bag::prime_bag_element::PrimeBagElement;
+use prime_bag::*;
 
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;

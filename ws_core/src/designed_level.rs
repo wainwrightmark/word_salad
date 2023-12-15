@@ -134,7 +134,7 @@ impl DesignedLevel {
         };
 
         'character_groups: for (character, mut remaining_copies) in
-            potentially_redundant_characters.iter_groups()
+            potentially_redundant_characters.iter_groups().map(|x|(x.0, x.1.get()))
         {
             let character_tiles = self
                 .grid
