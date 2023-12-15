@@ -227,9 +227,13 @@ impl ButtonInteraction {
                         },
                         NonLevel::NoMoreDailyChallenge => {
                             total_completion.reset_daily_challenge_completion();
+                            if let Some(index) = total_completion.get_next_incomplete_daily_challenge_from_today(){
+                                *current_level.as_mut() = CurrentLevel::DailyChallenge { index };
+                            }
                         },
                         NonLevel::NoMoreLevelSequence(ls) => {
                             total_completion.restart_level_sequence_completion(ls);
+                            *current_level.as_mut() = CurrentLevel::Fixed { level_index: 0, sequence: ls };
                         },
                     }
                 }
