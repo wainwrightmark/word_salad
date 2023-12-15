@@ -32,7 +32,7 @@ fn update_state_on_level_change(
     mut found_words: ResMut<FoundWordsState>,
     mut chosen: ResMut<ChosenState>,
 ) {
-    if current_level.is_changed() {
+    if current_level.is_changed() && !current_level.is_added() {
         match current_level.level(daily_challenges.as_ref()) {
             Either::Left(level) => {
                 *found_words = FoundWordsState::new_from_level(level);
