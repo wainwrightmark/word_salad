@@ -198,6 +198,7 @@ async fn disable_back_async<'a>(_writer: async_event_writer::AsyncEventWriter<Ap
     }
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Copy, Event, PartialEq)]
 enum AppLifeCycleEvent {
     StateChange { is_active: bool },

@@ -1,3 +1,29 @@
+pub mod non_level;
+pub mod background;
+pub mod congrats;
+pub mod game_grid;
+pub mod hints;
+pub mod words;
+pub mod top_bar;
+pub mod menu;
+pub mod popup;
+pub mod tutorial;
+pub mod wordline;
+pub mod timer;
+
+pub use non_level::*;
+pub use background::*;
+pub use congrats::*;
+pub use game_grid::*;
+pub use hints::*;
+pub use words::*;
+pub use top_bar::*;
+pub use menu::*;
+pub use popup::*;
+pub use tutorial::*;
+pub use wordline::*;
+pub use timer::*;
+
 use crate::{completion::TotalCompletion, prelude::*};
 
 pub type ViewContext = (
