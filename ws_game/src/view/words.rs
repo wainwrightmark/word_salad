@@ -10,6 +10,7 @@ use ws_core::layout::entities::*;
 use ws_core::prelude::*;
 
 
+pub const WORD_ROUNDING: f32 = 1.0;
 
 #[derive(Debug, PartialEq)]
 pub struct WordsNode;
@@ -131,7 +132,7 @@ impl MavericNode for WordNode {
                     node.rect.extents.y.abs(),
                     shape_translation,
                     palette::WORD_BACKGROUND_UNSTARTED.convert_color(),
-                    0.1,
+                    WORD_ROUNDING * node.rect.extents.y.abs() / node.rect.extents.x.abs(),
                 )
                 .with_bundle(ButtonInteraction::WordButton(node.tile))
                 .with_transition_to::<SmudColorLens>(*fill_color, amount_per_second.into()),

@@ -158,7 +158,7 @@ pub fn box_node(
         sdf: BOX_SHADER_PATH,
         fill: SIMPLE_FILL_SHADER_PATH,
         frame_size: (1.0f32).max(height / scale),
-        f_params: [(height / scale), rounding, rounding, 0.0, 0.0, 0.0],
+        f_params: [(height / scale), rounding , rounding, 0.0, 0.0, 0.0],
         u_params: Default::default(),
         sdf_param_usage: ShaderParamUsage(SDF_PARAMETERS),
         fill_param_usage: ShaderParamUsage::NO_PARAMS,
