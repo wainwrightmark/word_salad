@@ -29,7 +29,7 @@ impl MavericNode for TopBar {
                 commands.add_child(
                     "TopBar",
                     box_node(
-                        top_bar_rect.width() * 1.2,
+                        size.scaled_width,
                         top_bar_rect.height(),
                         top_bar_rect
                             .centre()

@@ -52,7 +52,7 @@ pub mod palette {
 
 
     pub const CONGRATS_BUTTON_TEXT: Color = Color::rgb(0.1, 0.1, 0.1);
-    pub const CONGRATS_BUTTON_FILL: Color = Color::rgba(0.7,0.7,0.7,0.4);
+    pub const CONGRATS_BUTTON_FILL: Color = Color::rgba(0.4,0.4,0.4,0.4);
 
     pub const ICON_BUTTON_BACKGROUND: Color = Color::NONE;
     pub const TEXT_BUTTON_BACKGROUND: Color = Color::WHITE;
