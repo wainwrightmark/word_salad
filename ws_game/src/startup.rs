@@ -114,7 +114,9 @@ fn choose_level_on_game_load(
     {
         match crate::wasm::get_game_from_location() {
             Some(level) => {
-                CUSTOM_LEVEL.set(level);
+                if let Err(err) = CUSTOM_LEVEL.set(level){
+                    error!("{err}");
+                }
                 *current_level = CurrentLevel::Custom;
                 *timer = LevelTime::default();
                 return;

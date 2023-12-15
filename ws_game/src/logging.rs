@@ -22,7 +22,7 @@ fn watch_level_changes(current_level: Res<CurrentLevel>, daily_challenges: Res<D
     if current_level.is_changed() {
         //info!("Logging level changed");
         let level = current_level.level(&daily_challenges);
-        let level = level
+        let level = level.left()
             .map(|x| x.name.clone())
             .unwrap_or_else(|| "Unknown".to_string());
 
@@ -52,7 +52,7 @@ fn watch_level_completion(
         };
 
         let level = current_level.level(&daily_challenges);
-        let level = level
+        let level = level.left()
             .map(|x| x.name.clone())
             .unwrap_or_else(|| "Unknown".to_string());
 

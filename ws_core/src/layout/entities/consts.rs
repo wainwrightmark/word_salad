@@ -36,6 +36,13 @@ pub const STREAMING_TOP_OFFSET:f32 = 100.0;
 pub const CONGRATS_ENTITY_HEIGHT: f32 = 40.0;
 pub const CONGRATS_ENTITY_WIDTH: f32 = 80.0;
 
+pub const NON_LEVEL_TEXT_HEIGHT: f32 = 80.0;
+pub const NON_LEVEL_TEXT_WIDTH: f32 = 240.0;
+
+pub const NON_LEVEL_BUTTON_HEIGHT: f32 = 40.0;
+pub const NON_LEVEL_BUTTON_WIDTH: f32 = 80.0;
+
+
 pub const HINTS_POPUP_BOX_TOP: f32 = 180.;
 pub const HINTS_POPUP_BOX_WIDTH: f32 = 300.;
 pub const HINTS_POPUP_BOX_HEIGHT: f32 = 200.;

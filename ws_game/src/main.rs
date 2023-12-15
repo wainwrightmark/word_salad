@@ -32,6 +32,7 @@ pub mod wordline;
 pub mod z_indices;
 pub mod hints_view;
 pub mod daily_challenge;
+pub mod non_level_view;
 
 fn main() {
     crate::startup::go();
@@ -69,6 +70,7 @@ pub mod prelude {
     pub use crate::tutorial::*;
     pub use crate::hints_view::*;
     pub use crate::daily_challenge::*;
+    pub use crate::non_level_view::*;
 
     pub use std::array;
 

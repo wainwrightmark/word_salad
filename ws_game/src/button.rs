@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use itertools::Either;
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
 use strum::EnumIs;
 use ws_core::layout::entities::{CongratsLayoutEntity, LayoutTopBarButton, LayoutWordTile};
@@ -42,6 +43,7 @@ pub enum ButtonInteraction {
     BuyMoreHints,
     ClosePopups,
     MenuBackButton,
+    NonLevelInteractionButton
 }
 
 impl ButtonInteraction {
@@ -139,7 +141,7 @@ impl ButtonInteraction {
         hint_state: &mut ResMut<HintState>,
         popup_state: &mut ResMut<PopupState>,
 
-        total_completion: &TotalCompletion,
+        total_completion: &mut ResMut<TotalCompletion>,
         video_state: &VideoResource,
         video_events: &AsyncEventWriter<VideoEvent>,
         daily_challenges: &DailyChallenges
@@ -188,7 +190,7 @@ impl ButtonInteraction {
                             *current_level.as_mut() = CurrentLevel::Fixed { level_index: index, sequence };
                         }
                         else{
-                            *current_level.as_mut() = CurrentLevel::Unknown;
+                            *current_level.as_mut() = CurrentLevel::NonLevel(NonLevel::NoMoreLevelSequence(sequence));
                         }
 
 
@@ -202,7 +204,7 @@ impl ButtonInteraction {
                 if hint_state.hints_remaining == 0 {
                     *popup_state.as_mut() = PopupState::BuyMoreHints;
                 } else {
-                    if let Some(level) = current_level.level(daily_challenges){
+                    if let Either::Left(level) = current_level.level(daily_challenges){
                         found_words.try_hint_word(hint_state, level, word.0, chosen_state);
                     }
 
@@ -213,6 +215,24 @@ impl ButtonInteraction {
             }
             ButtonInteraction::TopMenuItem(LayoutTopBarButton::MenuBurgerButton) => {
                 menu_state.toggle()
+            }
+            ButtonInteraction::NonLevelInteractionButton =>{
+                if let Some(non_level) = current_level.level(daily_challenges).right(){
+                    match non_level{
+                        NonLevel::BeforeTutorial => {
+                            *current_level.as_mut() = CurrentLevel::Tutorial { index: 0 };
+                        },
+                        NonLevel::AfterCustomLevel => {
+                            *current_level.as_mut() = CurrentLevel::Custom;
+                        },
+                        NonLevel::NoMoreDailyChallenge => {
+                            total_completion.reset_daily_challenge_completion();
+                        },
+                        NonLevel::NoMoreLevelSequence(ls) => {
+                            total_completion.restart_level_sequence_completion(ls);
+                        },
+                    }
+                }
             }
             ButtonInteraction::TopMenuItem(LayoutTopBarButton::WordSaladButton) => {
                 if let Some(index) =  total_completion.get_next_incomplete_daily_challenge_from_today(){

@@ -95,7 +95,7 @@ fn handle_daily_challenge_data_loaded(
     mut ev: EventReader<DailyChallengeDataLoadedEvent>,
 ) {
     for event in ev.read() {
-        info!("Daily challenge data loaded '{}'", event.data);
+        //info!("Daily challenge data loaded '{}'", event.data);
         let levels = event
             .data
             .lines()

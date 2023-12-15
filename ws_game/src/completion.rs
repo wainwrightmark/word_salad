@@ -29,6 +29,15 @@ impl TrackableResource for TotalCompletion {
 }
 
 impl TotalCompletion {
+    pub fn reset_daily_challenge_completion(&mut self) {
+        self.daily_challenge_completion.clear();
+    }
+    pub fn restart_level_sequence_completion(&mut self, sequence: LevelSequence) {
+        if let Some(lc) = self.completions.get_mut(sequence as usize) {
+            lc.current_index = 0;
+        }
+    }
+
     pub fn level_complete(
         total_completion: &mut ResMut<Self>,
         hints_state: &mut ResMut<HintState>,
@@ -64,27 +73,28 @@ impl TotalCompletion {
             }
             CurrentLevel::DailyChallenge { index } => {
                 if !total_completion.daily_challenge_completion.contains(*index) {
-                    total_completion.daily_challenge_completion.grow(index.saturating_add(1));
+                    total_completion
+                        .daily_challenge_completion
+                        .grow(index.saturating_add(1));
                     total_completion.daily_challenge_completion.insert(*index);
                     hints_state.hints_remaining += 2;
                     hints_state.total_earned_hints += 2;
                 }
             }
-            CurrentLevel::Unknown => {
-
-            },
+            CurrentLevel::NonLevel(..) => {}
         }
     }
 
     pub fn get_next_level_index(&self, sequence: LevelSequence) -> Option<usize> {
         let sequence_index = sequence as usize;
 
-        let index = self.completions
+        let index = self
+            .completions
             .get(sequence_index)
             .map(|x| x.current_index)
             .unwrap_or_default();
 
-        if index >= sequence.level_count(){
+        if index >= sequence.level_count() {
             return None;
         }
         return Some(index);
@@ -112,7 +122,7 @@ impl TotalCompletion {
     }
 
     pub fn get_next_incomplete_daily_challenge(&self, today_date_index: usize) -> Option<usize> {
-        if !self.daily_challenge_completion.contains(today_date_index){
+        if !self.daily_challenge_completion.contains(today_date_index) {
             return Some(today_date_index);
         }
 

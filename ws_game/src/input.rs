@@ -4,7 +4,7 @@ use crate::{
     prelude::{
         level_group_layout::LevelGroupLayoutEntity, levels_menu_layout::LevelsMenuLayoutEntity,
         main_menu_layout::MainMenuLayoutEntity, *,
-    }, daily_challenge,
+    },
 };
 use bevy::{prelude::*, window::PrimaryWindow};
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
@@ -56,6 +56,7 @@ impl InteractionEntity {
         is_level_complete: bool,
         grid_tolerance: Option<f32>,
     ) -> Option<Self> {
+        info!("Try find input");
         match popup_state {
             PopupState::None => {}
             PopupState::BuyMoreHints => {
@@ -82,37 +83,61 @@ impl InteractionEntity {
 
         match menu_state {
             MenuState::Closed => {
-                if is_level_complete {
-                    return Self::try_get_button::<CongratsLayoutEntity>(position, size, &SelfieMode(video_resource.is_selfie_mode));
-                }
+                match current_level.level(daily_challenges) {
+                    itertools::Either::Left(level) => {
+                        if is_level_complete {
+                            return Self::try_get_button::<CongratsLayoutEntity>(
+                                position,
+                                size,
+                                &SelfieMode(video_resource.is_selfie_mode),
+                            );
+                        }
 
-                let Some(layout_entity) = size.try_pick::<GameLayoutEntity>(*position, &()) else {
-                    return None;
-                };
-                match layout_entity {
-                    GameLayoutEntity::TopBar => {
-                        Self::try_get_button::<LayoutTopBarButton>(position, size, &())
+                        let Some(layout_entity) = size.try_pick::<GameLayoutEntity>(*position, &())
+                        else {
+                            return None;
+                        };
+
+                        match layout_entity {
+                            GameLayoutEntity::TopBar => {
+                                Self::try_get_button::<LayoutTopBarButton>(position, size, &())
+                            }
+                            GameLayoutEntity::Theme => None,
+                            GameLayoutEntity::Grid => match grid_tolerance {
+                                Some(tolerance) => size
+                                    .try_pick_with_tolerance::<LayoutGridTile>(
+                                        *position,
+                                        tolerance,
+                                        &(),
+                                    )
+                                    .map(|t| Self::Tile(t.0)),
+                                None => size
+                                    .try_pick::<LayoutGridTile>(*position, &())
+                                    .map(|t| Self::Tile(t.0)),
+                            },
+                            GameLayoutEntity::WordList => {
+                                return Self::try_get_button::<LayoutWordTile>(
+                                    position,
+                                    size,
+                                    &level.words,
+                                );
+                            }
+                            GameLayoutEntity::Timer => None,
+                        }
                     }
-                    GameLayoutEntity::Theme => None,
-                    GameLayoutEntity::Grid => match grid_tolerance {
-                        Some(tolerance) => size
-                            .try_pick_with_tolerance::<LayoutGridTile>(*position, tolerance, &())
-                            .map(|t| Self::Tile(t.0)),
-                        None => size
-                            .try_pick::<LayoutGridTile>(*position, &())
-                            .map(|t| Self::Tile(t.0)),
-                    },
-                    GameLayoutEntity::WordList => {
+                    itertools::Either::Right(..) => {
+                        let non_level_entity =
+                            size.try_pick::<NonLevelLayoutEntity>(*position, &())?;
 
-                        let level = &current_level.level(daily_challenges)?;
-
-                        return Self::try_get_button::<LayoutWordTile>(
-                            position,
-                            size,
-                            &level.words,
-                        );
+                        match non_level_entity {
+                            NonLevelLayoutEntity::Text => return None,
+                            NonLevelLayoutEntity::InteractButton => {
+                                return Some(InteractionEntity::Button(
+                                    ButtonInteraction::NonLevelInteractionButton,
+                                ));
+                            }
+                        }
                     }
-                    GameLayoutEntity::Timer => None,
                 }
             }
 
@@ -154,7 +179,7 @@ impl InputType {
         chosen_state: &mut ResMut<ChosenState>,
         input_state: &mut Local<GridInputState>,
         found_words: &mut ResMut<FoundWordsState>,
-        total_completion: &TotalCompletion,
+        total_completion: &mut ResMut<TotalCompletion>,
         pressed_button: &mut ResMut<PressedButton>,
         hint_state: &mut ResMut<HintState>,
         popup_state: &mut ResMut<PopupState>,
@@ -163,7 +188,6 @@ impl InputType {
         video_events: &AsyncEventWriter<VideoEvent>,
     ) {
         let is_level_complete = found_words.is_level_complete();
-
 
         let button_interaction: Option<ButtonInteraction> = match self {
             InputType::Start(position) => {
@@ -198,7 +222,9 @@ impl InputType {
                             Some(button)
                         }
                         InteractionEntity::Tile(tile) => {
-                            let Some(level) = current_level.level(daily_challenges) else {return;};
+                            let Some(level) = current_level.level(daily_challenges).left() else {
+                                return;
+                            };
                             input_state.handle_input_start(
                                 chosen_state,
                                 tile,
@@ -227,7 +253,9 @@ impl InputType {
                     match interaction {
                         InteractionEntity::Button(button) => Some(button),
                         InteractionEntity::Tile(tile) => {
-                            let Some(level) = current_level.level(daily_challenges) else {return;};
+                            let Some(level) = current_level.level(daily_challenges).left() else {
+                                return;
+                            };
                             input_state.handle_input_move(
                                 chosen_state,
                                 tile,
@@ -264,7 +292,6 @@ impl InputType {
                                     hint_state,
                                     popup_state,
                                     total_completion,
-
                                     video_resource,
                                     video_events,
                                     daily_challenges,
@@ -310,7 +337,7 @@ fn handle_mouse_input(
     video_state: Res<VideoResource>,
     daily_challenges: Res<DailyChallenges>,
     video_events: AsyncEventWriter<VideoEvent>,
-    total_completion: Res<TotalCompletion>,
+    mut total_completion: ResMut<TotalCompletion>,
 ) {
     let input_type = if mouse_input.just_released(MouseButton::Left) {
         let position_option = get_cursor_position(q_windows);
@@ -336,7 +363,7 @@ fn handle_mouse_input(
         &mut chosen_state,
         &mut input_state,
         &mut found_words,
-        &total_completion,
+        &mut total_completion,
         &mut pressed_button,
         &mut hint_state,
         &mut popup_state,
@@ -361,7 +388,7 @@ fn handle_touch_input(
     mut popup_state: ResMut<PopupState>,
     video_state: Res<VideoResource>,
     video_events: AsyncEventWriter<VideoEvent>,
-    total_completion: Res<TotalCompletion>,
+    mut total_completion: ResMut<TotalCompletion>,
     daily_challenges: Res<DailyChallenges>,
 ) {
     for ev in touch_events.read() {
@@ -392,7 +419,7 @@ fn handle_touch_input(
             &mut chosen_state,
             &mut input_state,
             &mut found_words,
-            &total_completion,
+            &mut total_completion,
             &mut pressed_button,
             &mut hint_state,
             &mut popup_state,

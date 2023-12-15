@@ -1,6 +1,7 @@
 use crate::{animated_solutions, prelude::*, z_indices};
 use bevy_smud::param_usage::{ShaderParamUsage, ShaderParameter};
 use bevy_smud::{ShapeBundle, SmudShaders, SmudShape};
+use itertools::Either;
 use maveric::transition::speed::calculate_speed;
 use maveric::widgets::text2d_node::Text2DNode;
 use maveric::with_bundle::CanWithBundle;
@@ -111,7 +112,7 @@ impl MavericNode for WordsNode {
         commands
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
-                let Some(level) = context.1.level(&context.9) else {
+                let Either::Left(level) = context.1.level(&context.9) else {
                     return;
                 };
                 let words = &level.words;
@@ -126,7 +127,7 @@ impl MavericNode for WordsNode {
                         CurrentLevel::Custom => (1, 0),
                         CurrentLevel::Tutorial { index } => (2, *index as u16),
                         CurrentLevel::DailyChallenge { index } => (3, *index as u16),
-                        CurrentLevel::Unknown => (4, 0),
+                        CurrentLevel::NonLevel(..) => (4, 0),
                     };
                     commands.add_child(
                         (index as u16, level_indices.0, level_indices.1),

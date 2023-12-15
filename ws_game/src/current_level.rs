@@ -1,5 +1,7 @@
+use itertools::Either;
 use nice_bevy_utils::TrackableResource;
 use serde::{Deserialize, Serialize};
+use strum::EnumIs;
 use std::sync::OnceLock;
 use ws_levels::{all_levels::get_tutorial_level, level_sequence::LevelSequence};
 
@@ -18,7 +20,21 @@ pub enum CurrentLevel {
         index: usize,
     },
     Custom,
-    Unknown,
+    NonLevel(NonLevel),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, EnumIs)]
+pub enum NonLevel{
+    BeforeTutorial,
+    AfterCustomLevel,
+    NoMoreDailyChallenge,
+    NoMoreLevelSequence(LevelSequence)
+}
+
+impl Into<CurrentLevel> for NonLevel {
+    fn into(self) -> CurrentLevel {
+        CurrentLevel::NonLevel(self)
+    }
 }
 
 impl TrackableResource for CurrentLevel {
@@ -27,23 +43,43 @@ impl TrackableResource for CurrentLevel {
 
 impl Default for CurrentLevel {
     fn default() -> Self {
-        Self::Tutorial { index: 0 }
+        Self::NonLevel(NonLevel::BeforeTutorial)
     }
 }
 
 pub static CUSTOM_LEVEL: OnceLock<DesignedLevel> = OnceLock::new();
 
 impl CurrentLevel {
-    pub fn level<'c>(&self, daily_challenges: &'c DailyChallenges) -> Option<&'c DesignedLevel> {
+    pub fn level<'c>(&self, daily_challenges: &'c DailyChallenges) -> Either<&'c DesignedLevel, NonLevel> {
         match self {
             CurrentLevel::Fixed {
                 level_index,
                 sequence,
-            } => sequence.get_level(*level_index),
-            CurrentLevel::Custom => CUSTOM_LEVEL.get(),
-            CurrentLevel::Tutorial { index } => get_tutorial_level(*index),
-            CurrentLevel::DailyChallenge { index } => daily_challenges.levels.get(*index),
-            CurrentLevel::Unknown => None,
+            } => {
+                match sequence.get_level(*level_index){
+                    Some(level) => Either::Left(level),
+                    None => Either::Right(NonLevel::NoMoreLevelSequence(*sequence)),
+                }
+            },
+            CurrentLevel::Custom => {
+                match  CUSTOM_LEVEL.get(){
+                    Some(cl) => Either::Left(cl),
+                    None => Either::Right(NonLevel::AfterCustomLevel),
+                }
+            },
+            CurrentLevel::Tutorial { index } => {
+                match get_tutorial_level(*index){
+                    Some(cl) => Either::Left(cl),
+                    None => Either::Right(NonLevel::BeforeTutorial),
+                }
+            },
+            CurrentLevel::DailyChallenge { index } => {
+                match daily_challenges.levels.get(*index){
+                    Some(cl) => Either::Left(cl),
+                    None => Either::Right(NonLevel::NoMoreDailyChallenge),
+                }
+            },
+            CurrentLevel::NonLevel(nl) => Either::Right(*nl),
         }
     }
 
@@ -56,7 +92,7 @@ impl CurrentLevel {
                     None => match total_completion.get_next_incomplete_daily_challenge_from_today()
                     {
                         Some(index) => CurrentLevel::DailyChallenge { index },
-                        None => CurrentLevel::Unknown,
+                        None => CurrentLevel::NonLevel(NonLevel::NoMoreDailyChallenge),
                     },
                 }
             }
@@ -64,30 +100,27 @@ impl CurrentLevel {
                 level_index: _,
                 sequence,
             } => {
-                let mut sequence = Some(*sequence);
 
-                while let Some(seq) = sequence {
-                    if let Some(index) = total_completion.get_next_level_index(seq) {
-                        if let Some(..) = seq.get_level(index) {
-                            return Self::Fixed {
-                                level_index: index,
-                                sequence: seq,
-                            };
-                        }
+                if let Some(index) = total_completion.get_next_level_index(*sequence) {
+                    if let Some(..) = sequence.get_level(index) {
+                        return Self::Fixed {
+                            level_index: index,
+                            sequence: *sequence,
+                        };
                     }
-
-                    sequence = seq.get_next();
                 }
-                CurrentLevel::Unknown
+
+                return NonLevel::NoMoreLevelSequence(*sequence).into();
             }
             CurrentLevel::DailyChallenge { .. } => {
                 match total_completion.get_next_incomplete_daily_challenge_from_today() {
                     Some(index) => CurrentLevel::DailyChallenge { index },
-                    None => CurrentLevel::Unknown,
+                    None => CurrentLevel::NonLevel(NonLevel::NoMoreDailyChallenge),
                 }
             }
-            CurrentLevel::Custom => CurrentLevel::Unknown,
-            CurrentLevel::Unknown => CurrentLevel::Unknown,
+            CurrentLevel::Custom => NonLevel::AfterCustomLevel.into(),
+            CurrentLevel::NonLevel(x) => (*x).into(),//No change
+
         }
     }
 }

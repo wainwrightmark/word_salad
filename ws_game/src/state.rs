@@ -4,7 +4,7 @@ use crate::{
     completion::{track_level_completion, TotalCompletion},
     prelude::*,
 };
-use itertools::Itertools;
+use itertools::{Itertools, Either};
 use nice_bevy_utils::{CanInitTrackedResource, TrackableResource};
 use serde::{Deserialize, Serialize};
 use strum::EnumIs;
@@ -34,10 +34,10 @@ fn update_state_on_level_change(
 ) {
     if current_level.is_changed() {
         match current_level.level(daily_challenges.as_ref()) {
-            Some(level) => {
+            Either::Left(level) => {
                 *found_words = FoundWordsState::new_from_level(level);
             }
-            None => {
+            Either::Right(..) => {
                 *found_words = FoundWordsState::default();
             }
         }
@@ -265,7 +265,7 @@ fn track_found_words(
     if !chosen.is_changed() || chosen.is_just_finished {
         return;
     }
-    let Some(level) = current_level.level(&daily_challenges) else {
+    let Either::Left(level) = current_level.level(&daily_challenges) else {
         return;
     };
     let grid = level.grid;
