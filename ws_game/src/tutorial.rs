@@ -344,7 +344,7 @@ impl LayoutStructure for TutorialLayoutEntity {
 
     fn size(&self, _context: &Self::Context) -> bevy::prelude::Vec2 {
         match self {
-            TutorialLayoutEntity::Top => Vec2 { x: 300.0, y: 100.0 },
+            TutorialLayoutEntity::Top => Vec2 { x: 300.0, y: 70.0 },
             TutorialLayoutEntity::Middle => Vec2 { x: 300.0, y: 140.0 },
             TutorialLayoutEntity::Bottom => Vec2 { x: 300.0, y: 40.0 },
         }
@@ -352,9 +352,9 @@ impl LayoutStructure for TutorialLayoutEntity {
 
     fn location(&self, _context: &Self::Context) -> bevy::prelude::Vec2 {
         match self {
-            TutorialLayoutEntity::Top => Vec2 { x: 10.0, y: 50.0 },
-            TutorialLayoutEntity::Middle => Vec2 { x: 10.0, y: 50.0 },
-            TutorialLayoutEntity::Bottom => Vec2 { x: 10.0, y: 528.0 },
+            TutorialLayoutEntity::Top => Vec2 { x: 10.0, y: 52.0 },
+            TutorialLayoutEntity::Middle => Vec2 { x: 10.0, y: 52.0 },
+            TutorialLayoutEntity::Bottom => Vec2 { x: 10.0, y: 500.0 },
         }
     }
 

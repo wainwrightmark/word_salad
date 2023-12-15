@@ -56,7 +56,7 @@ impl InteractionEntity {
         is_level_complete: bool,
         grid_tolerance: Option<f32>,
     ) -> Option<Self> {
-        info!("Try find input");
+        //info!("Try find input");
         match popup_state {
             PopupState::None => {}
             PopupState::BuyMoreHints => {

@@ -5,7 +5,7 @@ use maveric::{prelude::*, with_bundle::CanWithBundle};
 pub struct BackgroundPlugin;
 
 impl Plugin for BackgroundPlugin {
-    fn build(&self, app: &mut App) {
+    fn build(&self, _app: &mut App) {
         //app.register_maveric::<Background>();
     }
 }

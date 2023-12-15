@@ -174,6 +174,15 @@ impl MavericNode for WordNode {
                 Completion::Complete => node.word.text.to_string(),
             };
 
+            let fill_color = node.completion.color();
+            let amount_per_second = if node.completion.is_unstarted() {
+                100.0
+            } else {
+                0.1
+            };
+
+            //info!("Word node '{text}' {fill_color:?} {amount_per_second}");
+
             let centre = node.rect.centre();
 
             let text_translation = centre.extend(crate::z_indices::WORD_TEXT);
@@ -195,12 +204,7 @@ impl MavericNode for WordNode {
             let shape_translation = centre.extend(crate::z_indices::WORD_BACKGROUND);
             let _shape_border_translation = centre.extend(crate::z_indices::WORD_BACKGROUND + 1.0);
 
-            let fill_color = node.completion.color();
-            let amount_per_second = if node.completion.is_unstarted() {
-                100.0
-            } else {
-                0.1
-            };
+
 
             commands.add_child(
                 "shape_fill",
