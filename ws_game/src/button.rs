@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use itertools::Either;
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
 use strum::EnumIs;
-use ws_core::layout::entities::{CongratsLayoutEntity, LayoutTopBarButton, LayoutWordTile};
+use ws_core::layout::entities::{CongratsLayoutEntity, LayoutTopBar, LayoutWordTile};
 
 use crate::completion::TotalCompletion;
 use crate::menu_layout::main_menu_back_button::MainMenuBackButton;
@@ -38,7 +38,7 @@ pub enum ButtonInteraction {
     LevelsMenu(LevelsMenuLayoutEntity),
     LevelGroupMenu(LevelGroupLayoutEntity),
     WordButton(LayoutWordTile),
-    TopMenuItem(LayoutTopBarButton),
+    TopMenuItem(LayoutTopBar),
     Congrats(CongratsLayoutEntity),
     BuyMoreHints,
     ClosePopups,
@@ -76,8 +76,8 @@ impl From<LayoutWordTile> for ButtonInteraction {
         ButtonInteraction::WordButton(val)
     }
 }
-impl From<LayoutTopBarButton> for ButtonInteraction {
-    fn from(val: LayoutTopBarButton) -> Self {
+impl From<LayoutTopBar> for ButtonInteraction {
+    fn from(val: LayoutTopBar) -> Self {
         ButtonInteraction::TopMenuItem(val)
     }
 }
@@ -210,10 +210,10 @@ impl ButtonInteraction {
 
                 }
             }
-            ButtonInteraction::TopMenuItem(LayoutTopBarButton::HintCounter) => {
+            ButtonInteraction::TopMenuItem(LayoutTopBar::HintCounter) => {
                 *popup_state.as_mut() = PopupState::BuyMoreHints;
             }
-            ButtonInteraction::TopMenuItem(LayoutTopBarButton::MenuBurgerButton) => {
+            ButtonInteraction::TopMenuItem(LayoutTopBar::MenuBurgerButton) => {
                 menu_state.toggle()
             }
             ButtonInteraction::NonLevelInteractionButton =>{
@@ -238,7 +238,7 @@ impl ButtonInteraction {
                     }
                 }
             }
-            ButtonInteraction::TopMenuItem(LayoutTopBarButton::WordSaladButton) => {
+            ButtonInteraction::TopMenuItem(LayoutTopBar::WordSaladLogo) => {
                 if let Some(index) =  total_completion.get_next_incomplete_daily_challenge_from_today(){
                     *current_level.as_mut() = CurrentLevel::DailyChallenge { index };
                 }

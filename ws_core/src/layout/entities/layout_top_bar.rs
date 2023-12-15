@@ -7,23 +7,23 @@ use super::consts::*;
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Display, EnumIter, EnumCount,
 )]
-pub enum LayoutTopBarButton {
+pub enum LayoutTopBar {
     MenuBurgerButton,
-    WordSaladButton,
+    WordSaladLogo,
     HintCounter,
 }
 
-impl LayoutTopBarButton {
+impl LayoutTopBar {
     pub const fn index(&self) -> usize {
         match self {
-            LayoutTopBarButton::MenuBurgerButton => 0,
-            LayoutTopBarButton::WordSaladButton => 1,
-            LayoutTopBarButton::HintCounter => 2,
+            LayoutTopBar::MenuBurgerButton => 0,
+            LayoutTopBar::WordSaladLogo => 1,
+            LayoutTopBar::HintCounter => 2,
         }
     }
 }
 
-impl LayoutStructure for LayoutTopBarButton {
+impl LayoutStructure for LayoutTopBar {
     type Context = ();
     type Iterator = <Self as IntoEnumIterator>::Iterator;
 
@@ -37,15 +37,15 @@ impl LayoutStructure for LayoutTopBarButton {
     }
 
     fn size(&self, _context: &Self::Context) -> Vec2 {
-        use LayoutTopBarButton::*;
+        use LayoutTopBar::*;
         match self {
             MenuBurgerButton | HintCounter => Vec2 {
-                x: TOP_BAR_ICON_SIZE,
-                y: TOP_BAR_ICON_SIZE,
+                x: TOP_BAR_ICON_WIDTH,
+                y: TOP_BAR_HEIGHT,
             },
-            WordSaladButton => Vec2 {
+            WordSaladLogo => Vec2 {
                 x: WORD_SALAD_LOGO_WIDTH,
-                y: TOP_BAR_ICON_SIZE,
+                y: TOP_BAR_HEIGHT,
             },
         }
     }
@@ -53,13 +53,19 @@ impl LayoutStructure for LayoutTopBarButton {
     fn location(&self, _context: &Self::Context) -> Vec2 {
 
         match self{
-            LayoutTopBarButton::MenuBurgerButton | LayoutTopBarButton::HintCounter => {
+            LayoutTopBar::MenuBurgerButton => {
                 Vec2 {
-                    x: Spacing::SpaceBetween.apply(IDEAL_WIDTH, TOP_BAR_ICON_SIZE, 3, self.index()),
+                    x: (IDEAL_WIDTH - GRID_SIZE) * 0.5,
                     y: 0.,
                 }
             },
-            LayoutTopBarButton::WordSaladButton => {
+            LayoutTopBar::HintCounter =>{
+                Vec2 {
+                    x: ((IDEAL_WIDTH + GRID_SIZE) * 0.5) - TOP_BAR_ICON_WIDTH,
+                    y: 0.,
+                }
+            }
+            LayoutTopBar::WordSaladLogo => {
                 Vec2{
                     x: (IDEAL_WIDTH - WORD_SALAD_LOGO_WIDTH) / 2.,
                     y: 5.0
@@ -75,13 +81,13 @@ impl LayoutStructure for LayoutTopBarButton {
     }
 }
 
-impl LayoutStructureWithFont for LayoutTopBarButton {
+impl LayoutStructureWithFont for LayoutTopBar {
     fn font_size(&self) -> f32 {
 
         match self{
-            LayoutTopBarButton::MenuBurgerButton => 40.0,
-            LayoutTopBarButton::WordSaladButton => 36.0,
-            LayoutTopBarButton::HintCounter => 20.0,
+            LayoutTopBar::MenuBurgerButton => 40.0,
+            LayoutTopBar::WordSaladLogo => 24.0,
+            LayoutTopBar::HintCounter => 20.0,
         }
 
     }

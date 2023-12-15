@@ -1,7 +1,9 @@
 use std::time::Duration;
 
 use crate::prelude::*;
-use bevy_smud::param_usage::{ShaderParamUsage, ShaderParameter};
+use bevy::sprite::Anchor;
+use bevy::text::Text2dBounds;
+use bevy_smud::param_usage::ShaderParamUsage;
 use bevy_smud::{ShapeBundle, SmudShaders};
 use maveric::transition::speed::calculate_speed;
 use maveric::widgets::text2d_node::Text2DNode;
@@ -15,7 +17,7 @@ pub struct HintsViewNode {
     pub hint_state: HintState,
 }
 
-const CIRCLE_SCALE: f32 = 0.25;
+const CIRCLE_SCALE: f32 = 0.5;
 
 impl MavericNode for HintsViewNode {
     type Context = MyWindowSize;
@@ -34,9 +36,9 @@ impl MavericNode for HintsViewNode {
         const SECONDS: f32 = 1.0;
 
         let size = context.as_ref();
-        let hints_rect = size.get_rect(&LayoutTopBarButton::HintCounter, &());
+        let hints_rect = size.get_rect(&LayoutTopBar::HintCounter, &());
         let hint_font_size =
-            size.font_size::<LayoutTopBarButton>(&LayoutTopBarButton::WordSaladButton);
+            size.font_size::<LayoutTopBar>(&LayoutTopBar::WordSaladLogo);
 
         let final_translation = (hints_rect.centre() + (Vec2::X * hint_font_size * 0.03))
             .extend(crate::z_indices::TOP_BAR_BUTTON - 1.0);
@@ -103,9 +105,9 @@ impl MavericNode for HintsViewNode {
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
             let size = context.as_ref();
-            let hints_rect = size.get_rect(&LayoutTopBarButton::HintCounter, &());
+            let hints_rect = size.get_rect(&LayoutTopBar::HintCounter, &());
             let hint_font_size =
-                size.font_size::<LayoutTopBarButton>(&LayoutTopBarButton::HintCounter);
+                size.font_size::<LayoutTopBar>(&LayoutTopBar::HintCounter);
 
             commands.add_child(
                 "hints",
@@ -116,6 +118,8 @@ impl MavericNode for HintsViewNode {
                     font: BUTTONS_FONT_PATH,
                     alignment: TextAlignment::Center,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                    text_anchor: Anchor::default(),
+                    text_2d_bounds: Text2dBounds::default()
                 }
                 .with_bundle(Transform::from_translation(
                     hints_rect.centre().extend(crate::z_indices::TOP_BAR_BUTTON),

@@ -28,7 +28,7 @@ mod tests {
     #[test]
     fn test_picking_all() {
         test_picking::<GameLayoutEntity>(&());
-        test_picking::<LayoutTopBarButton>(&());
+        test_picking::<LayoutTopBar>(&());
         // test_picking::<LayoutPuzzleTheme>(&());
         test_picking::<LayoutGridTile>(&());
         //test_picking::<LayoutWordTile>(&()); //TODO test this

@@ -47,17 +47,17 @@ impl LayoutStructure for CongratsLayoutEntity {
     fn location(&self, context: &Self::Context) -> Vec2 {
 
         let top_offset = if context.0{
-            THEME_HEIGHT + GRID_TILE_SIZE + STREAMING_TOP_OFFSET
+            TOP_BAR_HEIGHT + THEME_HEIGHT + GRID_TILE_SIZE + STREAMING_TOP_OFFSET
         }else{
-            THEME_HEIGHT + GRID_TILE_SIZE
+            TOP_BAR_HEIGHT + THEME_HEIGHT + GRID_TILE_SIZE
         };
 
         match self{
             CongratsLayoutEntity::HintsUsed => {
                 Vec2 {
                     x: (IDEAL_WIDTH - CONGRATS_ENTITY_WIDTH) / 2.,
-                    y: TOP_BAR_ICON_SIZE
-                        + top_offset
+                    y:
+                        top_offset
                         + Spacing::Centre.apply(
                             GRID_SIZE,
                             CONGRATS_ENTITY_HEIGHT * 1.2,
@@ -71,8 +71,8 @@ impl LayoutStructure for CongratsLayoutEntity {
                     let num_children = if cfg!(target_arch = "wasm32"){2} else {1};
                     Vec2{
                     x: Spacing::SpaceAround.apply(IDEAL_WIDTH, CONGRATS_ENTITY_WIDTH * 1.2,  num_children, self.index() - 1),
-                    y: TOP_BAR_ICON_SIZE
-                        + top_offset
+                    y:
+                        top_offset
                         + Spacing::Centre.apply(
                             GRID_SIZE,
                             CONGRATS_ENTITY_HEIGHT * 1.2,

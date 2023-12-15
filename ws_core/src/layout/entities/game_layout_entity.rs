@@ -10,9 +10,10 @@ use super::consts::*;
 pub enum GameLayoutEntity {
     TopBar,
     Theme,
+    Timer,
     Grid,
     WordList,
-    Timer,
+
 }
 
 impl LayoutStructure for GameLayoutEntity {
@@ -38,7 +39,7 @@ impl LayoutStructure for GameLayoutEntity {
         match self {
             GameLayoutEntity::TopBar => Vec2 {
                 x: IDEAL_WIDTH,
-                y: TOP_BAR_ICON_SIZE,
+                y: TOP_BAR_HEIGHT,
             },
             GameLayoutEntity::Theme => Vec2 {
                 x: THEME_WIDTH,
@@ -65,20 +66,21 @@ impl LayoutStructure for GameLayoutEntity {
 
             GameLayoutEntity::Theme => Vec2 {
                 x: (IDEAL_WIDTH - THEME_WIDTH) * 0.5,
-                y: TOP_BAR_ICON_SIZE,
+                y: TOP_BAR_HEIGHT,
+            },
+            GameLayoutEntity::Timer => Vec2 {
+                x: (IDEAL_WIDTH - THEME_WIDTH) * 0.5,
+                y: TOP_BAR_HEIGHT + THEME_HEIGHT,
             },
             GameLayoutEntity::Grid => Vec2 {
                 x: (IDEAL_WIDTH - GRID_SIZE) * 0.5,
-                y: TOP_BAR_ICON_SIZE + THEME_HEIGHT + (GRID_TILE_SIZE * 0.5),
+                y: TOP_BAR_HEIGHT + THEME_HEIGHT + TIMER_HEIGHT + (GRID_TILE_SIZE * 0.5),
             },
             GameLayoutEntity::WordList => Vec2 {
                 x: (IDEAL_WIDTH - WORD_LIST_WIDTH) / 2.,
-                y: TOP_BAR_ICON_SIZE + THEME_HEIGHT + GRID_SIZE + GRID_TILE_SIZE,
+                y: TOP_BAR_HEIGHT + THEME_HEIGHT + TIMER_HEIGHT + GRID_SIZE + GRID_TILE_SIZE,
             },
-            GameLayoutEntity::Timer => Vec2 {
-                x: (IDEAL_WIDTH - TIMER_WIDTH) * 0.5,
-                y: IDEAL_HEIGHT - TIMER_HEIGHT,
-            },
+
         }
     }
 }
@@ -87,7 +89,7 @@ impl LayoutStructureWithFont for GameLayoutEntity {
     fn font_size(&self) -> f32 {
         match self {
             GameLayoutEntity::TopBar => f32::NAN,
-            GameLayoutEntity::Theme => 32.0,
+            GameLayoutEntity::Theme => 24.0,
             GameLayoutEntity::Grid => f32::NAN,
             GameLayoutEntity::WordList => f32::NAN,
             GameLayoutEntity::Timer => 20.0,

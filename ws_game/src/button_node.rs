@@ -55,6 +55,8 @@ impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> Maveri
                         font: MENU_BUTTON_FONT_PATH,
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                        text_2d_bounds: Default::default(),
+                        text_anchor: Default::default(),
                     }
                     .with_bundle(Transform::from_translation(text_translation)),
                     &(),

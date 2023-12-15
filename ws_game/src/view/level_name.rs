@@ -33,6 +33,8 @@ impl MavericNode for LevelName {
                     font: TITLE_FONT_PATH,
                     alignment: TextAlignment::Left,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                    text_2d_bounds: Default::default(),
+                    text_anchor: bevy::sprite::Anchor::CenterLeft,
                 }
                 .with_bundle(Transform::from_translation(
                     context

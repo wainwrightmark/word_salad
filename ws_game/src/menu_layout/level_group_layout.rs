@@ -5,7 +5,7 @@ use super::{
 };
 use bevy::math::Vec2;
 use ws_core::{
-    layout::entities::{IDEAL_HEIGHT, IDEAL_WIDTH, TOP_BAR_ICON_SIZE},
+    layout::entities::{IDEAL_HEIGHT, IDEAL_WIDTH, TOP_BAR_HEIGHT},
     LayoutStructure, LayoutStructureWithFont, Spacing,
 };
 use ws_levels::level_group::LevelGroup;
@@ -57,9 +57,9 @@ impl LayoutStructure for LevelGroupLayoutEntity {
     fn location(&self, context: &Self::Context) -> bevy::prelude::Vec2 {
         Vec2 {
             x: (IDEAL_WIDTH - MENU_BUTTON_WIDTH) / 2.,
-            y: TOP_BAR_ICON_SIZE
+            y: TOP_BAR_HEIGHT
                 + Spacing::Centre.apply(
-                    IDEAL_HEIGHT - TOP_BAR_ICON_SIZE,
+                    IDEAL_HEIGHT - TOP_BAR_HEIGHT,
                     MENU_BUTTON_DOUBLE_HEIGHT + MENU_BUTTON_SPACING,
                     context.get_sequences().len(),
                     self.index,

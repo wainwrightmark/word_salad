@@ -45,15 +45,17 @@ impl MavericNode for TopBar {
                     Text2DNode {
                         text: "\u{f0c9}",
                         font_size: size
-                            .font_size::<LayoutTopBarButton>(&LayoutTopBarButton::WordSaladButton),
+                            .font_size::<LayoutTopBar>(&LayoutTopBar::WordSaladLogo),
                         color: palette::BUTTON_TEXT_COLOR.convert_color(),
                         font: MENU_BUTTON_FONT_PATH,
-                        alignment: TextAlignment::Center,
+                        alignment: TextAlignment::Left,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                        text_2d_bounds: Default::default(),
+                        text_anchor: bevy::sprite::Anchor::CenterLeft,
                     }
                     .with_bundle(Transform::from_translation(
-                        size.get_rect(&LayoutTopBarButton::MenuBurgerButton, &())
-                            .centre()
+                        size.get_rect(&LayoutTopBar::MenuBurgerButton, &())
+                            .centre_left()
                             .extend(crate::z_indices::TOP_BAR_BUTTON),
                     )),
                     &(),
@@ -72,14 +74,16 @@ impl MavericNode for TopBar {
                     Text2DNode {
                         text: "Word Salad",
                         font_size: size
-                            .font_size::<LayoutTopBarButton>(&LayoutTopBarButton::WordSaladButton),
+                            .font_size::<LayoutTopBar>(&LayoutTopBar::WordSaladLogo),
                         color: palette::BUTTON_TEXT_COLOR.convert_color(),
                         font: WORD_SALAD_LOGO_FONT_PATH,
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                        text_2d_bounds: Default::default(),
+                    text_anchor: Default::default(),
                     }
                     .with_bundle((Transform::from_translation(
-                        size.get_rect(&LayoutTopBarButton::WordSaladButton, &())
+                        size.get_rect(&LayoutTopBar::WordSaladLogo, &())
                             .centre()
                             .extend(crate::z_indices::TOP_BAR_BUTTON),
                     ),)),

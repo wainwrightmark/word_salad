@@ -128,7 +128,9 @@ impl MavericNode for GridTiles {
             let solution = context.0.current_solution();
             let selected_tile: Option<&geometrid::prelude::Tile<4, 4>> = solution.last();
 
-            let Either::Left(level) = context.1.level(&context.9) else {return;};
+            let Either::Left(level) = context.1.level(&context.9) else {
+                return;
+            };
             let inadvisable_tiles: GridSet = context.2.calculate_inadvisable_tiles(solution, level);
 
             let hint_set = &context.2.manual_hint_set(level, solution); //TODO this should reveal if a tile is previously hinted
@@ -304,6 +306,8 @@ impl MavericNode for GridLetter {
                     color,
                     alignment: TextAlignment::Center,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                    text_2d_bounds: Default::default(),
+                    text_anchor: Default::default(),
                 }
                 .with_bundle(Transform::from_xyz(
                     0.0,

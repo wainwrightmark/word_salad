@@ -31,14 +31,16 @@ impl MavericNode for UITimer {
                     font_size: timer_font_size,
                     color: palette::BUTTON_TEXT_COLOR.convert_color(),
                     font: TITLE_FONT_PATH,
-                    alignment: TextAlignment::Center,
+                    alignment: TextAlignment::Left,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                    text_2d_bounds: Default::default(),
+                    text_anchor: bevy::sprite::Anchor::CenterLeft,
                 }
                 .with_bundle((
                     Transform::from_translation(
                         context
                             .get_rect(&GameLayoutEntity::Timer, &())
-                            .centre()
+                            .centre_left()
                             .extend(crate::z_indices::TIMER),
                     ),
                     TimeCounterMarker,

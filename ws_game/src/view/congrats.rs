@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use crate::{prelude::*, z_indices};
+use bevy::{text::Text2dBounds, sprite::Anchor};
 use bevy_smud::{
     param_usage::{ShaderParamUsage, ShaderParameter},
     ShapeBundle, SmudShaders, SmudShape,
@@ -154,6 +155,8 @@ impl MavericNode for CongratsView {
                         font: BUTTONS_FONT_PATH,
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                        text_2d_bounds: Text2dBounds::default(),
+                        text_anchor: Anchor::default()
                     }
                     .with_bundle(Transform::from_translation(
                         size.get_rect(&CongratsLayoutEntity::HintsUsed, &selfie_mode)

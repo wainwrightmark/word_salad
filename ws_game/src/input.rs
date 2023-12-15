@@ -76,7 +76,7 @@ impl InteractionEntity {
             }
         }
 
-        let tbi = Self::try_get_button::<LayoutTopBarButton>(position, size, &());
+        let tbi = Self::try_get_button::<LayoutTopBar>(position, size, &());
         if tbi.is_some() {
             return tbi;
         }
@@ -100,7 +100,7 @@ impl InteractionEntity {
 
                         match layout_entity {
                             GameLayoutEntity::TopBar => {
-                                Self::try_get_button::<LayoutTopBarButton>(position, size, &())
+                                Self::try_get_button::<LayoutTopBar>(position, size, &())
                             }
                             GameLayoutEntity::Theme => None,
                             GameLayoutEntity::Grid => match grid_tolerance {

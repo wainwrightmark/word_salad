@@ -141,6 +141,8 @@ impl MavericNode for TutorialPopupNode {
                 color: Color::BLACK,
                 alignment: TextAlignment::Center,
                 linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                text_2d_bounds: Default::default(),
+                    text_anchor: Default::default(),
             }
             .with_bundle(Transform::from_translation(
                 rect.centre()
