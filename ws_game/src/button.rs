@@ -1,3 +1,4 @@
+use bevy::ecs::system::EntityCommands;
 use bevy::prelude::*;
 use itertools::Either;
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
@@ -9,7 +10,7 @@ use crate::menu_layout::main_menu_back_button::MainMenuBackButton;
 use crate::prelude::level_group_layout::LevelGroupLayoutEntity;
 use crate::prelude::levels_menu_layout::LevelsMenuLayoutEntity;
 use crate::prelude::main_menu_layout::MainMenuLayoutEntity;
-use crate::prelude::*;
+use crate::{prelude::*, rounding};
 
 pub struct ButtonPlugin;
 
@@ -43,7 +44,7 @@ pub enum ButtonInteraction {
     BuyMoreHints,
     ClosePopups,
     MenuBackButton,
-    NonLevelInteractionButton
+    NonLevelInteractionButton,
 }
 
 impl ButtonInteraction {
@@ -98,7 +99,7 @@ fn track_pressed_button(
     mut commands: Commands,
     pressed_button: Res<PressedButton>,
     mut prev: Local<PressedButton>,
-    mut query: Query<(Entity, &ButtonInteraction)>,
+    query: Query<(Entity, &ButtonInteraction)>,
 ) {
     if !pressed_button.is_changed() {
         return;
@@ -111,27 +112,50 @@ fn track_pressed_button(
             return;
         }
 
-        if let Some((entity, _)) = query.iter_mut().find(|x| x.1 == &prev_interaction) {
-            commands.entity(entity).insert(
-                TransitionBuilder::<SmudParamLens<1>>::default()
-                    .then_tween(0.1, 0.1.into())
-                    .build(),
-            );
+
+        for (entity, i) in query.iter(){
+            if i == &prev_interaction{
+                let mut ec = commands.entity(entity);
+                i.on_interact(&mut ec, InteractionType::EndPress);
+            }
         }
     }
 
-    if let Some(interaction) = pressed_button.as_ref().interaction {
-        if let Some((entity, _)) = query.iter_mut().find(|x| x.1 == &interaction) {
-            commands.entity(entity).insert(
-                TransitionBuilder::<SmudParamLens<1>>::default()
-                    .then_tween(0.15, 0.5.into())
-                    .build(),
-            );
+    if let Some(interaction) = pressed_button.interaction{
+        for (entity, i) in query.iter(){
+            if i == &interaction{
+                let mut ec = commands.entity(entity);
+                i.on_interact(&mut ec, InteractionType::Press);
+            }
         }
     }
+
+
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, EnumIs)]
+pub enum InteractionType {
+    Press,
+    EndPress,
 }
 
 impl ButtonInteraction {
+    pub fn on_interact(&self, commands: &mut EntityCommands, interaction_type: InteractionType) {
+        let new_rounding = match (self, interaction_type){
+            (ButtonInteraction::WordButton(_), InteractionType::Press) =>rounding::WORD_BUTTON_PRESSED,
+            (ButtonInteraction::WordButton(_), InteractionType::EndPress) => rounding::WORD_BUTTON_NORMAL,
+
+            (_, InteractionType::Press) => rounding::OTHER_BUTTON_PRESSED,
+            (_, InteractionType::EndPress) => rounding::OTHER_BUTTON_NORMAL,
+        };
+
+        commands.insert(
+            TransitionBuilder::<SmudParamLens<1>>::default()
+                .then_tween(  new_rounding, 1.0.into())
+                .build(),
+        );
+    }
+
     pub fn on_pressed(
         &self,
         current_level: &mut ResMut<CurrentLevel>,
@@ -144,15 +168,15 @@ impl ButtonInteraction {
         total_completion: &mut ResMut<TotalCompletion>,
         video_state: &VideoResource,
         video_events: &AsyncEventWriter<VideoEvent>,
-        daily_challenges: &DailyChallenges
+        daily_challenges: &DailyChallenges,
     ) {
         match self {
             ButtonInteraction::MenuBackButton => {
                 menu_state.go_back();
             }
             ButtonInteraction::MainMenu(MainMenuLayoutEntity::ResetPuzzle) => {
-
                 current_level.set_changed();
+                menu_state.close();
             }
             ButtonInteraction::MainMenu(MainMenuLayoutEntity::Puzzles) => {
                 *menu_state.as_mut() = MenuState::ChooseLevelsPage;
@@ -171,7 +195,9 @@ impl ButtonInteraction {
             }
 
             ButtonInteraction::LevelsMenu(LevelsMenuLayoutEntity::WordSalad) => {
-                if let Some(index) =  total_completion.get_next_incomplete_daily_challenge_from_today(){
+                if let Some(index) =
+                    total_completion.get_next_incomplete_daily_challenge_from_today()
+                {
                     *current_level.as_mut() = CurrentLevel::DailyChallenge { index };
                 }
                 menu_state.close();
@@ -185,16 +211,16 @@ impl ButtonInteraction {
                     if let MenuState::LevelGroupPage(level_group) = menu_state.as_ref() {
                         let sequence = level_group.get_level_sequence(*index);
 
-                        if let Some(index)  = total_completion.get_next_level_index(sequence){
+                        if let Some(index) = total_completion.get_next_level_index(sequence) {
                             info!("Changing level to {sequence} {index}");
-                            *current_level.as_mut() = CurrentLevel::Fixed { level_index: index, sequence };
+                            *current_level.as_mut() = CurrentLevel::Fixed {
+                                level_index: index,
+                                sequence,
+                            };
+                        } else {
+                            *current_level.as_mut() =
+                                CurrentLevel::NonLevel(NonLevel::NoMoreLevelSequence(sequence));
                         }
-                        else{
-                            *current_level.as_mut() = CurrentLevel::NonLevel(NonLevel::NoMoreLevelSequence(sequence));
-                        }
-
-
-
 
                         menu_state.close();
                     }
@@ -204,48 +230,52 @@ impl ButtonInteraction {
                 if hint_state.hints_remaining == 0 {
                     *popup_state.as_mut() = PopupState::BuyMoreHints;
                 } else {
-                    if let Either::Left(level) = current_level.level(daily_challenges){
+                    if let Either::Left(level) = current_level.level(daily_challenges) {
                         found_words.try_hint_word(hint_state, level, word.0, chosen_state);
                     }
-
                 }
             }
             ButtonInteraction::TopMenuItem(LayoutTopBar::HintCounter) => {
                 *popup_state.as_mut() = PopupState::BuyMoreHints;
             }
-            ButtonInteraction::TopMenuItem(LayoutTopBar::MenuBurgerButton) => {
-                menu_state.toggle()
-            }
-            ButtonInteraction::NonLevelInteractionButton =>{
-                if let Some(non_level) = current_level.level(daily_challenges).right(){
-                    match non_level{
+            ButtonInteraction::TopMenuItem(LayoutTopBar::MenuBurgerButton) => menu_state.toggle(),
+            ButtonInteraction::NonLevelInteractionButton => {
+                if let Some(non_level) = current_level.level(daily_challenges).right() {
+                    match non_level {
                         NonLevel::BeforeTutorial => {
                             *current_level.as_mut() = CurrentLevel::Tutorial { index: 0 };
-                        },
+                        }
                         NonLevel::AfterCustomLevel => {
                             *current_level.as_mut() = CurrentLevel::Custom;
-                        },
+                        }
                         NonLevel::NoMoreDailyChallenge => {
                             total_completion.reset_daily_challenge_completion();
-                            if let Some(index) = total_completion.get_next_incomplete_daily_challenge_from_today(){
+                            if let Some(index) =
+                                total_completion.get_next_incomplete_daily_challenge_from_today()
+                            {
                                 *current_level.as_mut() = CurrentLevel::DailyChallenge { index };
                             }
-                        },
+                        }
                         NonLevel::NoMoreLevelSequence(ls) => {
                             total_completion.restart_level_sequence_completion(ls);
-                            *current_level.as_mut() = CurrentLevel::Fixed { level_index: 0, sequence: ls };
-                        },
+                            *current_level.as_mut() = CurrentLevel::Fixed {
+                                level_index: 0,
+                                sequence: ls,
+                            };
+                        }
                     }
                 }
             }
             ButtonInteraction::TopMenuItem(LayoutTopBar::WordSaladLogo) => {
-                if let Some(index) =  total_completion.get_next_incomplete_daily_challenge_from_today(){
+                if let Some(index) =
+                    total_completion.get_next_incomplete_daily_challenge_from_today()
+                {
                     *current_level.as_mut() = CurrentLevel::DailyChallenge { index };
                 }
                 menu_state.close();
             }
             ButtonInteraction::Congrats(CongratsLayoutEntity::NextButton) => {
-                let next_level =current_level.get_next_level(total_completion);
+                let next_level = current_level.get_next_level(total_completion);
                 *current_level.as_mut() = next_level;
             }
 

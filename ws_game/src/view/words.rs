@@ -10,7 +10,6 @@ use ws_core::layout::entities::*;
 use ws_core::prelude::*;
 
 
-pub const WORD_ROUNDING: f32 = 1.0;
 
 #[derive(Debug, PartialEq)]
 pub struct WordsNode;
@@ -127,12 +126,12 @@ impl MavericNode for WordNode {
 
             commands.add_child(
                 "shape_fill",
-                box_node(
+                box_node1(
                     node.rect.extents.x.abs(),
                     node.rect.extents.y.abs(),
                     shape_translation,
                     palette::WORD_BACKGROUND_UNSTARTED.convert_color(),
-                    WORD_ROUNDING * node.rect.extents.y.abs() / node.rect.extents.x.abs(),
+                    crate::rounding::WORD_BUTTON_NORMAL,
                 )
                 .with_bundle(ButtonInteraction::WordButton(node.tile))
                 .with_transition_to::<SmudColorLens>(*fill_color, amount_per_second.into()),
@@ -183,7 +182,7 @@ impl MavericNode for WordNode {
                 frame: bevy_smud::Frame::Quad(1.0),
                 f_params: [
                     (height / scale),
-                    WORD_ROUNDING * (height / scale),
+                    crate::rounding::WORD_BUTTON_NORMAL,
                     from,
                     color2.r(),
                     color2.g(),
@@ -207,6 +206,7 @@ impl MavericNode for WordNode {
 
         let bundle = (
             bundle,
+            ButtonInteraction::WordButton(self.tile),
             TransitionBuilder::<SmudParamLens<2>>::default()
                 .then_tween(
                     to,

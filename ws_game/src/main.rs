@@ -12,6 +12,7 @@ pub mod input;
 pub mod level_time;
 pub mod logging;
 pub mod menu_layout;
+pub mod rounding;
 pub mod shapes;
 pub mod startup;
 pub mod state;

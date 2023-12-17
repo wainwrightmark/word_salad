@@ -1,7 +1,7 @@
 use crate::{
     prelude::*,
     shapes,
-    z_indices::{self, POPUP_BOX_TEXT},
+    z_indices::{self, POPUP_BOX_TEXT}, rounding::OTHER_BUTTON_NORMAL,
 };
 use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
 use strum::{Display, EnumCount, EnumIter, IntoEnumIterator};
@@ -43,7 +43,7 @@ impl MavericRootChildren for PopupStateRoot {
             PopupState::BuyMoreHints => {
                 commands.add_child(
                     "grey out",
-                    shapes::box_node(
+                    shapes::box_node1(
                         size.scaled_width,
                         size.scaled_height,
                         Vec3::Z * z_indices::POPUP_BOX_GREY_OUT,
@@ -82,12 +82,12 @@ impl MavericRootChildren for PopupStateRoot {
                             commands.add_child("title text", text, &());
                         }
                         BuyMoreHintsLayoutEntity::BuyMoreHintsButton => {
-                            let button = shapes::box_node(
+                            let button = shapes::box_node1(
                                 rect.width(),
                                 rect.height(),
                                 rect.centre().extend(crate::z_indices::POPUP_BOX_BUTTON),
                                 Color::BLUE,
-                                0.1,
+                                OTHER_BUTTON_NORMAL,
                             );
 
                             commands.add_child(
@@ -113,12 +113,12 @@ impl MavericRootChildren for PopupStateRoot {
                             commands.add_child("buy_mode_hints_text", text, &());
                         }
                         BuyMoreHintsLayoutEntity::SufferAloneButton => {
-                            let button = shapes::box_node(
+                            let button = shapes::box_node1(
                                 rect.width(),
                                 rect.height(),
                                 rect.centre().extend(crate::z_indices::POPUP_BOX_BUTTON),
                                 Color::GRAY,
-                                0.1,
+                                OTHER_BUTTON_NORMAL,
                             )
                             .with_bundle(ButtonInteraction::ClosePopups);
 

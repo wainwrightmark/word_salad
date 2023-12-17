@@ -8,7 +8,7 @@ use maveric::{
 
 use ws_core::LayoutRectangle;
 
-use crate::prelude::{box_node, ButtonInteraction, MENU_BUTTON_FONT_PATH};
+use crate::prelude::{box_node1, ButtonInteraction, MENU_BUTTON_FONT_PATH};
 
 #[derive(Debug, PartialEq)]
 pub struct ButtonNode2d<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> {
@@ -65,12 +65,12 @@ impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> Maveri
                 let shape_translation = centre.extend(crate::z_indices::MENU_BUTTON_BACKGROUND);
                 commands.add_child(
                     "shape_fill",
-                    box_node(
+                    box_node1(
                         rect.extents.x.abs(),
                         rect.extents.y.abs(),
                         shape_translation,
                         *fill_color,
-                        0.1,
+                        crate::rounding::OTHER_BUTTON_NORMAL,
                     )
                     .with_bundle(*interaction),
                     &(),
