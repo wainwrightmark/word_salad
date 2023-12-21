@@ -37,8 +37,7 @@ impl MavericNode for HintsViewNode {
 
         let size = context.as_ref();
         let hints_rect = size.get_rect(&LayoutTopBar::HintCounter, &());
-        let hint_font_size =
-            size.font_size::<LayoutTopBar>(&LayoutTopBar::WordSaladLogo);
+        let hint_font_size = size.font_size::<LayoutTopBar>(&LayoutTopBar::WordSaladLogo);
 
         let final_translation = (hints_rect.centre() + (Vec2::X * hint_font_size * 0.03))
             .extend(crate::z_indices::TOP_BAR_BUTTON - 1.0);
@@ -49,7 +48,7 @@ impl MavericNode for HintsViewNode {
             Duration::from_secs_f32(SECONDS),
         );
 
-        let transform = Transform {
+        let circle_transform = Transform {
             translation: initial_translation,
             scale: Vec3::ONE * hints_rect.width() * CIRCLE_SCALE,
             rotation: Default::default(),
@@ -58,11 +57,12 @@ impl MavericNode for HintsViewNode {
         let Some(asset_server) = world.get_resource::<AssetServer>() else {
             return;
         };
+        let font = asset_server.load(BUTTONS_FONT_PATH);
 
         let sdf: Handle<_> = asset_server.load(CIRCLE_SHADER_PATH);
         let fill = asset_server.load(SIMPLE_FILL_SHADER_PATH);
 
-        let bundle = ShapeBundle::<SHAPE_F_PARAMS, SHAPE_U_PARAMS> {
+        let circle_bundle = ShapeBundle::<SHAPE_F_PARAMS, SHAPE_U_PARAMS> {
             shape: bevy_smud::SmudShape {
                 color: palette::HINT_COUNTER_COLOR.convert_color(),
                 frame: bevy_smud::Frame::Quad(1.0),
@@ -75,12 +75,12 @@ impl MavericNode for HintsViewNode {
                 sdf_param_usage: ShaderParamUsage::NO_PARAMS,
                 fill_param_usage: ShaderParamUsage::NO_PARAMS,
             },
-            transform,
+            transform: circle_transform,
             ..default()
         };
 
-        let bundle = (
-            bundle,
+        let circle_bundle = (
+            circle_bundle,
             ScheduledForDeletion {
                 remaining: Duration::from_secs_f32(SECONDS),
             },
@@ -89,8 +89,44 @@ impl MavericNode for HintsViewNode {
                 .build(),
         );
 
-        entity_commands.with_children(|x| {
-            x.spawn(bundle);
+        let text_transform = Transform {
+            translation: initial_translation + Vec3::Z,
+            scale: Vec3::ONE,
+            rotation: Default::default(),
+        };
+
+        let text_bundle = Text2dBundle {
+            text: Text::from_section(
+                "2",
+                TextStyle {
+                    font_size: hint_font_size,
+                    color: palette::BUTTON_TEXT_COLOR.convert_color(),
+                    font,
+                },
+            )
+            .with_alignment(TextAlignment::Center)
+            .with_no_wrap(),
+
+            text_anchor: Anchor::default(),
+            text_2d_bounds: Text2dBounds::default(),
+
+            transform: text_transform,
+            ..Default::default()
+        };
+
+        let text_bundle = (
+            text_bundle,
+            ScheduledForDeletion {
+                remaining: Duration::from_secs_f32(SECONDS),
+            },
+            TransitionBuilder::<TransformTranslationLens>::default()
+                .then_tween(final_translation, speed)
+                .build(),
+        );
+
+        entity_commands.with_children(|cb| {
+            cb.spawn(circle_bundle);
+            cb.spawn(text_bundle);
         });
     }
 
@@ -106,8 +142,7 @@ impl MavericNode for HintsViewNode {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
             let size = context.as_ref();
             let hints_rect = size.get_rect(&LayoutTopBar::HintCounter, &());
-            let hint_font_size =
-                size.font_size::<LayoutTopBar>(&LayoutTopBar::HintCounter);
+            let hint_font_size = size.font_size::<LayoutTopBar>(&LayoutTopBar::HintCounter);
 
             commands.add_child(
                 "hints",
@@ -119,7 +154,7 @@ impl MavericNode for HintsViewNode {
                     alignment: TextAlignment::Center,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     text_anchor: Anchor::default(),
-                    text_2d_bounds: Text2dBounds::default()
+                    text_2d_bounds: Text2dBounds::default(),
                 }
                 .with_bundle(Transform::from_translation(
                     hints_rect.centre().extend(crate::z_indices::TOP_BAR_BUTTON),
@@ -147,33 +182,6 @@ impl MavericNode for HintsViewNode {
                 }),
                 &(),
             );
-
-            // const SPARKLE_FILL_PARAMETERS: &[ShaderParameter] = &[
-            //     ShaderParameter::f32(0),
-            //     ShaderParameter::f32(1),
-            //     ShaderParameter::f32(2),
-            // ];
-
-            // commands.add_child(
-            //     "hints_sparkle",
-            //     SmudShapeNode {
-            //         color: palette::HINT_COUNTER_COLOR.convert_color(),
-            //         sdf: CIRCLE_SHADER_PATH,
-            //         fill: SPARKLE_SHADER_PATH,
-            //         frame_size: 0.9,
-            //         f_params: [3.0, 2.0, 56789.0, 0.0, 0.0, 0.0],
-            //         u_params: [0; SHAPE_U_PARAMS],
-            //         sdf_param_usage: ShaderParamUsage::NO_PARAMS,
-            //         fill_param_usage: ShaderParamUsage(SPARKLE_FILL_PARAMETERS),
-            //     }
-            //     .with_bundle(Transform {
-            //         translation: (hints_rect.centre() + (Vec2::X * hint_font_size * 0.03))
-            //             .extend(crate::z_indices::TOP_BAR_BUTTON - 0.5),
-            //         scale: Vec3::ONE * hints_rect.width() * CIRCLE_SCALE,
-            //         rotation: Default::default(),
-            //     }),
-            //     &(),
-            // );
         });
     }
 }
