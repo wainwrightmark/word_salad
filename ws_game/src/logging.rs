@@ -107,7 +107,7 @@ async fn log_start_async<'a>(user_exists: bool) {
 
         match DEVICE_ID.set(device_id.clone()) {
             Ok(()) => {
-                info!("Device id set {device_id:?}");
+                debug!("Device id set {device_id:?}");
             }
             Err(err) => {
                 error!("Error setting device id {err:?}")
@@ -355,7 +355,7 @@ impl LoggableEvent {
             severity,
         };
 
-        log::info!("logged {message:?}");
+        log::debug!("logged {message:?}");
         message.send_log_async().await;
     }
 

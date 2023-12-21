@@ -1,9 +1,7 @@
-use std::str::FromStr;
-
 use indicatif::{ProgressBar, ProgressStyle};
 use itertools::Itertools;
 use log::info;
-use ws_core::{DesignedLevel, LayoutStructure, Word};
+use ws_core::{DesignedLevel, LayoutStructure};
 
 pub fn do_word_layout() {
     let folder = std::fs::read_dir("grids").unwrap();

@@ -66,9 +66,9 @@ impl DesignedLevel {
         }
 
         if path.to_ascii_lowercase().starts_with("/game/") {
-            //info!("Path starts with game");
+            //log::info!("Path starts with game");
             let data = path[6..].to_string();
-            //bevy::log::info!("{data}");
+            //log::info!("{data}");
 
             use base64::Engine;
 
@@ -77,9 +77,14 @@ impl DesignedLevel {
                 .ok()?;
 
             let data = String::from_utf8(data).ok()?;
-            //bevy::log::info!("{data}");
 
-            DesignedLevel::from_tsv_line(&data).ok()
+            match DesignedLevel::from_tsv_line(&data.trim()) {
+                Ok(data) => Some(data),
+                Err(err) => {
+                    log::error!("{err}");
+                    None
+                }
+            }
         } else {
             None
         }
@@ -133,8 +138,9 @@ impl DesignedLevel {
             return unneeded_tiles;
         };
 
-        'character_groups: for (character, mut remaining_copies) in
-            potentially_redundant_characters.iter_groups().map(|x|(x.0, x.1.get()))
+        'character_groups: for (character, mut remaining_copies) in potentially_redundant_characters
+            .iter_groups()
+            .map(|x| (x.0, x.1.get()))
         {
             let character_tiles = self
                 .grid
