@@ -2,6 +2,7 @@ pub mod clustering;
 pub mod cluster_ordering;
 pub mod combinations;
 pub mod search;
+pub mod word_layout;
 
 use clap::Parser;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
@@ -42,6 +43,11 @@ struct Options {
     /// search all found grids for a particular word or list of words
     #[arg(long)]
     pub search: Option<String>,
+
+    /// Check word layouts
+    #[arg(long)]
+    pub check_layout: bool,
+
     /// If set, will find clusters for all existing grids rather than finding new grids
     #[arg(short, long, default_value = "false")]
     pub cluster: bool,
@@ -59,9 +65,15 @@ fn main() {
 
     let options = Options::parse();
 
+
+
     if let Some(search) = options.search {
         search::do_search(search);
-    } else if options.cluster {
+    }
+    else if options.check_layout{
+        word_layout::do_word_layout();
+    }
+    else if options.cluster {
         do_cluster(options);
     } else {
         do_finder(options);
