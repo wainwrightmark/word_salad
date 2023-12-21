@@ -39,14 +39,17 @@ impl GridTile {
     }
 
     fn border_proportion(&self) -> f32 {
-        if self.selectability.is_selected() {
-            2. / 36.
-        } else {
-            match self.hint_status {
-                HintStatus::Inadvisable => 0. / 36.,
-                _ => 1. / 36.,
-            }
-        }
+
+        0.0
+
+        // if self.selectability.is_selected() {
+        //     2. / 36.
+        // } else {
+        //     match self.hint_status {
+        //         HintStatus::Inadvisable => 0. / 36.,
+        //         _ => 1. / 36.,
+        //     }
+        // }
     }
 }
 
