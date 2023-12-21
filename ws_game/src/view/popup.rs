@@ -4,7 +4,7 @@ use crate::{
     z_indices::{self, POPUP_BOX_TEXT}, rounding::OTHER_BUTTON_NORMAL,
 };
 use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
-use strum::{Display, EnumCount, EnumIter, IntoEnumIterator};
+use strum::{Display, EnumCount, EnumIter, IntoEnumIterator, EnumIs};
 use ws_core::{
     layout::entities::*,
     palette::{POPUP_BOX_BACKGROUND, POPUP_BOX_BORDER},
@@ -20,7 +20,7 @@ impl Plugin for PopupPlugin {
     }
 }
 
-#[derive(Debug, Clone, Copy, Resource, MavericContext, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, Resource, MavericContext, PartialEq, Eq, Default, EnumIs)]
 pub enum PopupState {
     #[default]
     None,

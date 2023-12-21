@@ -158,6 +158,7 @@ fn watch_lifecycle(
     mut events: EventReader<AppLifeCycleEvent>,
     mut video: ResMut<VideoResource>,
     mut menu: ResMut<MenuState>,
+    mut popup: ResMut<PopupState>,
 ) {
     for event in events.read() {
         match event {
@@ -168,8 +169,10 @@ fn watch_lifecycle(
                 }
             }
             AppLifeCycleEvent::BackPressed => {
-                //info!("State change Back Pressed");
-                if !menu.is_closed() {
+                if popup.is_buy_more_hints(){
+                    *popup.as_mut() = PopupState::None;
+                }
+                else if !menu.is_closed() {
                     menu.close();
                 }
             }
