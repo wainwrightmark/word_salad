@@ -93,6 +93,6 @@ impl LayoutStructure for CongratsLayoutEntity {
 
 impl LayoutStructureWithFont for CongratsLayoutEntity {
     fn font_size(&self) -> f32 {
-        22.0
+        30.0
     }
 }

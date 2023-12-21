@@ -66,7 +66,7 @@ impl LayoutStructure for LayoutWordTile {
 
 impl LayoutStructureWithFont for LayoutWordTile {
     fn font_size(&self) -> f32 {
-        28.0
+        30.0
     }
 }
 
