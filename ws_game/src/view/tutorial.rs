@@ -8,7 +8,7 @@ use maveric::{
     with_bundle::CanWithBundle,
 };
 use strum::{EnumCount, EnumIter, IntoEnumIterator};
-use ws_core::{LayoutRectangle, LayoutStructure};
+use ws_core::{LayoutRectangle, LayoutStructure, layout::entities::{GRID_SIZE, IDEAL_WIDTH}};
 
 use crate::prelude::*;
 
@@ -346,17 +346,17 @@ impl LayoutStructure for TutorialLayoutEntity {
 
     fn size(&self, _context: &Self::Context) -> bevy::prelude::Vec2 {
         match self {
-            TutorialLayoutEntity::Top => Vec2 { x: 300.0, y: 70.0 },
-            TutorialLayoutEntity::Middle => Vec2 { x: 300.0, y: 140.0 },
-            TutorialLayoutEntity::Bottom => Vec2 { x: 300.0, y: 40.0 },
+            TutorialLayoutEntity::Top => Vec2 { x: GRID_SIZE, y: 70.0 },
+            TutorialLayoutEntity::Middle => Vec2 { x: GRID_SIZE, y: 140.0 },
+            TutorialLayoutEntity::Bottom => Vec2 { x: GRID_SIZE, y: 40.0 },
         }
     }
 
     fn location(&self, _context: &Self::Context) -> bevy::prelude::Vec2 {
         match self {
-            TutorialLayoutEntity::Top => Vec2 { x: 10.0, y: 52.0 },
-            TutorialLayoutEntity::Middle => Vec2 { x: 10.0, y: 52.0 },
-            TutorialLayoutEntity::Bottom => Vec2 { x: 10.0, y: 500.0 },
+            TutorialLayoutEntity::Top => Vec2 { x: (IDEAL_WIDTH - GRID_SIZE) * 0.5, y: 52.0 },
+            TutorialLayoutEntity::Middle => Vec2 { x: (IDEAL_WIDTH - GRID_SIZE) * 0.5, y: 52.0 },
+            TutorialLayoutEntity::Bottom => Vec2 { x: (IDEAL_WIDTH - GRID_SIZE) * 0.5, y: 500.0 },
         }
     }
 
@@ -368,9 +368,9 @@ impl LayoutStructure for TutorialLayoutEntity {
 impl LayoutStructureWithFont for TutorialLayoutEntity {
     fn font_size(&self) -> f32 {
         match self {
-            TutorialLayoutEntity::Top => 20.0,
-            TutorialLayoutEntity::Middle => 20.0,
-            TutorialLayoutEntity::Bottom => 16.0,
+            TutorialLayoutEntity::Top => 24.0,
+            TutorialLayoutEntity::Middle => 24.0,
+            TutorialLayoutEntity::Bottom => 20.0,
         }
     }
 }
