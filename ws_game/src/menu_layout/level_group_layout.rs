@@ -56,7 +56,7 @@ impl LayoutStructure for LevelGroupLayoutEntity {
         }
     }
 
-    fn location(&self, context: &Self::Context) -> bevy::prelude::Vec2 {
+    fn location(&self, _context: &Self::Context) -> bevy::prelude::Vec2 {
         Vec2 {
             x: (IDEAL_WIDTH - MENU_BUTTON_WIDTH) / 2.,
             y: TOP_BAR_HEIGHT
