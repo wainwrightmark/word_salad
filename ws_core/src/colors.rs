@@ -74,6 +74,7 @@ pub mod palette {
     pub const HINT_COUNTER_COLOR: Color = LIGHT_GREEN;
 
     pub const MY_BLACK: Color = Color::rgba(0.12, 0., 0., 1.);
+    pub const MY_WHITE: Color = Color::rgba(1.0, 1.0, 1.0, 1.);
     pub const FULL_GREEN: Color = Color::rgba(0.17, 0.71, 0.35, 1.);
     pub const LIGHT_GREEN: Color = Color::rgba(0.463, 0.851, 0.596, 1.);
     pub const LIGHT_GRAY: Color = Color::rgba(0.91, 0.89, 0.89, 1.);

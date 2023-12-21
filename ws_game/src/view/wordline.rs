@@ -24,7 +24,7 @@ impl MavericNode for WordLine {
                 return;
             }
 
-            const DEFAULT_WIDTH: f32 = 0.05;
+            const DEFAULT_WIDTH: f32 = 0.15;
 
             let solution: &[Tile];
             let should_hide: bool;
@@ -110,7 +110,7 @@ impl MavericNode for WordLine {
                 .expect("Wordline should be able to get asset server");
 
             let fill = asset_server.load(WORD_LINE_FILL_SHADER_PATH);
-            let sdf = asset_server.load(WORD_LINE_SHADER_PATH);
+            let sdf = asset_server.load(ANYWHERE_SHADER_PATH);
 
             let u_params = solution_to_u32s(solution);
             let u_params: [u32; SHAPE_U_PARAMS] = u_params.map(|x| x.into());
@@ -144,8 +144,8 @@ impl MavericNode for WordLine {
                 SmudShaders::<SHAPE_F_PARAMS, SHAPE_U_PARAMS> {
                     fill,
                     sdf,
-                    sdf_param_usage: ShaderParamUsage(SDF_PARAMETERS),
-                    fill_param_usage: ShaderParamUsage::NO_PARAMS,
+                    sdf_param_usage: ShaderParamUsage::NO_PARAMS,
+                    fill_param_usage: ShaderParamUsage(SDF_PARAMETERS),
                 },
                 Transform {
                     translation: rect.centre().extend(z_indices::WORD_LINE),

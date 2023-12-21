@@ -61,18 +61,19 @@ pub enum Selectability {
 }
 
 impl Selectability {
-    pub fn new(tile: Tile, selected_tile: Option<&Tile>) -> Self {
+    pub fn new(tile: Tile, solution: &Solution) -> Self {
         use Selectability::*;
-        match selected_tile {
-            Some(selected) => {
-                if tile == *selected {
+
+        match solution.last(){
+            Some(last) => {
+                if solution.contains(&tile){
                     Selected
-                } else if tile.is_adjacent_to(selected) {
+                }else if last.is_adjacent_to(&tile) {
                     Selectable
                 } else {
                     Unselectable
                 }
-            }
+            },
             None => Selectable,
         }
     }
@@ -129,7 +130,7 @@ impl MavericNode for GridTiles {
                 return;
             }
             let solution = context.0.current_solution();
-            let selected_tile: Option<&geometrid::prelude::Tile<4, 4>> = solution.last();
+
 
             let Either::Left(level) = context.1.level(&context.9) else {
                 return;
@@ -149,7 +150,7 @@ impl MavericNode for GridTiles {
                     continue;
                 }
 
-                let selectability = Selectability::new(tile, selected_tile);
+                let selectability = Selectability::new(tile, solution);
                 let hint_status =
                     HintStatus::new(tile, selectability, hint_set, &inadvisable_tiles);
 
@@ -234,6 +235,7 @@ impl MavericNode for GridTile {
                 GridLetter {
                     character: node.character,
                     font_size: node.font_size,
+                    selected: node.selectability.is_selected()
                 },
                 &context,
             );
@@ -279,6 +281,7 @@ impl MavericNode for GridTile {
 pub struct GridLetter {
     pub character: Character,
     pub font_size: f32,
+    pub selected: bool
 }
 
 impl MavericNode for GridLetter {
@@ -295,7 +298,10 @@ impl MavericNode for GridLetter {
         commands.unordered_children_with_node_and_context(|args, context, commands| {
             let color = if context.is_selfie_mode {
                 palette::GRID_LETTER_SELFIE
-            } else {
+            } else if args.selected {
+                palette::MY_WHITE
+            }
+            else{
                 palette::GRID_LETTER_NORMAL
             }
             .convert_color();
@@ -312,6 +318,7 @@ impl MavericNode for GridLetter {
                     text_2d_bounds: Default::default(),
                     text_anchor: Default::default(),
                 }
+                .with_transition_to::<TextColorLens<0>>(color, 5.0.into())
                 .with_bundle(Transform::from_xyz(
                     0.0,
                     0.0,

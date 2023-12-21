@@ -32,6 +32,7 @@ impl Plugin for ShapesPlugin {
         app.add_plugins(SmudPlugin::<SHAPE_F_PARAMS, SHAPE_U_PARAMS>);
 
         app.register_transition::<SmudColorLens>();
+        app.register_transition::<TextColorLens<0>>();
         app.register_transition::<SmudParamLens<0>>();
         app.register_transition::<SmudParamLens<1>>();
         app.register_transition::<SmudParamLens<2>>();
@@ -102,7 +103,7 @@ fn preload_shaders(asset_server: Res<AssetServer>) {
     //force all shaders to stay loaded
     for shader in [
         BOX_SHADER_PATH,
-        WORD_LINE_SHADER_PATH,
+
         SIMPLE_FILL_SHADER_PATH,
         CIRCLE_SHADER_PATH,
         WORD_LINE_FILL_SHADER_PATH,
@@ -128,7 +129,6 @@ fn preload_shaders(asset_server: Res<AssetServer>) {
 }
 
 pub const BOX_SHADER_PATH: &str = "shaders/sdf/box.wgsl";
-pub const WORD_LINE_SHADER_PATH: &str = "shaders/sdf/word_line.wgsl";
 pub const ANYWHERE_SHADER_PATH: &str = "shaders/sdf/anywhere.wgsl";
 pub const CIRCLE_SHADER_PATH: &str = "shaders/sdf/circle.wgsl";
 
