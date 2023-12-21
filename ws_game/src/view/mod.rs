@@ -1,5 +1,4 @@
 pub mod non_level;
-pub mod background;
 pub mod congrats;
 pub mod game_grid;
 pub mod hints;
@@ -13,7 +12,6 @@ pub mod wordline;
 pub mod timer;
 
 pub use non_level::*;
-pub use background::*;
 pub use congrats::*;
 pub use game_grid::*;
 pub use hints::*;

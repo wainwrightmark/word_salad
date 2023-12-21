@@ -94,7 +94,7 @@ impl MavericNode for WordNode {
             let amount_per_second = if node.completion.is_unstarted() {
                 100.0
             } else {
-                0.1
+                1.0
             };
 
             //info!("Word node '{text}' {fill_color:?} {amount_per_second}");

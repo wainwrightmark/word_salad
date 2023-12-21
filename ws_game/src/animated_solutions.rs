@@ -8,7 +8,7 @@ use ws_core::layout::entities::*;
 use ws_core::prelude::*;
 
 const STEP_ONE_SCALE_SECONDS: f32 = 1.0;
-const STEP_ONE_TRANSLATION_SECONDS: f32 = 2.0;
+const STEP_ONE_TRANSLATION_SECONDS: f32 = 1.5;
 
 
 pub const TOTAL_SECONDS: f32 = STEP_ONE_TRANSLATION_SECONDS;
