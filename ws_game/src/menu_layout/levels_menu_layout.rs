@@ -9,7 +9,7 @@ use ws_levels::level_group::LevelGroup;
 use crate::{completion::TotalCompletion, prelude::DailyChallenges};
 
 use super::{
-    MENU_BUTTON_DOUBLE_HEIGHT, MENU_BUTTON_FONT_SIZE, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH,
+    MENU_BUTTON_HEIGHT, MENU_BUTTON_FONT_SIZE, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Display)]
@@ -28,7 +28,7 @@ impl LevelsMenuLayoutEntity {
 
     pub const COUNT: usize = 1 + LevelGroup::COUNT;
 
-    pub fn get_text(&self, completion: &TotalCompletion, daily_challenges: &DailyChallenges) -> String {
+    pub fn get_text(&self, completion: &TotalCompletion, daily_challenges: &DailyChallenges) -> (String, String) {
         let name = self.name();
         let complete = match self {
             LevelsMenuLayoutEntity::WordSalad => completion.get_daily_challenges_complete(),
@@ -42,8 +42,9 @@ impl LevelsMenuLayoutEntity {
         };
 
         let complete = complete.min(total);
+        let fraction = fmtastic::VulgarFraction::new(complete, total).to_string();
 
-        format!("{name}\n{complete:3}/{total:3}")
+        (name.to_string(), fraction)
     }
 
     fn name(&self) -> &'static str {
@@ -65,7 +66,7 @@ impl LayoutStructure for LevelsMenuLayoutEntity {
     fn size(&self, _context: &Self::Context) -> Vec2 {
         Vec2 {
             x: MENU_BUTTON_WIDTH,
-            y: MENU_BUTTON_DOUBLE_HEIGHT,
+            y: MENU_BUTTON_HEIGHT,
         }
     }
 
@@ -75,8 +76,8 @@ impl LayoutStructure for LevelsMenuLayoutEntity {
             y: TOP_BAR_HEIGHT
                 + Spacing::Centre.apply(
                     IDEAL_HEIGHT - TOP_BAR_HEIGHT,
-                    MENU_BUTTON_DOUBLE_HEIGHT + MENU_BUTTON_SPACING,
-                    Self::COUNT,
+                    MENU_BUTTON_HEIGHT + MENU_BUTTON_SPACING,
+                    super::MENU_VIRTUAL_CHILDREN,
                     self.index(),
                 ),
         }

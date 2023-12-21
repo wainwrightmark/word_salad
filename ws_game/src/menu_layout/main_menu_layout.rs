@@ -6,7 +6,7 @@ use ws_core::{
 };
 
 use super::{
-    MENU_BUTTON_FONT_SIZE, MENU_BUTTON_SINGLE_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH,
+    MENU_BUTTON_FONT_SIZE, MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH,
 };
 
 #[derive(
@@ -37,7 +37,7 @@ impl LayoutStructure for MainMenuLayoutEntity {
     fn size(&self, _context: &Self::Context) -> Vec2 {
         Vec2 {
             x: MENU_BUTTON_WIDTH,
-            y: MENU_BUTTON_SINGLE_HEIGHT,
+            y: MENU_BUTTON_HEIGHT,
         }
     }
 
@@ -47,10 +47,9 @@ impl LayoutStructure for MainMenuLayoutEntity {
             y: TOP_BAR_HEIGHT
                 + Spacing::Centre.apply(
                     IDEAL_HEIGHT
-                        - TOP_BAR_HEIGHT
-                        - (MENU_BUTTON_SINGLE_HEIGHT + MENU_BUTTON_SPACING),
-                    MENU_BUTTON_SINGLE_HEIGHT + MENU_BUTTON_SPACING,
-                    Self::COUNT,
+                        - TOP_BAR_HEIGHT,
+                        MENU_BUTTON_HEIGHT + MENU_BUTTON_SPACING,
+                        super::MENU_VIRTUAL_CHILDREN,
                     self.index(),
                 ),
         }

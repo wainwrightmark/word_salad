@@ -61,7 +61,7 @@ impl MavericNode for NonLevelView {
 
             commands.add_child(
                 "interaction",
-                ButtonNode2d {
+                WSButtonNode {
                     text: interaction_text,
                     font_size: size.font_size(&NonLevelLayoutEntity::InteractButton),
                     rect: size.get_rect(&NonLevelLayoutEntity::InteractButton, &()),

@@ -168,7 +168,7 @@ impl MavericNode for CongratsView {
 
                 commands.add_child(
                     "next level",
-                    ButtonNode2d {
+                    WSButtonNode {
                         text: "Next",
                         font_size: size.font_size(&CongratsLayoutEntity::NextButton),
                         rect: size.get_rect(&CongratsLayoutEntity::NextButton, &selfie_mode),
@@ -183,7 +183,7 @@ impl MavericNode for CongratsView {
                 {
                     commands.add_child(
                         "share",
-                        ButtonNode2d {
+                        WSButtonNode {
                             text: "Share",
                             font_size: size.font_size(&CongratsLayoutEntity::ShareButton),
                             rect: size.get_rect(&CongratsLayoutEntity::ShareButton, &selfie_mode),

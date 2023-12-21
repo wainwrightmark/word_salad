@@ -1,7 +1,8 @@
 use crate::completion::TotalCompletion;
 
+
 use super::{
-    MENU_BUTTON_DOUBLE_HEIGHT, MENU_BUTTON_FONT_SIZE, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH,
+     MENU_BUTTON_FONT_SIZE, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT
 };
 use bevy::math::Vec2;
 use ws_core::{
@@ -16,7 +17,7 @@ pub struct LevelGroupLayoutEntity {
 }
 
 impl LevelGroupLayoutEntity {
-    pub fn get_text(&self, completion: &TotalCompletion, group: &LevelGroup) -> String {
+    pub fn get_text(&self, completion: &TotalCompletion, group: &LevelGroup) -> (String, String) {
         let name = self.name(group);
 
         let sequence = group.get_level_sequence(self.index);
@@ -25,8 +26,9 @@ impl LevelGroupLayoutEntity {
         let total = sequence.level_count();
 
         let complete = complete.min(total);
+        let fraction = fmtastic::VulgarFraction::new(complete, total).to_string();
 
-        format!("{name}\n{complete:3}/{total:3}")
+        (name.to_string(), fraction)
     }
 
     fn name(&self, group: &LevelGroup) -> &'static str {
@@ -50,7 +52,7 @@ impl LayoutStructure for LevelGroupLayoutEntity {
     fn size(&self, _context: &Self::Context) -> bevy::prelude::Vec2 {
         Vec2 {
             x: MENU_BUTTON_WIDTH,
-            y: super::MENU_BUTTON_DOUBLE_HEIGHT,
+            y: super::MENU_BUTTON_HEIGHT,
         }
     }
 
@@ -60,8 +62,8 @@ impl LayoutStructure for LevelGroupLayoutEntity {
             y: TOP_BAR_HEIGHT
                 + Spacing::Centre.apply(
                     IDEAL_HEIGHT - TOP_BAR_HEIGHT,
-                    MENU_BUTTON_DOUBLE_HEIGHT + MENU_BUTTON_SPACING,
-                    context.get_sequences().len(),
+                    MENU_BUTTON_HEIGHT + MENU_BUTTON_SPACING,
+                    super::MENU_VIRTUAL_CHILDREN,
                     self.index,
                 ),
         }

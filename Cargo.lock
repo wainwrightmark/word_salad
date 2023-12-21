@@ -1828,6 +1828,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "fmtastic"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "01e0788fd5d05fe28fb0a37654ac8ef55c2a069bb9e4e5ec5361de87f8f3a8dc"
+
+[[package]]
 name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4852,6 +4858,7 @@ dependencies = [
  "console_error_panic_hook",
  "enumset",
  "fixedbitset",
+ "fmtastic",
  "geometrid",
  "insta",
  "itertools 0.12.0",

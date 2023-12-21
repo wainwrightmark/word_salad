@@ -25,7 +25,7 @@ impl LayoutRectangle {
 
     pub fn centre_right(&self) -> Vec2 {
         Vec2 {
-            x: self.top_left.x + self.extents.x * 0.5,
+            x: self.top_left.x + self.extents.x,
             y: self.top_left.y + (self.extents.y * 0.5),
         }
     }

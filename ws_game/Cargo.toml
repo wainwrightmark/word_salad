@@ -46,6 +46,7 @@ capacitor_bindings = { version = "0.10.0", features = [
   "rate_plugin",
 ] }
 fixedbitset = { version = "0.4.2", features = ["serde"] }
+fmtastic = "0.1.0"
 
 
 

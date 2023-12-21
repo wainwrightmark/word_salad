@@ -14,7 +14,7 @@ use crate::{
     menu_layout::main_menu_back_button::MainMenuBackButton,
     prelude::{
         level_group_layout::LevelGroupLayoutEntity, levels_menu_layout::LevelsMenuLayoutEntity,
-        main_menu_layout::MainMenuLayoutEntity, ButtonInteraction, ButtonNode2d, ConvertColor,
+        main_menu_layout::MainMenuLayoutEntity, ButtonInteraction, WSButtonNode, DoubleTextButtonNode, ConvertColor,
         SaladWindowSize, Size, ViewContext,
     },
 };
@@ -75,29 +75,31 @@ impl MavericNode for Menu {
                 match context.5.as_ref() {
                     MenuState::Closed => {}
                     MenuState::ShowMainMenu => {
-                        add_menu_items::<R, MainMenuLayoutEntity>(&(), commands, size, 0);
+                        add_menu_items::<R, MainMenuLayoutEntity>(&(), commands, size, 0, palette::MENU_BUTTON_FILL.convert_color());
                     }
                     MenuState::ChooseLevelsPage => {
-                        add_menu_items_with_fn::<R, LevelsMenuLayoutEntity>(
+                        add_double_text_menu_items::<R, LevelsMenuLayoutEntity>(
                             &(),
                             commands,
                             size,
                             1,
                             |x| x.get_text(context.7.as_ref(), context.9.as_ref()),
+                            palette::MENU_BUTTON_FILL.convert_color()
                         );
                     }
                     MenuState::LevelGroupPage(group) => {
-                        add_menu_items_with_fn::<R, LevelGroupLayoutEntity>(
+                        add_double_text_menu_items::<R, LevelGroupLayoutEntity>(
                             group,
                             commands,
                             size,
                             2,
                             |x| x.get_text(context.7.as_ref(), group),
+                            palette::MENU_BUTTON_FILL.convert_color()
                         );
                     }
                 }
 
-                add_menu_items::<R, MainMenuBackButton>(&(), commands, size, 400);
+                add_menu_items::<R, MainMenuBackButton>(&(), commands, size, 400, palette::LIGHT_GRAY.convert_color());
             });
     }
 }
@@ -110,46 +112,49 @@ fn add_menu_items<
     commands: &mut UnorderedChildCommands<R>,
     size: &Size,
     page: u16,
+    fill_color: Color
 ) {
     for (index, entity) in L::iter_all(context).enumerate() {
         let font_size = size.font_size::<L>(&entity);
         let rect = size.get_rect(&entity, context);
         commands.add_child(
             (index as u16, page),
-            ButtonNode2d {
+            WSButtonNode {
                 font_size,
                 rect,
                 text: entity.text(context),
                 interaction: entity.into(),
                 text_color: palette::MENU_BUTTON_TEXT.convert_color(),
-                fill_color: palette::MENU_BUTTON_FILL.convert_color(),
+                fill_color,
             },
             &(),
         );
     }
 }
 
-fn add_menu_items_with_fn<R: MavericRoot, L: LayoutStructureWithFont + Into<ButtonInteraction>>(
+fn add_double_text_menu_items<R: MavericRoot, L: LayoutStructureWithFont + Into<ButtonInteraction>>(
     context: &<L as LayoutStructure>::Context,
     commands: &mut UnorderedChildCommands<R>,
     size: &Size,
     page: u16,
-    func: impl Fn(&L) -> String,
+    func: impl Fn(&L) -> (String, String),
+    fill_color: Color
 ) {
     for (index, entity) in L::iter_all(context).enumerate() {
         let font_size = size.font_size::<L>(&entity);
-        let text = func(&entity);
+        let (left_text, right_text) = func(&entity);
 
         let rect = size.get_rect(&entity, context);
         commands.add_child(
             (index as u16, page),
-            ButtonNode2d {
+            DoubleTextButtonNode {
                 font_size,
                 rect,
-                text,
+                left_text,
+                right_text,
                 interaction: entity.into(),
                 text_color: palette::MENU_BUTTON_TEXT.convert_color(),
-                fill_color: palette::MENU_BUTTON_FILL.convert_color(),
+                fill_color,
             },
             &(),
         );
