@@ -85,9 +85,9 @@ impl MavericNode for WordNode {
         commands.unordered_children_with_node(|node, commands| {
             let text = match node.completion {
                 Completion::Unstarted => node.word.hidden_text.clone(),
-                Completion::ManualHinted(hints) => node.word.hinted_text(hints),
+                Completion::ManualHinted(hints) => node.word.hinted_text(hints).to_uppercase(),
 
-                Completion::Complete => node.word.text.to_string(),
+                Completion::Complete => node.word.text.to_uppercase().to_string(),
             };
 
             let fill_color = node.completion.color();
@@ -96,8 +96,6 @@ impl MavericNode for WordNode {
             } else {
                 1.0
             };
-
-            //info!("Word node '{text}' {fill_color:?} {amount_per_second}");
 
             let centre = node.rect.centre();
 

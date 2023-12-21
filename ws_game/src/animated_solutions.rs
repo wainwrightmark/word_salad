@@ -39,16 +39,8 @@ pub fn animate_solution(
     let Some(layout_word_tile) = words.iter().position(|x| x == word).map(LayoutWordTile) else {
         return;
     };
-
-    //let Some(last_tile) = solution.last() else{return;};
-
-    // let mid_destination = size
-    //     .get_rect(&LayoutTextItem::FoundWordAnimation, &())
-    //     .centre();
     let word_destination_rect = size.get_rect(&layout_word_tile, words);
     let word_destination_centre = word_destination_rect.centre();
-
-    //info!("Animate to {mid_destination}, then {word_destination_centre}", );
 
     let font = asset_server.load(SOLUTIONS_FONT_PATH);
     let font_size = size.font_size::<LayoutGridTile>(&LayoutGridTile::default());
@@ -58,13 +50,6 @@ pub fn animate_solution(
         &(Vec3::ONE * MID_SCALE),
         Duration::from_secs_f32(STEP_ONE_SCALE_SECONDS * time_multiplier),
     );
-    // let speed_two_scale = calculate_speed(
-    //     &(Vec3::ONE),
-    //     &(Vec3::ONE * MID_SCALE),
-    //     Duration::from_secs_f32(STEP_TWO_SCALE_SECONDS * time_multiplier),
-    // );
-
-    //let right_push = ((mid_destination.x - ((solution.len() as f32 + 0.5) * font_size * SPACING)) + (size.scaled_width * 0.5)).min(0.0);
 
     for (index, (tile, character)) in solution
         .iter()
@@ -72,7 +57,7 @@ pub fn animate_solution(
         .enumerate()
     {
         let text = Text::from_section(
-            character.grapheme.clone(),
+            character.grapheme.to_uppercase(),
             TextStyle {
                 font_size,
                 color: color.convert_color(),
@@ -80,11 +65,6 @@ pub fn animate_solution(
             },
         );
         let offset = (solution.len() as f32 / 2.0) - index as f32;
-        // let destination_one = mid_destination
-        //     - Vec2 {
-        //         x: ((offset - 0.5) * font_size * SPACING),
-        //         y: 0.0,
-        //     };
 
         let destination_two = word_destination_centre
             - Vec2 {
@@ -93,20 +73,6 @@ pub fn animate_solution(
             };
 
         let start_position = size.get_rect(&LayoutGridTile(*tile), &()).centre();
-        // let speed_two_translation = calculate_speed(
-        //     &destination_two,
-        //     &destination_one,
-        //     Duration::from_secs_f32(STEP_TWO_TRANSLATION_SECONDS * time_multiplier),
-        // );
-
-        // let step_two = TransitionStep::<(TransformTranslationLens, TransformScaleLens)>::new_arc(
-        //     (
-        //         destination_two.extend(crate::z_indices::ANIMATED_SOLUTION),
-        //         Vec3::ZERO,
-        //     ),
-        //     Some((speed_two_translation, speed_two_scale)),
-        //     NextStep::None,
-        // );
 
         let speed_one_translation = calculate_speed(
             &start_position,
