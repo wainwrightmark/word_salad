@@ -53,7 +53,12 @@ fn get_today_date() -> chrono::NaiveDate {
     today.date_naive()
 }
 
-fn load_levels(writer: AsyncEventWriter<DailyChallengeDataLoadedEvent>){
+fn load_levels(writer: AsyncEventWriter<DailyChallengeDataLoadedEvent>, dc: Res<DailyChallenges>){
+
+    if DailyChallenges::get_today_index().is_some_and(|x| x < dc.total_levels()){
+        return;
+    }
+
     asynchronous::spawn_and_run(load_levels_async(writer));
 }
 
