@@ -89,10 +89,10 @@ impl LayoutStructureWithFont for GameLayoutEntity {
     fn font_size(&self) -> f32 {
         match self {
             GameLayoutEntity::TopBar => f32::NAN,
-            GameLayoutEntity::Theme => 24.0,
+            GameLayoutEntity::Theme => 36.0,
             GameLayoutEntity::Grid => f32::NAN,
             GameLayoutEntity::WordList => f32::NAN,
-            GameLayoutEntity::Timer => 16.0,
+            GameLayoutEntity::Timer => 24.0,
         }
     }
 }

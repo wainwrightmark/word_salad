@@ -47,7 +47,7 @@ impl MavericNode for TopBar {
                         font_size: size
                             .font_size::<LayoutTopBar>(&LayoutTopBar::WordSaladLogo),
                         color: palette::BUTTON_TEXT_COLOR.convert_color(),
-                        font: MENU_BUTTON_FONT_PATH,
+                        font: ICON_FONT_PATH,
                         alignment: TextAlignment::Left,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         text_2d_bounds: Default::default(),

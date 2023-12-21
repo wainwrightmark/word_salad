@@ -8,7 +8,7 @@ use maveric::{
 
 use ws_core::LayoutRectangle;
 
-use crate::prelude::{box_node1, ButtonInteraction, MENU_BUTTON_FONT_PATH};
+use crate::prelude::{box_node1, ButtonInteraction, BUTTONS_FONT_PATH};
 
 #[derive(Debug, PartialEq)]
 pub struct ButtonNode2d<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> {
@@ -52,7 +52,7 @@ impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> Maveri
                         text: text.clone(),
                         font_size: *font_size,
                         color: *text_color,
-                        font: MENU_BUTTON_FONT_PATH,
+                        font: BUTTONS_FONT_PATH,
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         text_2d_bounds: Default::default(),

@@ -98,14 +98,16 @@ pub const DEFAULT_WINDOW_HEIGHT: f32 = 800f32;
 
 pub const TILE_MULTIPLIER: f32 = 0.9;
 
-pub const TILE_FONT_PATH: &str = "fonts/DMSans-SemiBold.ttf";
-pub const TITLE_FONT_PATH: &str = "fonts/FiraMono-Medium.ttf";
-pub const BUTTONS_FONT_PATH: &str = "fonts/FiraMono-Medium.ttf";
-pub const SOLUTIONS_FONT_PATH: &str = "fonts/DMSans-Regular.ttf";
-pub const MENU_BUTTON_FONT_PATH: &str = "fonts/merged-font.ttf";
+pub const TILE_FONT_PATH: &str = "fonts/Cairo-Bold.ttf";
+
+pub const TITLE_FONT_PATH: &str = "fonts/Cairo-Regular.ttf";
+pub const BUTTONS_FONT_PATH: &str = "fonts/Cairo-Regular.ttf";
+
+
+pub const SOLUTIONS_FONT_PATH: &str = "fonts/Cairo-Regular.ttf";
+pub const ICON_FONT_PATH: &str = "fonts/fontello.ttf";
 pub const WORD_SALAD_LOGO_FONT_PATH: &str = "fonts/LuckiestGuy.ttf";
 
-pub const ICON_FONT_PATH: &str = "";
 
 pub const ICON_BUTTON_SIZE: f32 = 40f32; //40 pixels
 pub const TOOLBAR_SIZE: f32 = 40f32; //40 pixels

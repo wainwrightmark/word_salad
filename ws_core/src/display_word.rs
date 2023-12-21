@@ -57,7 +57,7 @@ impl DisplayWord {
                     hints_left = hints_left.saturating_sub(1);
                 }
             } else {
-                result.push('?');
+                result.push('_');
             }
         }
 

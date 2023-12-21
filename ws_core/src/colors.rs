@@ -91,4 +91,9 @@ pub mod palette {
 
 
     pub const TOP_BAR_COLOR: Color = Color::rgb(0.8,0.8,0.8);
+
+
+    // pub const FULL_BLACK: Color = Color::rgba(0.12, 0., 0., 1.);
+    // pub const FULL_GREEN: Color = Color::rgba(0.17, 0.71, 0.35, 1.);
+    // pub const LIGHT_GRAY: Color = Color::rgba(0.96, 0.95, 0.95, 1.);
 }
