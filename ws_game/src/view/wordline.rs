@@ -24,7 +24,7 @@ impl MavericNode for WordLine {
                 return;
             }
 
-            const DEFAULT_WIDTH: f32 = 0.15;
+            const DEFAULT_WIDTH: f32 = 0.05;
 
             let solution: &[Tile];
             let should_hide: bool;
