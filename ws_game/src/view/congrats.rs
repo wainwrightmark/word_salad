@@ -162,7 +162,7 @@ impl MavericNode for CongratsView {
                         size.get_rect(&CongratsLayoutEntity::HintsUsed, &selfie_mode)
                             .centre()
                             .extend(crate::z_indices::CONGRATS_BUTTON),
-                    )),
+                    )).with_transition_in::<TransformScaleLens> (Vec3::ZERO, Vec3::ONE, Duration::from_secs_f32(1.0)),
                     &(),
                 );
 
@@ -175,7 +175,7 @@ impl MavericNode for CongratsView {
                         interaction: ButtonInteraction::Congrats(CongratsLayoutEntity::NextButton),
                         text_color: palette::CONGRATS_BUTTON_TEXT.convert_color(),
                         fill_color: palette::CONGRATS_BUTTON_FILL.convert_color(),
-                    },
+                    }.with_transition_in::<TransformScaleLens> (Vec3::ZERO, Vec3::ONE, Duration::from_secs_f32(1.0)),
                     &(),
                 );
 
@@ -192,7 +192,7 @@ impl MavericNode for CongratsView {
                             ),
                             text_color: palette::CONGRATS_BUTTON_TEXT.convert_color(),
                             fill_color: palette::CONGRATS_BUTTON_FILL.convert_color(),
-                        },
+                        }.with_transition_in::<TransformScaleLens> (Vec3::ZERO, Vec3::ONE, Duration::from_secs_f32(1.0)),
                         &(),
                     );
                 }
