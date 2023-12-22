@@ -101,12 +101,16 @@ fn handle_daily_challenge_data_loaded(
 ) {
     for event in ev.read() {
         //info!("Daily challenge data loaded '{}'", event.data);
-        let levels = event
+        let mut levels = event
             .data
             .lines()
             .map(DesignedLevel::from_tsv_line)
             .flat_map(|x| x.ok())
             .collect_vec();
+
+        for (index, level) in levels.iter_mut().enumerate(){
+            level.name = format!("#{} {}", index + 1, level.name);
+        }
 
         if levels.len() > challenges.levels.len() {
             info!(
