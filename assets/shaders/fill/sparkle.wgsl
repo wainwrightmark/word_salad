@@ -58,6 +58,8 @@ fn fill(d: f32, color1: vec4<f32>, uv: vec2<f32>, count1: f32, count2: f32, seed
         }
     }
 
+    alpha = smoothstep(0.1, 1.0, alpha);
+
     return vec4(color, alpha);
 }
 
