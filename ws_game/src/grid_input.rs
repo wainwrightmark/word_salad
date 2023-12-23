@@ -5,6 +5,8 @@ use ws_core::Tile;
 pub struct GridInputState {
     last_tile: Option<Tile>,
     delete_on_end: bool,
+
+    last_truncate: Option<Tile>,
 }
 
 impl GridInputState {
@@ -24,6 +26,7 @@ impl GridInputState {
 
         if chosen_state.is_just_finished {
             *chosen_state.as_mut() = ChosenState::default();
+            self.last_truncate = None;
         }
 
         if let Some(last) = chosen_state.solution.last() {
@@ -31,12 +34,22 @@ impl GridInputState {
                 // element is already present
                 if index + 1 == chosen_state.solution.len() {
                     //info!("His1");
-                    self.delete_on_end = true;
+                    if Some(tile) == self.last_truncate {
+                        chosen_state.solution.clear();
+                        chosen_state.solution.push(tile);
+                        self.last_truncate = None;
+                    } else {
+                        self.delete_on_end = true;
+                    }
+
+                    self.last_truncate = None;
                 } else if index == 0 {
                     chosen_state.solution.clear();
+                    self.last_truncate = None;
                 } else {
                     //info!("His2");
                     chosen_state.solution.truncate(index + 1);
+                    self.last_truncate = Some(tile);
                 }
             } else if last.is_adjacent_to(&tile) {
                 //element is not already present
@@ -72,17 +85,20 @@ impl GridInputState {
 
         if chosen_state.is_just_finished {
             *chosen_state.as_mut() = ChosenState::default();
+            self.last_truncate = None;
         }
 
         if let Some(last) = chosen_state.solution.last() {
             if let Some(index) = chosen_state.solution.iter().position(|x| *x == tile) {
                 // element is already present
                 chosen_state.solution.truncate(index + 1);
+                self.last_truncate = None;
             } else if last.is_adjacent_to(&tile) {
                 //element is not already present
                 if allow_tile(tile, grid, found_words) {
                     //info!("Him2");
                     chosen_state.solution.push(tile);
+                    self.last_truncate = None;
                 }
             }
         }
