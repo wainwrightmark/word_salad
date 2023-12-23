@@ -198,7 +198,7 @@ impl FoundWordsState {
             Completion::Complete => return false,
         };
 
-        if let Some(solution) = word.find_solution(&level.grid) {
+        if let Some(solution) = word.find_solution_with_tiles(&level.grid, self.unneeded_tiles) {
             if solution.len() > new_count {
                 let new_selection: ArrayVec<Tile, 16> =
                     ArrayVec::from_iter(solution.iter().take(new_count).cloned());
