@@ -1,6 +1,6 @@
 use crate::input::InputPlugin;
 pub use crate::prelude::*;
-use bevy::log::LogPlugin;
+use bevy::{log::LogPlugin, window::RequestRedraw};
 use nice_bevy_utils::{async_event_writer, window_size::WindowSizePlugin, CanRegisterAsyncEvent};
 use ws_core::layout::entities::*;
 
@@ -90,15 +90,49 @@ pub fn go() {
     app.add_systems(Update, watch_lifecycle);
     app.add_systems(Startup, set_status_bar.after(hide_splash));
 
+    app.add_systems(Last, stack_frames);
+    app.init_resource::<FrameStack>();
+
     app.insert_resource(bevy::winit::WinitSettings {
         return_from_run: false,
-        focused_mode: bevy::winit::UpdateMode::Continuous,
+        focused_mode: bevy::winit::UpdateMode::Reactive {
+            wait: std::time::Duration::from_secs(1),
+        },
         unfocused_mode: bevy::winit::UpdateMode::Reactive {
             wait: std::time::Duration::from_secs(60),
         },
     });
 
     app.run();
+}
+
+#[derive(Debug, Resource)]
+pub struct FrameStack {
+    pub remaining: u16,
+}
+
+impl Default for FrameStack {
+    fn default() -> Self {
+        Self { remaining: 360 }
+    }
+}
+
+fn stack_frames(
+    mouse: Res<Input<MouseButton>>,
+    mut touch_events: EventReader<TouchInput>,
+    mut frames: ResMut<FrameStack>,
+    mut events: EventWriter<RequestRedraw>,
+) {
+    if !touch_events.is_empty() {
+        touch_events.clear();
+    } else if mouse.is_changed() {
+        frames.remaining = FrameStack::default().remaining;
+    }
+
+    if let Some(new_remaining) = frames.remaining.checked_sub(1) {
+        frames.remaining = new_remaining;
+        events.send(RequestRedraw);
+    }
 }
 
 fn setup_system(mut commands: Commands) {
@@ -111,23 +145,20 @@ fn choose_level_on_game_load(
     mut found_words: ResMut<FoundWordsState>,
     mut timer: ResMut<crate::level_time::LevelTime>,
 ) {
-
     #[cfg(target_arch = "wasm32")]
     {
         match crate::wasm::get_game_from_location() {
             Some(level) => {
                 info!("Loaded custom level from path");
-                if !current_level.as_ref().eq(&CurrentLevel::Custom){
+                if !current_level.as_ref().eq(&CurrentLevel::Custom) {
                     info!("Setting custom level");
                     *current_level = CurrentLevel::Custom;
                     *found_words = FoundWordsState::new_from_level(&level);
                 }
 
-                if let Err(err) = CUSTOM_LEVEL.set(level){
+                if let Err(err) = CUSTOM_LEVEL.set(level) {
                     error!("{err}");
                 }
-
-
 
                 *timer = LevelTime::default();
                 return;
@@ -172,10 +203,9 @@ fn watch_lifecycle(
                 }
             }
             AppLifeCycleEvent::BackPressed => {
-                if popup.is_buy_more_hints(){
+                if popup.is_buy_more_hints() {
                     *popup.as_mut() = PopupState::None;
-                }
-                else if !menu.is_closed() {
+                } else if !menu.is_closed() {
                     menu.close();
                 }
             }
