@@ -122,7 +122,7 @@ impl InteractionEntity {
                                     &level.words,
                                 );
                             }
-                            GameLayoutEntity::Timer => None,
+                            GameLayoutEntity::Timer => Some(InteractionEntity::Button(ButtonInteraction::TimerButton)),
                         }
                     }
                     itertools::Either::Right(..) => {
@@ -186,6 +186,7 @@ impl InputType {
         video_resource: &VideoResource,
         daily_challenges: &DailyChallenges,
         video_events: &AsyncEventWriter<VideoEvent>,
+        level_time: &mut ResMut<LevelTime>
     ) {
         let is_level_complete = found_words.is_level_complete();
 
@@ -216,6 +217,7 @@ impl InputType {
                                     video_resource,
                                     video_events,
                                     daily_challenges,
+                                    level_time
                                 );
                             }
 
@@ -295,6 +297,8 @@ impl InputType {
                                     video_resource,
                                     video_events,
                                     daily_challenges,
+                                    level_time
+
                                 );
                             }
 
@@ -338,6 +342,7 @@ fn handle_mouse_input(
     daily_challenges: Res<DailyChallenges>,
     video_events: AsyncEventWriter<VideoEvent>,
     mut total_completion: ResMut<TotalCompletion>,
+    mut level_time: ResMut<LevelTime>
 ) {
     let input_type = if mouse_input.just_released(MouseButton::Left) {
         let position_option = get_cursor_position(q_windows);
@@ -370,6 +375,7 @@ fn handle_mouse_input(
         &video_state,
         &daily_challenges,
         &video_events,
+        &mut level_time
     );
 }
 
@@ -390,9 +396,10 @@ fn handle_touch_input(
     video_events: AsyncEventWriter<VideoEvent>,
     mut total_completion: ResMut<TotalCompletion>,
     daily_challenges: Res<DailyChallenges>,
+    mut level_time: ResMut<LevelTime>
 ) {
     for ev in touch_events.read() {
-        let input_type = match ev.phase {
+        let input_type: InputType = match ev.phase {
             bevy::input::touch::TouchPhase::Started => {
                 let Some(position) = get_touch_position(ev.position, &q_camera, &size) else {
                     continue;
@@ -426,6 +433,7 @@ fn handle_touch_input(
             &video_state,
             &daily_challenges,
             &video_events,
+            &mut level_time
         );
     }
 }

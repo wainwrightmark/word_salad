@@ -1,28 +1,28 @@
-pub mod non_level;
 pub mod congrats;
 pub mod game_grid;
 pub mod hints;
-pub mod words;
-pub mod top_bar;
 pub mod level_name;
 pub mod menu;
+pub mod non_level;
 pub mod popup;
+pub mod timer;
+pub mod top_bar;
 pub mod tutorial;
 pub mod wordline;
-pub mod timer;
+pub mod words;
 
-pub use non_level::*;
 pub use congrats::*;
 pub use game_grid::*;
 pub use hints::*;
-pub use words::*;
-pub use top_bar::*;
 pub use level_name::*;
 pub use menu::*;
+pub use non_level::*;
 pub use popup::*;
+pub use timer::*;
+pub use top_bar::*;
 pub use tutorial::*;
 pub use wordline::*;
-pub use timer::*;
+pub use words::*;
 
 use crate::{completion::TotalCompletion, prelude::*};
 
@@ -80,10 +80,8 @@ impl MavericRootChildren for ViewRoot {
                         let theme = level.name.clone();
                         commands.add_child("ui_theme", LevelName { theme }, &context.3);
 
-                        let time_text = match context.4.as_ref() {
-                            LevelTime::Started(..) => "00:00".to_string(),
-                            LevelTime::Finished { total_seconds } => format_seconds(*total_seconds),
-                        };
+                        let total_seconds = context.4.as_ref().total_elapsed().as_secs();
+                        let time_text = format_seconds(total_seconds);
                         commands.add_child("ui_timer", UITimer { time_text }, &context.3);
                     }
                 }

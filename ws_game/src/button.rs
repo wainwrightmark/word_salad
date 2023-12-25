@@ -45,6 +45,7 @@ pub enum ButtonInteraction {
     ClosePopups,
     MenuBackButton,
     NonLevelInteractionButton,
+    TimerButton
 }
 
 impl ButtonInteraction {
@@ -169,6 +170,7 @@ impl ButtonInteraction {
         video_state: &VideoResource,
         video_events: &AsyncEventWriter<VideoEvent>,
         daily_challenges: &DailyChallenges,
+        level_time: &mut ResMut<LevelTime>
     ) {
         match self {
             ButtonInteraction::MenuBackButton => {
@@ -201,6 +203,15 @@ impl ButtonInteraction {
                     *current_level.as_mut() = CurrentLevel::DailyChallenge { index };
                 }
                 menu_state.close();
+            }
+
+            ButtonInteraction::TimerButton =>{
+                if level_time.is_paused(){
+                    level_time.as_mut().resume_timer();
+                }
+                else if level_time.is_running(){
+                    level_time.as_mut().pause_timer();
+                }
             }
 
             ButtonInteraction::LevelsMenu(LevelsMenuLayoutEntity::AdditionalLevel(group)) => {

@@ -42,14 +42,7 @@ fn watch_level_completion(
     }
     if state.is_level_complete() {
         //info!("Logging level complete");
-        let seconds = match timer.as_ref() {
-            LevelTime::Started(started) => {
-                let now = chrono::Utc::now();
-                let diff = now.signed_duration_since(started);
-                diff.num_seconds().max(0) as u64
-            }
-            LevelTime::Finished { total_seconds } => *total_seconds,
-        };
+        let seconds = timer.total_elapsed().as_secs();
 
         let level = current_level.level(&daily_challenges);
         let level = level.left()

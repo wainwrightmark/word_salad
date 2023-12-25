@@ -19,6 +19,8 @@ pub struct GridTile {
     pub tile_size: f32,
     pub font_size: f32,
     pub centre: Vec2,
+
+    pub timer_paused: bool,
 }
 
 impl GridTile {
@@ -39,7 +41,6 @@ impl GridTile {
     }
 
     fn border_proportion(&self) -> f32 {
-
         0.0
 
         // if self.selectability.is_selected() {
@@ -64,16 +65,16 @@ impl Selectability {
     pub fn new(tile: Tile, solution: &Solution) -> Self {
         use Selectability::*;
 
-        match solution.last(){
+        match solution.last() {
             Some(last) => {
-                if solution.contains(&tile){
+                if solution.contains(&tile) {
                     Selected
-                }else if last.is_adjacent_to(&tile) {
+                } else if last.is_adjacent_to(&tile) {
                     Selectable
                 } else {
                     Unselectable
                 }
-            },
+            }
             None => Selectable,
         }
     }
@@ -131,7 +132,6 @@ impl MavericNode for GridTiles {
             }
             let solution = context.0.current_solution();
 
-
             let Either::Left(level) = context.1.level(&context.9) else {
                 return;
             };
@@ -169,6 +169,7 @@ impl MavericNode for GridTiles {
                         font_size,
                         centre,
                         hint_status,
+                        timer_paused: context.4.is_paused(),
                     },
                     &context.8,
                 );
@@ -235,7 +236,8 @@ impl MavericNode for GridTile {
                 GridLetter {
                     character: node.character,
                     font_size: node.font_size,
-                    selected: node.selectability.is_selected()
+                    selected: node.selectability.is_selected(),
+                    visible: !node.timer_paused,
                 },
                 &context,
             );
@@ -281,17 +283,29 @@ impl MavericNode for GridTile {
 pub struct GridLetter {
     pub character: Character,
     pub font_size: f32,
-    pub selected: bool
+    pub selected: bool,
+    pub visible: bool,
 }
 
 impl MavericNode for GridLetter {
     type Context = VideoResource;
-    fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
+    fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
+        commands.node_to_bundle(|x| {
+            if x.visible {
+                &Visibility::Inherited
+            } else {
+                &Visibility::Hidden
+            }
+        });
         commands
             .ignore_context()
             .ignore_node()
-            .insert(SpatialBundle::default())
-            .finish()
+            .insert((
+                TransformBundle::default(),
+                InheritedVisibility::default(),
+                ViewVisibility::default(),
+            ))
+            .finish();
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
@@ -300,8 +314,7 @@ impl MavericNode for GridLetter {
                 palette::GRID_LETTER_SELFIE
             } else if args.selected {
                 palette::MY_WHITE
-            }
-            else{
+            } else {
                 palette::GRID_LETTER_NORMAL
             }
             .convert_color();

@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::prelude::*;
 use bevy::prelude::*;
 use chrono::{DateTime, Utc};
@@ -17,8 +19,49 @@ impl Plugin for LevelTimePlugin {
 
 #[derive(Debug, PartialEq, Clone, Resource, Serialize, Deserialize, EnumIs, MavericContext)]
 pub enum LevelTime {
-    Started(DateTime<Utc>),
-    Finished { total_seconds: u64 },
+    Running {
+        since: DateTime<Utc>,
+        additional: Duration,
+    },
+    Paused {
+        elapsed: Duration,
+    },
+    Finished {
+        elapsed: Duration,
+    },
+}
+
+impl LevelTime {
+    pub fn total_elapsed(&self) -> std::time::Duration {
+        match self {
+            LevelTime::Running { since, additional } => {
+                let now = chrono::Utc::now();
+
+                let additional =
+                    chrono::Duration::from_std(*additional).unwrap_or(chrono::Duration::zero());
+                //info!("{now:?}");
+                let elapsed = now.signed_duration_since(since) + additional;
+
+                let elapsed = elapsed.to_std().unwrap_or_default();
+                elapsed
+            }
+            LevelTime::Paused { elapsed } => *elapsed,
+            LevelTime::Finished { elapsed } => *elapsed,
+        }
+    }
+
+    pub fn pause_timer(&mut self) {
+        *self = LevelTime::Paused {
+            elapsed: self.total_elapsed(),
+        }
+    }
+
+    pub fn resume_timer(&mut self) {
+        *self = LevelTime::Running {
+            since: chrono::Utc::now(),
+            additional: self.total_elapsed(),
+        }
+    }
 }
 
 impl TrackableResource for LevelTime {
@@ -27,8 +70,11 @@ impl TrackableResource for LevelTime {
 
 impl Default for LevelTime {
     fn default() -> Self {
-        let time = chrono::Utc::now();
-        LevelTime::Started(time)
+        let since: DateTime<Utc> = chrono::Utc::now();
+        LevelTime::Running {
+            since,
+            additional: Duration::ZERO,
+        }
     }
 }
 
@@ -36,6 +82,8 @@ fn manage_timer(
     mut timer: ResMut<LevelTime>,
     current_level: Res<CurrentLevel>,
     found_words: Res<FoundWordsState>,
+    menu_state: Res<MenuState>,
+    chosen_state:Res<ChosenState>
 ) {
     if !current_level.is_added() && current_level.is_changed() {
         *timer.as_mut() = LevelTime::default();
@@ -43,35 +91,40 @@ fn manage_timer(
         //debug!("{timer:?}");
     }
 
-    match timer.as_ref() {
-        LevelTime::Started(started) => {
-            if found_words.is_changed() && found_words.is_level_complete() {
-                let now = chrono::Utc::now();
-
-                //info!("{now:?}");
-                let diff = now.signed_duration_since(started);
-                let total_seconds = diff.num_seconds().max(0) as u64;
-
-                *timer.as_mut() = LevelTime::Finished { total_seconds };
-
-                //info!("{timer:?}");
-            }
+    if found_words.is_changed() {
+        if  found_words.is_level_complete() {
+            *timer.as_mut() = LevelTime::Finished {
+                elapsed: timer.total_elapsed(),
+            };
         }
-        LevelTime::Finished { .. } => {}
+        else if timer.is_paused(){
+            timer.resume_timer()
+        }
+    }
+
+    if chosen_state.is_changed() && timer.is_paused(){
+        timer.resume_timer()
+    }
+
+    if menu_state.is_changed(){
+        if menu_state.is_closed(){
+            timer.resume_timer();
+        }else{
+            timer.pause_timer();
+        }
     }
 }
 
 fn count_up(mut query: Query<&mut Text, With<TimeCounterMarker>>, timer: Res<LevelTime>) {
-    let LevelTime::Started(started) = timer.as_ref() else {
+    if !timer.is_running() {
         return;
-    };
+    }
+
+    let elapsed = timer.total_elapsed();
 
     for mut t in query.iter_mut() {
         if let Some(section) = t.sections.first_mut() {
-            let now = chrono::Utc::now();
-            let diff = now.signed_duration_since(started);
-            let total_seconds = diff.num_seconds().max(0) as u64;
-
+            let total_seconds = elapsed.as_secs();
             section.value = format_seconds(total_seconds);
         }
     }
