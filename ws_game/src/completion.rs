@@ -73,8 +73,8 @@ impl TotalCompletion {
                     }
                 }
             }
-            CurrentLevel::Custom => {}
-            CurrentLevel::Tutorial { .. } => {
+
+            CurrentLevel::Tutorial { .. } |  CurrentLevel::Custom{..} => {
                 // No need to track tutorial completion
             }
             CurrentLevel::DailyChallenge { index } => {

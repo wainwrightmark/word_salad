@@ -14,7 +14,6 @@ pub mod prelude {
     pub use crate::designed_level::*;
     pub use crate::display_word::*;
     pub use crate::word::*;
-    pub use crate::word::*;
 
     pub use arrayvec::ArrayVec;
     pub use geometrid::prelude::HasCenter;

@@ -19,7 +19,7 @@ pub enum CurrentLevel {
     DailyChallenge {
         index: usize,
     },
-    Custom,
+    Custom {name: String},
     NonLevel(NonLevel),
 }
 
@@ -61,7 +61,7 @@ impl CurrentLevel {
                     None => Either::Right(NonLevel::NoMoreLevelSequence(*sequence)),
                 }
             },
-            CurrentLevel::Custom => {
+            CurrentLevel::Custom { .. } => {
                 match  CUSTOM_LEVEL.get(){
                     Some(cl) => Either::Left(cl),
                     None => Either::Right(NonLevel::AfterCustomLevel),
@@ -118,7 +118,7 @@ impl CurrentLevel {
                     None => CurrentLevel::NonLevel(NonLevel::NoMoreDailyChallenge),
                 }
             }
-            CurrentLevel::Custom => NonLevel::AfterCustomLevel.into(),
+            CurrentLevel::Custom{..} => NonLevel::AfterCustomLevel.into(),
             CurrentLevel::NonLevel(x) => (*x).into(),//No change
 
         }

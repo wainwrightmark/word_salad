@@ -257,7 +257,10 @@ impl ButtonInteraction {
                             *current_level.as_mut() = CurrentLevel::Tutorial { index: 0 };
                         }
                         NonLevel::AfterCustomLevel => {
-                            *current_level.as_mut() = CurrentLevel::Custom;
+                            if let Some(l) = CUSTOM_LEVEL.get(){
+                                *current_level.as_mut() = CurrentLevel::Custom{name: l.name.clone()};
+                            }
+
                         }
                         NonLevel::NoMoreDailyChallenge => {
                             total_completion.reset_daily_challenge_completion();

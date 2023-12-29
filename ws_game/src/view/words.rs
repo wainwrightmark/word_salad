@@ -40,7 +40,7 @@ impl MavericNode for WordsNode {
                     let rect = context.3.get_rect(&tile, words);
                     let level_indices: (u16, u16) = match context.1.as_ref() {
                         CurrentLevel::Fixed { level_index, .. } => (0, *level_index as u16),
-                        CurrentLevel::Custom => (1, 0),
+                        CurrentLevel::Custom{..} => (1, 0),
                         CurrentLevel::Tutorial { index } => (2, *index as u16),
                         CurrentLevel::DailyChallenge { index } => (3, *index as u16),
                         CurrentLevel::NonLevel(..) => (4, 0),

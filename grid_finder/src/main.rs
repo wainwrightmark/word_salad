@@ -261,6 +261,7 @@ fn create_grids(
 
     while let Some((size, mut sets)) = ordered_combinations.pop() {
         if size < min_size {
+            info!("Skipping {} of size {size}", sets.len());
             break;
         }
         let pb = ProgressBar::new(sets.len() as u64)

@@ -40,7 +40,6 @@ pub mod prelude {
     pub use crate::constants::*;
     pub use crate::current_level::*;
     pub use crate::daily_challenge::*;
-    pub use crate::daily_challenge::*;
     pub use crate::grid_input::*;
     pub use crate::level_time::*;
     pub use crate::logging::*;
