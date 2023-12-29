@@ -210,7 +210,7 @@ impl FoundWordsState {
                 *completion = Completion::Complete;
 
 
-                chosen_state.is_just_finished = true;
+                chosen_state.is_just_finished = true;//todo change this slightly
             }
         } else {
             warn!("Could not find solution during hint");

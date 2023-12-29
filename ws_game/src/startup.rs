@@ -1,6 +1,7 @@
-use crate::input::InputPlugin;
 pub use crate::prelude::*;
+use crate::{completion::TotalCompletion, input::InputPlugin};
 use bevy::{log::LogPlugin, window::RequestRedraw};
+use itertools::Either;
 use nice_bevy_utils::{async_event_writer, window_size::WindowSizePlugin, CanRegisterAsyncEvent};
 use ws_core::layout::entities::*;
 
@@ -144,6 +145,8 @@ fn choose_level_on_game_load(
     mut current_level: ResMut<CurrentLevel>,
     mut found_words: ResMut<FoundWordsState>,
     mut timer: ResMut<crate::level_time::LevelTime>,
+    completion: Res<TotalCompletion>,
+    daily_challenges: Res<DailyChallenges>,
 ) {
     #[cfg(target_arch = "wasm32")]
     {
@@ -166,6 +169,38 @@ fn choose_level_on_game_load(
             None => {}
         }
     }
+
+    if !found_words.is_level_complete() {
+        return;
+    }
+
+    match current_level.as_ref() {
+        CurrentLevel::Tutorial { .. }
+        | CurrentLevel::DailyChallenge { .. }
+        | CurrentLevel::NonLevel(_)
+        | CurrentLevel::Custom => {
+            if let Some(index) = completion.get_next_incomplete_daily_challenge_from_today() {
+                *current_level = CurrentLevel::DailyChallenge { index };
+            } else {
+                *current_level = CurrentLevel::NonLevel(NonLevel::NoMoreDailyChallenge);
+            }
+        }
+        CurrentLevel::Fixed { sequence, .. } => {
+            if let Some(level_index) = completion.get_next_level_index(*sequence) {
+                *current_level = CurrentLevel::Fixed {
+                    level_index,
+                    sequence: *sequence,
+                };
+            } else {
+                *current_level = CurrentLevel::NonLevel(NonLevel::NoMoreLevelSequence(*sequence));
+            }
+        }
+    }
+
+    if let Either::Left(dl) = current_level.level(daily_challenges.as_ref()) {
+        *found_words = FoundWordsState::new_from_level(dl);
+    }
+    *timer = LevelTime::default();
 }
 
 fn hide_splash() {
