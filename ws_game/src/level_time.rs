@@ -64,8 +64,24 @@ impl LevelTime {
     }
 }
 
+const FLUSH_SECONDS: i64 = 15;
+
 impl TrackableResource for LevelTime {
     const KEY: &'static str = "Timer";
+
+    fn on_loaded(&mut self) {
+
+        if let LevelTime::Running { since, additional } = self {
+            let now = chrono::Utc::now();
+            let flush_time =chrono::Duration::seconds(FLUSH_SECONDS);
+            if now.signed_duration_since(since) > flush_time{
+                let new_additional = *additional + Duration::from_secs(FLUSH_SECONDS as u64);
+                *self = LevelTime::Running { since: now, additional: new_additional  }
+            }
+            else{
+            }
+        }
+    }
 }
 
 impl Default for LevelTime {
@@ -83,7 +99,7 @@ fn manage_timer(
     current_level: Res<CurrentLevel>,
     found_words: Res<FoundWordsState>,
     menu_state: Res<MenuState>,
-    chosen_state:Res<ChosenState>
+    chosen_state: Res<ChosenState>,
 ) {
     if !current_level.is_added() && current_level.is_changed() {
         *timer.as_mut() = LevelTime::default();
@@ -92,25 +108,30 @@ fn manage_timer(
     }
 
     if found_words.is_changed() {
-        if  found_words.is_level_complete() {
+        if found_words.is_level_complete() {
             *timer.as_mut() = LevelTime::Finished {
                 elapsed: timer.total_elapsed(),
             };
-        }
-        else if timer.is_paused(){
+        } else if timer.is_paused() {
             timer.resume_timer()
         }
     }
 
-    if chosen_state.is_changed() && timer.is_paused(){
+    if chosen_state.is_changed() && timer.is_paused() {
         timer.resume_timer()
     }
 
-    if menu_state.is_changed(){
-        if menu_state.is_closed(){
+    if menu_state.is_changed() {
+        if menu_state.is_closed() {
             timer.resume_timer();
-        }else{
+        } else {
             timer.pause_timer();
+        }
+    }
+
+    if let LevelTime::Running { since, .. } = timer.as_ref() {
+        if chrono::Utc::now().signed_duration_since(since) >= chrono::Duration::seconds(FLUSH_SECONDS) {
+            timer.resume_timer();
         }
     }
 }
