@@ -114,6 +114,7 @@ fn preload_shaders(asset_server: Res<AssetServer>) {
         VORONOI_SHADER_PATH,
         GRADIENT_SHADER_PATH,
         HORIZONTAL_GRADIENT_SHADER_PATH,
+        PLAY_PAUSE_SHADER_PATH
     ] {
         let handle: Handle<Shader> = asset_server.load(shader);
         match handle {
@@ -131,6 +132,7 @@ fn preload_shaders(asset_server: Res<AssetServer>) {
 pub const BOX_SHADER_PATH: &str = "shaders/sdf/box.wgsl";
 pub const ANYWHERE_SHADER_PATH: &str = "shaders/sdf/anywhere.wgsl";
 pub const CIRCLE_SHADER_PATH: &str = "shaders/sdf/circle.wgsl";
+pub const PLAY_PAUSE_SHADER_PATH: &str = "shaders/sdf/play_pause.wgsl";
 
 pub const SIMPLE_FILL_SHADER_PATH: &str = "shaders/fill/simple.wgsl";
 pub const FILL_WITH_OUTLINE_SHADER_PATH: &str = "shaders/fill/fill_with_outline.wgsl";
