@@ -4,7 +4,7 @@ use crate::{
     completion::{track_level_completion, TotalCompletion},
     prelude::*,
 };
-use itertools::{Itertools, Either};
+use itertools::{Either, Itertools};
 use nice_bevy_utils::{CanInitTrackedResource, TrackableResource};
 use serde::{Deserialize, Serialize};
 use strum::EnumIs;
@@ -199,15 +199,18 @@ impl FoundWordsState {
         };
 
         if let Some(solution) = word.find_solution_with_tiles(&level.grid, self.unneeded_tiles) {
-            if solution.len() > new_count {
-                let new_selection: ArrayVec<Tile, 16> =
+            let new_selection: ArrayVec<Tile, 16> =
                     ArrayVec::from_iter(solution.iter().take(new_count).cloned());
                 chosen_state.solution = new_selection;
+
+            if solution.len() > new_count {
                 chosen_state.is_just_finished = false;
             } else {
                 //do not select the full word - let the user do that
-                chosen_state.solution.clear();
-                chosen_state.is_just_finished = false;
+                *completion = Completion::Complete;
+
+
+                chosen_state.is_just_finished = true;
             }
         } else {
             warn!("Could not find solution during hint");
