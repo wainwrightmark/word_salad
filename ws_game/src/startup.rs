@@ -126,6 +126,7 @@ fn stack_frames(
 ) {
     if !touch_events.is_empty() {
         touch_events.clear();
+        frames.remaining = FrameStack::default().remaining;
     } else if mouse.is_changed() {
         frames.remaining = FrameStack::default().remaining;
     }
