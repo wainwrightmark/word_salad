@@ -1,17 +1,16 @@
 use std::{num::NonZeroUsize, str::FromStr};
-
-use serde::{Deserialize, Serialize};
+use ustr::Ustr;
 
 use crate::{finder::helpers::LetterCounts, prelude::*};
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DisplayWord {
     /// The characters needed to solve the word
     pub characters: CharsArray,
     /// The final display text of the word
-    pub text: String,
+    pub text: Ustr,
     /// The text when the word is hidden
-    pub hidden_text: String,
+    pub hidden_text: Ustr,
     /// The graphemes - used for partially hiding the word
     pub graphemes: Vec<CharGrapheme>,
 }
@@ -22,10 +21,10 @@ impl std::fmt::Display for DisplayWord {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CharGrapheme {
     pub is_game_char: bool,
-    pub grapheme: String,
+    pub grapheme: Ustr,
 }
 
 impl DisplayWord {
@@ -121,7 +120,7 @@ impl FromStr for DisplayWord {
 
             graphemes.push(CharGrapheme {
                 is_game_char: !character.is_blank(),
-                grapheme: grapheme.to_string(),
+                grapheme: Ustr::from(grapheme),
             })
         }
         if stack > 0 {
@@ -134,8 +133,8 @@ impl FromStr for DisplayWord {
 
         Ok(Self {
             characters,
-            text: s.to_string(),
-            hidden_text,
+            text: Ustr::from(s),
+            hidden_text: Ustr::from(&hidden_text),
             graphemes,
         })
     }

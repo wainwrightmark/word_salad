@@ -116,7 +116,7 @@ pub fn number_levels(
     let mut r = vec![];
     let mut index = 1;
     for mut l in levels {
-        l.name = format!("{prefix} {index}");
+        l.name = ws_core::Ustr::from(format!("{prefix} {index}").as_str());
         index += 1;
         r.push(l)
     }

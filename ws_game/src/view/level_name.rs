@@ -6,7 +6,7 @@ use ws_core::prelude::*;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct LevelName {
-    pub theme: String,
+    pub theme: Ustr,
 }
 
 impl MavericNode for LevelName {
@@ -27,7 +27,7 @@ impl MavericNode for LevelName {
             commands.add_child(
                 "theme",
                 Text2DNode {
-                    text: node.theme.clone(),
+                    text: node.theme.to_string(),
                     font_size: theme_font_size,
                     color: palette::BUTTON_TEXT_COLOR.convert_color(),
                     font: TITLE_FONT_PATH,

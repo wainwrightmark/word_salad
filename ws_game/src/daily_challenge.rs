@@ -130,7 +130,7 @@ fn handle_daily_challenge_data_loaded(
             .collect_vec();
 
         for (index, level) in levels.iter_mut().enumerate() {
-            level.name = format!("#{} - {}", index + 1, level.name);
+            level.name = Ustr::from(format!("#{} - {}", index + 1, level.name).as_str());
         }
 
         if levels.len() > challenges.levels.len() {

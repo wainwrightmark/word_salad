@@ -2,11 +2,12 @@ use std::str::FromStr;
 
 use crate::{finder::helpers::LetterCounts, prelude::*, Grid};
 use itertools::Itertools;
+use ustr::Ustr;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DesignedLevel {
-    pub name: String,
-    pub extra_info: Option<String>,
+    pub name: Ustr,
+    pub extra_info: Option<Ustr>,
     pub grid: Grid,
     pub words: Vec<DisplayWord>,
 }
@@ -26,7 +27,7 @@ impl std::fmt::Display for DesignedLevel {
 impl DesignedLevel {
     pub fn unknown() -> Self {
         Self {
-            name: "Unknown".to_string(),
+            name: Ustr::from("Unknown"),
             extra_info: None,
             grid: Grid::from_inner([Character::Blank; 16]),
             words: vec![],
@@ -61,13 +62,13 @@ impl DesignedLevel {
         let (name, extra_info) = if name.ends_with(']') {
             if let Some(index) = name.find('[') {
                 let (name, extra_info) = name.split_at(index);
-                let extra_info = extra_info[1..(extra_info.len() - 1)].to_string();
-                (name.trim_end().to_string(), Some(extra_info))
+                let extra_info = Ustr::from(&extra_info[1..(extra_info.len() - 1)]);
+                (Ustr::from(name.trim_end()), Some(extra_info))
             } else {
-                (name.to_string(), None)
+                (Ustr::from(name), None)
             }
         } else {
-            (name.to_string(), None)
+            (Ustr::from(name), None)
         };
 
         Ok(Self {

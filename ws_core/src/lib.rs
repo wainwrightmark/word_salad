@@ -15,7 +15,9 @@ pub mod prelude {
     pub use crate::display_word::*;
     pub use crate::word::*;
 
+
     pub use arrayvec::ArrayVec;
+    pub use ustr::Ustr;
     pub use geometrid::prelude::HasCenter;
     pub use geometrid::prelude::*;
     pub use std::array;

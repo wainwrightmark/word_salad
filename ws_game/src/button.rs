@@ -258,7 +258,7 @@ impl ButtonInteraction {
                         }
                         NonLevel::AfterCustomLevel => {
                             if let Some(l) = CUSTOM_LEVEL.get(){
-                                *current_level.as_mut() = CurrentLevel::Custom{name: l.name.clone()};
+                                *current_level.as_mut() = CurrentLevel::Custom{name: l.name.to_string()};
                             }
 
                         }

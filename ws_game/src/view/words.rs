@@ -84,7 +84,7 @@ impl MavericNode for WordNode {
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node(|node, commands| {
             let text = match node.completion {
-                Completion::Unstarted => node.word.hidden_text.clone(),
+                Completion::Unstarted => node.word.hidden_text.to_string(),
                 Completion::ManualHinted(hints) => node.word.hinted_text(hints).to_uppercase(),
 
                 Completion::Complete => node.word.text.to_uppercase().to_string(),

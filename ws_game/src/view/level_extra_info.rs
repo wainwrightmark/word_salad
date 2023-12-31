@@ -6,7 +6,7 @@ use ws_core::prelude::*;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct LevelExtraInfo {
-    pub info: String,
+    pub info: Ustr,
 }
 
 impl MavericNode for LevelExtraInfo {
@@ -27,7 +27,7 @@ impl MavericNode for LevelExtraInfo {
             commands.add_child(
                 "info",
                 Text2DNode {
-                    text: node.info.clone(),
+                    text: node.info.to_string(),
                     font_size: theme_font_size,
                     color: palette::BUTTON_TEXT_COLOR.convert_color(),
                     font: TITLE_FONT_PATH,
