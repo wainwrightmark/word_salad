@@ -281,10 +281,8 @@ impl ButtonInteraction {
                 }
             }
             ButtonInteraction::TopMenuItem(LayoutTopBar::WordSaladLogo) => {
-                if let Some(index) =
-                    total_completion.get_next_incomplete_daily_challenge_from_today()
-                {
-                    *current_level.as_mut() = CurrentLevel::DailyChallenge { index };
+                if let Some(index)  = DailyChallenges::get_today_index(){
+                    current_level.set_if_neq(CurrentLevel::DailyChallenge { index });
                 }
                 menu_state.close();
             }
