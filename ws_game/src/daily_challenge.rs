@@ -1,4 +1,4 @@
-use crate::{prelude::*, asynchronous};
+use crate::{asynchronous, prelude::*};
 use bevy::prelude::*;
 use chrono::Datelike;
 use itertools::Itertools;
@@ -22,11 +22,31 @@ impl Plugin for DailyChallengePlugin {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Resource, Default, MavericContext)]
 pub struct DailyChallenges {
+    level_data: String,
+    #[serde(skip)]
     pub levels: Vec<DesignedLevel>,
 } //todo make the default be something
 
 impl TrackableResource for DailyChallenges {
     const KEY: &'static str = "DailyChallenges";
+
+    fn on_loaded(&mut self) {
+
+        //let now = chrono::Utc::now();
+        self.levels = self
+            .level_data.lines()
+            .map(|x| {
+                DesignedLevel::from_tsv_line(x).unwrap_or_else(|err| {
+                    error!("{err}");
+                    DesignedLevel::unknown()
+                })
+            })
+            .collect();
+
+            //let elapsed = chrono::Utc::now().signed_duration_since(now).num_microseconds().unwrap_or_default();
+            //info!("Elapsed: {elapsed}microseconds");
+            //TODO think about performance of this
+    }
 }
 
 pub const DAYS_OFFSET: i32 = 738865;
@@ -36,26 +56,27 @@ pub struct DailyChallengeDataLoadedEvent {
     pub data: String,
 }
 
-impl DailyChallenges{
+impl DailyChallenges {
     pub fn get_today_index() -> Option<usize> {
         let today = get_today_date();
         usize::try_from(today.num_days_from_ce() - DAYS_OFFSET).ok()
     }
 
-    pub fn total_levels(&self)-> usize{
-        (Self::get_today_index().unwrap_or_default().saturating_add(1)) .min(self.levels.len())
+    pub fn total_levels(&self) -> usize {
+        (Self::get_today_index()
+            .unwrap_or_default()
+            .saturating_add(1))
+        .min(self.levels.len())
     }
 }
-
 
 fn get_today_date() -> chrono::NaiveDate {
     let today = chrono::offset::Utc::now();
     today.date_naive()
 }
 
-fn load_levels(writer: AsyncEventWriter<DailyChallengeDataLoadedEvent>, dc: Res<DailyChallenges>){
-
-    if DailyChallenges::get_today_index().is_some_and(|x| x < dc.total_levels()){
+fn load_levels(writer: AsyncEventWriter<DailyChallengeDataLoadedEvent>, dc: Res<DailyChallenges>) {
+    if DailyChallenges::get_today_index().is_some_and(|x| x < dc.total_levels()) {
         return;
     }
 
@@ -99,7 +120,7 @@ fn handle_daily_challenge_data_loaded(
     mut challenges: ResMut<DailyChallenges>,
     mut ev: EventReader<DailyChallengeDataLoadedEvent>,
 ) {
-    for event in ev.read() {
+    for event in ev .read() {
         //info!("Daily challenge data loaded '{}'", event.data);
         let mut levels = event
             .data
@@ -108,7 +129,7 @@ fn handle_daily_challenge_data_loaded(
             .flat_map(|x| x.ok())
             .collect_vec();
 
-        for (index, level) in levels.iter_mut().enumerate(){
+        for (index, level) in levels.iter_mut().enumerate() {
             level.name = format!("#{} - {}", index + 1, level.name);
         }
 
@@ -118,6 +139,7 @@ fn handle_daily_challenge_data_loaded(
                 levels.len(),
                 challenges.levels.len()
             );
+            challenges.level_data = event.data.clone();
             challenges.levels = levels;
         } else if levels.len() < challenges.levels.len() {
             warn!(

@@ -24,6 +24,11 @@ impl std::fmt::Display for DesignedLevel {
 }
 
 impl DesignedLevel {
+
+    pub fn unknown()-> Self{
+        Self { name: "Unknown".to_string(), grid: Grid::from_inner([Character::Blank;16]), words: vec![] }
+    }
+
     pub fn letter_counts(&self) -> Option<LetterCounts> {
         LetterCounts::try_from_iter(self.grid.iter().cloned())
     }
