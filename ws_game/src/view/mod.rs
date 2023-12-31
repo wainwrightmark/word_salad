@@ -2,6 +2,7 @@ pub mod congrats;
 pub mod game_grid;
 pub mod hints;
 pub mod level_name;
+pub mod level_extra_info;
 pub mod menu;
 pub mod non_level;
 pub mod popup;
@@ -16,6 +17,7 @@ pub use congrats::*;
 pub use game_grid::*;
 pub use hints::*;
 pub use level_name::*;
+pub use level_extra_info::*;
 use maveric::with_bundle::CanWithBundle;
 pub use menu::*;
 pub use non_level::*;
@@ -82,6 +84,10 @@ impl MavericRootChildren for ViewRoot {
                     } else {
                         let theme = level.name.clone();
                         commands.add_child("ui_theme", LevelName { theme }, &context.3);
+
+                        if let Some(info) = &level.extra_info{
+                            commands.add_child("ui_theme_info", LevelExtraInfo { info: info.clone() }, &context.3);
+                        }
 
                         let total_seconds = context.4.as_ref().total_elapsed().as_secs();
                         let time_text = format_seconds(total_seconds);

@@ -11,6 +11,7 @@ pub enum GameLayoutEntity {
     TopBar,
     Theme,
     Timer,
+    ThemeInfo,
     Grid,
     WordList,
 
@@ -44,6 +45,9 @@ impl LayoutStructure for GameLayoutEntity {
             GameLayoutEntity::Theme => Vec2 {
                 x: THEME_WIDTH,
                 y: THEME_HEIGHT,
+            },GameLayoutEntity::ThemeInfo => Vec2 {
+                x: THEME_INFO_WIDTH,
+                y: THEME_INFO_HEIGHT,
             },
             GameLayoutEntity::Grid => Vec2 {
                 x: GRID_SIZE,
@@ -72,6 +76,12 @@ impl LayoutStructure for GameLayoutEntity {
                 x: (IDEAL_WIDTH - THEME_WIDTH) * 0.5,
                 y: TOP_BAR_HEIGHT + THEME_HEIGHT,
             },
+
+            GameLayoutEntity::ThemeInfo => Vec2 {
+                x: ((IDEAL_WIDTH + GRID_SIZE) * 0.5) - THEME_INFO_WIDTH,
+                y: TOP_BAR_HEIGHT + THEME_HEIGHT,
+            },
+
             GameLayoutEntity::Grid => Vec2 {
                 x: (IDEAL_WIDTH - GRID_SIZE) * 0.5,
                 y: TOP_BAR_HEIGHT + THEME_HEIGHT + TIMER_HEIGHT + (GRID_TILE_SIZE * 0.5),
@@ -80,6 +90,7 @@ impl LayoutStructure for GameLayoutEntity {
                 x: (IDEAL_WIDTH - GRID_SIZE) / 2.,
                 y: TOP_BAR_HEIGHT + THEME_HEIGHT + TIMER_HEIGHT + GRID_SIZE + GRID_TILE_SIZE,
             },
+
 
         }
     }
@@ -93,6 +104,7 @@ impl LayoutStructureWithFont for GameLayoutEntity {
             GameLayoutEntity::Grid => f32::NAN,
             GameLayoutEntity::WordList => f32::NAN,
             GameLayoutEntity::Timer => 24.0,
+            GameLayoutEntity::ThemeInfo => 24.0,
         }
     }
 }

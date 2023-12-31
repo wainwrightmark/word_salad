@@ -9,6 +9,9 @@ pub const WORD_SALAD_LOGO_WIDTH: f32 = 160.;
 pub const THEME_HEIGHT: f32 = 40.;
 pub const THEME_WIDTH: f32 = 260.;
 
+pub const THEME_INFO_HEIGHT: f32 = 10.;
+pub const THEME_INFO_WIDTH: f32 = 100.;
+
 pub const TIMER_HEIGHT: f32 = 10.;
 pub const TIMER_WIDTH: f32 = 70.;
 

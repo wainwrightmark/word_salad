@@ -74,6 +74,7 @@ mod tests {
                 GameLayoutEntity::TopBar => "blue",
 
                 GameLayoutEntity::Theme => "coral",
+                GameLayoutEntity::ThemeInfo => "gold",
 
                 GameLayoutEntity::Grid => "indigo",
 

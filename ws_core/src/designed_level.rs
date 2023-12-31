@@ -2,11 +2,11 @@ use std::str::FromStr;
 
 use crate::{finder::helpers::LetterCounts, prelude::*, Grid};
 use itertools::Itertools;
-use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DesignedLevel {
     pub name: String,
+    pub extra_info: Option<String>,
     pub grid: Grid,
     pub words: Vec<DisplayWord>,
 }
@@ -24,9 +24,13 @@ impl std::fmt::Display for DesignedLevel {
 }
 
 impl DesignedLevel {
-
-    pub fn unknown()-> Self{
-        Self { name: "Unknown".to_string(), grid: Grid::from_inner([Character::Blank;16]), words: vec![] }
+    pub fn unknown() -> Self {
+        Self {
+            name: "Unknown".to_string(),
+            extra_info: None,
+            grid: Grid::from_inner([Character::Blank; 16]),
+            words: vec![],
+        }
     }
 
     pub fn letter_counts(&self) -> Option<LetterCounts> {
@@ -54,8 +58,21 @@ impl DesignedLevel {
 
         words.sort_by_cached_key(|x| x.text.to_ascii_lowercase());
 
+        let (name, extra_info) = if name.ends_with(']') {
+            if let Some(index) = name.find('[') {
+                let (name, extra_info) = name.split_at(index);
+                let extra_info = extra_info[1..(extra_info.len() - 1)].to_string();
+                (name.trim_end().to_string(), Some(extra_info))
+            } else {
+                (name.to_string(), None)
+            }
+        } else {
+            (name.to_string(), None)
+        };
+
         Ok(Self {
-            name: name.to_string(),
+            name,
+            extra_info,
             grid,
             words,
         })
