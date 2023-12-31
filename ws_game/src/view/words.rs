@@ -128,7 +128,7 @@ impl MavericNode for WordNode {
                     node.rect.extents.x.abs(),
                     node.rect.extents.y.abs(),
                     shape_translation,
-                    palette::WORD_BACKGROUND_UNSTARTED.convert_color(),
+                    *fill_color,
                     crate::rounding::WORD_BUTTON_NORMAL,
                 )
                 .with_bundle(ButtonInteraction::WordButton(node.tile))
