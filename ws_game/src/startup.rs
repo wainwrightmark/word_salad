@@ -179,12 +179,20 @@ fn choose_level_on_game_load(
     }
 
     match current_level.as_ref() {
+        CurrentLevel::NonLevel(NonLevel::BeforeTutorial) => {
+            return;
+        }
+
         CurrentLevel::Tutorial { .. }
         | CurrentLevel::DailyChallenge { .. }
         | CurrentLevel::NonLevel(_)
         | CurrentLevel::Custom { .. } => {
             if let Some(index) = completion.get_next_incomplete_daily_challenge_from_today() {
-                *current_level = CurrentLevel::DailyChallenge { index };
+                let today_level = CurrentLevel::DailyChallenge { index };
+                if today_level.level(&daily_challenges).is_left() {
+                    //Only change to this level if we have loaded it already
+                    *current_level = today_level;
+                }
             } else {
                 *current_level = CurrentLevel::NonLevel(NonLevel::NoMoreDailyChallenge);
             }
