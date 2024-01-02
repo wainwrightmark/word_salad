@@ -2,13 +2,12 @@ use itertools::Itertools;
 use lazy_static::lazy_static;
 use ws_core::DesignedLevel;
 
-lazy_static! {
+lazy_static! { //todo data_bake
     pub(crate) static ref TUTORIAL: Vec<DesignedLevel> = include_str!("levels/tutorial.tsv")
         .lines()
         .map(DesignedLevel::from_tsv_line)
         .map(|x| x.unwrap())
         .collect_vec();
-
     pub(crate) static ref EU_CAPITALS: Vec<DesignedLevel> = number_levels(
         include_str!("levels/global_location/eu_capitals.tsv")
             .lines()
@@ -124,7 +123,7 @@ pub fn number_levels(
     r
 }
 
-pub fn get_tutorial_level(index: usize)-> Option<&'static DesignedLevel>{
+pub fn get_tutorial_level(index: usize) -> Option<&'static DesignedLevel> {
     TUTORIAL.get(index)
 }
 
@@ -177,5 +176,31 @@ pub mod tests {
                 }
             }
         }
+    }
+
+    #[test]
+    pub fn test_daily_challenge_levels_valid() {
+        assert!(DAILY_CHALLENGE.len() > 10);
+
+        for level in DAILY_CHALLENGE.clone().into_iter() {
+            let name = &level.name;
+            assert!(level.words.len() > 0, "Level {name} should have words");
+            for word in level.words.into_iter() {
+                let solution = word.find_solution(&level.grid);
+                if solution.is_none() {
+                    panic!(
+                        "Level '{name}' has no solution for '{word}'",
+                        word = word.text
+                    )
+                }
+            }
+        }
+    }
+
+    lazy_static! {
+        pub(crate) static ref DAILY_CHALLENGE: Vec<DesignedLevel> = include_str!("../../ws_game/daily.tsv")
+        .lines()
+        .map(DesignedLevel::from_tsv_line)
+        .map(|x| x.unwrap()).collect_vec();
     }
 }
