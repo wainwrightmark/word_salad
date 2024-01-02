@@ -6,12 +6,12 @@ use nice_bevy_utils::{async_event_writer, window_size::WindowSizePlugin, CanRegi
 use ws_core::layout::entities::*;
 
 const CLEAR_COLOR: Color = {
-    Color::NONE
-    // if cfg!(target_arch = "wasm32") {
-    //     Color::NONE
-    // } else {
-    //     crate::prelude::convert_color_const(palette::GAME_BACKGROUND)
-    // }
+    //Color::NONE
+    if cfg!(target_arch = "wasm32") {
+        Color::NONE
+    } else {
+        Color::WHITE
+    }
 };
 
 pub fn go() {

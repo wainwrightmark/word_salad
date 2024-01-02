@@ -254,7 +254,7 @@ fn create_grids(
         .into_iter()
         .sorted_unstable_by_key(|(k, _v)| *k)
         .map(|(word_count, v)| (word_count, HashSet::from_iter(v)))
-        .collect_vec();
+        .collect_vec();//todo use radsort
 
     let mut all_solutions: Vec<GridResult> = vec![];
     let mut solved_sets: Vec<WordSet> = vec![];
