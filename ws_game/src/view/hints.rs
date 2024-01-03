@@ -18,7 +18,7 @@ pub struct HintsViewNode {
 
 const CIRCLE_SCALE: f32 = 0.5;
 
-const ANIMATE_SECONDS: f32 = 1.0;
+const ANIMATE_SECONDS: f32 = 2.0;
 
 impl MavericNode for HintsViewNode {
     type Context = MyWindowSize;

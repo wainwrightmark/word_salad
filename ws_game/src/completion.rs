@@ -14,7 +14,10 @@ use crate::{
 pub struct TotalCompletion {
     completions: Vec<LevelCompletion>,
     daily_challenge_completion: DailyChallengeCompletion,
+    tutorial_completion: LevelCompletion
 }
+
+
 
 #[derive(Debug, PartialEq,  Serialize, Deserialize, Default, Clone)]
 pub struct DailyChallengeCompletion{
@@ -65,7 +68,7 @@ impl TotalCompletion {
                 let completion = &mut total_completion.completions[sequence_index];
                 completion.current_index = (completion.current_index + 1) % sequence.level_count();
                 if completion.total_complete < number_complete {
-                    total_completion.completions[sequence_index].total_complete = number_complete;
+                    completion.total_complete = number_complete;
 
                     if number_complete <= sequence.level_count() {
                         hints_state.hints_remaining += 2;
@@ -74,9 +77,28 @@ impl TotalCompletion {
                 }
             }
 
-            CurrentLevel::Tutorial { .. } |  CurrentLevel::Custom{..} => {
-                // No need to track tutorial completion
+            CurrentLevel::Custom{..} => {
+                // No need to track custom level completion
             }
+            CurrentLevel::Tutorial { index } => {
+                const TUTORIAL_LEVEL_COUNT: usize = 2;
+
+                let number_complete = index + 1;
+
+                let completion = &mut total_completion.tutorial_completion;
+                completion.current_index = (completion.current_index + 1) % TUTORIAL_LEVEL_COUNT;
+                if completion.total_complete < number_complete {
+                    completion.total_complete = number_complete;
+
+                    if number_complete <= TUTORIAL_LEVEL_COUNT {
+                        hints_state.hints_remaining += 2;
+                        hints_state.total_earned_hints += 2;
+                    }
+                }
+            }
+
+
+
             CurrentLevel::DailyChallenge { index } => {
                 if !total_completion.daily_challenge_completion.total_completion.contains(*index) {
                     total_completion

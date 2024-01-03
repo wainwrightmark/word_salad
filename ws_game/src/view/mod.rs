@@ -12,7 +12,6 @@ pub mod tutorial;
 pub mod wordline;
 pub mod words;
 
-use bevy_param_shaders::ShaderBundle;
 pub use congrats::*;
 pub use game_grid::*;
 pub use hints::*;
@@ -26,7 +25,6 @@ pub use top_bar::*;
 pub use tutorial::*;
 pub use wordline::*;
 pub use words::*;
-use ws_core::layout::entities::GameLayoutEntity;
 
 use crate::{completion::TotalCompletion, prelude::*};
 

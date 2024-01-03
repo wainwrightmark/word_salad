@@ -8,6 +8,7 @@ use itertools::{Either, Itertools};
 use nice_bevy_utils::{CanInitTrackedResource, TrackableResource};
 use serde::{Deserialize, Serialize};
 use strum::EnumIs;
+use ws_levels::all_levels::get_tutorial_level;
 
 pub struct StatePlugin;
 
@@ -200,8 +201,8 @@ impl FoundWordsState {
 
         if let Some(solution) = word.find_solution_with_tiles(&level.grid, self.unneeded_tiles) {
             let new_selection: ArrayVec<Tile, 16> =
-                    ArrayVec::from_iter(solution.iter().take(new_count).cloned());
-                chosen_state.solution = new_selection;
+                ArrayVec::from_iter(solution.iter().take(new_count).cloned());
+            chosen_state.solution = new_selection;
 
             if solution.len() > new_count {
                 chosen_state.is_just_finished = false;
@@ -209,8 +210,7 @@ impl FoundWordsState {
                 //do not select the full word - let the user do that
                 *completion = Completion::Complete;
 
-
-                chosen_state.is_just_finished = true;//todo change this slightly
+                chosen_state.is_just_finished = true; //todo change this slightly
             }
         } else {
             warn!("Could not find solution during hint");
@@ -304,10 +304,46 @@ fn track_found_words(
         &level,
     );
 
-    // found_words.calculate_auto_hints(&current_level);
-
     if is_first_time {
         chosen.is_just_finished = true;
+    }
+
+    if is_first_time
+        && current_level
+            .as_ref()
+            .eq(&CurrentLevel::Tutorial { index: 1 })
+    {
+        let complete_words = found_words
+            .word_completions
+            .iter()
+            .filter(|x| x.is_complete())
+            .count();
+
+        if let Some(hints_to_give) = match complete_words {
+            1 => NonZeroUsize::new(1),
+            4 => NonZeroUsize::new(2),
+            _ => None,
+        } {
+            if let Some((word_index, _)) = found_words
+                .word_completions
+                .iter()
+                .find_position(|x| !x.is_complete())
+            {
+                found_words.word_completions[word_index] =
+                    Completion::ManualHinted(hints_to_give);
+
+
+                if let Some(level)  = get_tutorial_level(1){
+                    if let Some(word) = level.words.get(word_index){
+                        if let Some(mut solution) = word.find_solution_with_tiles(&level.grid, found_words.unneeded_tiles){
+                            solution.truncate(hints_to_give.get());
+                            chosen.solution = solution;
+                            chosen.is_just_finished = false;
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
