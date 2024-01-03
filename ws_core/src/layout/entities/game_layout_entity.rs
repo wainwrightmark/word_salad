@@ -69,11 +69,11 @@ impl LayoutStructure for GameLayoutEntity {
             GameLayoutEntity::TopBar => Vec2::ZERO,
 
             GameLayoutEntity::Theme => Vec2 {
-                x: (IDEAL_WIDTH - THEME_WIDTH) * 0.5,
+                x: (IDEAL_WIDTH - GRID_SIZE) * 0.5,
                 y: TOP_BAR_HEIGHT,
             },
             GameLayoutEntity::Timer => Vec2 {
-                x: (IDEAL_WIDTH - THEME_WIDTH) * 0.5,
+                x: (IDEAL_WIDTH - GRID_SIZE) * 0.5,
                 y: TOP_BAR_HEIGHT + THEME_HEIGHT,
             },
 

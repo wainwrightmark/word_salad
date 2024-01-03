@@ -7,7 +7,7 @@ pub const TOP_BAR_ICON_WIDTH: f32 = 25.;
 pub const WORD_SALAD_LOGO_WIDTH: f32 = 160.;
 
 pub const THEME_HEIGHT: f32 = 40.;
-pub const THEME_WIDTH: f32 = 260.;
+pub const THEME_WIDTH: f32 = GRID_SIZE;
 
 pub const THEME_INFO_HEIGHT: f32 = 10.;
 pub const THEME_INFO_WIDTH: f32 = 100.;
@@ -17,13 +17,14 @@ pub const TIMER_WIDTH: f32 = 70.;
 
 pub const GRID_TILE_SIZE: f32 = 60.;
 pub const GRID_SIZE: f32 = 260.;
+pub const WORD_LIST_EXTRA_WIDTH: f32 = 20.0;
 
 pub const WORD_LIST_HEIGHT: f32 = 108.;
 pub const WORD_HEIGHT: f32 = 22.;
 pub const WORD_WIDTH_PER_CHARACTER: f32 = 10.;
 pub const WORD_WIDTH_FIXED: f32 = 20.;
 
-pub const WORD_LIST_WIDTH: f32 = 280.;
+pub const WORD_LIST_WIDTH: f32 = GRID_SIZE + WORD_LIST_EXTRA_WIDTH;
 pub const WORD_MAIN_PAD: f32 = 10.;
 pub const WORD_CROSS_PAD: f32 = 5.;
 

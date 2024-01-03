@@ -1,9 +1,12 @@
-- Hide tiles which are not longer needed
-- Animations for tiles
-- Animations for Found words
-- Dynamic resolution
-- Host on the web
-- Level Generator
-- Smaller tile hitbox
-- Better history
-- Hint button
+- Cannot pause in tutorial
+- Different word line shader
+- Clicking grey area closes "Buy more hints"
+- "Next" button dynamic text
+- Track Streak
+- New End Screen
+- Optimize Colours on selfie mode
+- Make Logo
+- Popup the first time you enter selfie mode
+- Add "more levels" button
+- Check Greek Gods 1 / 6 and roman gods 1 / 8
+- Add play steks button to main menu
