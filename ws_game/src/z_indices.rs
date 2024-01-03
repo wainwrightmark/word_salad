@@ -19,7 +19,7 @@ pub const THEME: f32 = 50.0;
 pub const TIMER: f32 = 50.0;
 
 
-pub const TUTORIAL_POPUP_BOX_BACKGROUND: f32 = 400.0;
+pub const TUTORIAL_POPUP_BOX_BACKGROUND: f32 = 240.0;
 pub const TUTORIAL_POPUP_BOX_TEXT: f32 = 450.0;
 
 

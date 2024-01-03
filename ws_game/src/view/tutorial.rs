@@ -1,6 +1,7 @@
 use std::time::Duration;
 
-use bevy::math::Vec2;
+use bevy::{math::Vec2, text::Text2dBounds};
+use itertools::Itertools;
 use maveric::{
     helpers::{ChildCommands, SpatialBundle},
     node::MavericNode,
@@ -8,7 +9,10 @@ use maveric::{
     with_bundle::CanWithBundle,
 };
 use strum::{EnumCount, EnumIter, IntoEnumIterator};
-use ws_core::{LayoutRectangle, LayoutStructure, layout::entities::{GRID_SIZE, IDEAL_WIDTH}};
+use ws_core::{
+    layout::entities::{GRID_SIZE, IDEAL_WIDTH},
+    LayoutRectangle, LayoutStructure,
+};
 
 use crate::prelude::*;
 
@@ -50,7 +54,7 @@ impl MavericNode for TutorialNode {
                     &(),
                 );
             }
-             if let Some(text) = node.text.middle {
+            if let Some(text) = node.text.middle {
                 let rect = context.get_rect(&TutorialLayoutEntity::Middle, &());
                 let font_size = context.font_size(&TutorialLayoutEntity::Middle);
                 commands.add_child(
@@ -139,13 +143,13 @@ impl MavericNode for TutorialPopupNode {
                 font: TITLE_FONT_PATH,
                 font_size: *font_size,
                 color: Color::BLACK,
-                alignment: TextAlignment::Center,
-                linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                text_2d_bounds: Default::default(),
-                    text_anchor: Default::default(),
+                alignment: TextAlignment::Left,
+                linebreak_behavior: bevy::text::BreakLineOn::WordBoundary,
+                text_2d_bounds: Text2dBounds::default(),
+                text_anchor: bevy::sprite::Anchor::CenterLeft,
             }
             .with_bundle(Transform::from_translation(
-                rect.centre()
+                (rect.centre_left() + Vec2 { x: 20.0, y: 0.0 })
                     .extend(crate::z_indices::TUTORIAL_POPUP_BOX_TEXT),
             ));
 
@@ -164,12 +168,10 @@ pub struct TutorialText {
 impl TutorialText {
     pub fn try_create(current_level: &CurrentLevel, found_words: &FoundWordsState) -> Option<Self> {
         let level_index = match current_level {
-            CurrentLevel::Tutorial {
-                index,
-            } => {
-                *index % 2
+            CurrentLevel::Tutorial { index } => *index % 2,
+            _ => {
+                return None;
             }
-            _=> {return None;}
         };
 
         let completed_words = found_words
@@ -184,8 +186,7 @@ impl TutorialText {
                     top: Some(
                         "\
                         Let's start by finding 'Pawn'\n\
-                        Tap or swipe adjacent tiles\n\
-                        to make the word",
+                        Make words by linking tiles",
                     ),
                     middle: None,
                     bottom: None,
@@ -194,11 +195,12 @@ impl TutorialText {
                     top: Some(
                         "\
                         Words can be made diagonally\n\
-                        Like 'Queen'",
+                        Try finding 'Bishop'",
                     ),
                     middle: None,
                     bottom: Some(
                         "\
+                        \n\
                         These labels show the word lengths\n\
                         Four more to go",
                     ),
@@ -206,43 +208,86 @@ impl TutorialText {
                 2 => Self {
                     top: Some(
                         "\
-                        Find the final three\n\
-                        Chess Pieces\n\
-                        to finish the puzzle",
+                        Find the final three Chess Pieces\n",
                     ),
                     middle: None,
-                    bottom: Some(
-                        "\
-                        Labels are listed alphabetically\n\
-                        Use this to your advantage",
-                    ),
+                    bottom: None,
                 },
                 3 => Self {
-                    top: Some(
-                        "\
-                        Find the final two\n\
-                        Chess Pieces\n\
-                        to finish the puzzle",
-                    ),
+                    top: None,
                     middle: None,
                     bottom: Some(
                         "\
+                        \n\
                         Labels are listed alphabetically\n\
-                        Use this to your advantage",
+                        This can help you find first letters",
                     ),
                 },
-                4 => Self {
-                    top: Some(
-                        "\
-                        Just one Chess Piece left",
-                    ),
-                    middle: None,
-                    bottom: Some(
-                        "\
-                        Labels are listed alphabetically\n\
-                        Use this to your advantage",
-                    ),
-                },
+                4 => {
+                    let incomplete_index = found_words
+                        .word_completions
+                        .iter()
+                        .find_position(|z| !z.is_complete())
+                        .map(|x| x.0)
+                        .unwrap_or_default();
+
+                    let bottom = match incomplete_index {
+                        0 =>
+                        //bishop
+                        {
+                            "\
+                        \n\
+                        Because the labels are alphabetical\n\
+                        This word starts with 'K', 'N', or 'H'"
+                        }
+
+                        1 =>
+                        //king
+                        {
+                            "\
+                        \n\
+                        Because the labels are alphabetical\n\
+                        This word can't start with 'N'"
+                        }
+
+                        2 =>
+                        //knight
+                        {
+                            "\
+                        \n\
+                        Because the labels are alphabetical\n\
+                        This word must start with 'K' or 'N'"
+                        }
+
+                        3 =>
+                        //pawn
+                        {
+                            "\
+                        \n\
+                        Because the labels are alphabetical\n\
+                        This word must start with 'P' or 'N'"
+                        }
+
+                        _ =>
+                        // queen
+                        {
+                            "\
+                            \n\
+                            Because the labels are alphabetical\n\
+                            This word must start with 'Q'"
+                        }
+                    };
+
+                    Self {
+                        top: Some(
+                            "\
+                            Just one Chess Piece left\n\
+                            See below for a clue!",
+                        ),
+                        middle: None,
+                        bottom: Some(bottom),
+                    }
+                }
 
                 _ => {
                     //Completed
@@ -250,11 +295,9 @@ impl TutorialText {
                         top: None,
                         middle: Some(
                             "\
-                            You completed your first\n\
-                            Word Salad\n\
+                            You completed your first Word Salad\n\
                             You've earned two hints\n\
-                            Hints reveal a letter\n\
-                            from a word of your choosing",
+                            Spend a hint to reveal a letter",
                         ),
                         bottom: None,
                     }
@@ -266,39 +309,46 @@ impl TutorialText {
                 0 => Self {
                     top: Some(
                         "\
-                    Your line can cross\n\
-                    over itself\n\
-                    Find 'Mars'",
+                    To beat this puzzle, find six planets\n\
+                    Why not start with 'Mercury'?",
                     ),
                     middle: None,
                     bottom: None,
                 },
-                1..=3 => Self {
+                1 => Self {
                     top: Some("Find the other planets"),
                     middle: None,
                     bottom: Some(
                         "\
-                    To use a hint\n\
-                     click a word you haven't found yet",
+                        \n\
+                    To spend a hint, click on a label\n\
+                    We've done one for you", //TODO actually do one
+                    ),
+                },
+                2..=3 => Self {
+                    top: Some("Your remaining hints are shown\nIn the green circle"),
+                    middle: None,
+                    bottom: Some(
+                        "\
+                        \n\
+                    You earn hints by completing levels\n\
+                    Don't be afraid to spend them!",
                     ),
                 },
                 4 => Self {
-                    top: Some("Find the other planets"),
+                    top: None,
                     middle: None,
                     bottom: Some(
                         "\
+                        \n\
                     You can hint a word more than once\n\
-                    to reveal more letters",
+                    We've done that for you", //TODO actually do one
                     ),
                 },
                 5 => Self {
-                    top: Some("You're a Word Salad expert"),
+                    top: Some("One planet to go!"),
                     middle: None,
-                    bottom: Some(
-                        "\
-                    You can hint a word more than once\n\
-                    to reveal more letters",
-                    ),
+                    bottom: None,
                 },
                 _ => {
                     //Completed
@@ -306,11 +356,9 @@ impl TutorialText {
                         top: None,
                         middle: Some(
                             "\
-                        Wanna film yourself playing?\n\
-                        Use Selfie Mode in the menu\n\
-                        Then use your device's\n\
-                        Screen Recorder\n\
-                        Remember to tag us!",
+                        Tap 'Word Salad' for today's puzzle\n\
+                        Open the menu for extra puzzles\n\
+                        Why not try out Selfie Mode?",
                         ),
 
                         bottom: None,
@@ -330,6 +378,8 @@ enum TutorialLayoutEntity {
     Bottom,
 }
 
+const BOX_WIDTH: f32 = GRID_SIZE + 20.0;
+
 impl LayoutStructure for TutorialLayoutEntity {
     type Context = ();
 
@@ -346,17 +396,35 @@ impl LayoutStructure for TutorialLayoutEntity {
 
     fn size(&self, _context: &Self::Context) -> bevy::prelude::Vec2 {
         match self {
-            TutorialLayoutEntity::Top => Vec2 { x: GRID_SIZE, y: 70.0 },
-            TutorialLayoutEntity::Middle => Vec2 { x: GRID_SIZE, y: 140.0 },
-            TutorialLayoutEntity::Bottom => Vec2 { x: GRID_SIZE, y: 40.0 },
+            TutorialLayoutEntity::Top => Vec2 {
+                x: BOX_WIDTH,
+                y: 70.0,
+            },
+            TutorialLayoutEntity::Middle => Vec2 {
+                x: BOX_WIDTH,
+                y: 105.0,
+            },
+            TutorialLayoutEntity::Bottom => Vec2 {
+                x: BOX_WIDTH,
+                y: 140.0,
+            },
         }
     }
 
     fn location(&self, _context: &Self::Context) -> bevy::prelude::Vec2 {
         match self {
-            TutorialLayoutEntity::Top => Vec2 { x: (IDEAL_WIDTH - GRID_SIZE) * 0.5, y: 52.0 },
-            TutorialLayoutEntity::Middle => Vec2 { x: (IDEAL_WIDTH - GRID_SIZE) * 0.5, y: 52.0 },
-            TutorialLayoutEntity::Bottom => Vec2 { x: (IDEAL_WIDTH - GRID_SIZE) * 0.5, y: 500.0 },
+            TutorialLayoutEntity::Top => Vec2 {
+                x: (IDEAL_WIDTH - BOX_WIDTH) * 0.5,
+                y: 52.0,
+            },
+            TutorialLayoutEntity::Middle => Vec2 {
+                x: (IDEAL_WIDTH - BOX_WIDTH) * 0.5,
+                y: 70.0,
+            },
+            TutorialLayoutEntity::Bottom => Vec2 {
+                x: (IDEAL_WIDTH - BOX_WIDTH) * 0.5,
+                y: 410.0,
+            },
         }
     }
 
@@ -368,9 +436,9 @@ impl LayoutStructure for TutorialLayoutEntity {
 impl LayoutStructureWithFont for TutorialLayoutEntity {
     fn font_size(&self) -> f32 {
         match self {
-            TutorialLayoutEntity::Top => 24.0,
-            TutorialLayoutEntity::Middle => 24.0,
-            TutorialLayoutEntity::Bottom => 20.0,
+            TutorialLayoutEntity::Top => 30.0,
+            TutorialLayoutEntity::Middle => 30.0,
+            TutorialLayoutEntity::Bottom => 30.0,
         }
     }
 }

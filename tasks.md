@@ -14,3 +14,5 @@
 - Stop selfie mode on wake-up
 - Three taps to go to an adjacent letter
 - Don't show line or hints when timer paused
+- Make hint movement slower
+- Track tutorial completion

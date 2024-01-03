@@ -192,7 +192,7 @@ impl ButtonInteraction {
             }
 
             ButtonInteraction::MainMenu(MainMenuLayoutEntity::Tutorial) => {
-                *current_level.as_mut() = CurrentLevel::Tutorial { index: 0 };
+                *current_level.as_mut() = CurrentLevel::NonLevel(NonLevel::BeforeTutorial) ;
                 menu_state.close();
             }
 

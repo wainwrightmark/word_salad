@@ -56,7 +56,7 @@ pub struct HintState {
 impl Default for HintState {
     fn default() -> Self {
         Self {
-            hints_remaining: 3,
+            hints_remaining: 0,
             total_earned_hints: 0,
             total_bought_hints: 0,
         }
