@@ -22,7 +22,7 @@ impl Plugin for ShapesPlugin {
         app.add_plugins(ParamShaderPlugin::<BoxShader>::default());
         app.add_plugins(ParamShaderPlugin::<HorizontalGradientBoxShader>::default());
         app.add_plugins(ParamShaderPlugin::<BoxWithBorderShader>::default());
-        app.add_plugins(ParamShaderPlugin::<PlayPauseShader>::default());
+        //app.add_plugins(ParamShaderPlugin::<PlayPauseShader>::default());
         app.add_plugins(ParamShaderPlugin::<CircleShader>::default());
         app.add_plugins(ParamShaderPlugin::<SparkleShader>::default());
         app.add_plugins(ParamShaderPlugin::<WordLineShader>::default());

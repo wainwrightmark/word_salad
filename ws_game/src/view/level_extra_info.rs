@@ -31,15 +31,15 @@ impl MavericNode for LevelExtraInfo {
                     font_size: theme_font_size,
                     color: palette::BUTTON_TEXT_COLOR.convert_color(),
                     font: TITLE_FONT_PATH,
-                    alignment: TextAlignment::Right,
+                    alignment: TextAlignment::Left,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     text_2d_bounds: Default::default(),
-                    text_anchor: bevy::sprite::Anchor::CenterRight,
+                    text_anchor: bevy::sprite::Anchor::CenterLeft,
                 }
                 .with_bundle(Transform::from_translation(
                     context
                         .get_rect(&GameLayoutEntity::ThemeInfo, &())
-                        .centre_right()
+                        .centre_left()
                         .extend(crate::z_indices::THEME),
                 )),
                 &(),

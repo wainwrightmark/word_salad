@@ -70,15 +70,16 @@ impl TrackableResource for LevelTime {
     const KEY: &'static str = "Timer";
 
     fn on_loaded(&mut self) {
-
         if let LevelTime::Running { since, additional } = self {
             let now = chrono::Utc::now();
-            let flush_time =chrono::Duration::seconds(FLUSH_SECONDS);
-            if now.signed_duration_since(since) > flush_time{
+            let flush_time = chrono::Duration::seconds(FLUSH_SECONDS);
+            if now.signed_duration_since(since) > flush_time {
                 let new_additional = *additional + Duration::from_secs(FLUSH_SECONDS as u64);
-                *self = LevelTime::Running { since: now, additional: new_additional  }
-            }
-            else{
+                *self = LevelTime::Running {
+                    since: now,
+                    additional: new_additional,
+                }
+            } else {
             }
         }
     }
@@ -130,7 +131,9 @@ fn manage_timer(
     }
 
     if let LevelTime::Running { since, .. } = timer.as_ref() {
-        if chrono::Utc::now().signed_duration_since(since) >= chrono::Duration::seconds(FLUSH_SECONDS) {
+        if chrono::Utc::now().signed_duration_since(since)
+            >= chrono::Duration::seconds(FLUSH_SECONDS)
+        {
             timer.resume_timer();
         }
     }
@@ -155,11 +158,14 @@ fn count_up(mut query: Query<&mut Text, With<TimeCounterMarker>>, timer: Res<Lev
 pub struct TimeCounterMarker;
 
 pub fn format_seconds(total_seconds: u64) -> String {
-    let hh = total_seconds / 3600;
-    let mm = (total_seconds / 60) % 60;
-    let ss = total_seconds % 60;
+    if total_seconds >= 3600 {
+        return "60:00".to_string();
+    } else {
+        let mm = (total_seconds / 60) % 60;
+        let ss = total_seconds % 60;
 
-    let time_str = format!("{hh:02}:{mm:02}:{ss:02}");
+        let time_str = format!("{mm:02}:{ss:02}");
 
-    time_str
+        time_str
+    }
 }

@@ -56,13 +56,12 @@ pub mod palette {
 
     pub const WORD_LINE_COLOR: Color = FULL_GREEN.with_a(1.0);
 
-    pub const GRID_TILE_STROKE_NORMAL: Color = Color::rgba(0.25, 0.25, 0.25, 1.0);
+
     pub const GRID_TILE_FILL_NORMAL: Color = LIGHT_GRAY;
     pub const GRID_LETTER_NORMAL: Color = MY_BLACK;
 
-    pub const GRID_TILE_STROKE_SELFIE: Color = Color::rgba(0.25, 0.25, 0.25, 0.95);
-    pub const GRID_TILE_FILL_SELFIE: Color = Color::rgba(0.7, 0.7, 0.7, 0.7);
-    pub const GRID_LETTER_SELFIE: Color = Color::rgba(0.25, 0.25, 0.25, 0.95);
+    pub const GRID_TILE_FILL_SELFIE: Color = Color::rgba(0.4, 0.4, 0.4, 0.5);
+    pub const GRID_LETTER_SELFIE: Color = Color::rgba(0.9, 0.9, 0.9, 0.95);
 
     pub const MENU_BUTTON_TEXT: Color = MY_BLACK;
     pub const MENU_BUTTON_FILL: Color = LIGHT_GREEN;

@@ -13,7 +13,7 @@ pub const THEME_INFO_HEIGHT: f32 = 10.;
 pub const THEME_INFO_WIDTH: f32 = 100.;
 
 pub const TIMER_HEIGHT: f32 = 10.;
-pub const TIMER_WIDTH: f32 = 70.;
+pub const TIMER_WIDTH: f32 = 40.;
 
 pub const GRID_TILE_SIZE: f32 = 60.;
 pub const GRID_SIZE: f32 = 260.;
