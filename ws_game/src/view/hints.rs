@@ -3,8 +3,7 @@ use std::time::Duration;
 use crate::prelude::*;
 use bevy::sprite::Anchor;
 use bevy::text::Text2dBounds;
-use bevy_smud::param_usage::ShaderParamUsage;
-use bevy_smud::{ShapeBundle, SmudShaders};
+use bevy_param_shaders::ShaderBundle;
 use maveric::transition::speed::calculate_speed;
 use maveric::widgets::text2d_node::Text2DNode;
 use maveric::with_bundle::CanWithBundle;
@@ -35,8 +34,6 @@ impl MavericNode for HintsViewNode {
             return;
         }
 
-
-
         let size = context.as_ref();
         let hints_rect = size.get_rect(&LayoutTopBar::HintCounter, &());
         let hint_font_size = size.font_size::<LayoutTopBar>(&LayoutTopBar::WordSaladLogo);
@@ -61,23 +58,11 @@ impl MavericNode for HintsViewNode {
         };
         let font = asset_server.load(BUTTONS_FONT_PATH);
 
-        let sdf: Handle<_> = asset_server.load(CIRCLE_SHADER_PATH);
-        let fill = asset_server.load(SIMPLE_FILL_SHADER_PATH);
-
-        let circle_bundle = ShapeBundle::<SHAPE_F_PARAMS, SHAPE_U_PARAMS> {
-            shape: bevy_smud::SmudShape {
-                color: palette::HINT_COUNTER_COLOR.convert_color(),
-                frame: bevy_smud::Frame::Quad(1.0),
-                f_params: [0.0; SHAPE_F_PARAMS],
-                u_params: [0; SHAPE_U_PARAMS],
-            },
-            shaders: SmudShaders {
-                sdf,
-                fill,
-                sdf_param_usage: ShaderParamUsage::NO_PARAMS,
-                fill_param_usage: ShaderParamUsage::NO_PARAMS,
-            },
+        let circle_bundle = ShaderBundle::<CircleShader> {
             transform: circle_transform,
+            parameters: ShaderColor {
+                color: palette::HINT_COUNTER_COLOR.convert_color(),
+            },
             ..default()
         };
 
@@ -131,21 +116,24 @@ impl MavericNode for HintsViewNode {
             cb.spawn(text_bundle);
         });
 
-        if let Some(children) = world.get::<Children>(entity_commands.id()){
-            for child in children{
-                if let Some(text) = world.get::<Text>(*child){
+        if let Some(children) = world.get::<Children>(entity_commands.id()) {
+            for child in children {
+                if let Some(text) = world.get::<Text>(*child) {
                     let mut new_text = text.clone();
 
-                    if let Some(t) = new_text.sections.get_mut(0){
-                            t.value = self.hint_state.hints_remaining.to_string();
+                    if let Some(t) = new_text.sections.get_mut(0) {
+                        t.value = self.hint_state.hints_remaining.to_string();
                     }
 
-                    entity_commands.commands().entity(*child).insert(ScheduledChange{
-                        remaining: Duration::from_secs_f32(ANIMATE_SECONDS),
-                        boxed_change: Box::new(|ec|{
-                            ec.insert(new_text);
-                        })
-                    });
+                    entity_commands
+                        .commands()
+                        .entity(*child)
+                        .insert(ScheduledChange {
+                            remaining: Duration::from_secs_f32(ANIMATE_SECONDS),
+                            boxed_change: Box::new(|ec| {
+                                ec.insert(new_text);
+                            }),
+                        });
                     break;
                 }
             }
@@ -172,10 +160,11 @@ impl MavericNode for HintsViewNode {
                 let hints_rect = size.get_rect(&LayoutTopBar::HintCounter, &());
                 let hint_font_size = size.font_size::<LayoutTopBar>(&LayoutTopBar::HintCounter);
 
-                let text: String =
-                if let Some(prev) = a.previous.filter(|p|p.hint_state.total_earned_hints < node.hint_state.total_earned_hints) {
+                let text: String = if let Some(prev) = a.previous.filter(|p| {
+                    p.hint_state.total_earned_hints < node.hint_state.total_earned_hints
+                }) {
                     prev.hint_state.hints_remaining.to_string()
-                }else{
+                } else {
                     node.hint_state.hints_remaining.to_string()
                 };
 
@@ -191,32 +180,26 @@ impl MavericNode for HintsViewNode {
                         text_anchor: Anchor::default(),
                         text_2d_bounds: Text2dBounds::default(),
                     }
-                    .with_bundle((
-                        Transform::from_translation(
-                            hints_rect.centre().extend(crate::z_indices::TOP_BAR_BUTTON),
-                        ),
-                    )),
+                    .with_bundle((Transform::from_translation(
+                        hints_rect.centre().extend(crate::z_indices::TOP_BAR_BUTTON),
+                    ),)),
                     &(),
                 );
 
                 commands.add_child(
                     "hints_box",
-                    SmudShapeNode {
-                        color: palette::HINT_COUNTER_COLOR.convert_color(),
-                        sdf: CIRCLE_SHADER_PATH,
-                        fill: SIMPLE_FILL_SHADER_PATH,
-                        frame_size: 1.0,
-                        f_params: [0.0; SHAPE_F_PARAMS],
-                        u_params: [0; SHAPE_U_PARAMS],
-                        sdf_param_usage: ShaderParamUsage::NO_PARAMS,
-                        fill_param_usage: ShaderParamUsage::NO_PARAMS,
-                    }
-                    .with_bundle(Transform {
-                        translation: (hints_rect.centre() + (Vec2::X * hint_font_size * 0.03))
-                            .extend(crate::z_indices::TOP_BAR_BUTTON - 1.0),
-                        scale: Vec3::ONE * hints_rect.width() * CIRCLE_SCALE,
-                        rotation: Default::default(),
-                    }),
+                    ShaderBundle::<CircleShader> {
+                        transform: Transform {
+                            translation: (hints_rect.centre() + (Vec2::X * hint_font_size * 0.03))
+                                .extend(crate::z_indices::TOP_BAR_BUTTON - 1.0),
+                            scale: Vec3::ONE * hints_rect.width() * CIRCLE_SCALE,
+                            rotation: Default::default(),
+                        },
+                        parameters: ShaderColor {
+                            color: palette::HINT_COUNTER_COLOR.convert_color(),
+                        },
+                        ..default()
+                    },
                     &(),
                 );
             })

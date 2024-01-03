@@ -1,5 +1,5 @@
-#define_import_path smud::sparkle
-#import smud::view_bindings::globals
+#define_import_path fill::sparkle
+
 
 fn modulo_euclidean(a: f32, b: f32) -> f32 {
     var m = a % b;
@@ -17,14 +17,8 @@ fn Hash31(p: vec3<f32>) -> f32 {
     return fract(937.276 * cos(836.826 * p.x + 263.736 * p.y + 374.723 * p.z + 637.839));
 }
 
-fn fill(d: f32, color1: vec4<f32>, uv: vec2<f32>, count1: f32, count2: f32, seed: f32) -> vec4<f32> {
-
-    if d > 0.0{
-        return vec4(0.0);
-    }
-
+fn fill(uv: vec2<f32>, count1: f32, count2: f32, seed: f32, time: f32) -> vec4<f32> {
     var color = vec3(0.0);
-    let time: f32 = globals.time;
     var alpha = 0.0;
 
     for (var i = count1 * -1.0; i <= count1; i += 1.25) {

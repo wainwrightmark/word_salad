@@ -31,10 +31,10 @@ impl TrackableResource for DailyChallenges {
     const KEY: &'static str = "DailyChallenges";
 
     fn on_loaded(&mut self) {
-
         //let now = chrono::Utc::now();
         self.levels = self
-            .level_data.lines()
+            .level_data
+            .lines()
             .map(|x| {
                 DesignedLevel::from_tsv_line(x).unwrap_or_else(|err| {
                     error!("{err}");
@@ -43,9 +43,13 @@ impl TrackableResource for DailyChallenges {
             })
             .collect();
 
-            //let elapsed = chrono::Utc::now().signed_duration_since(now).num_microseconds().unwrap_or_default();
-            //info!("Elapsed: {elapsed}microseconds");
-            //TODO think about performance of this
+        for (index, level) in self.levels.iter_mut().enumerate() {
+            level.name = Ustr::from(format!("#{}: {}", index + 1, level.name).as_str());
+        }
+
+        //let elapsed = chrono::Utc::now().signed_duration_since(now).num_microseconds().unwrap_or_default();
+        //info!("Elapsed: {elapsed}microseconds");
+        //TODO think about performance of this
     }
 }
 
@@ -120,7 +124,7 @@ fn handle_daily_challenge_data_loaded(
     mut challenges: ResMut<DailyChallenges>,
     mut ev: EventReader<DailyChallengeDataLoadedEvent>,
 ) {
-    for event in ev .read() {
+    for event in ev.read() {
         //info!("Daily challenge data loaded '{}'", event.data);
         let mut levels = event
             .data
@@ -130,7 +134,7 @@ fn handle_daily_challenge_data_loaded(
             .collect_vec();
 
         for (index, level) in levels.iter_mut().enumerate() {
-            level.name = Ustr::from(format!("#{} - {}", index + 1, level.name).as_str());
+            level.name = Ustr::from(format!("#{}: {}", index + 1, level.name).as_str());
         }
 
         if levels.len() > challenges.levels.len() {

@@ -1,8 +1,6 @@
-#define_import_path smud::word_line_fill
+#define_import_path word_line
 
-#import smud
-
-fn fill(d: f32, color: vec4<f32>, p: vec2<f32>, line_width: f32, segments: f32, points1: u32, points2: u32, points3: u32, points4: u32) -> vec4<f32> {
+fn fill( p: vec2<f32>, line_width: f32, segments: f32, points1: u32, points2: u32, points3: u32, points4: u32) -> vec4<f32> {
 
     let d_and_s = dist_and_segment(p, line_width, segments, points1, points2, points3, points4);
 
@@ -10,6 +8,7 @@ fn fill(d: f32, color: vec4<f32>, p: vec2<f32>, line_width: f32, segments: f32, 
     let a = sd_fill_alpha_nearest(d_and_s.dist);
 
     return vec4<f32>(r_color, a);
+
 }
 
 // Dirt cheap, but ugly
@@ -133,10 +132,6 @@ fn get_color(index: u32) -> vec3<f32> {
         default: {return vec3<f32>(30.0, 169.0, 123.0) / 255.0;}
     }
 }
-
-
-#define_import_path shaders::word_line
-
 fn sd_circle(p: vec2<f32>, r: f32) -> f32 {
     return length(p) - r;
 }

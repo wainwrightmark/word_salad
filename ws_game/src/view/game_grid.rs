@@ -1,6 +1,5 @@
 use crate::prelude::*;
-use bevy_smud::param_usage::ShaderParamUsage;
-use bevy_smud::param_usage::ShaderParameter;
+use bevy_param_shaders::ShaderBundle;
 use itertools::Either;
 use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
 use strum::EnumIs;
@@ -32,26 +31,18 @@ impl GridTile {
         }
     }
 
-    fn border_color(&self, video: &VideoResource) -> Color {
-        if video.is_selfie_mode {
-            palette::GRID_TILE_STROKE_SELFIE.convert_color()
-        } else {
-            palette::GRID_TILE_STROKE_NORMAL.convert_color()
-        }
-    }
+    // fn border_proportion(&self) -> f32 {
+    //     0.0
 
-    fn border_proportion(&self) -> f32 {
-        0.0
-
-        // if self.selectability.is_selected() {
-        //     2. / 36.
-        // } else {
-        //     match self.hint_status {
-        //         HintStatus::Inadvisable => 0. / 36.,
-        //         _ => 1. / 36.,
-        //     }
-        // }
-    }
+    //     // if self.selectability.is_selected() {
+    //     //     2. / 36.
+    //     // } else {
+    //     //     match self.hint_status {
+    //     //         HintStatus::Inadvisable => 0. / 36.,
+    //     //         _ => 1. / 36.,
+    //     //     }
+    //     // }
+    // }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, EnumIs)]
@@ -203,33 +194,19 @@ impl MavericNode for GridTile {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
             let tile_size = node.tile_size;
             let fill = node.fill_color(context.as_ref());
-            let border_color = node.border_color(context.as_ref());
-            let border_proportion = node.border_proportion();
 
             commands.add_child(
                 "tile",
-                box_with_border_node(
+                box_node1(
                     tile_size,
                     tile_size,
                     Vec3::new(0.0, 0.0, crate::z_indices::GRID_TILE),
                     fill,
-                    border_color,
                     0.1,
-                    border_proportion,
                 )
-                .with_transition_to::<SmudColorLens>(fill, 0.1.into())
-                .with_transition_to::<SmudParamLens<2>>(
-                    border_proportion,
-                    border_proportion.max(1. / 36.).into(),
-                ),
+                .with_transition_to::<ShaderColorLens>(fill, 0.1.into()),
                 &(),
             );
-
-            const SPARKLE_FILL_PARAMETERS: &[ShaderParameter] = &[
-                ShaderParameter::f32(0),
-                ShaderParameter::f32(1),
-                ShaderParameter::f32(2),
-            ];
 
             commands.add_child(
                 "letter",
@@ -243,26 +220,24 @@ impl MavericNode for GridTile {
             );
 
             if let HintStatus::ManualHinted = node.hint_status {
-                let (p0, p1) = (4.0, 3.0);
+                let (count1, count2) = (4.0, 3.0);
                 let seed = node.tile.inner() as f32 * 123.456;
 
                 commands.add_child(
                     "sparkle",
-                    SmudShapeNode {
-                        color: Color::PINK,
-                        sdf: ANYWHERE_SHADER_PATH,
-                        fill: SPARKLE_SHADER_PATH,
-                        frame_size: 1.0,
-                        f_params: [p0, p1, seed, 0.0, 0.0, 0.0],
-                        u_params: Default::default(),
-                        sdf_param_usage: ShaderParamUsage::NO_PARAMS,
-                        fill_param_usage: ShaderParamUsage(SPARKLE_FILL_PARAMETERS),
-                    }
-                    .with_bundle(Transform {
-                        translation: Vec3::Z * 100.0,
-                        scale: Vec3::ONE * tile_size * 0.5,
-                        ..default()
-                    }),
+                    ShaderBundle::<SparkleShader> {
+                        parameters: SparkleParams {
+                            count1,
+                            count2,
+                            seed,
+                        },
+                        transform: Transform {
+                            translation: Vec3::Z * 100.0,
+                            scale: Vec3::ONE * tile_size * 0.5,
+                            ..default()
+                        },
+                        ..Default::default()
+                    },
                     &(),
                 );
             }

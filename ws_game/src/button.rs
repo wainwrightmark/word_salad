@@ -151,7 +151,7 @@ impl ButtonInteraction {
         };
 
         commands.insert(
-            TransitionBuilder::<SmudParamLens<1>>::default()
+            TransitionBuilder::<RoundingLens>::default()
                 .then_tween(  new_rounding, 1.0.into())
                 .build(),
         );

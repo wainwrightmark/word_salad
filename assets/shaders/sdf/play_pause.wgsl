@@ -1,7 +1,7 @@
 #define_import_path shaders::play_pause
 
-fn sdf(p: vec2<f32>, playness: f32 ) -> f32 {
-    return mix(pause(p), play(p), playness) - 0.05;
+fn sdf(p: vec2<f32>, progress: f32 ) -> f32 {
+    return mix(pause(p), play(p), progress) - 0.05;
 }
 
 fn pause(p: vec2<f32>)->f32{

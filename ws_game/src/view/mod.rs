@@ -1,8 +1,8 @@
 pub mod congrats;
 pub mod game_grid;
 pub mod hints;
-pub mod level_name;
 pub mod level_extra_info;
+pub mod level_name;
 pub mod menu;
 pub mod non_level;
 pub mod popup;
@@ -12,13 +12,12 @@ pub mod tutorial;
 pub mod wordline;
 pub mod words;
 
-use bevy_smud::param_usage::{ShaderParamUsage, ShaderParameter};
+use bevy_param_shaders::ShaderBundle;
 pub use congrats::*;
 pub use game_grid::*;
 pub use hints::*;
-pub use level_name::*;
 pub use level_extra_info::*;
-use maveric::with_bundle::CanWithBundle;
+pub use level_name::*;
 pub use menu::*;
 pub use non_level::*;
 pub use popup::*;
@@ -85,42 +84,44 @@ impl MavericRootChildren for ViewRoot {
                         let theme = level.name.clone();
                         commands.add_child("ui_theme", LevelName { theme }, &context.3);
 
-                        if let Some(info) = &level.extra_info{
-                            commands.add_child("ui_theme_info", LevelExtraInfo { info: info.clone() }, &context.3);
+                        if let Some(info) = &level.extra_info {
+                            commands.add_child(
+                                "ui_theme_info",
+                                LevelExtraInfo { info: info.clone() },
+                                &context.3,
+                            );
                         }
 
                         let total_seconds = context.4.as_ref().total_elapsed().as_secs();
                         let time_text = format_seconds(total_seconds);
                         commands.add_child("ui_timer", UITimer { time_text }, &context.3);
 
-                        if let Some(playness) = match context.4.as_ref(){
+                        if let Some(progress) = match context.4.as_ref() {
                             LevelTime::Running { .. } => Some(0.0), //if running show pause
-                            LevelTime::Paused { .. } => Some(1.0), // if paused show running
+                            LevelTime::Paused { .. } => Some(1.0),  // if paused show running
                             LevelTime::Finished { .. } => None,
-                        }{
-
-                            const SDF_PARAMETERS: &[ShaderParameter] = &[ShaderParameter::f32(0)];
+                        } {
                             let timer_rect = context.3.get_rect(&GameLayoutEntity::Timer, &());
-                            commands.add_child("timer_play_pause",
-                            SmudShapeNode{
-                               color: Color::BLACK,
-                               sdf: PLAY_PAUSE_SHADER_PATH,
-                               fill: SIMPLE_FILL_SHADER_PATH,
-                               frame_size: 1.0,
-                               f_params:[playness, 0.0, 0.0, 0.0, 0.0, 0.0],
-                               u_params:[0;SHAPE_U_PARAMS],
-                               fill_param_usage: ShaderParamUsage::NO_PARAMS,
-                               sdf_param_usage: ShaderParamUsage(SDF_PARAMETERS)
-                            }.with_bundle(Transform{
-                                translation: (timer_rect.centre_right() - Vec2{x: timer_rect.height(), y: 0.0}).extend(crate::z_indices::TIMER),
-                                rotation: Default::default(),
-                                scale: Vec3::ONE * timer_rect.height()
-                            })
-                            .with_transition_to::<SmudParamLens<0>>(playness, 2.0.into())
-                            , &())
+                            commands.add_child(
+                                "timer_play_pause",
+                                ShaderBundle::<PlayPauseShader> {
+                                    parameters: ShaderProgress { progress },
+                                    transform: Transform {
+                                        translation: (timer_rect.centre_right()
+                                            - Vec2 {
+                                                x: timer_rect.height(),
+                                                y: 0.0,
+                                            })
+                                        .extend(crate::z_indices::TIMER),
+                                        rotation: Default::default(),
+                                        scale: Vec3::ONE * timer_rect.height(),
+                                    },
+                                    ..default()
+                                }
+                                .with_transition_to::<ProgressLens>(progress, 2.0.into()),
+                                &(),
+                            )
                         }
-
-
                     }
                 }
                 itertools::Either::Right(non_level) => {

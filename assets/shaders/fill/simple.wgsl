@@ -1,6 +1,4 @@
-#define_import_path smud::simple_fill
-
-#import smud
+#define_import_path fill::simple
 
 fn fill(d: f32, color: vec4<f32>, pos: vec2<f32>) -> vec4<f32> {
     let a = sd_fill_alpha_fwidth(d);

@@ -50,7 +50,7 @@ impl MavericRootChildren for PopupStateRoot {
                         Color::GRAY.with_a(0.9),
                         0.0,
                     )
-                    .with_transition_in_out::<SmudColorLens>(
+                    .with_transition_in_out::<ShaderColorLens>(
                         Color::GRAY.with_a(0.0),
                         Color::GRAY.with_a(0.9),
                         Color::GRAY.with_a(0.0),

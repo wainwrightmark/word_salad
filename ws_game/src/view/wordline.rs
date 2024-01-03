@@ -1,10 +1,7 @@
 use crate::{prelude::*, z_indices};
-use bevy_smud::{SmudShaders, SmudShape};
-
-use bevy_smud::param_usage::{ShaderParamUsage, ShaderParameter};
+use bevy_param_shaders::prelude::*;
 use bitfield_struct::bitfield;
 use ws_core::layout::entities::*;
-use ws_core::palette::WORD_LINE_COLOR;
 use ws_core::prelude::*;
 
 #[derive(Debug, PartialEq)]
@@ -74,8 +71,8 @@ impl MavericNode for WordLine {
             let rect = args.context.get_rect(&GameLayoutEntity::Grid, &());
 
             let scale = rect.extents.x.abs() * 0.5;
-            let initial_width = if should_hide {
-                commands.transition_value::<SmudParamLens<0>>(
+            let line_width = if should_hide {
+                commands.transition_value::<WordLineWidthLens>(
                     -DEFAULT_WIDTH,
                     (DEFAULT_WIDTH * 1.2).into(),
                 )
@@ -84,20 +81,20 @@ impl MavericNode for WordLine {
                 .is_some_and(|x| !x.solution.is_empty() && !x.should_hide)
             {
                 if args.node.close_to_solution {
-                    let cycle = TransitionBuilder::<SmudParamLens<0>>::default()
+                    let cycle = TransitionBuilder::<WordLineWidthLens>::default()
                         .then_tween(DEFAULT_WIDTH * 1.05, 0.03.into())
                         .then_tween(DEFAULT_WIDTH, 0.03.into())
                         .build_loop();
 
                     commands.insert(cycle)
                 } else {
-                    commands.remove::<Transition<SmudParamLens<0>>>();
+                    commands.remove::<Transition<WordLineWidthLens>>();
                 }
                 DEFAULT_WIDTH
             } else {
                 //info!("Word line newly visible");
                 commands.insert(
-                    TransitionBuilder::<SmudParamLens<0>>::default()
+                    TransitionBuilder::<WordLineWidthLens>::default()
                         .then_tween(DEFAULT_WIDTH, (DEFAULT_WIDTH * 4.0).into())
                         .build(),
                 );
@@ -105,54 +102,33 @@ impl MavericNode for WordLine {
                 DEFAULT_WIDTH * 0.25
             };
 
-            let asset_server = commands
-                .get_res_untracked::<AssetServer>()
-                .expect("Wordline should be able to get asset server");
-
-            let fill = asset_server.load(WORD_LINE_FILL_SHADER_PATH);
-            let sdf = asset_server.load(ANYWHERE_SHADER_PATH);
-
             let u_params = solution_to_u32s(solution);
-            let u_params: [u32; SHAPE_U_PARAMS] = u_params.map(|x| x.into());
+
             let final_segment_length = final_segment_length as f32;
             let speed = 4.0;
 
-            let segment_length = commands
-                .transition_value::<SmudParamLens<1>>(final_segment_length, speed.into())
+            let progress = commands
+                .transition_value::<WordLineProgressLens>(final_segment_length, speed.into())
                 .min(final_segment_length + 1.0) // don't go more than half past the last tile
                 .min(solution.len() as f32) //don't show more tiles than we know
                 .max(final_segment_length - 0.75); //always be relatively close to the end
 
-            const SDF_PARAMETERS: &[ShaderParameter] = &[
-                ShaderParameter::f32(0),
-                ShaderParameter::f32(1),
-                ShaderParameter::u32(0),
-                ShaderParameter::u32(1),
-                ShaderParameter::u32(2),
-                ShaderParameter::u32(3),
-            ];
-
-            commands.insert((
-                SmudShape::<SHAPE_F_PARAMS, SHAPE_U_PARAMS> {
-                    color: WORD_LINE_COLOR.convert_color(),
-
-                    frame: bevy_smud::Frame::Quad(1.0),
-
-                    f_params: [initial_width, segment_length, 0.0, 0.0, 0.0, 0.0],
-                    u_params,
+            commands.insert(ShaderBundle::<WordLineShader> {
+                parameters: WordLineParams {
+                    line_width,
+                    progress,
+                    points1: u_params[0].into(),
+                    points2: u_params[1].into(),
+                    points3: u_params[2].into(),
+                    points4: u_params[3].into(),
                 },
-                SmudShaders::<SHAPE_F_PARAMS, SHAPE_U_PARAMS> {
-                    fill,
-                    sdf,
-                    sdf_param_usage: ShaderParamUsage::NO_PARAMS,
-                    fill_param_usage: ShaderParamUsage(SDF_PARAMETERS),
-                },
-                Transform {
+                transform: Transform {
                     translation: rect.centre().extend(z_indices::WORD_LINE),
                     scale: Vec3::ONE * scale,
                     ..default()
                 },
-            ));
+                ..default()
+            });
         });
     }
 
@@ -220,3 +196,5 @@ struct WordLinePoints {
                  // #[bits(4)]
                  // p7: u8,
 }
+
+

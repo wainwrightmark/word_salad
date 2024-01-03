@@ -1,9 +1,6 @@
 #define_import_path fill::fireworks
-#import smud::view_bindings::globals
 
 const NUM_PARTICLES =  50.;
-
-
 
 fn Hash12_Polar(t: f32) -> vec2<f32> {
 
@@ -30,15 +27,10 @@ fn Explosion(uv: vec2<f32>, t: f32) -> f32 {
     return sparks;
 }
 
-fn fill(d: f32, color1: vec4<f32>, point: vec2<f32>, fract: f32) -> vec4<f32> {
-    if d >= 0.0  {
-        return vec4<f32>(0.0);
-    }
-
-    var color = color1.rgb;
-    let explosion = Explosion(point, fract);
+fn fill(color: vec3<f32>, point: vec2<f32>, progress: f32) -> vec4<f32> {
+    let explosion = Explosion(point, progress);
     let a = smoothstep(0.1, 0.5, explosion);
-    let col = explosion * color * 2.;
+    let col = explosion * color.rgb * 2.;
 
     return vec4(col, a);
 }
