@@ -11,3 +11,4 @@
 - Stop selfie mode on wake-up
 - Three taps to go to an adjacent letter
 - use ustr in a bunch more places
+- motion blur

@@ -18,6 +18,8 @@ pub mod startup;
 pub mod state;
 pub mod video;
 pub mod view;
+pub mod test_res_mut;
+
 #[cfg(target_arch = "wasm32")]
 pub mod wasm;
 
@@ -48,6 +50,7 @@ pub mod prelude {
     pub use crate::state::*;
     pub use crate::video::*;
     pub use crate::view::*;
+    pub use crate::test_res_mut::*;
 
     pub use std::array;
 
