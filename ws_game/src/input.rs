@@ -1,6 +1,6 @@
 use crate::{
     completion::TotalCompletion,
-    menu_layout::main_menu_back_button::MainMenuBackButton,
+    menu_layout::{main_menu_back_button::MainMenuBackButton, word_salad_menu_layout::WordSaladMenuLayoutEntity},
     prelude::{
         level_group_layout::LevelGroupLayoutEntity, levels_menu_layout::LevelsMenuLayoutEntity,
         main_menu_layout::MainMenuLayoutEntity, *,
@@ -71,7 +71,7 @@ impl InteractionEntity {
                         }
                         BuyMoreHintsLayoutEntity::Box => None,
                     },
-                    None => None,
+                    None => Some(InteractionEntity::Button(ButtonInteraction::ClosePopups)),
                 }
             }
         }
@@ -82,64 +82,67 @@ impl InteractionEntity {
         }
 
         match menu_state {
-            MenuState::Closed => {
-                match current_level.level(daily_challenges) {
-                    itertools::Either::Left(level) => {
-                        if is_level_complete {
-                            return Self::try_get_button::<CongratsLayoutEntity>(
+            MenuState::Closed => match current_level.level(daily_challenges) {
+                itertools::Either::Left(level) => {
+                    if is_level_complete {
+                        return Self::try_get_button::<CongratsLayoutEntity>(
+                            position,
+                            size,
+                            &SelfieMode(video_resource.is_selfie_mode),
+                        );
+                    }
+
+                    let Some(layout_entity) = size.try_pick::<GameLayoutEntity>(*position, &())
+                    else {
+                        return None;
+                    };
+
+                    match layout_entity {
+                        GameLayoutEntity::TopBar => {
+                            Self::try_get_button::<LayoutTopBar>(position, size, &())
+                        }
+                        GameLayoutEntity::Theme | GameLayoutEntity::ThemeInfo => None,
+                        GameLayoutEntity::Grid => match grid_tolerance {
+                            Some(tolerance) => size
+                                .try_pick_with_tolerance::<LayoutGridTile>(
+                                    *position,
+                                    tolerance,
+                                    &(),
+                                )
+                                .map(|t| Self::Tile(t.0)),
+                            None => size
+                                .try_pick::<LayoutGridTile>(*position, &())
+                                .map(|t| Self::Tile(t.0)),
+                        },
+                        GameLayoutEntity::WordList => {
+                            return Self::try_get_button::<LayoutWordTile>(
                                 position,
                                 size,
-                                &SelfieMode(video_resource.is_selfie_mode),
+                                &level.words,
                             );
                         }
-
-                        let Some(layout_entity) = size.try_pick::<GameLayoutEntity>(*position, &())
-                        else {
-                            return None;
-                        };
-
-                        match layout_entity {
-                            GameLayoutEntity::TopBar => {
-                                Self::try_get_button::<LayoutTopBar>(position, size, &())
-                            }
-                            GameLayoutEntity::Theme | GameLayoutEntity::ThemeInfo => None,
-                            GameLayoutEntity::Grid => match grid_tolerance {
-                                Some(tolerance) => size
-                                    .try_pick_with_tolerance::<LayoutGridTile>(
-                                        *position,
-                                        tolerance,
-                                        &(),
-                                    )
-                                    .map(|t| Self::Tile(t.0)),
-                                None => size
-                                    .try_pick::<LayoutGridTile>(*position, &())
-                                    .map(|t| Self::Tile(t.0)),
-                            },
-                            GameLayoutEntity::WordList => {
-                                return Self::try_get_button::<LayoutWordTile>(
-                                    position,
-                                    size,
-                                    &level.words,
-                                );
-                            }
-                            GameLayoutEntity::Timer => Some(InteractionEntity::Button(ButtonInteraction::TimerButton)),
-                        }
-                    }
-                    itertools::Either::Right(..) => {
-                        let non_level_entity =
-                            size.try_pick::<NonLevelLayoutEntity>(*position, &())?;
-
-                        match non_level_entity {
-                            NonLevelLayoutEntity::Text => return None,
-                            NonLevelLayoutEntity::InteractButton => {
-                                return Some(InteractionEntity::Button(
-                                    ButtonInteraction::NonLevelInteractionButton,
-                                ));
+                        GameLayoutEntity::Timer => {
+                            if current_level.is_tutorial() {
+                                None
+                            } else {
+                                Some(InteractionEntity::Button(ButtonInteraction::TimerButton))
                             }
                         }
                     }
                 }
-            }
+                itertools::Either::Right(..) => {
+                    let non_level_entity = size.try_pick::<NonLevelLayoutEntity>(*position, &())?;
+
+                    match non_level_entity {
+                        NonLevelLayoutEntity::Text => return None,
+                        NonLevelLayoutEntity::InteractButton => {
+                            return Some(InteractionEntity::Button(
+                                ButtonInteraction::NonLevelInteractionButton,
+                            ));
+                        }
+                    }
+                }
+            },
 
             MenuState::ShowMainMenu => {
                 if let Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &())
@@ -156,6 +159,13 @@ impl InteractionEntity {
                 }
 
                 Self::try_get_button::<LevelsMenuLayoutEntity>(position, size, &())
+            }MenuState::WordSaladLevels => {
+                if let Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &())
+                {
+                    return Some(back);
+                }
+
+                Self::try_get_button::<WordSaladMenuLayoutEntity>(position, size, &())
             }
             MenuState::LevelGroupPage(group) => {
                 if let Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &())
@@ -165,6 +175,7 @@ impl InteractionEntity {
 
                 Self::try_get_button::<LevelGroupLayoutEntity>(position, size, group)
             }
+
         }
     }
 }
@@ -186,7 +197,7 @@ impl InputType {
         video_resource: &VideoResource,
         daily_challenges: &DailyChallenges,
         video_events: &AsyncEventWriter<VideoEvent>,
-        level_time: &mut ResMut<LevelTime>
+        level_time: &mut ResMut<LevelTime>,
     ) {
         let is_level_complete = found_words.is_level_complete();
 
@@ -217,7 +228,7 @@ impl InputType {
                                     video_resource,
                                     video_events,
                                     daily_challenges,
-                                    level_time
+                                    level_time,
                                 );
                             }
 
@@ -297,8 +308,7 @@ impl InputType {
                                     video_resource,
                                     video_events,
                                     daily_challenges,
-                                    level_time
-
+                                    level_time,
                                 );
                             }
 
@@ -342,7 +352,7 @@ fn handle_mouse_input(
     daily_challenges: Res<DailyChallenges>,
     video_events: AsyncEventWriter<VideoEvent>,
     mut total_completion: ResMut<TotalCompletion>,
-    mut level_time: ResMut<LevelTime>
+    mut level_time: ResMut<LevelTime>,
 ) {
     let input_type = if mouse_input.just_released(MouseButton::Left) {
         let position_option = get_cursor_position(q_windows);
@@ -375,7 +385,7 @@ fn handle_mouse_input(
         &video_state,
         &daily_challenges,
         &video_events,
-        &mut level_time
+        &mut level_time,
     );
 }
 
@@ -396,7 +406,7 @@ fn handle_touch_input(
     video_events: AsyncEventWriter<VideoEvent>,
     mut total_completion: ResMut<TotalCompletion>,
     daily_challenges: Res<DailyChallenges>,
-    mut level_time: ResMut<LevelTime>
+    mut level_time: ResMut<LevelTime>,
 ) {
     for ev in touch_events.read() {
         let input_type: InputType = match ev.phase {
@@ -433,7 +443,7 @@ fn handle_touch_input(
             &video_state,
             &daily_challenges,
             &video_events,
-            &mut level_time
+            &mut level_time,
         );
     }
 }

@@ -43,7 +43,7 @@ impl MavericNode for TopBar {
                 commands.add_child(
                     "Burger",
                     Text2DNode {
-                        text: "\u{f0c9}",
+                        text: "\u{e800}",
                         font_size: size
                             .font_size::<LayoutTopBar>(&LayoutTopBar::WordSaladLogo),
                         color: palette::BUTTON_TEXT_COLOR.convert_color(),

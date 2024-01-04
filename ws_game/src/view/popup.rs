@@ -44,8 +44,8 @@ impl MavericRootChildren for PopupStateRoot {
                 commands.add_child(
                     "grey out",
                     shapes::box_node1(
-                        size.scaled_width,
-                        size.scaled_height,
+                        size.scaled_width.max(size.scaled_height),
+                        size.scaled_width.max(size.scaled_height),
                         Vec3::Z * z_indices::POPUP_BOX_GREY_OUT,
                         Color::GRAY.with_a(0.9),
                         0.0,

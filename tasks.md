@@ -1,6 +1,4 @@
-- Cannot pause in tutorial
 - Different word line shader
-- Clicking grey area closes "Buy more hints"
 - "Next" button dynamic text - move to next category if necessary
 - Track Streak
 - New End Screen
@@ -8,11 +6,8 @@
 - Make Logo
 - Popup the first time you enter selfie mode
 - Add "more levels" button
-- Check Greek Gods 1 / 6 and roman gods 1 / 8
 - Add play steks button to main menu
 - Boxes around everything in selfie mode
 - Stop selfie mode on wake-up
 - Three taps to go to an adjacent letter
-- Don't show line or hints when timer paused
-- Make hint movement slower
-- Track tutorial completion
+- use ustr in a bunch more places

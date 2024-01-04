@@ -79,10 +79,9 @@ impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> Maveri
     }
 }
 
-
-
 #[derive(Debug, PartialEq)]
-pub struct DoubleTextButtonNode<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> {
+pub struct DoubleTextButtonNode<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static>
+{
     pub font_size: f32,
     pub rect: LayoutRectangle,
     pub left_text: T,
@@ -90,6 +89,8 @@ pub struct DoubleTextButtonNode<T: Into<String> + PartialEq + Debug + Send + Syn
     pub interaction: ButtonInteraction,
     pub fill_color: Color,
     pub text_color: Color,
+    pub left_font: &'static str,
+    pub right_font: &'static str,
 }
 
 impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> MavericNode
@@ -115,10 +116,22 @@ impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> Maveri
                     interaction,
                     fill_color,
                     text_color,
+                    left_font,
+                    right_font,
                 } = node;
                 let centre = rect.centre();
-                let left_text_translation = (rect.centre_left() + Vec2{x: rect.extents.x * 0.05, y: 0.0}).extend(crate::z_indices::MENU_BUTTON_TEXT);
-                let right_text_translation = (rect.centre_right() - Vec2{x: rect.extents.x * 0.05, y: 0.0}).extend(crate::z_indices::MENU_BUTTON_TEXT);
+                let left_text_translation = (rect.centre_left()
+                    + Vec2 {
+                        x: rect.extents.x * 0.05,
+                        y: 0.0,
+                    })
+                .extend(crate::z_indices::MENU_BUTTON_TEXT);
+                let right_text_translation = (rect.centre_right()
+                    - Vec2 {
+                        x: rect.extents.x * 0.05,
+                        y: 0.0,
+                    })
+                .extend(crate::z_indices::MENU_BUTTON_TEXT);
 
                 commands.add_child(
                     "left_text",
@@ -126,7 +139,7 @@ impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> Maveri
                         text: left_text.clone(),
                         font_size: *font_size,
                         color: *text_color,
-                        font: BUTTONS_FONT_PATH,
+                        font: &left_font,
                         alignment: TextAlignment::Left,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         text_2d_bounds: Default::default(),
@@ -142,7 +155,7 @@ impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> Maveri
                         text: right_text.clone(),
                         font_size: *font_size,
                         color: *text_color,
-                        font: BUTTONS_FONT_PATH,
+                        font: &right_font,
                         alignment: TextAlignment::Right,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         text_2d_bounds: Default::default(),

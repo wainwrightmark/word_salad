@@ -11,11 +11,15 @@ use ws_core::{palette, LayoutStructure, LayoutStructureWithFont, LayoutStructure
 use ws_levels::level_group::LevelGroup;
 
 use crate::{
-    menu_layout::main_menu_back_button::MainMenuBackButton,
+    menu_layout::{
+        main_menu_back_button::MainMenuBackButton,
+        word_salad_menu_layout::WordSaladMenuLayoutEntity,
+    },
     prelude::{
         level_group_layout::LevelGroupLayoutEntity, levels_menu_layout::LevelsMenuLayoutEntity,
-        main_menu_layout::MainMenuLayoutEntity, ButtonInteraction, WSButtonNode, DoubleTextButtonNode, ConvertColor,
-        SaladWindowSize, Size, ViewContext,
+        main_menu_layout::MainMenuLayoutEntity, ButtonInteraction, ConvertColor,
+        DoubleTextButtonNode, SaladWindowSize, Size, ViewContext, WSButtonNode, BUTTONS_FONT_PATH,
+        ICON_FONT_PATH,
     },
 };
 
@@ -26,6 +30,7 @@ pub enum MenuState {
     ShowMainMenu,
     ChooseLevelsPage,
     LevelGroupPage(LevelGroup),
+    WordSaladLevels,
 }
 
 impl MenuState {
@@ -48,6 +53,7 @@ impl MenuState {
             ShowMainMenu => Closed,
             ChooseLevelsPage => ShowMainMenu,
             LevelGroupPage(_) => ChooseLevelsPage,
+            WordSaladLevels => ChooseLevelsPage,
         }
     }
 }
@@ -75,7 +81,13 @@ impl MavericNode for Menu {
                 match context.5.as_ref() {
                     MenuState::Closed => {}
                     MenuState::ShowMainMenu => {
-                        add_menu_items::<R, MainMenuLayoutEntity>(&(), commands, size, 0, palette::MENU_BUTTON_FILL.convert_color());
+                        add_menu_items::<R, MainMenuLayoutEntity>(
+                            &(),
+                            commands,
+                            size,
+                            0,
+                            palette::MENU_BUTTON_FILL.convert_color(),
+                        );
                     }
                     MenuState::ChooseLevelsPage => {
                         add_double_text_menu_items::<R, LevelsMenuLayoutEntity>(
@@ -84,7 +96,9 @@ impl MavericNode for Menu {
                             size,
                             1,
                             |x| x.get_text(context.7.as_ref(), context.9.as_ref()),
-                            palette::MENU_BUTTON_FILL.convert_color()
+                            palette::MENU_BUTTON_FILL.convert_color(),
+                            BUTTONS_FONT_PATH,
+                            BUTTONS_FONT_PATH,
                         );
                     }
                     MenuState::LevelGroupPage(group) => {
@@ -94,12 +108,32 @@ impl MavericNode for Menu {
                             size,
                             2,
                             |x| x.get_text(context.7.as_ref(), group),
-                            palette::MENU_BUTTON_FILL.convert_color()
+                            palette::MENU_BUTTON_FILL.convert_color(),
+                            BUTTONS_FONT_PATH,
+                            BUTTONS_FONT_PATH,
                         );
+                    }
+                    MenuState::WordSaladLevels => {
+                        add_double_text_menu_items::<R, WordSaladMenuLayoutEntity>(
+                            &(),
+                            commands,
+                            size,
+                            5,
+                            |x| x.get_text(context.7.as_ref(), context.9.as_ref()),
+                            palette::MENU_BUTTON_FILL.convert_color(),
+                            BUTTONS_FONT_PATH,
+                            ICON_FONT_PATH,
+                        )
                     }
                 }
 
-                add_menu_items::<R, MainMenuBackButton>(&(), commands, size, 400, palette::LIGHT_GRAY.convert_color());
+                add_menu_items::<R, MainMenuBackButton>(
+                    &(),
+                    commands,
+                    size,
+                    4,
+                    palette::LIGHT_GRAY.convert_color(),
+                );
             });
     }
 }
@@ -112,7 +146,7 @@ fn add_menu_items<
     commands: &mut UnorderedChildCommands<R>,
     size: &Size,
     page: u16,
-    fill_color: Color
+    fill_color: Color,
 ) {
     for (index, entity) in L::iter_all(context).enumerate() {
         let font_size = size.font_size::<L>(&entity);
@@ -132,13 +166,18 @@ fn add_menu_items<
     }
 }
 
-fn add_double_text_menu_items<R: MavericRoot, L: LayoutStructureWithFont + Into<ButtonInteraction>>(
+fn add_double_text_menu_items<
+    R: MavericRoot,
+    L: LayoutStructureWithFont + Into<ButtonInteraction>,
+>(
     context: &<L as LayoutStructure>::Context,
     commands: &mut UnorderedChildCommands<R>,
     size: &Size,
     page: u16,
     func: impl Fn(&L) -> (String, String),
-    fill_color: Color
+    fill_color: Color,
+    left_font: &'static str,
+    right_font: &'static str,
 ) {
     for (index, entity) in L::iter_all(context).enumerate() {
         let font_size = size.font_size::<L>(&entity);
@@ -155,6 +194,8 @@ fn add_double_text_menu_items<R: MavericRoot, L: LayoutStructureWithFont + Into<
                 interaction: entity.into(),
                 text_color: palette::MENU_BUTTON_TEXT.convert_color(),
                 fill_color,
+                left_font,
+                right_font,
             },
             &(),
         );

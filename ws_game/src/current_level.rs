@@ -7,7 +7,7 @@ use ws_levels::{all_levels::get_tutorial_level, level_sequence::LevelSequence};
 
 use crate::{completion::TotalCompletion, prelude::*};
 
-#[derive(Debug, Clone, Resource, PartialEq, Eq, Serialize, Deserialize, MavericContext)]
+#[derive(Debug, Clone, Resource, PartialEq, Eq, Serialize, Deserialize, MavericContext, EnumIs)]
 pub enum CurrentLevel {
     Tutorial {
         index: usize,

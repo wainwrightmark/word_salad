@@ -62,15 +62,18 @@ impl MavericRootChildren for ViewRoot {
                 itertools::Either::Left(level) => {
                     let close_to_solution =
                         context.0.is_close_to_a_solution(level, context.2.as_ref());
-                    commands.add_child(
-                        "word_line",
-                        WordLine {
-                            solution: context.0.solution.clone(),
-                            should_hide: context.0.is_just_finished,
-                            close_to_solution,
-                        },
-                        &context.3,
-                    );
+
+                    if !context.4.is_paused() {
+                        commands.add_child(
+                            "word_line",
+                            WordLine {
+                                solution: context.0.solution.clone(),
+                                should_hide: context.0.is_just_finished,
+                                close_to_solution,
+                            },
+                            &context.3,
+                        );
+                    }
 
                     if context.2.is_level_complete() {
                         commands.add_child("congrats", CongratsView, context);

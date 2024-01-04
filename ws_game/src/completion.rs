@@ -47,6 +47,10 @@ impl TotalCompletion {
         }
     }
 
+    pub fn is_daily_challenge_complete(&self, index: usize)-> bool{
+        self.daily_challenge_completion.total_completion.contains(index)
+    }
+
     pub fn level_complete(
         total_completion: &mut ResMut<Self>,
         hints_state: &mut ResMut<HintState>,

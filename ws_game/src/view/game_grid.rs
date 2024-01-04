@@ -218,29 +218,31 @@ impl MavericNode for GridTile {
                 },
                 &context,
             );
+            if !node.timer_paused {
+                if let HintStatus::ManualHinted = node.hint_status{
+                    let (count1, count2) = (4.0, 3.0);
+                    let seed = node.tile.inner() as f32 * 123.456;
 
-            if let HintStatus::ManualHinted = node.hint_status {
-                let (count1, count2) = (4.0, 3.0);
-                let seed = node.tile.inner() as f32 * 123.456;
-
-                commands.add_child(
-                    "sparkle",
-                    ShaderBundle::<SparkleShader> {
-                        parameters: SparkleParams {
-                            count1,
-                            count2,
-                            seed,
+                    commands.add_child(
+                        "sparkle",
+                        ShaderBundle::<SparkleShader> {
+                            parameters: SparkleParams {
+                                count1,
+                                count2,
+                                seed,
+                            },
+                            transform: Transform {
+                                translation: Vec3::Z * 100.0,
+                                scale: Vec3::ONE * tile_size * 0.5,
+                                ..default()
+                            },
+                            ..Default::default()
                         },
-                        transform: Transform {
-                            translation: Vec3::Z * 100.0,
-                            scale: Vec3::ONE * tile_size * 0.5,
-                            ..default()
-                        },
-                        ..Default::default()
-                    },
-                    &(),
-                );
+                        &(),
+                    );
+                }
             }
+
         })
     }
 

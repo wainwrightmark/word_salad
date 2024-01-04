@@ -26,7 +26,7 @@ impl LevelGroupLayoutEntity {
         let total = sequence.level_count();
 
         let complete = complete.min(total);
-        let fraction = fmtastic::VulgarFraction::new(complete, total).to_string();
+        let fraction = format!("{:#}",  fmtastic::VulgarFraction::new(complete, total));
 
         (name.to_string(), fraction)
     }

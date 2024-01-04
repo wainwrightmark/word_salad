@@ -105,7 +105,7 @@ pub const BUTTONS_FONT_PATH: &str = "fonts/Cairo-Regular.ttf";
 
 
 pub const SOLUTIONS_FONT_PATH: &str = "fonts/Cairo-Regular.ttf";
-pub const ICON_FONT_PATH: &str = "fonts/fontello.ttf";
+pub const ICON_FONT_PATH: &str = "fonts/ws_icons.ttf";
 pub const WORD_SALAD_LOGO_FONT_PATH: &str = "fonts/LuckiestGuy.ttf";
 
 
