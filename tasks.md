@@ -9,6 +9,5 @@
 - Add play steks button to main menu
 - Boxes around everything in selfie mode
 - Stop selfie mode on wake-up
-- Three taps to go to an adjacent letter
 - use ustr in a bunch more places
 - motion blur
