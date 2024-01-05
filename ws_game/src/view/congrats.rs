@@ -7,10 +7,7 @@ use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
 use num_traits::Zero;
 use rand::{rngs::ThreadRng, Rng};
 use strum::IntoEnumIterator;
-use ws_core::{
-    layout::entities::*,
-    palette::{BUTTON_TEXT_COLOR, WORD_BACKGROUND_UNSTARTED},
-};
+use ws_core::layout::entities::*;
 #[derive(Debug, Clone, PartialEq)]
 pub struct CongratsView;
 
@@ -123,14 +120,28 @@ impl MavericNode for CongratsView {
                     let number_font_size = size.font_size(&StatisticNumber);
                     let text_font_size = size.font_size(&StatisticLabel);
 
+                    let text_color = if selfie_mode.0 {
+                        palette::CONGRATS_STATISTIC_TEXT_SELFIE
+                    } else {
+                        palette::CONGRATS_STATISTIC_TEXT_NORMAL
+                    }
+                    .convert_color();
+
+                    let fill_color = if selfie_mode.0 {
+                        palette::CONGRATS_STATISTIC_FILL_SELFIE
+                    } else {
+                        palette::CONGRATS_STATISTIC_FILL_NORMAL
+                    }
+                    .convert_color();
+
                     commands.add_child(
                         (0u16, index as u16),
                         StatisticNode {
                             rect,
                             number,
                             text: label,
-                            text_color: BUTTON_TEXT_COLOR.convert_color(),
-                            background_color: WORD_BACKGROUND_UNSTARTED.convert_color(),
+                            text_color,
+                            fill_color,
                             number_font_size,
                             text_font_size,
                         }
@@ -154,6 +165,20 @@ impl MavericNode for CongratsView {
                         CongratsButton::Share => "Share",
                     };
 
+                    let text_color = if selfie_mode.0 {
+                        palette::CONGRATS_BUTTON_TEXT_SELFIE
+                    } else {
+                        palette::CONGRATS_BUTTON_TEXT_NORMAL
+                    }
+                    .convert_color();
+
+                    let fill_color = if selfie_mode.0 {
+                        palette::CONGRATS_BUTTON_FILL_SELFIE
+                    } else {
+                        palette::CONGRATS_BUTTON_FILL_NORMAL
+                    }
+                    .convert_color();
+
                     commands.add_child(
                         (1u16, index as u16),
                         WSButtonNode {
@@ -162,8 +187,8 @@ impl MavericNode for CongratsView {
                             rect: size
                                 .get_rect(&CongratsLayoutEntity::Button(button), &selfie_mode),
                             interaction: ButtonInteraction::Congrats(button),
-                            text_color: palette::CONGRATS_BUTTON_TEXT.convert_color(),
-                            fill_color: palette::CONGRATS_BUTTON_FILL.convert_color(),
+                            text_color,
+                            fill_color,
                         }
                         .with_transition_in::<TransformScaleLens>(
                             Vec3::ZERO,
@@ -183,7 +208,7 @@ struct StatisticNode {
     number: usize,
     text: &'static str,
     text_color: Color,
-    background_color: Color,
+    fill_color: Color,
     number_font_size: f32,
     text_font_size: f32,
 }
@@ -206,7 +231,7 @@ impl MavericNode for StatisticNode {
                 number,
                 text,
                 text_color,
-                background_color,
+                fill_color: background_color,
                 number_font_size,
                 text_font_size,
             } = node;

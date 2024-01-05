@@ -28,7 +28,7 @@ pub enum CongratsLayoutEntity {
     Button(CongratsButton),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub struct SelfieMode(pub bool);
 
 impl LayoutStructure for CongratsLayoutEntity {
@@ -49,7 +49,7 @@ impl LayoutStructure for CongratsLayoutEntity {
 
     fn location(&self, context: &Self::Context) -> Vec2 {
         let top_offset = if context.0 {
-            TOP_BAR_HEIGHT + THEME_HEIGHT + GRID_TILE_SIZE + STREAMING_TOP_OFFSET
+            TOP_BAR_HEIGHT + THEME_HEIGHT + GRID_TILE_SIZE + SELFIE_MODE_CONGRATS_TOP_OFFSET
         } else {
             TOP_BAR_HEIGHT + THEME_HEIGHT + GRID_TILE_SIZE
         };
@@ -57,8 +57,6 @@ impl LayoutStructure for CongratsLayoutEntity {
         pub const MENU_BUTTON_SPACING: f32 = 40.0 * 0.1;
 
         match self {
-
-
             CongratsLayoutEntity::Statistic(statistic) => Vec2 {
                 x: Spacing::SpaceBetween.apply(
                     CONGRATS_ENTITY_BUTTON_WIDTH,
@@ -76,7 +74,8 @@ impl LayoutStructure for CongratsLayoutEntity {
                     + Spacing::Centre.apply(
                         GRID_SIZE
                             - CONGRATS_ENTITY_STATISTIC_HEIGHT
-                            - CONGRATS_ENTITY_VERTICAL_GAP,
+                            - CONGRATS_ENTITY_VERTICAL_GAP
+                            - SELFIE_MODE_CONGRATS_TOP_OFFSET,
                         CONGRATS_ENTITY_BUTTON_HEIGHT + MENU_BUTTON_SPACING,
                         CongratsButton::COUNT,
                         *button as usize,

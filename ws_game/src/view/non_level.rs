@@ -4,6 +4,7 @@ use ws_core::layout::entities::*;
 #[derive(Debug, Clone, PartialEq)]
 pub struct NonLevelView {
     pub non_level: NonLevel,
+    pub selfie_mode: SelfieMode
 }
 
 impl MavericNode for NonLevelView {
@@ -16,6 +17,8 @@ impl MavericNode for NonLevelView {
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
             let size = &context;
+
+            let selfie_mode = node.selfie_mode;
 
             let text = match node.non_level {
                 NonLevel::BeforeTutorial => {
@@ -59,6 +62,20 @@ impl MavericNode for NonLevelView {
                 NonLevel::NoMoreLevelSequence(_) => "Reset",
             };
 
+            let text_color = if selfie_mode.0 {
+                palette::CONGRATS_BUTTON_TEXT_SELFIE
+            } else {
+                palette::CONGRATS_BUTTON_TEXT_NORMAL
+            }
+            .convert_color();
+
+            let fill_color = if selfie_mode.0 {
+                palette::CONGRATS_BUTTON_FILL_SELFIE
+            } else {
+                palette::CONGRATS_BUTTON_FILL_NORMAL
+            }
+            .convert_color();
+
             commands.add_child(
                 "interaction",
                 WSButtonNode {
@@ -66,8 +83,8 @@ impl MavericNode for NonLevelView {
                     font_size: size.font_size(&NonLevelLayoutEntity::InteractButton),
                     rect: size.get_rect(&NonLevelLayoutEntity::InteractButton, &()),
                     interaction: ButtonInteraction::NonLevelInteractionButton,
-                    text_color: palette::CONGRATS_BUTTON_TEXT.convert_color(),
-                    fill_color: palette::CONGRATS_BUTTON_FILL.convert_color(),
+                    text_color,
+                    fill_color
                 },
                 &(),
             );

@@ -25,6 +25,7 @@ pub use top_bar::*;
 pub use tutorial::*;
 pub use wordline::*;
 pub use words::*;
+use ws_core::layout::entities::SelfieMode;
 
 use crate::{completion::TotalCompletion, prelude::*};
 
@@ -127,7 +128,8 @@ impl MavericRootChildren for ViewRoot {
                     }
                 }
                 itertools::Either::Right(non_level) => {
-                    commands.add_child("non_level", NonLevelView { non_level }, &context.3);
+                    let selfie_mode = SelfieMode(context.8.is_selfie_mode);
+                    commands.add_child("non_level", NonLevelView { non_level, selfie_mode }, &context.3);
                 }
             }
         } else {

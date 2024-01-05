@@ -32,7 +32,7 @@ pub const WORD_CROSS_PAD: f32 = 5.;
 
 /// Extra top offset while streaming
 
-pub const STREAMING_TOP_OFFSET:f32 = 90.0;
+pub const SELFIE_MODE_CONGRATS_TOP_OFFSET:f32 = 75.0;
 
 
 pub const CONGRATS_ENTITY_STATISTIC_HEIGHT: f32 = 70.0;
@@ -46,8 +46,8 @@ pub const CONGRATS_ENTITY_BUTTON_WIDTH: f32 = GRID_SIZE;
 pub const NON_LEVEL_TEXT_HEIGHT: f32 = 80.0;
 pub const NON_LEVEL_TEXT_WIDTH: f32 = 240.0;
 
-pub const NON_LEVEL_BUTTON_HEIGHT: f32 = 40.0;
-pub const NON_LEVEL_BUTTON_WIDTH: f32 = 80.0;
+pub const NON_LEVEL_BUTTON_HEIGHT: f32 = 35.0;
+pub const NON_LEVEL_BUTTON_WIDTH: f32 = GRID_SIZE;
 
 
 pub const HINTS_POPUP_BOX_TOP: f32 = 180.;
