@@ -55,7 +55,7 @@ impl LayoutStructure for CongratsLayoutEntity {
             CongratsLayoutEntity::Statistic(statistic) => Vec2 {
                 x: Spacing::SpaceBetween.apply(
                     GRID_SIZE,
-                    CONGRATS_ENTITY_STATISTIC_WIDTH * 1.2,
+                    CONGRATS_ENTITY_STATISTIC_WIDTH,
                     CongratsStatistic::COUNT,
                     *statistic as usize,
                 ) + ((IDEAL_WIDTH - GRID_SIZE) * 0.5),
@@ -83,5 +83,21 @@ impl LayoutStructure for CongratsLayoutEntity {
 impl LayoutStructureWithFont for CongratsLayoutEntity {
     fn font_size(&self) -> f32 {
         30.0
+    }
+}
+
+
+pub struct StatisticNumber;
+pub struct StatisticLabel;
+
+impl LayoutStructureWithFont for StatisticNumber{
+    fn font_size(&self) -> f32 {
+        40.0
+    }
+}
+
+impl LayoutStructureWithFont for StatisticLabel{
+    fn font_size(&self) -> f32 {
+        16.0
     }
 }

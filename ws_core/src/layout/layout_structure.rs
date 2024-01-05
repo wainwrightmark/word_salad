@@ -26,7 +26,7 @@ pub trait LayoutStructure: Sized + PartialEq + Debug {
     fn iter_all(context: &Self::Context) -> impl Iterator<Item = Self>;
 }
 
-pub trait LayoutStructureWithFont: LayoutStructure {
+pub trait LayoutStructureWithFont {
     fn font_size(&self) -> f32;
 }
 

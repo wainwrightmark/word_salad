@@ -168,7 +168,7 @@ fn add_menu_items<
 
 fn add_double_text_menu_items<
     R: MavericRoot,
-    L: LayoutStructureWithFont + Into<ButtonInteraction>,
+    L: LayoutStructureWithFont + LayoutStructure + Into<ButtonInteraction>,
 >(
     context: &<L as LayoutStructure>::Context,
     commands: &mut UnorderedChildCommands<R>,

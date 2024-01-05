@@ -47,21 +47,21 @@ impl GridInputState {
                         chosen_state.solution.clear();
                         chosen_state.solution.push(tile);
                         self.last_truncate = None;
-                        info!("His1a");
+                        //info!("His1a");
                         next_multi_click = None;
                     } else {
                         next_multi_click = Some(MultiClick::DeleteOnEndThenMaybeSwitch(tile));
-                        info!("His1b");
+                        //info!("His1b");
                     }
 
                     self.last_truncate = None;
                 } else if index == 0 {
-                    info!("His2");
+                    //info!("His2");
                     chosen_state.solution.clear();
                     self.last_truncate = None;
                     next_multi_click = None;
                 } else {
-                    info!("His3");
+                    //info!("His3");
                     chosen_state.solution.truncate(index + 1);
                     self.last_truncate = Some(tile);
                     next_multi_click = None;
@@ -69,7 +69,7 @@ impl GridInputState {
             } else if last.is_adjacent_to(&tile) {
                 //element is not already present
                 if allow_tile(tile, grid, found_words) {
-                    info!("His4");
+                    //info!("His4");
                     if self.multi_click == Some(MultiClick::SwitchOnStart(tile)) {
                         chosen_state.solution = ArrayVec::from_iter([tile].into_iter());
                     } else {
@@ -78,7 +78,7 @@ impl GridInputState {
                 }
                 next_multi_click = None;
             } else {
-                info!("His5");
+                //info!("His5");
                 *chosen_state.as_mut() = ChosenState::default();
                 next_multi_click = None;
             }
@@ -86,7 +86,7 @@ impl GridInputState {
             next_multi_click = None;
             //array is empty
             if allow_tile(tile, grid, found_words) {
-                info!("His5");
+                //info!("His5");
                 chosen_state.solution.push(tile);
             }
         }
@@ -114,14 +114,14 @@ impl GridInputState {
 
         if let Some(last) = chosen_state.solution.last() {
             if let Some(index) = chosen_state.solution.iter().position(|x| *x == tile) {
-                info!("Him1");
+                //info!("Him1");
                 // element is already present
                 chosen_state.solution.truncate(index + 1);
                 self.last_truncate = None;
             } else if last.is_adjacent_to(&tile) {
                 //element is not already present
                 if allow_tile(tile, grid, found_words) {
-                    info!("Him2");
+                    //info!("Him2");
                     chosen_state.solution.push(tile);
                     self.last_truncate = None;
                 }

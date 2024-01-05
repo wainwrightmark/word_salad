@@ -7,62 +7,9 @@ use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
 use num_traits::Zero;
 use rand::{rngs::ThreadRng, Rng};
 use strum::IntoEnumIterator;
-use ws_core::layout::entities::*;
+use ws_core::{layout::entities::*, palette::{BUTTON_TEXT_COLOR, WORD_BACKGROUND_UNSTARTED}};
 #[derive(Debug, Clone, PartialEq)]
 pub struct CongratsView;
-
-fn create_firework(
-    cb: &mut ChildBuilder,
-    rng: &mut impl Rng,
-    total_seconds: f32,
-    size: &Size,
-    no_delay: bool,
-) {
-    let rect = size.get_rect(&ws_core::layout::entities::GameLayoutEntity::Grid, &());
-
-    let delay = if no_delay {
-        0.0
-    } else {
-        rng.gen_range(0.0..(total_seconds - 1.0))
-    };
-    let color = Color::hsl(rng.gen_range(0.0..=360.0), 1.0, 0.75);
-
-    let position = rect.top_left
-        + Vec2 {
-            x: rng.gen_range(0.0..=(rect.extents.x.abs())),
-            y: rng.gen_range(rect.extents.y..=0.0),
-        };
-
-    let bundle = (
-        ShaderBundle::<FireworksShader> {
-            parameters: (color.into(), 0.0.into()),
-            transform: Transform {
-                translation: position.extend(z_indices::FIREWORKS),
-
-                scale: Vec3::ONE * rect.extents.x.max(rect.extents.y),
-                ..default()
-            },
-            ..default()
-        },
-        ScheduledForDeletion {
-            remaining: Duration::from_secs_f32(1.0),
-        },
-        TransitionBuilder::<ProgressLens>::default()
-            .then_tween(1.0, 1.0.into())
-            .build(),
-    );
-
-    if delay.is_zero() {
-        cb.spawn(bundle);
-    } else {
-        cb.spawn(ScheduledChange {
-            remaining: Duration::from_secs_f32(delay),
-            boxed_change: Box::new(move |ec| {
-                ec.insert(bundle);
-            }),
-        });
-    }
-}
 
 impl MavericNode for CongratsView {
     type Context = ViewContext;
@@ -166,34 +113,29 @@ impl MavericNode for CongratsView {
                     let Some((number, label)) = data else {
                         continue;
                     };
+                    let rect = size.get_rect(
+                        &CongratsLayoutEntity::Statistic(statistic),
+                        &selfie_mode,
+                    );
+                    let number_font_size = size.font_size(&StatisticNumber);
+                    let text_font_size = size.font_size(&StatisticLabel);
 
-                    // todo actually two pieces of text
-                    // todo draw box around this
                     commands.add_child(
                         (0u16, index as u16),
-                        Text2DNode {
-                            text: format!("{number}\n{label}"),
-                            font_size: size.font_size(&CongratsLayoutEntity::Statistic(statistic)),
-                            color: palette::BUTTON_TEXT_COLOR.convert_color(),
-                            font: BUTTONS_FONT_PATH,
-                            alignment: TextAlignment::Center,
-                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                            text_2d_bounds: Text2dBounds::default(),
-                            text_anchor: Anchor::default(),
-                        }
-                        .with_bundle(Transform::from_translation(
-                            size.get_rect(
-                                &CongratsLayoutEntity::Statistic(statistic),
-                                &selfie_mode,
-                            )
-                            .centre()
-                            .extend(crate::z_indices::CONGRATS_BUTTON),
-                        ))
-                        .with_transition_in::<TransformScaleLens>(
+                        StatisticNode{
+                            rect,
+                            number,
+                            text: label,
+                            text_color: BUTTON_TEXT_COLOR.convert_color(),
+                            background_color: WORD_BACKGROUND_UNSTARTED.convert_color(),
+                            number_font_size,
+                            text_font_size,
+                        }.with_transition_in::<TransformScaleLens>(
                             Vec3::ZERO,
                             Vec3::ONE,
                             Duration::from_secs_f32(1.0),
-                        ),
+                        )
+                        ,
                         &(),
                     );
                 }
@@ -225,6 +167,141 @@ impl MavericNode for CongratsView {
                     );
                 }
             });
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+struct StatisticNode {
+    rect: LayoutRectangle,
+    number: usize,
+    text: &'static str,
+    text_color: Color,
+    background_color: Color,
+    number_font_size: f32,
+    text_font_size: f32,
+}
+
+impl MavericNode for StatisticNode {
+    type Context = ();
+
+    fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
+        commands.insert_static_bundle((GlobalTransform::default(), VisibilityBundle::default()));
+        commands.insert_with_node(|n| {
+            Transform::from_translation(n.rect.centre().extend(crate::z_indices::CONGRATS_BUTTON))
+        });
+    }
+
+    fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
+        commands.unordered_children_with_node(|node, commands| {
+            let StatisticNode{
+                rect,
+                number,
+                text,
+                text_color,
+                background_color,
+                number_font_size,
+                text_font_size,
+            } = node;
+
+
+            commands.add_child(
+                "number",
+                Text2DNode {
+                    text: number.to_string(),
+                    font_size: *number_font_size,
+                    color: *text_color,
+                    font: BUTTONS_FONT_PATH,
+                    alignment: TextAlignment::Center,
+                    linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                    text_2d_bounds: Text2dBounds::default(),
+                    text_anchor: Anchor::TopCenter,
+                }
+                .with_bundle(Transform::from_translation(Vec3{x:0.0, y: rect.extents.y * -0.5, z: 1.0}))
+                ,
+                &(),
+            );
+
+            commands.add_child(
+                "label",
+                Text2DNode {
+                    text: *text,
+                    font_size: *text_font_size,
+                    color: *text_color,
+                    font: BUTTONS_FONT_PATH,
+                    alignment: TextAlignment::Center,
+                    linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                    text_2d_bounds: Text2dBounds::default(),
+                    text_anchor: Anchor::BottomCenter,
+                }
+                .with_bundle(Transform::from_translation(Vec3{x: 0.0, y: rect.extents.y * 0.5, z: 1.0}))
+                ,
+                &(),
+            );
+
+            commands.add_child(
+                "box",
+                ShaderBundle::<BoxShader> {
+                    parameters: ((*background_color).into(), 0.1.into(),  (rect.width() / rect.height() ).into()),
+
+                    transform: Transform::from_scale(Vec3::ONE * node.rect.height()* 0.5) ,
+                    ..Default::default()
+                },
+                &(),
+            );
+        });
+    }
+}
+
+fn create_firework(
+    cb: &mut ChildBuilder,
+    rng: &mut impl Rng,
+    total_seconds: f32,
+    size: &Size,
+    no_delay: bool,
+) {
+    let rect = size.get_rect(&ws_core::layout::entities::GameLayoutEntity::Grid, &());
+
+    let delay = if no_delay {
+        0.0
+    } else {
+        rng.gen_range(0.0..(total_seconds - 1.0))
+    };
+    let color = Color::hsl(rng.gen_range(0.0..=360.0), 1.0, 0.75);
+
+    let position = rect.top_left
+        + Vec2 {
+            x: rng.gen_range(0.0..=(rect.extents.x.abs())),
+            y: rng.gen_range(rect.extents.y..=0.0),
+        };
+
+    let bundle = (
+        ShaderBundle::<FireworksShader> {
+            parameters: (color.into(), 0.0.into()),
+            transform: Transform {
+                translation: position.extend(z_indices::FIREWORKS),
+
+                scale: Vec3::ONE * rect.extents.x.max(rect.extents.y),
+                ..default()
+            },
+            ..default()
+        },
+        ScheduledForDeletion {
+            remaining: Duration::from_secs_f32(1.0),
+        },
+        TransitionBuilder::<ProgressLens>::default()
+            .then_tween(1.0, 1.0.into())
+            .build(),
+    );
+
+    if delay.is_zero() {
+        cb.spawn(bundle);
+    } else {
+        cb.spawn(ScheduledChange {
+            remaining: Duration::from_secs_f32(delay),
+            boxed_change: Box::new(move |ec| {
+                ec.insert(bundle);
+            }),
+        });
     }
 }
 
