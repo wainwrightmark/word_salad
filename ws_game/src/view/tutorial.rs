@@ -8,10 +8,10 @@ use maveric::{
     widgets::text2d_node::Text2DNode,
     with_bundle::CanWithBundle,
 };
-use strum::{EnumCount, EnumIter, IntoEnumIterator};
+use strum::{EnumCount, EnumIs, EnumIter, IntoEnumIterator};
 use ws_core::{
     layout::entities::{GRID_SIZE, IDEAL_WIDTH},
-    LayoutRectangle, LayoutStructure,
+    LayoutStructure,
 };
 
 use crate::prelude::*;
@@ -37,57 +37,48 @@ impl MavericNode for TutorialNode {
     ) {
         commands.ordered_children_with_node_and_context(|node, context, commands| {
             if let Some(text) = node.text.top {
-                let rect = context.get_rect(&TutorialLayoutEntity::Top, &());
-                let font_size = context.font_size(&TutorialLayoutEntity::Top);
                 commands.add_child(
                     "top",
                     TutorialPopupNode {
                         text,
-                        rect,
-                        font_size,
+                        entity: TutorialLayoutEntity::Top,
                     }
                     .with_transition_in::<TransformScaleLens>(
                         Vec3::ZERO,
                         Vec3::ONE,
                         Duration::from_secs_f32(0.5),
                     ),
-                    &(),
+                    context,
                 );
             }
             if let Some(text) = node.text.middle {
-                let rect = context.get_rect(&TutorialLayoutEntity::Middle, &());
-                let font_size = context.font_size(&TutorialLayoutEntity::Middle);
                 commands.add_child(
                     "middle",
                     TutorialPopupNode {
                         text,
-                        rect,
-                        font_size,
+                        entity: TutorialLayoutEntity::Middle,
                     }
                     .with_transition_in::<TransformScaleLens>(
                         Vec3::ZERO,
                         Vec3::ONE,
                         Duration::from_secs_f32(0.5),
                     ),
-                    &(),
+                    context,
                 );
             }
             if let Some(text) = node.text.bottom {
-                let rect = context.get_rect(&TutorialLayoutEntity::Bottom, &());
-                let font_size = context.font_size(&TutorialLayoutEntity::Bottom);
                 commands.add_child(
                     "bottom",
                     TutorialPopupNode {
                         text,
-                        rect,
-                        font_size,
+                        entity: TutorialLayoutEntity::Bottom,
                     }
                     .with_transition_in::<TransformScaleLens>(
                         Vec3::ZERO,
                         Vec3::ONE,
                         Duration::from_secs_f32(0.5),
                     ),
-                    &(),
+                    context,
                 );
             }
         });
@@ -97,12 +88,11 @@ impl MavericNode for TutorialNode {
 #[derive(Debug, PartialEq)]
 struct TutorialPopupNode {
     text: &'static str,
-    rect: LayoutRectangle,
-    font_size: f32,
+    entity: TutorialLayoutEntity,
 }
 
 impl MavericNode for TutorialPopupNode {
-    type Context = ();
+    type Context = MyWindowSize;
 
     fn set_components(commands: maveric::prelude::SetComponentCommands<Self, Self::Context>) {
         commands
@@ -115,12 +105,13 @@ impl MavericNode for TutorialPopupNode {
     fn set_children<R: maveric::prelude::MavericRoot>(
         commands: maveric::prelude::SetChildrenCommands<Self, Self::Context, R>,
     ) {
-        commands.unordered_children_with_node(|node, commands| {
-            let TutorialPopupNode {
-                text,
-                rect,
-                font_size,
-            } = node;
+        commands.unordered_children_with_node_and_context(|node, context, commands| {
+            let TutorialPopupNode { text, entity } = node;
+
+            let rect = context.get_rect(entity, &());
+            let font_size = context.font_size(&TutorialTextLayoutEntity(*entity));
+            let text_rect = context.get_rect(&TutorialTextLayoutEntity(*entity), &());
+
             let background = crate::shapes::box_with_border_node(
                 rect.width(),
                 rect.height(),
@@ -141,7 +132,7 @@ impl MavericNode for TutorialPopupNode {
             let text = Text2DNode {
                 text: *text,
                 font: TITLE_FONT_PATH,
-                font_size: *font_size,
+                font_size: font_size,
                 color: Color::BLACK,
                 alignment: TextAlignment::Left,
                 linebreak_behavior: bevy::text::BreakLineOn::WordBoundary,
@@ -149,7 +140,8 @@ impl MavericNode for TutorialPopupNode {
                 text_anchor: bevy::sprite::Anchor::CenterLeft,
             }
             .with_bundle(Transform::from_translation(
-                (rect.centre_left() + Vec2 { x: 20.0, y: 0.0 })
+                text_rect
+                    .centre_left()
                     .extend(crate::z_indices::TUTORIAL_POPUP_BOX_TEXT),
             ));
 
@@ -199,27 +191,31 @@ impl TutorialText {
                         .map(|x| x.0)
                         .unwrap_or_default();
 
-                    let bottom = match found_index{
-                        4=> "\
+                    let bottom = match found_index {
+                        4 => {
+                            "\
                         \n\
                         These labels show the word lengths\n\
-                        The first 6 letter word is 'Bishop'",
-                        _=> "\
+                        The first 6-letter word is 'Bishop'"
+                        }
+                        _ => {
+                            "\
                         \n\
                         These labels show the word lengths\n\
-                        The 5 letter word is 'Queen'"
-
+                        The 5-letter word is 'Queen'"
+                        }
                     };
 
                     Self {
-                    top: Some(
-                        "\
+                        top: Some(
+                            "\
                         Letters vanish when no longer needed\n\
                         Every remaining letter is needed",
-                    ),
-                    middle: None,
-                    bottom: Some(bottom),
-                }},
+                        ),
+                        middle: None,
+                        bottom: Some(bottom),
+                    }
+                }
                 2 => Self {
                     top: Some(
                         "\
@@ -325,7 +321,7 @@ impl TutorialText {
                     top: Some(
                         "\
                     To beat this puzzle, find six planets\n\
-                    The 4 letter word is 'Mars'",
+                    The 4-letter word is 'Mars'",
                     ),
                     middle: None,
                     bottom: None,
@@ -386,7 +382,7 @@ impl TutorialText {
     }
 }
 
-#[derive(Debug, EnumCount, EnumIter, PartialEq, Clone, Copy)]
+#[derive(Debug, EnumCount, EnumIter, EnumIs, PartialEq, Clone, Copy)]
 enum TutorialLayoutEntity {
     Top,
     Middle,
@@ -397,7 +393,6 @@ const BOX_WIDTH: f32 = GRID_SIZE + 20.0;
 
 impl LayoutStructure for TutorialLayoutEntity {
     type Context = ();
-
 
     fn pick(point: bevy::prelude::Vec2, context: &Self::Context) -> Option<Self> {
         for x in Self::iter() {
@@ -447,30 +442,51 @@ impl LayoutStructure for TutorialLayoutEntity {
     }
 }
 
-// pub struct TutorialTextLayoutEntity(pub TutorialLayoutEntity);
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub struct TutorialTextLayoutEntity(TutorialLayoutEntity);
 
-// impl LayoutStructure for TutorialTextLayoutEntity{
-//     type Context = ();
-//     type Iterator;
+const TEXT_LEFT_MARGIN: f32 = 15.0;
+const TEXT_RIGHT_MARGIN: f32 = 5.0;
+const BOTTOM_TEXT_TOP_OFFSET: f32 = 40.0;
 
-//     fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
-//         todo!()
-//     }
+impl LayoutStructure for TutorialTextLayoutEntity {
+    type Context = ();
 
-//     fn size(&self, context: &Self::Context) -> Vec2 {
-//         todo!()
-//     }
+    fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
+        for x in Self::iter_all(context) {
+            if x.rect(context).contains(point) {
+                return Some(x);
+            }
+        }
+        return None;
+    }
 
-//     fn location(&self, context: &Self::Context) -> Vec2 {
-//         todo!()
-//     }
+    fn size(&self, context: &Self::Context) -> Vec2 {
+        let x = TEXT_LEFT_MARGIN + TEXT_RIGHT_MARGIN;
+        let y = if self.0.is_bottom() {
+            BOTTOM_TEXT_TOP_OFFSET
+        } else {
+            0.0
+        };
+        self.0.size(context) - Vec2 { x, y }
+    }
 
-//     fn iter_all(context: &Self::Context) -> Self::Iterator {
-//         todo!()
-//     }
-// }
+    fn location(&self, context: &Self::Context) -> Vec2 {
+        let x = TEXT_LEFT_MARGIN; //note this is different from in 'size'
+        let y = if self.0.is_bottom() {
+            BOTTOM_TEXT_TOP_OFFSET
+        } else {
+            0.0
+        };
+        self.0.location(context) + Vec2 { x, y }
+    }
 
-impl LayoutStructureWithFont for TutorialLayoutEntity {
+    fn iter_all(_context: &Self::Context) -> impl Iterator<Item = Self> {
+        TutorialLayoutEntity::iter().map(|x| Self(x))
+    }
+}
+
+impl LayoutStructureWithFont for TutorialTextLayoutEntity {
     fn font_size(&self) -> f32 {
         30.0
     }
