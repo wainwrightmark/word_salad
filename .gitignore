@@ -18,3 +18,4 @@ saves/bevy_pkv.redb
 node_modules
 package-lock.json
 package.json
+ws_game/saves/bevy_pkv.redb

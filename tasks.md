@@ -11,3 +11,4 @@
 - Stop selfie mode on wake-up
 - use ustr in a bunch more places
 - motion blur
+- fix sparkles
