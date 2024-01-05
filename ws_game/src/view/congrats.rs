@@ -7,7 +7,10 @@ use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
 use num_traits::Zero;
 use rand::{rngs::ThreadRng, Rng};
 use strum::IntoEnumIterator;
-use ws_core::{layout::entities::*, palette::{BUTTON_TEXT_COLOR, WORD_BACKGROUND_UNSTARTED}};
+use ws_core::{
+    layout::entities::*,
+    palette::{BUTTON_TEXT_COLOR, WORD_BACKGROUND_UNSTARTED},
+};
 #[derive(Debug, Clone, PartialEq)]
 pub struct CongratsView;
 
@@ -48,6 +51,8 @@ impl MavericNode for CongratsView {
             .unordered_children_with_context(|context, commands| {
                 let size = &context.3;
                 let selfie_mode = SelfieMode(context.8.is_selfie_mode);
+
+                const TRANSITION_SECS: f32 = 1.0;
 
                 #[derive(Debug, Clone, Copy)]
                 enum Data {
@@ -113,16 +118,14 @@ impl MavericNode for CongratsView {
                     let Some((number, label)) = data else {
                         continue;
                     };
-                    let rect = size.get_rect(
-                        &CongratsLayoutEntity::Statistic(statistic),
-                        &selfie_mode,
-                    );
+                    let rect =
+                        size.get_rect(&CongratsLayoutEntity::Statistic(statistic), &selfie_mode);
                     let number_font_size = size.font_size(&StatisticNumber);
                     let text_font_size = size.font_size(&StatisticLabel);
 
                     commands.add_child(
                         (0u16, index as u16),
-                        StatisticNode{
+                        StatisticNode {
                             rect,
                             number,
                             text: label,
@@ -130,12 +133,15 @@ impl MavericNode for CongratsView {
                             background_color: WORD_BACKGROUND_UNSTARTED.convert_color(),
                             number_font_size,
                             text_font_size,
-                        }.with_transition_in::<TransformScaleLens>(
+                        }
+                        .with_bundle(Transform::from_translation(
+                            rect.centre().extend(z_indices::CONGRATS_BUTTON),
+                        ))
+                        .with_transition_in::<TransformScaleLens>(
                             Vec3::ZERO,
                             Vec3::ONE,
-                            Duration::from_secs_f32(1.0),
-                        )
-                        ,
+                            Duration::from_secs_f32(TRANSITION_SECS),
+                        ),
                         &(),
                     );
                 }
@@ -143,6 +149,7 @@ impl MavericNode for CongratsView {
                 for (index, button) in CongratsButton::iter().enumerate() {
                     let text = match button {
                         CongratsButton::Next => "Next",
+                        CongratsButton::MoreLevels => "More Puzzles",
                         #[cfg(target_arch = "wasm32")]
                         CongratsButton::Share => "Share",
                     };
@@ -161,7 +168,7 @@ impl MavericNode for CongratsView {
                         .with_transition_in::<TransformScaleLens>(
                             Vec3::ZERO,
                             Vec3::ONE,
-                            Duration::from_secs_f32(1.0),
+                            Duration::from_secs_f32(TRANSITION_SECS),
                         ),
                         &(),
                     );
@@ -185,15 +192,16 @@ impl MavericNode for StatisticNode {
     type Context = ();
 
     fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
-        commands.insert_static_bundle((GlobalTransform::default(), VisibilityBundle::default()));
-        commands.insert_with_node(|n| {
-            Transform::from_translation(n.rect.centre().extend(crate::z_indices::CONGRATS_BUTTON))
-        });
+        commands.insert_static_bundle((
+            GlobalTransform::default(),
+            Transform::default(),
+            VisibilityBundle::default(),
+        ));
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node(|node, commands| {
-            let StatisticNode{
+            let StatisticNode {
                 rect,
                 number,
                 text,
@@ -202,7 +210,6 @@ impl MavericNode for StatisticNode {
                 number_font_size,
                 text_font_size,
             } = node;
-
 
             commands.add_child(
                 "number",
@@ -214,10 +221,13 @@ impl MavericNode for StatisticNode {
                     alignment: TextAlignment::Center,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     text_2d_bounds: Text2dBounds::default(),
-                    text_anchor: Anchor::TopCenter,
+                    text_anchor: Anchor::Center,
                 }
-                .with_bundle(Transform::from_translation(Vec3{x:0.0, y: rect.extents.y * -0.5, z: 1.0}))
-                ,
+                .with_bundle(Transform::from_translation(Vec3 {
+                    x: 0.0,
+                    y: 0.0,
+                    z: 1.0,
+                })),
                 &(),
             );
 
@@ -233,17 +243,24 @@ impl MavericNode for StatisticNode {
                     text_2d_bounds: Text2dBounds::default(),
                     text_anchor: Anchor::BottomCenter,
                 }
-                .with_bundle(Transform::from_translation(Vec3{x: 0.0, y: rect.extents.y * 0.5, z: 1.0}))
-                ,
+                .with_bundle(Transform::from_translation(Vec3 {
+                    x: 0.0,
+                    y: rect.extents.y * 0.5,
+                    z: 1.0,
+                })),
                 &(),
             );
 
             commands.add_child(
                 "box",
                 ShaderBundle::<BoxShader> {
-                    parameters: ((*background_color).into(), 0.1.into(),  (rect.width() / rect.height() ).into()),
+                    parameters: (
+                        (*background_color).into(),
+                        0.1.into(),
+                        (rect.width() / rect.height()).into(),
+                    ),
 
-                    transform: Transform::from_scale(Vec3::ONE * node.rect.height()* 0.5) ,
+                    transform: Transform::from_scale(Vec3::ONE * node.rect.height() * 0.5),
                     ..Default::default()
                 },
                 &(),

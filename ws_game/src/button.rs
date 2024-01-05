@@ -332,6 +332,10 @@ impl ButtonInteraction {
                 *current_level.as_mut() = next_level;
             }
 
+            ButtonInteraction::Congrats(CongratsButton::MoreLevels) => {
+                *menu_state.as_mut() = MenuState::ChooseLevelsPage;
+            }
+
             #[cfg(target_arch = "wasm32")]
             ButtonInteraction::Congrats(CongratsButton::Share) => {
                 crate::wasm::share("Hello World".to_string()); //TODO better share

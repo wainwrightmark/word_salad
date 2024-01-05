@@ -1,7 +1,7 @@
 - Different word line shader
 - "Next" button dynamic text - move to next category if necessary
-- Track Streak
-- New End Screen
+
+
 - Optimize Colours on selfie mode
 - Make Logo
 - Popup the first time you enter selfie mode
@@ -13,3 +13,4 @@
 - motion blur on found word text and hint rewards
 - hint reward paths
 - fix sparkles
+- Change Word Salad Menu

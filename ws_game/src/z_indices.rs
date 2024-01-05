@@ -1,5 +1,5 @@
 pub const GRID_TILE: f32 = 0.0;
-pub const FIREWORKS: f32 = 1.0;
+pub const FIREWORKS: f32 = 450.0;
 pub const HINT: f32 = 50.0;
 pub const WORD_LINE: f32 = 95.0;
 pub const TILE_TEXT: f32 = 100.0;

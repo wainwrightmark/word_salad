@@ -15,8 +15,11 @@ pub enum CongratsStatistic {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, EnumIter, EnumCount, Display)]
 pub enum CongratsButton {
     Next = 0,
+
+    MoreLevels = 1,
+
     #[cfg(target_arch = "wasm32")]
-    Share = 1,
+    Share = 2,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, EnumCount, Display)]
@@ -51,24 +54,33 @@ impl LayoutStructure for CongratsLayoutEntity {
             TOP_BAR_HEIGHT + THEME_HEIGHT + GRID_TILE_SIZE
         };
 
+        pub const MENU_BUTTON_SPACING: f32 = 40.0 * 0.1;
+
         match self {
+
+
             CongratsLayoutEntity::Statistic(statistic) => Vec2 {
                 x: Spacing::SpaceBetween.apply(
-                    GRID_SIZE,
+                    CONGRATS_ENTITY_BUTTON_WIDTH,
                     CONGRATS_ENTITY_STATISTIC_WIDTH,
                     CongratsStatistic::COUNT,
                     *statistic as usize,
-                ) + ((IDEAL_WIDTH - GRID_SIZE) * 0.5),
+                ) + ((IDEAL_WIDTH - CONGRATS_ENTITY_BUTTON_WIDTH) * 0.5),
                 y: top_offset,
             },
             CongratsLayoutEntity::Button(button) => Vec2 {
-                x: Spacing::SpaceAround.apply(
-                    IDEAL_WIDTH,
-                    CONGRATS_ENTITY_BUTTON_WIDTH * 1.2,
-                    CongratsButton::COUNT,
-                    *button as usize,
-                ),
-                y: top_offset + CONGRATS_ENTITY_STATISTIC_HEIGHT + CONGRATS_ENTITY_VERTICAL_GAP,
+                x: (IDEAL_WIDTH - CONGRATS_ENTITY_BUTTON_WIDTH) * 0.5,
+                y: top_offset
+                    + CONGRATS_ENTITY_STATISTIC_HEIGHT
+                    + CONGRATS_ENTITY_VERTICAL_GAP
+                    + Spacing::Centre.apply(
+                        GRID_SIZE
+                            - CONGRATS_ENTITY_STATISTIC_HEIGHT
+                            - CONGRATS_ENTITY_VERTICAL_GAP,
+                        CONGRATS_ENTITY_BUTTON_HEIGHT + MENU_BUTTON_SPACING,
+                        CongratsButton::COUNT,
+                        *button as usize,
+                    ),
             },
         }
     }
@@ -86,18 +98,17 @@ impl LayoutStructureWithFont for CongratsLayoutEntity {
     }
 }
 
-
 pub struct StatisticNumber;
 pub struct StatisticLabel;
 
-impl LayoutStructureWithFont for StatisticNumber{
+impl LayoutStructureWithFont for StatisticNumber {
     fn font_size(&self) -> f32 {
-        40.0
+        60.0
     }
 }
 
-impl LayoutStructureWithFont for StatisticLabel{
+impl LayoutStructureWithFont for StatisticLabel {
     fn font_size(&self) -> f32 {
-        16.0
+        24.0
     }
 }

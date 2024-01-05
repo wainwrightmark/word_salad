@@ -151,6 +151,7 @@ fn choose_level_on_game_load(
     completion: Res<TotalCompletion>,
     daily_challenges: Res<DailyChallenges>,
 ) {
+
     #[cfg(target_arch = "wasm32")]
     {
         match crate::wasm::get_game_from_location() {
