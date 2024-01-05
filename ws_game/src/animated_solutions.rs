@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use crate::constants::SaladWindowSize;
+use crate::motion_blur::MotionBlur;
 use crate::prelude::*;
 use bevy::prelude::*;
 use maveric::transition::speed::calculate_speed;
@@ -9,7 +10,6 @@ use ws_core::prelude::*;
 
 const STEP_ONE_SCALE_SECONDS: f32 = 1.0;
 const STEP_ONE_TRANSLATION_SECONDS: f32 = 1.5;
-
 
 pub const TOTAL_SECONDS: f32 = STEP_ONE_TRANSLATION_SECONDS;
 
@@ -80,17 +80,23 @@ pub fn animate_solution(
             core::time::Duration::from_secs_f32(STEP_ONE_TRANSLATION_SECONDS * time_multiplier),
         );
 
-        let transition = TransitionBuilder::<(TransformTranslationLens, TransformScaleLens)>::default().then_tween((
-            destination_two.extend(crate::z_indices::ANIMATED_SOLUTION),
-            Vec3::ONE * MID_SCALE,
-        ), (speed_one_translation, speed_one_scale)).build();
+        let transition =
+            TransitionBuilder::<(TransformTranslationLens, TransformScaleLens)>::default()
+                .then_tween(
+                    (
+                        destination_two.extend(crate::z_indices::ANIMATED_SOLUTION),
+                        Vec3::ONE * MID_SCALE,
+                    ),
+                    (speed_one_translation, speed_one_scale),
+                )
+                .build();
 
         let components = (
             ScheduledForDeletion {
                 remaining: Duration::from_secs_f32(TOTAL_SECONDS * time_multiplier),
             },
             Text2dBundle {
-                text,
+                text: text.clone(),
                 transform: Transform::from_translation(
                     start_position.extend(crate::z_indices::ANIMATED_SOLUTION),
                 ),
@@ -99,6 +105,28 @@ pub fn animate_solution(
             transition,
         );
 
-        commands.spawn(components);
+        let parent_entity = commands.spawn(components).id();
+
+        //info!("{speed_one_translation}");
+
+        let mut scale = speed_one_translation.units_per_second / 300.0; //300.0; //scale the amount of blur with the speed
+        let mut a = 0.6; //300.0; //scale the amount of blur with the speed
+        for frame_offset in 1..=3 {
+            let mut text = text.clone();
+            for section in text.sections.iter_mut() {
+                section.style.color = section.style.color.with_a(a);
+            }
+            a *= 0.8;
+            scale *= 0.8;
+
+            commands.spawn((
+                Text2dBundle {
+                    text,
+                    transform: Transform::from_scale(Vec3::ONE * scale),
+                    ..Default::default()
+                },
+                MotionBlur::new(frame_offset * 2, parent_entity),
+            ));
+        }
     }
 }

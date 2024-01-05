@@ -39,7 +39,7 @@ pub mod palette {
     use crate::BasicColor as Color;
 
     pub const ANIMATED_SOLUTION_NEW: Color = FULL_GREEN;
-    pub const ANIMATED_SOLUTION_OLD: Color = LIGHT_GREEN;
+    pub const ANIMATED_SOLUTION_OLD: Color = Color::rgba(0.17, 0.48, 0.71, 1.0);
 
     pub const BUTTON_TEXT_COLOR: Color = MY_BLACK;
     pub const BUTTON_BORDER: Color = MY_BLACK;

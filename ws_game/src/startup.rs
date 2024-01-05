@@ -1,5 +1,5 @@
 pub use crate::prelude::*;
-use crate::{completion::TotalCompletion, input::InputPlugin};
+use crate::{completion::TotalCompletion, input::InputPlugin, motion_blur::MotionBlurPlugin};
 use bevy::log::LogPlugin;
 use itertools::Either;
 use nice_bevy_utils::{async_event_writer, window_size::WindowSizePlugin, CanRegisterAsyncEvent};
@@ -59,6 +59,7 @@ pub fn go() {
     app.add_plugins(LogWatchPlugin);
     app.add_plugins(DailyChallengePlugin);
     app.add_plugins(StreakPlugin);
+    app.add_plugins(MotionBlurPlugin);
 
     app.register_transition::<BackgroundColorLens>();
     app.register_transition::<TransformRotationYLens>();
