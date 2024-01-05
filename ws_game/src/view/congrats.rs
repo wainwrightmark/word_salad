@@ -158,8 +158,35 @@ impl MavericNode for CongratsView {
                 }
 
                 for (index, button) in CongratsButton::iter().enumerate() {
+
+
+
+
+
                     let text = match button {
-                        CongratsButton::Next => "Next",
+                        CongratsButton::Next => {
+
+                            let next_level = context.1.get_next_level(context.7.as_ref());
+
+                            match next_level{
+                                CurrentLevel::Tutorial { .. } => "Next",
+                                CurrentLevel::Fixed { ..  } => "Next",
+                                CurrentLevel::DailyChallenge { index:next_index } => {
+                                    if let CurrentLevel::DailyChallenge { index:current_index } = context.1.as_ref(){
+                                        if next_index > *current_index{
+                                            "Today's Puzzle"
+                                        }
+                                        else{
+                                            "Previous"
+                                        }
+                                    }else{
+                                        "Previous"
+                                    }
+                                },
+                                CurrentLevel::Custom { .. } => "Next",
+                                CurrentLevel::NonLevel(_) => "Finish",
+                            }
+                        },
                         CongratsButton::MoreLevels => "More Puzzles",
                         #[cfg(target_arch = "wasm32")]
                         CongratsButton::Share => "Share",

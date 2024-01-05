@@ -102,12 +102,15 @@ impl CurrentLevel {
             } => {
 
                 if let Some(index) = total_completion.get_next_level_index(*sequence) {
-                    if let Some(..) = sequence.get_level(index) {
-                        return Self::Fixed {
-                            level_index: index,
-                            sequence: *sequence,
-                        };
+                    if index > 0 {
+                        if let Some(..) = sequence.get_level(index) {
+                            return Self::Fixed {
+                                level_index: index,
+                                sequence: *sequence,
+                            };
+                        }
                     }
+
                 }
 
                 return NonLevel::NoMoreLevelSequence(*sequence).into();
