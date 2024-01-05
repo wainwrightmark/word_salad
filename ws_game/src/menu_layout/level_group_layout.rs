@@ -43,8 +43,6 @@ impl LevelGroupLayoutEntity {
 impl LayoutStructure for LevelGroupLayoutEntity {
     type Context = LevelGroup;
 
-    type Iterator = LevelGroupLayoutIter;
-
     fn pick(point: bevy::prelude::Vec2, context: &Self::Context) -> Option<Self> {
         Self::iter_all(context).find(|&x| x.rect(context).contains(point))
     }
@@ -69,7 +67,7 @@ impl LayoutStructure for LevelGroupLayoutEntity {
         }
     }
 
-    fn iter_all(context: &Self::Context) -> Self::Iterator {
+    fn iter_all(context: &Self::Context) -> impl Iterator<Item = Self> {
         LevelGroupLayoutIter {
             next_index: 0,
             group: *context,

@@ -21,7 +21,6 @@ impl NonLevelLayoutEntity {
 
 impl LayoutStructure for NonLevelLayoutEntity {
     type Context = ();
-    type Iterator = <Self as IntoEnumIterator>::Iterator;
 
     fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
         for x in Self::iter() {
@@ -64,7 +63,7 @@ impl LayoutStructure for NonLevelLayoutEntity {
         }
     }
 
-    fn iter_all(_context: &Self::Context) -> Self::Iterator {
+    fn iter_all(_context: &Self::Context) -> impl Iterator<Item = Self> {
         Self::iter()
     }
 }

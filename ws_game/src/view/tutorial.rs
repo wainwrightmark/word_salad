@@ -398,7 +398,6 @@ const BOX_WIDTH: f32 = GRID_SIZE + 20.0;
 impl LayoutStructure for TutorialLayoutEntity {
     type Context = ();
 
-    type Iterator = <Self as IntoEnumIterator>::Iterator;
 
     fn pick(point: bevy::prelude::Vec2, context: &Self::Context) -> Option<Self> {
         for x in Self::iter() {
@@ -443,17 +442,36 @@ impl LayoutStructure for TutorialLayoutEntity {
         }
     }
 
-    fn iter_all(_context: &Self::Context) -> Self::Iterator {
+    fn iter_all(_context: &Self::Context) -> impl Iterator<Item = Self> {
         Self::iter()
     }
 }
 
+// pub struct TutorialTextLayoutEntity(pub TutorialLayoutEntity);
+
+// impl LayoutStructure for TutorialTextLayoutEntity{
+//     type Context = ();
+//     type Iterator;
+
+//     fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
+//         todo!()
+//     }
+
+//     fn size(&self, context: &Self::Context) -> Vec2 {
+//         todo!()
+//     }
+
+//     fn location(&self, context: &Self::Context) -> Vec2 {
+//         todo!()
+//     }
+
+//     fn iter_all(context: &Self::Context) -> Self::Iterator {
+//         todo!()
+//     }
+// }
+
 impl LayoutStructureWithFont for TutorialLayoutEntity {
     fn font_size(&self) -> f32 {
-        match self {
-            TutorialLayoutEntity::Top => 30.0,
-            TutorialLayoutEntity::Middle => 30.0,
-            TutorialLayoutEntity::Bottom => 30.0,
-        }
+        30.0
     }
 }

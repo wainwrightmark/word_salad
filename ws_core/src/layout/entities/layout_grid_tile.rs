@@ -8,7 +8,6 @@ pub struct LayoutGridTile(pub Tile);
 
 impl LayoutStructure for LayoutGridTile {
     type Context = ();
-    type Iterator = LayoutGridTileIter;
 
     fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
         let grid_rect = GameLayoutEntity::Grid.rect(context);
@@ -43,7 +42,7 @@ impl LayoutStructure for LayoutGridTile {
         ))
     }
 
-    fn iter_all(_context: &Self::Context) -> Self::Iterator {
+    fn iter_all(_context: &Self::Context) -> impl Iterator<Item = Self> {
         LayoutGridTileIter::default()
     }
 }

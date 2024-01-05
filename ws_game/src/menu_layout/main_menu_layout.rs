@@ -28,7 +28,6 @@ impl MainMenuLayoutEntity {
 
 impl LayoutStructure for MainMenuLayoutEntity {
     type Context = ();
-    type Iterator = <Self as IntoEnumIterator>::Iterator;
 
     fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
         Self::iter().find(|&x| x.rect(context).contains(point))
@@ -55,7 +54,7 @@ impl LayoutStructure for MainMenuLayoutEntity {
         }
     }
 
-    fn iter_all(_context: &Self::Context) -> Self::Iterator {
+    fn iter_all(_context: &Self::Context) -> impl Iterator<Item = Self> {
         Self::iter()
     }
 }

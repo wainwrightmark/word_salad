@@ -14,9 +14,8 @@ impl From<usize> for LayoutWordTile {
 
 impl LayoutStructure for LayoutWordTile {
     type Context = Vec<DisplayWord>;
-    type Iterator = LayoutWordTileIter;
 
-    fn iter_all(context: &Self::Context) -> Self::Iterator {
+    fn iter_all(context: &Self::Context) -> impl Iterator<Item = Self> {
         LayoutWordTileIter {
             inner: 0,
             total_count: context.len(),

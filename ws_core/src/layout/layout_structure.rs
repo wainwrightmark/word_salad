@@ -6,7 +6,6 @@ use crate::LayoutRectangle;
 
 pub trait LayoutStructure: Sized + PartialEq + Debug {
     type Context;
-    type Iterator: Iterator<Item = Self>;
 
     fn pick(point: Vec2, context: &Self::Context) -> Option<Self>;
 
@@ -22,7 +21,7 @@ pub trait LayoutStructure: Sized + PartialEq + Debug {
 
     fn location(&self, context: &Self::Context) -> Vec2;
 
-    fn iter_all(context: &Self::Context) -> Self::Iterator;
+    fn iter_all(context: &Self::Context) -> impl Iterator<Item = Self>;
 }
 
 pub trait LayoutStructureWithFont: LayoutStructure {

@@ -57,7 +57,6 @@ impl LevelsMenuLayoutEntity {
 
 impl LayoutStructure for LevelsMenuLayoutEntity {
     type Context = ();
-    type Iterator = std::array::IntoIter<Self, { Self::COUNT }>;
 
     fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
         Self::iter_all(context).find(|&x| x.rect(context).contains(point))
@@ -83,7 +82,7 @@ impl LayoutStructure for LevelsMenuLayoutEntity {
         }
     }
 
-    fn iter_all(_context: &Self::Context) -> Self::Iterator {
+    fn iter_all(_context: &Self::Context) -> impl Iterator<Item = Self> {
         [
             Self::WordSalad,
             Self::AdditionalLevel(LevelGroup::GlobalLocation),
