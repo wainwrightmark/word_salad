@@ -39,6 +39,7 @@ pub type ViewContext = (
     TotalCompletion,
     VideoResource,
     DailyChallenges,
+    Streak
 );
 #[derive(MavericRoot)]
 pub struct ViewRoot;

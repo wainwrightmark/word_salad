@@ -5,20 +5,24 @@ use crate::prelude::*;
 
 use super::consts::*;
 
-#[derive(
-    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter, EnumCount, Display,
-)]
-pub enum CongratsLayoutEntity {
-    HintsUsed = 0,
-    NextButton = 1,
-    ShareButton = 2,
-    //TODO streak
+#[derive(Debug, Clone, Copy, PartialEq, Eq, EnumIter, EnumCount, Display)]
+pub enum CongratsStatistic {
+    Left = 0,
+    Middle = 1,
+    Right = 2,
 }
 
-impl CongratsLayoutEntity {
-    pub const fn index(&self) -> usize {
-        *self as usize
-    }
+#[derive(Debug, Clone, Copy, PartialEq, Eq, EnumIter, EnumCount, Display)]
+pub enum CongratsButton {
+    Next = 0,
+    #[cfg(target_arch = "wasm32")]
+    Share = 1,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, EnumCount, Display)]
+pub enum CongratsLayoutEntity {
+    Statistic(CongratsStatistic),
+    Button(CongratsButton),
 }
 
 #[derive(Debug, PartialEq)]
@@ -27,58 +31,52 @@ pub struct SelfieMode(pub bool);
 impl LayoutStructure for CongratsLayoutEntity {
     type Context = SelfieMode;
 
-
     fn size(&self, _context: &Self::Context) -> Vec2 {
-        Vec2 {
-            x: CONGRATS_ENTITY_WIDTH,
-            y: CONGRATS_ENTITY_HEIGHT,
+        match self {
+            CongratsLayoutEntity::Statistic(_) => Vec2 {
+                x: CONGRATS_ENTITY_STATISTIC_WIDTH,
+                y: CONGRATS_ENTITY_STATISTIC_HEIGHT,
+            },
+            CongratsLayoutEntity::Button(_) => Vec2 {
+                x: CONGRATS_ENTITY_BUTTON_WIDTH,
+                y: CONGRATS_ENTITY_BUTTON_HEIGHT,
+            },
         }
     }
 
     fn location(&self, context: &Self::Context) -> Vec2 {
-
-        let top_offset = if context.0{
+        let top_offset = if context.0 {
             TOP_BAR_HEIGHT + THEME_HEIGHT + GRID_TILE_SIZE + STREAMING_TOP_OFFSET
-        }else{
+        } else {
             TOP_BAR_HEIGHT + THEME_HEIGHT + GRID_TILE_SIZE
         };
 
-        match self{
-            CongratsLayoutEntity::HintsUsed => {
-                Vec2 {
-                    x: (IDEAL_WIDTH - CONGRATS_ENTITY_WIDTH) / 2.,
-                    y:
-                        top_offset
-                        + Spacing::Centre.apply(
-                            GRID_SIZE,
-                            CONGRATS_ENTITY_HEIGHT * 1.2,
-                            2,
-                            0,
-                        ),
-                }
+        match self {
+            CongratsLayoutEntity::Statistic(statistic) => Vec2 {
+                x: Spacing::SpaceBetween.apply(
+                    GRID_SIZE,
+                    CONGRATS_ENTITY_STATISTIC_WIDTH * 1.2,
+                    CongratsStatistic::COUNT,
+                    *statistic as usize,
+                ) + ((IDEAL_WIDTH - GRID_SIZE) * 0.5),
+                y: top_offset,
             },
-            CongratsLayoutEntity::NextButton | CongratsLayoutEntity::ShareButton => {
-                {
-                    let num_children = if cfg!(target_arch = "wasm32"){2} else {1};
-                    Vec2{
-                    x: Spacing::SpaceAround.apply(IDEAL_WIDTH, CONGRATS_ENTITY_WIDTH * 1.2,  num_children, self.index() - 1),
-                    y:
-                        top_offset
-                        + Spacing::Centre.apply(
-                            GRID_SIZE,
-                            CONGRATS_ENTITY_HEIGHT * 1.2,
-                            2,
-                            1,
-                        ),
-                }}
+            CongratsLayoutEntity::Button(button) => Vec2 {
+                x: Spacing::SpaceAround.apply(
+                    IDEAL_WIDTH,
+                    CONGRATS_ENTITY_BUTTON_WIDTH * 1.2,
+                    CongratsButton::COUNT,
+                    *button as usize,
+                ),
+                y: top_offset + CONGRATS_ENTITY_STATISTIC_HEIGHT + CONGRATS_ENTITY_VERTICAL_GAP,
             },
-
         }
-
     }
 
     fn iter_all(_context: &Self::Context) -> impl Iterator<Item = Self> {
-        Self::iter()
+        CongratsStatistic::iter()
+            .map(|x| Self::Statistic(x))
+            .chain(CongratsButton::iter().map(|x| Self::Button(x)))
     }
 }
 

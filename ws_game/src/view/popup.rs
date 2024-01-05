@@ -1,10 +1,11 @@
 use crate::{
     prelude::*,
+    rounding::OTHER_BUTTON_NORMAL,
     shapes,
-    z_indices::{self, POPUP_BOX_TEXT}, rounding::OTHER_BUTTON_NORMAL,
+    z_indices::{self, POPUP_BOX_TEXT},
 };
 use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
-use strum::{Display, EnumCount, EnumIter, IntoEnumIterator, EnumIs};
+use strum::{Display, EnumCount, EnumIs, EnumIter, IntoEnumIterator};
 use ws_core::{
     layout::entities::*,
     palette::{POPUP_BOX_BACKGROUND, POPUP_BOX_BORDER},
@@ -66,7 +67,7 @@ impl MavericRootChildren for PopupStateRoot {
                     match item {
                         BuyMoreHintsLayoutEntity::Title => {
                             let text = Text2DNode {
-                                text: "Need a Hint?",
+                                text: "Need some help?",
                                 font: TITLE_FONT_PATH,
                                 font_size,
                                 color: Color::BLACK,
@@ -91,7 +92,7 @@ impl MavericRootChildren for PopupStateRoot {
                             );
 
                             commands.add_child(
-                                "buy_mode_hints_box",
+                                "buy_more_hints_box",
                                 button.with_bundle(ButtonInteraction::BuyMoreHints),
                                 &(),
                             );
@@ -110,7 +111,7 @@ impl MavericRootChildren for PopupStateRoot {
                                 rect.centre().extend(POPUP_BOX_TEXT),
                             ));
 
-                            commands.add_child("buy_mode_hints_text", text, &());
+                            commands.add_child("buy_more_hints_text", text, &());
                         }
                         BuyMoreHintsLayoutEntity::SufferAloneButton => {
                             let button = shapes::box_node1(

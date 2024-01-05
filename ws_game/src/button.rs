@@ -3,7 +3,9 @@ use bevy::prelude::*;
 use itertools::Either;
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
 use strum::EnumIs;
-use ws_core::layout::entities::{CongratsLayoutEntity, LayoutTopBar, LayoutWordTile};
+use ws_core::layout::entities::{
+    CongratsButton, CongratsLayoutEntity, LayoutTopBar, LayoutWordTile,
+};
 
 use crate::completion::TotalCompletion;
 use crate::menu_layout::main_menu_back_button::MainMenuBackButton;
@@ -42,12 +44,13 @@ pub enum ButtonInteraction {
     WordSaladMenu(WordSaladMenuLayoutEntity),
     WordButton(LayoutWordTile),
     TopMenuItem(LayoutTopBar),
-    Congrats(CongratsLayoutEntity),
+    Congrats(CongratsButton),
     BuyMoreHints,
     ClosePopups,
     MenuBackButton,
     NonLevelInteractionButton,
     TimerButton,
+    None,
 }
 
 impl ButtonInteraction {
@@ -91,9 +94,18 @@ impl From<LayoutTopBar> for ButtonInteraction {
     }
 }
 
-impl From<CongratsLayoutEntity> for ButtonInteraction {
-    fn from(val: CongratsLayoutEntity) -> Self {
+impl From<CongratsButton> for ButtonInteraction {
+    fn from(val: CongratsButton) -> Self {
         ButtonInteraction::Congrats(val)
+    }
+}
+
+impl From<CongratsLayoutEntity> for ButtonInteraction {
+    fn from(value: CongratsLayoutEntity) -> Self {
+        match value {
+            CongratsLayoutEntity::Statistic(_) => ButtonInteraction::None,
+            CongratsLayoutEntity::Button(b) => b.into(),
+        }
     }
 }
 
@@ -181,6 +193,8 @@ impl ButtonInteraction {
         level_time: &mut ResMut<LevelTime>,
     ) {
         match self {
+            ButtonInteraction::None => {}
+
             ButtonInteraction::MenuBackButton => {
                 menu_state.go_back();
             }
@@ -313,18 +327,16 @@ impl ButtonInteraction {
                 }
                 menu_state.close();
             }
-            ButtonInteraction::Congrats(CongratsLayoutEntity::NextButton) => {
+            ButtonInteraction::Congrats(CongratsButton::Next) => {
                 let next_level = current_level.get_next_level(total_completion);
                 *current_level.as_mut() = next_level;
             }
 
-            ButtonInteraction::Congrats(CongratsLayoutEntity::HintsUsed) => {}
-            ButtonInteraction::Congrats(CongratsLayoutEntity::ShareButton) => {
-                #[cfg(target_arch = "wasm32")]
-                {
-                    crate::wasm::share("Hello World".to_string());
-                }
+            #[cfg(target_arch = "wasm32")]
+            ButtonInteraction::Congrats(CongratsButton::Share) => {
+                crate::wasm::share("Hello World".to_string()); //TODO better share
             }
+
             ButtonInteraction::BuyMoreHints => {
                 hint_state.hints_remaining += 3; //TODO actually make them buy them!
                 hint_state.total_bought_hints += 3;

@@ -6,6 +6,7 @@ use bevy_param_shaders::prelude::*;
 use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
 use num_traits::Zero;
 use rand::{rngs::ThreadRng, Rng};
+use strum::IntoEnumIterator;
 use ws_core::layout::entities::*;
 #[derive(Debug, Clone, PartialEq)]
 pub struct CongratsView;
@@ -86,7 +87,6 @@ impl MavericNode for CongratsView {
         const SECONDS: f32 = 5.0;
         const NUM_FIREWORKS: usize = 25;
 
-
         entity_commands.with_children(|cb| {
             let mut rng = ThreadRng::default();
             for i in 0..NUM_FIREWORKS {
@@ -100,70 +100,119 @@ impl MavericNode for CongratsView {
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
                 let size = &context.3;
-
-                let hints_used_text = match context.2.hints_used1 {
-                    0 => "No hints used".to_string(),
-                    1 => "1 hint used".to_string(),
-                    n => format!("{n} hints used"),
-                };
                 let selfie_mode = SelfieMode(context.8.is_selfie_mode);
 
-                //let full_rect = size.get_rect(GameLayoutEntity::, context)
+                #[derive(Debug, Clone, Copy)]
+                enum Data {
+                    None,
+                    TodaysChallenge { streak: usize, longest: usize },
+                    Sequence { complete: usize, remaining: usize },
+                }
 
-                commands.add_child(
-                    "hints used",
-                    Text2DNode {
-                        text: hints_used_text,
-                        font_size: size.font_size(&CongratsLayoutEntity::HintsUsed),
-                        color: palette::BUTTON_TEXT_COLOR.convert_color(),
-                        font: BUTTONS_FONT_PATH,
-                        alignment: TextAlignment::Center,
-                        linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                        text_2d_bounds: Text2dBounds::default(),
-                        text_anchor: Anchor::default(),
+                let data = match context.1.as_ref() {
+                    CurrentLevel::DailyChallenge { index } => {
+                        let today_index = DailyChallenges::get_today_index();
+                        if today_index == Some(*index) {
+                            let streak = context.10.as_ref();
+                            Data::TodaysChallenge {
+                                streak: streak.current,
+                                longest: streak.longest,
+                            }
+                        } else {
+                            let complete = context.7.get_daily_challenges_complete();
+                            let total = today_index.unwrap_or_default() + 1;
+                            let remaining = total.saturating_sub(complete);
+                            Data::Sequence {
+                                complete,
+                                remaining,
+                            }
+                        }
                     }
-                    .with_bundle(Transform::from_translation(
-                        size.get_rect(&CongratsLayoutEntity::HintsUsed, &selfie_mode)
+                    CurrentLevel::Tutorial { .. } => Data::None,
+                    CurrentLevel::Fixed { sequence, .. } => {
+                        let complete = context.7.get_number_complete(sequence);
+                        let total = sequence.level_count();
+                        let remaining = total.saturating_sub(complete);
+                        Data::Sequence {
+                            complete,
+                            remaining,
+                        }
+                    }
+                    CurrentLevel::Custom { .. } => Data::None,
+                    CurrentLevel::NonLevel(_) => Data::None,
+                };
+
+                for (index, statistic) in CongratsStatistic::iter().enumerate() {
+                    let data = match (statistic, data) {
+                        (CongratsStatistic::Left, Data::None)
+                        | (CongratsStatistic::Right, Data::None) => None,
+                        (CongratsStatistic::Left, _) | (CongratsStatistic::Middle, Data::None) => {
+                            Some((context.2.hints_used1, "Hints"))
+                        }
+                        (CongratsStatistic::Middle, Data::TodaysChallenge { streak, .. }) => {
+                            Some((streak, "Streak"))
+                        }
+                        (CongratsStatistic::Middle, Data::Sequence { complete, .. }) => {
+                            Some((complete, "Complete"))
+                        }
+                        (CongratsStatistic::Right, Data::TodaysChallenge { longest, .. }) => {
+                            Some((longest, "Longest"))
+                        }
+                        (CongratsStatistic::Right, Data::Sequence { remaining, .. }) => {
+                            Some((remaining, "Remaining"))
+                        }
+                    };
+
+                    let Some((number, label)) = data else {
+                        continue;
+                    };
+
+                    // todo actually two pieces of text
+                    // todo draw box around this
+                    commands.add_child(
+                        (0u16, index as u16),
+                        Text2DNode {
+                            text: format!("{number}\n{label}"),
+                            font_size: size.font_size(&CongratsLayoutEntity::Statistic(statistic)),
+                            color: palette::BUTTON_TEXT_COLOR.convert_color(),
+                            font: BUTTONS_FONT_PATH,
+                            alignment: TextAlignment::Center,
+                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                            text_2d_bounds: Text2dBounds::default(),
+                            text_anchor: Anchor::default(),
+                        }
+                        .with_bundle(Transform::from_translation(
+                            size.get_rect(
+                                &CongratsLayoutEntity::Statistic(statistic),
+                                &selfie_mode,
+                            )
                             .centre()
                             .extend(crate::z_indices::CONGRATS_BUTTON),
-                    ))
-                    .with_transition_in::<TransformScaleLens>(
-                        Vec3::ZERO,
-                        Vec3::ONE,
-                        Duration::from_secs_f32(1.0),
-                    ),
-                    &(),
-                );
+                        ))
+                        .with_transition_in::<TransformScaleLens>(
+                            Vec3::ZERO,
+                            Vec3::ONE,
+                            Duration::from_secs_f32(1.0),
+                        ),
+                        &(),
+                    );
+                }
 
-                commands.add_child(
-                    "next level",
-                    WSButtonNode {
-                        text: "Next",
-                        font_size: size.font_size(&CongratsLayoutEntity::NextButton),
-                        rect: size.get_rect(&CongratsLayoutEntity::NextButton, &selfie_mode),
-                        interaction: ButtonInteraction::Congrats(CongratsLayoutEntity::NextButton),
-                        text_color: palette::CONGRATS_BUTTON_TEXT.convert_color(),
-                        fill_color: palette::CONGRATS_BUTTON_FILL.convert_color(),
-                    }
-                    .with_transition_in::<TransformScaleLens>(
-                        Vec3::ZERO,
-                        Vec3::ONE,
-                        Duration::from_secs_f32(1.0),
-                    ),
-                    &(),
-                );
+                for (index, button) in CongratsButton::iter().enumerate() {
+                    let text = match button {
+                        CongratsButton::Next => "Next",
+                        #[cfg(target_arch = "wasm32")]
+                        CongratsButton::Share => "Share",
+                    };
 
-                #[cfg(target_arch = "wasm32")]
-                {
                     commands.add_child(
-                        "share",
+                        (1u16, index as u16),
                         WSButtonNode {
-                            text: "Share",
-                            font_size: size.font_size(&CongratsLayoutEntity::ShareButton),
-                            rect: size.get_rect(&CongratsLayoutEntity::ShareButton, &selfie_mode),
-                            interaction: ButtonInteraction::Congrats(
-                                CongratsLayoutEntity::ShareButton,
-                            ),
+                            text,
+                            font_size: size.font_size(&CongratsLayoutEntity::Button(button)),
+                            rect: size
+                                .get_rect(&CongratsLayoutEntity::Button(button), &selfie_mode),
+                            interaction: ButtonInteraction::Congrats(button),
                             text_color: palette::CONGRATS_BUTTON_TEXT.convert_color(),
                             fill_color: palette::CONGRATS_BUTTON_FILL.convert_color(),
                         }
@@ -208,7 +257,6 @@ impl ParameterizedShader for FireworksShader {
 
     const FRAME: Frame = Frame::square(0.25);
 }
-
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Default, Reflect, bytemuck::Pod, bytemuck::Zeroable)]
