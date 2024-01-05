@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use crate::motion_blur::MotionBlur;
 use crate::prelude::*;
 use bevy::sprite::Anchor;
 use bevy::text::Text2dBounds;
@@ -111,11 +112,35 @@ impl MavericNode for HintsViewNode {
                 .build(),
         );
 
+        let mut circle_entity = Entity::PLACEHOLDER;
+
         entity_commands.with_children(|cb| {
-            cb.spawn(circle_bundle);
+            circle_entity = cb.spawn(circle_bundle).id();
             cb.spawn(text_bundle);
         });
 
+        let mut scale = 0.9;
+        let mut a = 0.9;
+        for frame_offset in 1..=3 {
+
+            a *= 0.8;
+            scale *= 0.8;
+
+            entity_commands.commands().spawn((
+                ShaderBundle::<CircleShader> {
+                    transform: circle_transform.with_scale(Vec3::ONE * scale * circle_transform.scale),
+                    parameters: ShaderColor {
+                        color: palette::HINT_COUNTER_COLOR.convert_color().with_a(a),
+                    },
+                    ..default()
+                },
+                MotionBlur::new(frame_offset * 2, circle_entity),
+            ));
+        }
+
+
+
+        //Schedule the change to the number
         if let Some(children) = world.get::<Children>(entity_commands.id()) {
             for child in children {
                 if let Some(text) = world.get::<Text>(*child) {
