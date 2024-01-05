@@ -1,6 +1,6 @@
 pub use crate::prelude::*;
 use crate::{completion::TotalCompletion, input::InputPlugin};
-use bevy::{log::LogPlugin, window::RequestRedraw};
+use bevy::log::LogPlugin;
 use itertools::Either;
 use nice_bevy_utils::{async_event_writer, window_size::WindowSizePlugin, CanRegisterAsyncEvent};
 use ws_core::layout::entities::*;

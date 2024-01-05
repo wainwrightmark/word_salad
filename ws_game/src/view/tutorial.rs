@@ -191,20 +191,35 @@ impl TutorialText {
                     middle: None,
                     bottom: None,
                 },
-                1 => Self {
-                    top: Some(
-                        "\
-                        Words can be made diagonally\n\
-                        Try finding 'Bishop'",
-                    ),
-                    middle: None,
-                    bottom: Some(
-                        "\
+                1 => {
+                    let found_index = found_words
+                        .word_completions
+                        .iter()
+                        .find_position(|completion| completion.is_complete())
+                        .map(|x| x.0)
+                        .unwrap_or_default();
+
+                    let bottom = match found_index{
+                        4=> "\
                         \n\
                         These labels show the word lengths\n\
-                        Four more to go",
+                        The first 6 letter word is 'Bishop'",
+                        _=> "\
+                        \n\
+                        These labels show the word lengths\n\
+                        The 5 letter word is 'Queen'"
+
+                    };
+
+                    Self {
+                    top: Some(
+                        "\
+                        Letters vanish when no longer needed\n\
+                        Every remaining letter is needed",
                     ),
-                },
+                    middle: None,
+                    bottom: Some(bottom),
+                }},
                 2 => Self {
                     top: Some(
                         "\
@@ -227,7 +242,7 @@ impl TutorialText {
                     let incomplete_index = found_words
                         .word_completions
                         .iter()
-                        .find_position(|z| !z.is_complete())
+                        .find_position(|completion| !completion.is_complete())
                         .map(|x| x.0)
                         .unwrap_or_default();
 
@@ -238,7 +253,7 @@ impl TutorialText {
                             "\
                         \n\
                         Because the labels are alphabetical\n\
-                        This word starts with 'K', 'N', or 'H'"
+                        This word starts with 'B', 'H', or 'I'"
                         }
 
                         1 =>
@@ -247,7 +262,7 @@ impl TutorialText {
                             "\
                         \n\
                         Because the labels are alphabetical\n\
-                        This word can't start with 'N'"
+                        This word can't start with an 'N'"
                         }
 
                         2 =>
@@ -310,7 +325,7 @@ impl TutorialText {
                     top: Some(
                         "\
                     To beat this puzzle, find six planets\n\
-                    Why not start with 'Mercury'?",
+                    The 4 letter word is 'Mars'",
                     ),
                     middle: None,
                     bottom: None,
@@ -321,11 +336,21 @@ impl TutorialText {
                     bottom: Some(
                         "\
                         \n\
-                    To spend a hint, click on a label\n\
-                    We've done one for you", //TODO actually do one
+                    Want help? Use a hint\n\
+                    Click a label to reveal a letter", //TODO actually do one
                     ),
                 },
-                2..=3 => Self {
+                2 => Self {
+                    top: None,
+                    middle: None,
+                    bottom: Some(
+                        "\
+                        \n\
+                    Want help? Use a hint\n\
+                    Click a label to reveal a letter", //TODO actually do one
+                    ),
+                },
+                3..=4 => Self {
                     top: Some("Your remaining hints are shown\nIn the green circle"),
                     middle: None,
                     bottom: Some(
@@ -333,16 +358,6 @@ impl TutorialText {
                         \n\
                     You earn hints by completing levels\n\
                     Don't be afraid to spend them!",
-                    ),
-                },
-                4 => Self {
-                    top: None,
-                    middle: None,
-                    bottom: Some(
-                        "\
-                        \n\
-                    You can hint a word more than once\n\
-                    We've done that for you", //TODO actually do one
                     ),
                 },
                 5 => Self {
