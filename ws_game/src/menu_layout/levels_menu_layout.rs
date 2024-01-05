@@ -8,9 +8,7 @@ use ws_levels::level_group::LevelGroup;
 
 use crate::{completion::TotalCompletion, prelude::DailyChallenges};
 
-use super::{
-    MENU_BUTTON_HEIGHT, MENU_BUTTON_FONT_SIZE, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH,
-};
+use super::{MENU_BUTTON_FONT_SIZE, MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Display)]
 pub enum LevelsMenuLayoutEntity {
@@ -28,7 +26,11 @@ impl LevelsMenuLayoutEntity {
 
     pub const COUNT: usize = 1 + LevelGroup::COUNT;
 
-    pub fn get_text(&self, completion: &TotalCompletion, daily_challenges: &DailyChallenges) -> (String, String) {
+    pub fn get_text(
+        &self,
+        completion: &TotalCompletion,
+        daily_challenges: &DailyChallenges,
+    ) -> (String, String) {
         let name = self.name();
         let complete = match self {
             LevelsMenuLayoutEntity::WordSalad => completion.get_daily_challenges_complete(),
@@ -57,10 +59,6 @@ impl LevelsMenuLayoutEntity {
 
 impl LayoutStructure for LevelsMenuLayoutEntity {
     type Context = ();
-
-    fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
-        Self::iter_all(context).find(|&x| x.rect(context).contains(point))
-    }
 
     fn size(&self, _context: &Self::Context) -> Vec2 {
         Vec2 {

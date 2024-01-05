@@ -7,7 +7,9 @@ use crate::LayoutRectangle;
 pub trait LayoutStructure: Sized + PartialEq + Debug {
     type Context;
 
-    fn pick(point: Vec2, context: &Self::Context) -> Option<Self>;
+    fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
+        Self::iter_all(context).find(|x| x.rect(context).contains(point))
+    }
 
     fn rect(&self, context: &Self::Context) -> LayoutRectangle {
         LayoutRectangle {

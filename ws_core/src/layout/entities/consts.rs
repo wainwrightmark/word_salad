@@ -32,7 +32,7 @@ pub const WORD_CROSS_PAD: f32 = 5.;
 
 /// Extra top offset while streaming
 
-pub const STREAMING_TOP_OFFSET:f32 = 100.0;
+pub const STREAMING_TOP_OFFSET:f32 = 90.0;
 
 
 pub const CONGRATS_ENTITY_HEIGHT: f32 = 40.0;

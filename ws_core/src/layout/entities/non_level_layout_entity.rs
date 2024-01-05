@@ -22,15 +22,6 @@ impl NonLevelLayoutEntity {
 impl LayoutStructure for NonLevelLayoutEntity {
     type Context = ();
 
-    fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
-        for x in Self::iter() {
-            if x.rect(context).contains(point) {
-                return Some(x);
-            }
-        }
-        return None;
-    }
-
     fn size(&self, _context: &Self::Context) -> Vec2 {
         match self {
             NonLevelLayoutEntity::Text => Vec2 {
@@ -47,18 +38,14 @@ impl LayoutStructure for NonLevelLayoutEntity {
     fn location(&self, _context: &Self::Context) -> Vec2 {
         let top_offset = GRID_TILE_SIZE + TOP_BAR_HEIGHT;
 
-        match self{
-            NonLevelLayoutEntity::Text => {
-                Vec2{
-                    x: (IDEAL_WIDTH - NON_LEVEL_TEXT_WIDTH) / 2.,
-                    y:  top_offset
-                }
+        match self {
+            NonLevelLayoutEntity::Text => Vec2 {
+                x: (IDEAL_WIDTH - NON_LEVEL_TEXT_WIDTH) / 2.,
+                y: top_offset,
             },
-            NonLevelLayoutEntity::InteractButton => {
-                Vec2{
-                    x:  (IDEAL_WIDTH - NON_LEVEL_BUTTON_WIDTH) / 2.,
-                    y:  top_offset + NON_LEVEL_TEXT_HEIGHT
-                }
+            NonLevelLayoutEntity::InteractButton => Vec2 {
+                x: (IDEAL_WIDTH - NON_LEVEL_BUTTON_WIDTH) / 2.,
+                y: top_offset + NON_LEVEL_TEXT_HEIGHT,
             },
         }
     }

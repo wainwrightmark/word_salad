@@ -180,10 +180,6 @@ impl BuyMoreHintsLayoutEntity {
 impl LayoutStructure for BuyMoreHintsLayoutEntity {
     type Context = ();
 
-    fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
-        Self::iter().find(|&x| x.rect(context).contains(point))
-    }
-
     fn size(&self, _context: &Self::Context) -> Vec2 {
         use BuyMoreHintsLayoutEntity::*;
         match self {

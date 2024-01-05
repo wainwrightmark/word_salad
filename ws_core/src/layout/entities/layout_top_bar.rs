@@ -26,15 +26,6 @@ impl LayoutTopBar {
 impl LayoutStructure for LayoutTopBar {
     type Context = ();
 
-    fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
-        for x in Self::iter() {
-            if x.rect(context).contains(point) {
-                return Some(x);
-            }
-        }
-        return None;
-    }
-
     fn size(&self, _context: &Self::Context) -> Vec2 {
         use LayoutTopBar::*;
         match self {
@@ -50,29 +41,20 @@ impl LayoutStructure for LayoutTopBar {
     }
 
     fn location(&self, _context: &Self::Context) -> Vec2 {
-
-        match self{
-            LayoutTopBar::MenuBurgerButton => {
-                Vec2 {
-                    x: (IDEAL_WIDTH - GRID_SIZE) * 0.5,
-                    y: 0.,
-                }
+        match self {
+            LayoutTopBar::MenuBurgerButton => Vec2 {
+                x: (IDEAL_WIDTH - GRID_SIZE) * 0.5,
+                y: 0.,
             },
-            LayoutTopBar::HintCounter =>{
-                Vec2 {
-                    x: ((IDEAL_WIDTH + GRID_SIZE) * 0.5) - TOP_BAR_ICON_WIDTH,
-                    y: 0.,
-                }
-            }
-            LayoutTopBar::WordSaladLogo => {
-                Vec2{
-                    x: (IDEAL_WIDTH - WORD_SALAD_LOGO_WIDTH) / 2.,
-                    y: 5.0
-                }
+            LayoutTopBar::HintCounter => Vec2 {
+                x: ((IDEAL_WIDTH + GRID_SIZE) * 0.5) - TOP_BAR_ICON_WIDTH,
+                y: 0.,
+            },
+            LayoutTopBar::WordSaladLogo => Vec2 {
+                x: (IDEAL_WIDTH - WORD_SALAD_LOGO_WIDTH) / 2.,
+                y: 5.0,
             },
         }
-
-
     }
 
     fn iter_all(_context: &Self::Context) -> impl Iterator<Item = Self> {
@@ -82,12 +64,10 @@ impl LayoutStructure for LayoutTopBar {
 
 impl LayoutStructureWithFont for LayoutTopBar {
     fn font_size(&self) -> f32 {
-
-        match self{
+        match self {
             LayoutTopBar::MenuBurgerButton => 40.0,
             LayoutTopBar::WordSaladLogo => 20.0,
             LayoutTopBar::HintCounter => 24.0,
         }
-
     }
 }

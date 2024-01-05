@@ -25,15 +25,6 @@ impl LayoutStructure for GameLayoutEntity {
         Self::iter()
     }
 
-    fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
-        for item in Self::iter() {
-            if item.rect(context).contains(point) {
-                return Some(item);
-            }
-        }
-        return None;
-    }
-
     //const ROOT: Self = GameLayoutEntity::Root;
     ///The size on a 320x568 canvas
     fn size(&self, _context: &()) -> Vec2 {

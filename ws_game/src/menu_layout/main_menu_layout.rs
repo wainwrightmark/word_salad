@@ -5,9 +5,7 @@ use ws_core::{
     LayoutStructure, LayoutStructureWithFont, LayoutStructureWithStaticText, Spacing,
 };
 
-use super::{
-    MENU_BUTTON_FONT_SIZE, MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH,
-};
+use super::{MENU_BUTTON_FONT_SIZE, MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter, EnumCount, Display,
@@ -29,10 +27,6 @@ impl MainMenuLayoutEntity {
 impl LayoutStructure for MainMenuLayoutEntity {
     type Context = ();
 
-    fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
-        Self::iter().find(|&x| x.rect(context).contains(point))
-    }
-
     fn size(&self, _context: &Self::Context) -> Vec2 {
         Vec2 {
             x: MENU_BUTTON_WIDTH,
@@ -45,10 +39,9 @@ impl LayoutStructure for MainMenuLayoutEntity {
             x: (IDEAL_WIDTH - MENU_BUTTON_WIDTH) / 2.,
             y: TOP_BAR_HEIGHT
                 + Spacing::Centre.apply(
-                    IDEAL_HEIGHT
-                        - TOP_BAR_HEIGHT,
-                        MENU_BUTTON_HEIGHT + MENU_BUTTON_SPACING,
-                        super::MENU_VIRTUAL_CHILDREN,
+                    IDEAL_HEIGHT - TOP_BAR_HEIGHT,
+                    MENU_BUTTON_HEIGHT + MENU_BUTTON_SPACING,
+                    super::MENU_VIRTUAL_CHILDREN,
                     self.index(),
                 ),
         }

@@ -43,10 +43,6 @@ impl LevelGroupLayoutEntity {
 impl LayoutStructure for LevelGroupLayoutEntity {
     type Context = LevelGroup;
 
-    fn pick(point: bevy::prelude::Vec2, context: &Self::Context) -> Option<Self> {
-        Self::iter_all(context).find(|&x| x.rect(context).contains(point))
-    }
-
     fn size(&self, _context: &Self::Context) -> bevy::prelude::Vec2 {
         Vec2 {
             x: MENU_BUTTON_WIDTH,

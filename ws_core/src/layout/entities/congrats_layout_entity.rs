@@ -27,14 +27,6 @@ pub struct SelfieMode(pub bool);
 impl LayoutStructure for CongratsLayoutEntity {
     type Context = SelfieMode;
 
-    fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
-        for x in Self::iter() {
-            if x.rect(context).contains(point) {
-                return Some(x);
-            }
-        }
-        return None;
-    }
 
     fn size(&self, _context: &Self::Context) -> Vec2 {
         Vec2 {
