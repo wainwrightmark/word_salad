@@ -54,6 +54,7 @@ impl MavericNode for CongratsView {
                 #[derive(Debug, Clone, Copy)]
                 enum Data {
                     None,
+                    JustHints,
                     TodaysChallenge { streak: usize, longest: usize },
                     Sequence { complete: usize, remaining: usize },
                 }
@@ -87,16 +88,17 @@ impl MavericNode for CongratsView {
                             remaining,
                         }
                     }
-                    CurrentLevel::Custom { .. } => Data::None,
+                    CurrentLevel::Custom { .. } => Data::JustHints,
                     CurrentLevel::NonLevel(_) => Data::None,
                 };
 
                 for (index, statistic) in CongratsStatistic::iter().enumerate() {
                     let data = match (statistic, data) {
-                        (CongratsStatistic::Left, Data::None)
-                        | (CongratsStatistic::Right, Data::None) => None,
-                        (CongratsStatistic::Left, _) | (CongratsStatistic::Middle, Data::None) => {
-                            Some((context.2.hints_used1, "Hints"))
+                        (_, Data::None) |
+                        (CongratsStatistic::Left, Data::JustHints)
+                        | (CongratsStatistic::Right, Data::JustHints) => None,
+                        (CongratsStatistic::Left, _) | (CongratsStatistic::Middle, Data::JustHints) => {
+                            Some((context.2.hints_used, "Hints"))
                         }
                         (CongratsStatistic::Middle, Data::TodaysChallenge { streak, .. }) => {
                             Some((streak, "Streak"))

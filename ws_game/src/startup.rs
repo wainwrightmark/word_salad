@@ -159,10 +159,10 @@ fn choose_level_on_game_load(
             Some(level) => {
                 info!("Loaded custom level from path");
                 if !current_level.as_ref().eq(&CurrentLevel::Custom {
-                    name: level.name.to_string(),
+                    name: level.full_name().to_string(),
                 }) {
                     *current_level = CurrentLevel::Custom {
-                        name: level.name.to_string(),
+                        name: level.full_name().to_string(),
                     };
                     *found_words = FoundWordsState::new_from_level(&level);
                 }

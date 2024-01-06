@@ -9,6 +9,8 @@
 - Stop selfie mode on wake-up
 - use ustr in a bunch more places
 - hint reward paths
-- fix sparkles
 - Change Word Salad Menu
 - transition easing
+- split total completion into multiple resources
+- Share text
+- Store level metadata (number / index) differently

@@ -84,7 +84,7 @@ impl MavericRootChildren for ViewRoot {
                     if let Some(text) = TutorialText::try_create(&context.1, &context.2) {
                         commands.add_child("tutorial", TutorialNode { text }, &context.3);
                     } else {
-                        let theme = level.name.clone();
+                        let theme = level.full_name();
                         commands.add_child("ui_theme", LevelName { theme }, &context.3);
 
                         if let Some(info) = &level.extra_info {

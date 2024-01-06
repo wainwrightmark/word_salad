@@ -76,12 +76,13 @@ async fn share_game_async(data: String) {
         .try_log_async1(device_id.clone().into())
         .await;
 
-    let url = "https://wordsalad.online";
+
     let result = capacitor_bindings::share::Share::share(
         ShareOptions::builder()
             .title("Word Salad")
             .text(data)
-            .url(url)
+            //.url("https://wordsalad.online/")
+
             .build(),
     )
     .await;
@@ -94,9 +95,9 @@ async fn share_game_async(data: String) {
                     .await;
             }
 
-            bevy::log::info!("Share succeeded: {url}")
+            bevy::log::info!("Share succeeded")
         }
-        Err(_) => info!("Share failed: {url}"),
+        Err(_) => info!("Share failed"),
     }
 }
 

@@ -338,7 +338,13 @@ impl ButtonInteraction {
 
             #[cfg(target_arch = "wasm32")]
             ButtonInteraction::Congrats(CongratsButton::Share) => {
-                crate::wasm::share("Hello World".to_string()); //TODO better share
+
+                if let Either::Left(level) = current_level.level(daily_challenges){
+                    let share_text = generate_share_text(level, level_time.as_ref(), found_words.as_ref());
+                    crate::wasm::share(share_text);
+                }
+
+
             }
 
             ButtonInteraction::BuyMoreHints => {
@@ -351,4 +357,23 @@ impl ButtonInteraction {
             }
         }
     }
+}
+
+#[allow(dead_code)]
+
+fn generate_share_text(level: &DesignedLevel, time: &LevelTime, found_words_state: &FoundWordsState)-> String{
+    use std::fmt::format;
+
+    let first_lines = match level.numbering{
+        Some(Numbering::WordSaladNumber(num)) => format!("Word Salad #{num}\n{}", level.name),
+        Some(Numbering::SequenceNumber(..)) => level.full_name().to_string(),
+        None => level.full_name().to_string(),
+    };
+    let total_secs = time.total_elapsed().as_secs();
+    let minutes = total_secs / 60;
+    let seconds = total_secs % 60;
+    let hints = found_words_state.hints_used;
+    let second_line = format!("⌛{minutes}m {seconds}s, ❓{hints}");
+
+    format!("{first_lines}\n{second_line}\nhttps://wordsalad.online/")
 }

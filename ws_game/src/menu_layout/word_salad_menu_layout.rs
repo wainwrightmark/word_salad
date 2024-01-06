@@ -62,11 +62,11 @@ impl WordSaladMenuLayoutEntity {
             }
         };
 
-        let level = daily_challenges.levels.get(index)?;
+        let level: &ws_core::prelude::DesignedLevel = daily_challenges.levels.get(index)?;
 
         let complete = completion.is_daily_challenge_complete(index);
 
-        let name = level.name;
+        let name = level.full_name();
         let right = if complete { "\u{e802}" } else { "" }.to_string(); //check boxes
 
         Some((name.to_string(), right))

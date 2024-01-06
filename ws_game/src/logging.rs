@@ -23,7 +23,7 @@ fn watch_level_changes(current_level: Res<CurrentLevel>, daily_challenges: Res<D
         //info!("Logging level changed");
         let level = current_level.level(&daily_challenges);
         let level = level.left()
-            .map(|x| x.name)
+            .map(|x| x.full_name())
             .unwrap_or_else(|| Ustr::from("Unknown")).to_string();
 
         let event: LoggableEvent = LoggableEvent::StartLevel { level };
@@ -46,13 +46,13 @@ fn watch_level_completion(
 
         let level = current_level.level(&daily_challenges);
         let level = level.left()
-            .map(|x| x.name)
+            .map(|x| x.full_name())
             .unwrap_or_else(|| Ustr::from("Unknown")).to_string();
 
         let event = LoggableEvent::FinishLevel {
             level,
             seconds,
-            hints_used: state.hints_used1,
+            hints_used: state.hints_used,
         };
         event.try_log1();
     }

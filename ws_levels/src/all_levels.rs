@@ -1,6 +1,6 @@
 use itertools::Itertools;
 use lazy_static::lazy_static;
-use ws_core::DesignedLevel;
+use ws_core::{DesignedLevel, Numbering, Ustr};
 
 lazy_static! { //todo data_bake
     pub(crate) static ref TUTORIAL: Vec<DesignedLevel> = include_str!("levels/tutorial.tsv")
@@ -110,12 +110,13 @@ lazy_static! { //todo data_bake
 
 pub fn number_levels(
     levels: impl Iterator<Item = DesignedLevel>,
-    prefix: &'static str,
+    category: &'static str,
 ) -> Vec<DesignedLevel> {
     let mut r = vec![];
     let mut index = 1;
     for mut l in levels {
-        l.name = ws_core::Ustr::from(format!("{prefix} {index}").as_str());
+        l.numbering = Some(Numbering::SequenceNumber(index));
+        l.name = Ustr::from(category);
         index += 1;
         r.push(l)
     }

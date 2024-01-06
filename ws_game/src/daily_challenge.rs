@@ -44,7 +44,7 @@ impl TrackableResource for DailyChallenges {
             .collect();
 
         for (index, level) in self.levels.iter_mut().enumerate() {
-            level.name = Ustr::from(format!("#{}: {}", index + 1, level.name).as_str());
+            level.numbering = Some(Numbering::WordSaladNumber(index + 1));
         }
 
         //let elapsed = chrono::Utc::now().signed_duration_since(now).num_microseconds().unwrap_or_default();
@@ -134,7 +134,7 @@ fn handle_daily_challenge_data_loaded(
             .collect_vec();
 
         for (index, level) in levels.iter_mut().enumerate() {
-            level.name = Ustr::from(format!("#{}: {}", index + 1, level.name).as_str());
+            level.numbering = Some(Numbering::WordSaladNumber(index + 1));
         }
 
         if levels.len() > challenges.levels.len() {

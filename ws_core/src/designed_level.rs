@@ -7,9 +7,18 @@ use ustr::Ustr;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DesignedLevel {
     pub name: Ustr,
+    pub numbering: Option<Numbering>,
+
+    // Attribution
     pub extra_info: Option<Ustr>,
     pub grid: Grid,
     pub words: Vec<DisplayWord>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Numbering{
+    WordSaladNumber(usize),
+    SequenceNumber(usize)
 }
 
 impl std::fmt::Display for DesignedLevel {
@@ -25,9 +34,18 @@ impl std::fmt::Display for DesignedLevel {
 }
 
 impl DesignedLevel {
+
+    pub fn full_name(&self)-> Ustr{
+        match self.numbering{
+            Some(Numbering::SequenceNumber(num)) => Ustr::from(format!("{} {num}", self.name).as_str()),
+            Some(Numbering::WordSaladNumber(num)) => Ustr::from(format!("#{num}: {}", self.name).as_str()),
+            None => self.name,
+        }
+    }
     pub fn unknown() -> Self {
         Self {
             name: Ustr::from("Unknown"),
+            numbering: None,
             extra_info: None,
             grid: Grid::from_inner([Character::Blank; 16]),
             words: vec![],
@@ -59,7 +77,7 @@ impl DesignedLevel {
 
         words.sort_by_cached_key(|x| x.text.to_ascii_lowercase());
 
-        let (name, extra_info) = if name.ends_with(']') {
+        let (name1, extra_info) = if name.ends_with(']') {
             if let Some(index) = name.find('[') {
                 let (name, extra_info) = name.split_at(index);
                 let extra_info = Ustr::from(&extra_info[1..(extra_info.len() - 1)]);
@@ -72,7 +90,8 @@ impl DesignedLevel {
         };
 
         Ok(Self {
-            name,
+            name: name1,
+            numbering: None,
             extra_info,
             grid,
             words,

@@ -71,7 +71,7 @@ impl TrackableResource for HintState {
 pub struct FoundWordsState {
     pub unneeded_tiles: GridSet,
     pub word_completions: Vec<Completion>,
-    pub hints_used1: usize,
+    pub hints_used: usize,
 }
 
 impl TrackableResource for FoundWordsState {
@@ -83,7 +83,7 @@ impl FoundWordsState {
         Self {
             unneeded_tiles: GridSet::EMPTY,
             word_completions: vec![Completion::Unstarted; level.words.len()],
-            hints_used1: 0,
+            hints_used: 0,
         }
     }
 
@@ -180,7 +180,7 @@ impl FoundWordsState {
         let new_count = match completion {
             Completion::Unstarted => {
                 *completion = Completion::ManualHinted(NonZeroUsize::MIN.saturating_add(c));
-                self.hints_used1 += 1;
+                self.hints_used += 1;
                 hint_state.hints_remaining = new_hints;
 
                 1 + c
@@ -190,7 +190,7 @@ impl FoundWordsState {
                     return false;
                 }
                 *hints = hints.saturating_add(c + 1);
-                self.hints_used1 += 1;
+                self.hints_used += 1;
                 hint_state.hints_remaining = new_hints;
 
                 hints.get()
