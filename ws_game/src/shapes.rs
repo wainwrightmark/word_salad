@@ -47,6 +47,7 @@ impl ParameterizedShader for BoxShader {
     type Params = BoxShaderParams;
     type ParamsQuery<'a> = (&'a ShaderColor, &'a ShaderRounding, &'a ShaderAspectRatio);
     type ParamsBundle = (ShaderColor, ShaderRounding, ShaderAspectRatio);
+    type ResourceParams<'w> = ();
 
     fn fragment_body() -> impl Into<String> {
         SDFColorCall {
@@ -61,6 +62,7 @@ impl ParameterizedShader for BoxShader {
 
     fn get_params<'w, 'a>(
         query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
+        _r: &()
     ) -> Self::Params {
         BoxShaderParams {
             color: query_item.0.color.into(),
@@ -92,6 +94,7 @@ impl ParameterizedShader for HorizontalGradientBoxShader {
     type Params = HorizontalGradientBoxShaderParams;
     type ParamsQuery<'a> = (&'a ShaderColor, &'a ShaderRounding, &'a ShaderAspectRatio, &'a ShaderProgress, &'a ShaderSecondColor);
     type ParamsBundle = (ShaderColor, ShaderRounding, ShaderAspectRatio, ShaderProgress, ShaderSecondColor);
+    type ResourceParams<'w> = ();
 
     fn fragment_body() -> impl Into<String> {
         SDFColorCall {
@@ -106,6 +109,7 @@ impl ParameterizedShader for HorizontalGradientBoxShader {
 
     fn get_params<'w, 'a>(
         query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
+        _r: &()
     ) -> Self::Params {
         HorizontalGradientBoxShaderParams {
             color: query_item.0.color.into(),
@@ -195,6 +199,7 @@ impl ParameterizedShader for BoxWithBorderShader {
         &'a ShaderBorder,
     );
     type ParamsBundle = (ShaderColor, ShaderRounding, ShaderAspectRatio, ShaderBorder);
+    type ResourceParams<'w> = ();
 
     fn fragment_body() -> impl Into<String> {
         SDFColorCall {
@@ -209,6 +214,7 @@ impl ParameterizedShader for BoxWithBorderShader {
 
     fn get_params<'w, 'a>(
         query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
+        _r: &()
     ) -> Self::Params {
         BoxWithBorderShaderParams {
             color: query_item.0.color.into(),
@@ -251,6 +257,7 @@ impl ParameterizedShader for PlayPauseShader {
     type Params = ShaderProgress;
     type ParamsQuery<'a> = &'a ShaderProgress;
     type ParamsBundle = ShaderProgress;
+    type ResourceParams<'w> = ();
 
     fn fragment_body() -> impl Into<String> {
         SDFColorCall {
@@ -265,6 +272,7 @@ impl ParameterizedShader for PlayPauseShader {
 
     fn get_params<'w, 'a>(
         query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
+        _r: &()
     ) -> Self::Params {
         *query_item
     }
@@ -295,6 +303,8 @@ impl ParameterizedShader for CircleShader {
     type Params = ColorParams;
     type ParamsQuery<'a> = &'a ShaderColor;
     type ParamsBundle = ShaderColor;
+    type ResourceParams<'w> = ();
+
 
     fn fragment_body() -> impl Into<String> {
         SDFColorCall {
@@ -309,6 +319,7 @@ impl ParameterizedShader for CircleShader {
 
     fn get_params<'w, 'a>(
         query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
+        _r: &()
     ) -> Self::Params {
         ColorParams {
             color: query_item.color.into(),
@@ -332,12 +343,13 @@ impl ShaderParams for ColorParams {}
 pub struct SparkleShader;
 
 impl ParameterizedShader for SparkleShader {
-    type Params = SparkleParams;
+    type Params = SparkleShaderParams;
     type ParamsQuery<'a> = &'a SparkleParams;
     type ParamsBundle = SparkleParams;
+    type ResourceParams<'w> = Res<'w, Time>;
 
     fn fragment_body() -> impl Into<String> {
-        "return fill::sparkle::fill(in.pos, in.count1, in.count2, in.seed, globals.time);"
+        "return fill::sparkle::fill(in.pos, in.count1, in.count2, in.seed, in.time);"
     }
 
     fn imports() -> impl Iterator<Item = FragmentImport> {
@@ -345,9 +357,15 @@ impl ParameterizedShader for SparkleShader {
     }
 
     fn get_params<'w, 'a>(
-        query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
+        q: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
+        r :&Res<Time>
     ) -> Self::Params {
-        *query_item
+        SparkleShaderParams{
+            count1: q.count1,
+            count2: q.count2,
+            seed: q.seed,
+            time: r.elapsed_seconds_wrapped(),
+        }
     }
 
     const FRAME: Frame = Frame::square(1.0);
@@ -357,7 +375,17 @@ impl ParameterizedShader for SparkleShader {
 
 #[repr(C)]
 #[derive(
-    Debug, Clone, Copy, PartialEq, Default, Reflect, bytemuck::Pod, bytemuck::Zeroable, Component,
+    Debug, Clone, Copy, PartialEq, Default, Reflect, bytemuck::Pod, bytemuck::Zeroable,
+)]
+pub struct SparkleShaderParams{
+    pub count1: f32,
+    pub count2: f32,
+    pub seed: f32,
+    pub time: f32
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Default, Component,
 )]
 pub struct SparkleParams {
     pub count1: f32,
@@ -365,7 +393,7 @@ pub struct SparkleParams {
     pub seed: f32,
 }
 
-impl ShaderParams for SparkleParams {}
+impl ShaderParams for SparkleShaderParams {}
 
 #[repr(C)]
 #[derive(Debug, Reflect, Clone, Copy, TypeUuid, Default, PartialEq)]
@@ -376,9 +404,11 @@ impl ParameterizedShader for WordLineShader {
     type Params = WordLineParams;
     type ParamsQuery<'a> = &'a WordLineParams;
     type ParamsBundle = WordLineParams;
+    type ResourceParams<'w> = ();
 
     fn get_params<'w, 'a>(
         query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
+        _r: &()
     ) -> Self::Params {
         *query_item
     }

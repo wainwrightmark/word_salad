@@ -8,7 +8,7 @@
 - Boxes around everything in selfie mode
 - Stop selfie mode on wake-up
 - use ustr in a bunch more places
-- motion blur on found word text and hint rewards
 - hint reward paths
 - fix sparkles
 - Change Word Salad Menu
+- transition easing

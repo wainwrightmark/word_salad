@@ -121,8 +121,10 @@ impl TotalCompletion {
 
                     if let Some(today_index) = DailyChallenges::get_today_index() {
                         if streak.last_completed == today_index.checked_sub(1) {
+                            info!("Streak increased by one");
                             streak.current += 1;
                         } else {
+                            info!("Streak set to one");
                             streak.current = 1;
                         }
 
