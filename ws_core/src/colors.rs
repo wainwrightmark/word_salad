@@ -47,13 +47,11 @@ pub mod palette {
     pub const THEME_TEXT_COLOR_NORMAL: Color = MY_BLACK;
     pub const THEME_TEXT_COLOR_SELFIE: Color = LIGHT_GRAY;
 
-
     pub const CONGRATS_BUTTON_TEXT_NORMAL: Color = MY_BLACK;
     pub const CONGRATS_BUTTON_FILL_NORMAL: Color = LIGHT_GREEN;
 
     pub const CONGRATS_BUTTON_TEXT_SELFIE: Color = MY_BLACK.with_a(0.95);
     pub const CONGRATS_BUTTON_FILL_SELFIE: Color = LIGHT_GREEN.with_a(0.5);
-
 
     pub const CONGRATS_STATISTIC_TEXT_SELFIE: Color = LIGHT_GRAY.with_a(0.95);
     pub const CONGRATS_STATISTIC_FILL_SELFIE: Color = DARK_GRAY.with_a(0.5);
@@ -70,14 +68,12 @@ pub mod palette {
 
     pub const WORD_LINE_COLOR: Color = FULL_GREEN.with_a(1.0);
 
-
     pub const GRID_TILE_FILL_NORMAL: Color = LIGHT_GRAY;
 
     pub const GRID_LETTER_NORMAL: Color = MY_BLACK;
     pub const GRID_LETTER_SELFIE: Color = LIGHT_GRAY.with_a(0.95);
 
     pub const GRID_TILE_FILL_SELFIE: Color = DARK_GRAY.with_a(0.5);
-
 
     pub const MENU_BUTTON_TEXT: Color = MY_BLACK;
     pub const MENU_BUTTON_FILL: Color = LIGHT_GREEN;
@@ -98,7 +94,4 @@ pub mod palette {
     pub const LIGHT_GREEN: Color = Color::rgba(0.463, 0.851, 0.596, 1.);
     pub const LIGHT_GRAY: Color = Color::rgba(0.91, 0.89, 0.89, 1.);
     pub const DARK_GRAY: Color = Color::rgba(0.4, 0.4, 0.4, 1.);
-
-
-
 }

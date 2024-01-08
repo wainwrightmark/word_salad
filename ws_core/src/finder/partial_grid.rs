@@ -111,8 +111,15 @@ impl PartialGrid {
         {
             self.place_node(node, *tile);
 
-            self.solve_recursive(counter, collector, all_nodes, level + 1, words, exclude_words);
-            if collector.is_full(){
+            self.solve_recursive(
+                counter,
+                collector,
+                all_nodes,
+                level + 1,
+                words,
+                exclude_words,
+            );
+            if collector.is_full() {
                 return;
             }
 

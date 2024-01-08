@@ -37,8 +37,6 @@ impl LayoutRectangle {
         }
     }
 
-
-
     pub fn width(&self) -> f32 {
         self.extents.x.abs()
     }

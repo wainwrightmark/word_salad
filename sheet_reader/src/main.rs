@@ -1,5 +1,5 @@
 fn main() {
-    let Ok(text)  = std::fs::read_to_string("sheet1.txt") else {
+    let Ok(text) = std::fs::read_to_string("sheet1.txt") else {
         println!("There must be a file called `sheet1.txt`");
         std::io::stdin().read_line(&mut String::new()).unwrap();
         return;

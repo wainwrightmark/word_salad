@@ -140,7 +140,9 @@ impl MavericNode for Menu {
 
 fn add_menu_items<
     R: MavericRoot,
-    L: LayoutStructureWithFont<FontContext = ()> + LayoutStructureWithStaticText + Into<ButtonInteraction>,
+    L: LayoutStructureWithFont<FontContext = ()>
+        + LayoutStructureWithStaticText
+        + Into<ButtonInteraction>,
 >(
     context: &<L as LayoutStructure>::Context,
     commands: &mut UnorderedChildCommands<R>,

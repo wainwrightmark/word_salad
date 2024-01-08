@@ -46,11 +46,11 @@ pub fn do_word_layout() {
                 most_lines.1 = Some(level.clone());
             }
 
-            let longest = data.iter().map(|x|x.rightmost).max().unwrap_or_default();
-            let shortest = data.iter().map(|x|x.rightmost).min().unwrap_or_default();
+            let longest = data.iter().map(|x| x.rightmost).max().unwrap_or_default();
+            let shortest = data.iter().map(|x| x.rightmost).min().unwrap_or_default();
             let diff = longest - shortest;
 
-            if diff > max_diff.0{
+            if diff > max_diff.0 {
                 max_diff.0 = diff;
                 max_diff.1 = Some(level.clone());
             }
@@ -66,8 +66,6 @@ pub fn do_word_layout() {
                     shortest_line.1 = Some(level.clone());
                 }
             }
-
-
         }
 
         pb.inc(1);

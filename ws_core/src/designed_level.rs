@@ -16,9 +16,9 @@ pub struct DesignedLevel {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Numbering{
+pub enum Numbering {
     WordSaladNumber(usize),
-    SequenceNumber(usize)
+    SequenceNumber(usize),
 }
 
 impl std::fmt::Display for DesignedLevel {
@@ -34,11 +34,14 @@ impl std::fmt::Display for DesignedLevel {
 }
 
 impl DesignedLevel {
-
-    pub fn full_name(&self)-> Ustr{
-        match self.numbering{
-            Some(Numbering::SequenceNumber(num)) => Ustr::from(format!("{} {num}", self.name).as_str()),
-            Some(Numbering::WordSaladNumber(num)) => Ustr::from(format!("#{num}: {}", self.name).as_str()),
+    pub fn full_name(&self) -> Ustr {
+        match self.numbering {
+            Some(Numbering::SequenceNumber(num)) => {
+                Ustr::from(format!("{} {num}", self.name).as_str())
+            }
+            Some(Numbering::WordSaladNumber(num)) => {
+                Ustr::from(format!("#{num}: {}", self.name).as_str())
+            }
             None => self.name,
         }
     }

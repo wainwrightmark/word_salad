@@ -521,7 +521,6 @@ mod tests {
         }
     }
 
-
     #[test_case("Bishop\npawn\nKing\nKnight\nQueen")]
     pub fn test_try_make_many_grids(input: &'static str) {
         let words = crate::finder::helpers::make_words_vec_from_file(input);
@@ -582,7 +581,6 @@ mod tests {
             .map(|grid| {
                 let q = orientation::calculate_best_word(&grid);
                 (grid, q)
-
             })
             .sorted_by_key(|x| x.1 .1)
             .rev()

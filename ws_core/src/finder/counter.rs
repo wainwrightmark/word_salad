@@ -25,49 +25,48 @@ impl Counter for FakeCounter {
     }
 }
 
-pub trait SolutionCollector<T> : Default {
+pub trait SolutionCollector<T>: Default {
     type Mapped<S>: SolutionCollector<S>;
 
     fn collect_solution(&mut self, t: T);
 
-    fn is_full(&self)-> bool;
+    fn is_full(&self) -> bool;
 
-    fn collect_mapped<S>(&mut self, mapped: Self::Mapped<S>, f: impl Fn(S)-> T );
+    fn collect_mapped<S>(&mut self, mapped: Self::Mapped<S>, f: impl Fn(S) -> T);
 
     //fn map_solution<S>(self, f: impl Fn(T)-> S)-> Self::Mapped<S>;
 }
 
 impl<T> SolutionCollector<T> for Option<T> {
-    fn collect_solution(&mut self, t: T){
+    fn collect_solution(&mut self, t: T) {
         *self = Some(t);
     }
 
-    fn is_full(&self)-> bool {
+    fn is_full(&self) -> bool {
         return self.is_some();
     }
 
     type Mapped<S> = Option<S>;
 
-    fn collect_mapped<S>(&mut self, mapped: Self::Mapped<S>, f: impl Fn(S)-> T ) {
-        if self.is_none(){
+    fn collect_mapped<S>(&mut self, mapped: Self::Mapped<S>, f: impl Fn(S) -> T) {
+        if self.is_none() {
             *self = mapped.map(f)
         }
     }
-
 }
 
-impl <T> SolutionCollector<T> for Vec<T>{
-    fn collect_solution(&mut self, t: T){
+impl<T> SolutionCollector<T> for Vec<T> {
+    fn collect_solution(&mut self, t: T) {
         self.push(t);
     }
 
-    fn is_full(&self)-> bool {
+    fn is_full(&self) -> bool {
         return false;
     }
 
     type Mapped<S> = Vec<S>;
 
-    fn collect_mapped<S>(&mut self, mapped: Self::Mapped<S>, f: impl Fn(S)-> T ) {
+    fn collect_mapped<S>(&mut self, mapped: Self::Mapped<S>, f: impl Fn(S) -> T) {
         self.extend(mapped.into_iter().map(f))
     }
 }

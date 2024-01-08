@@ -11,7 +11,8 @@ use crate::{
 };
 
 #[derive(Debug, PartialEq, Resource, Serialize, Deserialize, Default, Clone, MavericContext)]
-pub struct TotalCompletion { //TODO think about splitting this up
+pub struct TotalCompletion {
+    //TODO think about splitting this up
     completions: Vec<LevelCompletion>,
     daily_challenge_completion: DailyChallengeCompletion,
     tutorial_completion: LevelCompletion,

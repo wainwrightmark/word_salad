@@ -80,7 +80,7 @@ impl MavericNode for TopBar {
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         text_2d_bounds: Default::default(),
-                    text_anchor: Default::default(),
+                        text_anchor: Default::default(),
                     }
                     .with_bundle((Transform::from_translation(
                         size.get_rect(&LayoutTopBar::WordSaladLogo, &())

@@ -1,9 +1,6 @@
 use crate::completion::TotalCompletion;
 
-
-use super::{
-     MENU_BUTTON_FONT_SIZE, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT
-};
+use super::{MENU_BUTTON_FONT_SIZE, MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
 use bevy::math::Vec2;
 use ws_core::{
     layout::entities::{IDEAL_HEIGHT, IDEAL_WIDTH, TOP_BAR_HEIGHT},
@@ -26,7 +23,7 @@ impl LevelGroupLayoutEntity {
         let total = sequence.level_count();
 
         let complete = complete.min(total);
-        let fraction = format!("{:#}",  fmtastic::VulgarFraction::new(complete, total));
+        let fraction = format!("{:#}", fmtastic::VulgarFraction::new(complete, total));
 
         (name.to_string(), fraction)
     }
@@ -73,7 +70,7 @@ impl LayoutStructure for LevelGroupLayoutEntity {
 
 impl LayoutStructureWithFont for LevelGroupLayoutEntity {
     type FontContext = ();
-    fn font_size(&self,_: &()) -> f32 {
+    fn font_size(&self, _: &()) -> f32 {
         MENU_BUTTON_FONT_SIZE
     }
 }

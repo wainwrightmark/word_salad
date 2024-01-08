@@ -1,5 +1,5 @@
-pub mod clustering;
 pub mod cluster_ordering;
+pub mod clustering;
 pub mod combinations;
 pub mod search;
 pub mod word_layout;
@@ -14,7 +14,8 @@ use std::{
     collections::HashSet,
     fs::File,
     io::{self, BufWriter, Write},
-    path::Path, str::FromStr,
+    path::Path,
+    str::FromStr,
 };
 use ws_core::{
     finder::{counter::FakeCounter, helpers::*, node::GridResult},
@@ -53,7 +54,7 @@ struct Options {
     pub cluster: bool,
 
     #[arg(long, default_value = "10")]
-    pub max_clusters: u32
+    pub max_clusters: u32,
 }
 
 fn main() {
@@ -65,15 +66,11 @@ fn main() {
 
     let options = Options::parse();
 
-
-
     if let Some(search) = options.search {
         search::do_search(search);
-    }
-    else if options.check_layout{
+    } else if options.check_layout {
         word_layout::do_word_layout();
-    }
-    else if options.cluster {
+    } else if options.cluster {
         do_cluster(options);
     } else {
         do_finder(options);
@@ -94,7 +91,7 @@ fn do_cluster(options: Options) {
 
     let _ = std::fs::create_dir("clusters");
 
-    for path in paths{
+    for path in paths {
         let grid_path = path.as_ref().unwrap().path();
         let file_name = grid_path.file_name().unwrap().to_string_lossy();
 
@@ -102,13 +99,17 @@ fn do_cluster(options: Options) {
 
         let grid_file_text = std::fs::read_to_string(grid_path.clone()).unwrap();
 
-
-        fn filter_enough_grids(grid: &GridResult, count: &mut usize, enough: usize, filter_below: &mut usize)-> bool{
-            if grid.words.len() < *filter_below{
+        fn filter_enough_grids(
+            grid: &GridResult,
+            count: &mut usize,
+            enough: usize,
+            filter_below: &mut usize,
+        ) -> bool {
+            if grid.words.len() < *filter_below {
                 return false;
             }
             *count += 1;
-            if *count >= enough{
+            if *count >= enough {
                 *filter_below = (*filter_below).max(grid.words.len());
             }
             true
@@ -116,11 +117,14 @@ fn do_cluster(options: Options) {
         let mut count = 0;
         let mut filter_below = 0;
 
-        let grids = grid_file_text.lines().map(|l|GridResult::from_str(l).unwrap())
-        .filter(|x|x.words.len() >= options.minimum as usize)
-        .filter(|x| filter_enough_grids(x, &mut count, options.grids as usize, &mut filter_below))
-        .collect_vec();
-
+        let grids = grid_file_text
+            .lines()
+            .map(|l| GridResult::from_str(l).unwrap())
+            .filter(|x| x.words.len() >= options.minimum as usize)
+            .filter(|x| {
+                filter_enough_grids(x, &mut count, options.grids as usize, &mut filter_below)
+            })
+            .collect_vec();
 
         let all_words = grids
             .iter()
@@ -130,7 +134,11 @@ fn do_cluster(options: Options) {
             .dedup()
             .collect_vec();
 
-        info!("{file_name} found {:6} grids with {:3} different words", grids.len(), all_words.len());
+        info!(
+            "{file_name} found {:6} grids with {:3} different words",
+            grids.len(),
+            all_words.len()
+        );
 
         let clusters = cluster_words(grids, &all_words, options.max_clusters as usize);
 
@@ -213,7 +221,8 @@ fn do_finder(options: Options) {
             .dedup()
             .collect_vec();
 
-        let clusters: Vec<clustering::Cluster> = cluster_words(grids, &all_words, options.max_clusters as usize);
+        let clusters: Vec<clustering::Cluster> =
+            cluster_words(grids, &all_words, options.max_clusters as usize);
 
         let clusters_write_path = format!("clusters/{file_name}",);
         let clusters_write_path = Path::new(clusters_write_path.as_str());
@@ -254,7 +263,7 @@ fn create_grids(
         .into_iter()
         .sorted_unstable_by_key(|(k, _v)| *k)
         .map(|(word_count, v)| (word_count, HashSet::from_iter(v)))
-        .collect_vec();//todo use radsort
+        .collect_vec(); //todo use radsort
 
     let mut all_solutions: Vec<GridResult> = vec![];
     let mut solved_sets: Vec<WordSet> = vec![];
@@ -293,7 +302,7 @@ fn create_grids(
                     &exclude_words,
                     Character::E,
                     &mut counter,
-                    &mut result
+                    &mut result,
                 );
 
                 pb.inc(1);

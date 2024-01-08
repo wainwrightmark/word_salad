@@ -1,5 +1,5 @@
-use std::ops::DerefMut;
 use bevy::{ecs::component::Tick, prelude::*};
+use std::ops::DerefMut;
 
 pub trait AnyResMut<T: Resource>:
     std::ops::Deref<Target = T> + AsMut<T> + DerefMut<Target = T>

@@ -57,7 +57,7 @@ impl LayoutStructure for NonLevelLayoutEntity {
 
 impl LayoutStructureWithFont for NonLevelLayoutEntity {
     type FontContext = ();
-    fn font_size(&self,_: &()) -> f32 {
+    fn font_size(&self, _: &()) -> f32 {
         30.0
     }
 }

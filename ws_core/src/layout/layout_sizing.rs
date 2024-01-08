@@ -88,7 +88,11 @@ impl LayoutSizing {
         }
     }
 
-    pub fn font_size<T: LayoutStructureWithFont>(&self, entity: &T, context: &T::FontContext) -> f32 {
+    pub fn font_size<T: LayoutStructureWithFont>(
+        &self,
+        entity: &T,
+        context: &T::FontContext,
+    ) -> f32 {
         const FONT_INTERVAL: f32 = 4.0;
         let base_size = entity.font_size(context);
 

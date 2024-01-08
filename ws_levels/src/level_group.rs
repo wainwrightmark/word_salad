@@ -26,16 +26,21 @@ pub enum LevelGroup {
 }
 
 impl LevelGroup {
-
-    pub fn total_count(&self)-> usize{
-        self.get_sequences().iter().map(|x|x.level_count()).sum()
+    pub fn total_count(&self) -> usize {
+        self.get_sequences().iter().map(|x| x.level_count()).sum()
     }
 
     pub fn get_sequences(&self) -> &'static [LevelSequence] {
         use LevelSequence::*;
         match self {
             LevelGroup::GlobalLocation => &[USStates, EUCapitals, EUCountries],
-            LevelGroup::HistoryMythology => &[USPresidents, GreekGods, RomanGods, EgyptianGods, FamousQueens],
+            LevelGroup::HistoryMythology => &[
+                USPresidents,
+                GreekGods,
+                RomanGods,
+                EgyptianGods,
+                FamousQueens,
+            ],
             LevelGroup::Science => &[Scientists, Insects, Fruit, Gemstones, Vegetables, Elements],
         }
     }

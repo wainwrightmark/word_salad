@@ -1,6 +1,12 @@
 use bevy::prelude::*;
-use maveric::helpers::MavericContext;
-use nice_bevy_utils::{async_event_writer::AsyncEventWriter, CanRegisterAsyncEvent};
+use maveric::{helpers::MavericContext, plugin::CanRegisterMaveric};
+use nice_bevy_utils::{
+    async_event_writer::AsyncEventWriter, CanInitTrackedResource, CanRegisterAsyncEvent,
+    TrackableResource,
+};
+use serde::{Deserialize, Serialize};
+
+use crate::prelude::selfie_popup::SelfiePopup;
 
 //use crate::{asynchronous, wasm::JsException};
 
@@ -9,6 +15,9 @@ pub struct VideoPlugin;
 impl Plugin for VideoPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(VideoResource::default());
+        app.init_tracked_resource::<SelfieModeHistory>();
+
+        app.register_maveric::<SelfiePopup>();
         app.register_async_event::<VideoEvent>();
         #[cfg(target_arch = "wasm32")]
         {
@@ -28,12 +37,31 @@ pub struct VideoResource {
     pub is_selfie_mode: bool,
 }
 
+#[derive(Default, Resource, Clone, PartialEq, Serialize, Deserialize, MavericContext)]
+pub struct SelfieModeHistory {
+    pub has_entered_selfie_mode: bool,
+}
+
+impl TrackableResource for SelfieModeHistory {
+    const KEY: &'static str = "SelfieModeHistory";
+}
+
 #[allow(unused_variables)]
 #[allow(dead_code)]
-fn handle_video_event(mut res: ResMut<VideoResource>, mut events: EventReader<VideoEvent>) {
+fn handle_video_event(
+    mut res: ResMut<VideoResource>,
+    mut history: ResMut<SelfieModeHistory>,
+    mut events: EventReader<VideoEvent>,
+) {
     for ev in events.read() {
         match ev {
-            VideoEvent::VideoStarted => res.is_selfie_mode = true,
+            VideoEvent::VideoStarted => {
+                res.is_selfie_mode = true;
+
+                if !history.has_entered_selfie_mode {
+                    history.has_entered_selfie_mode = true;
+                }
+            }
             VideoEvent::VideoStopped => res.is_selfie_mode = false,
         }
     }

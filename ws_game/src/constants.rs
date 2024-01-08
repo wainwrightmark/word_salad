@@ -103,11 +103,9 @@ pub const TILE_FONT_PATH: &str = "fonts/Cairo-Bold.ttf";
 pub const TITLE_FONT_PATH: &str = "fonts/Cairo-Regular.ttf";
 pub const BUTTONS_FONT_PATH: &str = "fonts/Cairo-Regular.ttf";
 
-
 pub const SOLUTIONS_FONT_PATH: &str = "fonts/Cairo-Regular.ttf";
 pub const ICON_FONT_PATH: &str = "fonts/ws_icons.ttf";
 pub const WORD_SALAD_LOGO_FONT_PATH: &str = "fonts/LuckiestGuy.ttf";
-
 
 pub const ICON_BUTTON_SIZE: f32 = 40f32; //40 pixels
 pub const TOOLBAR_SIZE: f32 = 40f32; //40 pixels

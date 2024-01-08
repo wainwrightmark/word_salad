@@ -34,9 +34,13 @@ impl DisplayWord {
         find_solution(&self.characters, grid)
     }
 
-    pub fn find_solution_with_tiles(&self, grid: &Grid, unneeded_tiles: GridSet) -> Option<Solution>{
+    pub fn find_solution_with_tiles(
+        &self,
+        grid: &Grid,
+        unneeded_tiles: GridSet,
+    ) -> Option<Solution> {
         let mut grid = grid.clone();
-        for tile in unneeded_tiles.iter_true_tiles(){
+        for tile in unneeded_tiles.iter_true_tiles() {
             grid[tile] = Character::Blank;
         }
 

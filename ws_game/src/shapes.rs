@@ -13,7 +13,6 @@ maveric::define_lens!(RoundingLens, ShaderRounding, f32, rounding);
 maveric::define_lens!(ProgressLens, ShaderProgress, f32, progress);
 maveric::define_lens!(ShaderColorLens, ShaderColor, Color, color);
 
-
 pub struct ShapesPlugin;
 
 impl Plugin for ShapesPlugin {
@@ -254,7 +253,6 @@ pub struct ShaderBorder {
 
 impl ShaderParams for BoxWithBorderShaderParams {}
 
-
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Default, Reflect, Pod, Zeroable, Component)]
 pub struct ShaderProgress {
@@ -365,7 +363,7 @@ pub struct SparkleParams {
 
 impl ShaderParams for SparkleShaderParams {}
 
-pub (crate) const SIMPLE_FILL_IMPORT: FragmentImport = FragmentImport {
+pub(crate) const SIMPLE_FILL_IMPORT: FragmentImport = FragmentImport {
     path: "shaders/fill/simple.wgsl",
     import_path: "fill::simple",
 };

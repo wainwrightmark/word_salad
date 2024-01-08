@@ -122,13 +122,13 @@ impl MavericNode for HintsViewNode {
         let mut scale = 0.9;
         let mut a = 0.9;
         for frame_offset in 1..=3 {
-
             a *= 0.8;
             scale *= 0.8;
 
             entity_commands.commands().spawn((
                 ShaderBundle::<CircleShader> {
-                    transform: circle_transform.with_scale(Vec3::ONE * scale * circle_transform.scale),
+                    transform: circle_transform
+                        .with_scale(Vec3::ONE * scale * circle_transform.scale),
                     parameters: ShaderColor {
                         color: palette::HINT_COUNTER_COLOR.convert_color().with_a(a),
                     },
@@ -137,8 +137,6 @@ impl MavericNode for HintsViewNode {
                 MotionBlur::new(frame_offset * 2, circle_entity),
             ));
         }
-
-
 
         //Schedule the change to the number
         if let Some(children) = world.get::<Children>(entity_commands.id()) {
@@ -183,7 +181,8 @@ impl MavericNode for HintsViewNode {
 
                 let size = context.as_ref();
                 let hints_rect = size.get_rect(&LayoutTopBar::HintCounter, &());
-                let hint_font_size = size.font_size::<LayoutTopBar>(&LayoutTopBar::HintCounter, &());
+                let hint_font_size =
+                    size.font_size::<LayoutTopBar>(&LayoutTopBar::HintCounter, &());
 
                 let text: String = if let Some(prev) = a.previous.filter(|p| {
                     p.hint_state.total_earned_hints < node.hint_state.total_earned_hints

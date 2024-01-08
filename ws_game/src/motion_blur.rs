@@ -51,7 +51,6 @@ fn track_motion_blur(
         }
 
         if let Ok(parent_translation) = parents.get(blur.parent_entity).map(|x| x.translation()) {
-
             blur.translation_queue.push_back(parent_translation);
         }
     }

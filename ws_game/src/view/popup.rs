@@ -230,7 +230,7 @@ impl LayoutStructure for BuyMoreHintsLayoutEntity {
 
 impl LayoutStructureWithFont for BuyMoreHintsLayoutEntity {
     type FontContext = ();
-    fn font_size(&self,_: &()) -> f32 {
+    fn font_size(&self, _: &()) -> f32 {
         MENU_BUTTON_FONT_SIZE
     }
 }

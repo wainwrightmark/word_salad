@@ -15,7 +15,9 @@ pub fn order_cluster(cluster: &mut Vec<WordSet>) {
     let mut number_ordered = 1usize;
 
     loop {
-        let Some(prev)  = cluster.get(number_ordered.saturating_sub(1usize)) else{return;};
+        let Some(prev) = cluster.get(number_ordered.saturating_sub(1usize)) else {
+            return;
+        };
 
         let Some((index, _)) =
             cluster

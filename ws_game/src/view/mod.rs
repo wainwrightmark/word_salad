@@ -6,6 +6,7 @@ pub mod level_name;
 pub mod menu;
 pub mod non_level;
 pub mod popup;
+pub mod selfie_popup;
 pub mod timer;
 pub mod top_bar;
 pub mod tutorial;
@@ -125,7 +126,7 @@ impl MavericRootChildren for ViewRoot {
                     }
                 }
                 itertools::Either::Right(non_level) => {
-                    let selfie_mode = SelfieMode{is_selfie_mode};
+                    let selfie_mode = SelfieMode { is_selfie_mode };
                     commands.add_child(
                         "non_level",
                         NonLevelView {

@@ -4,7 +4,7 @@ use ws_core::layout::entities::*;
 #[derive(Debug, Clone, PartialEq)]
 pub struct NonLevelView {
     pub non_level: NonLevel,
-    pub selfie_mode: SelfieMode
+    pub selfie_mode: SelfieMode,
 }
 
 impl MavericNode for NonLevelView {
@@ -67,8 +67,6 @@ impl MavericNode for NonLevelView {
                 NonLevel::NoMoreLevelSequence(_) => "Reset",
             };
 
-
-
             let fill_color = if selfie_mode.is_selfie_mode {
                 palette::CONGRATS_BUTTON_FILL_SELFIE
             } else {
@@ -84,7 +82,7 @@ impl MavericNode for NonLevelView {
                     rect: size.get_rect(&NonLevelLayoutEntity::InteractButton, &()),
                     interaction: ButtonInteraction::NonLevelInteractionButton,
                     text_color,
-                    fill_color
+                    fill_color,
                 },
                 &(),
             );

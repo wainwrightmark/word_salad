@@ -47,7 +47,9 @@ impl MavericNode for CongratsView {
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
                 let size = &context.3;
-                let selfie_mode = SelfieMode{is_selfie_mode: context.8.is_selfie_mode};
+                let selfie_mode = SelfieMode {
+                    is_selfie_mode: context.8.is_selfie_mode,
+                };
 
                 const TRANSITION_SECS: f32 = 1.0;
 
@@ -160,11 +162,7 @@ impl MavericNode for CongratsView {
                     );
                 }
 
-                let button_count  = if selfie_mode.is_selfie_mode{
-                    1
-                } else{
-                     3
-                };
+                let button_count = if selfie_mode.is_selfie_mode { 1 } else { 3 };
 
                 for (index, button) in CongratsButton::iter().enumerate().take(button_count) {
                     let text = match button {
@@ -308,14 +306,11 @@ impl MavericNode for StatisticNode {
                 &(),
             );
 
-
-
             commands.add_child(
                 "box",
                 ShaderBundle::<BoxShader> {
                     parameters: (
                         (*background_color).into(),
-
                         crate::rounding::OTHER_BUTTON_NORMAL.into(),
                         (rect.width() / rect.height()).into(),
                     ),

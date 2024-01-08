@@ -43,7 +43,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
                 &exclude_words,
                 Character::E,
                 &mut FakeCounter,
-                &mut solution
+                &mut solution,
             )
         })
     });

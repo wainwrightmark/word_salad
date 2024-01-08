@@ -12,15 +12,15 @@ pub mod input;
 pub mod level_time;
 pub mod logging;
 pub mod menu_layout;
+pub mod motion_blur;
 pub mod rounding;
 pub mod shapes;
 pub mod startup;
 pub mod state;
-pub mod video;
-pub mod view;
 pub mod streak;
 pub mod test_res_mut;
-pub mod motion_blur;
+pub mod video;
+pub mod view;
 
 #[cfg(target_arch = "wasm32")]
 pub mod wasm;
@@ -50,10 +50,10 @@ pub mod prelude {
     pub use crate::menu_layout::*;
     pub use crate::shapes::*;
     pub use crate::state::*;
-    pub use crate::video::*;
-    pub use crate::view::*;
     pub use crate::streak::*;
     pub use crate::test_res_mut::*;
+    pub use crate::video::*;
+    pub use crate::view::*;
 
     pub use std::array;
 

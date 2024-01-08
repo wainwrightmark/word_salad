@@ -86,9 +86,9 @@ impl MavericNode for TutorialNode {
 }
 
 #[derive(Debug, PartialEq)]
-struct TutorialPopupNode {
-    text: &'static str,
-    entity: TutorialLayoutEntity,
+pub struct TutorialPopupNode {
+    pub text: &'static str,
+    pub entity: TutorialLayoutEntity,
 }
 
 impl MavericNode for TutorialPopupNode {
@@ -383,7 +383,7 @@ impl TutorialText {
 }
 
 #[derive(Debug, EnumCount, EnumIter, EnumIs, PartialEq, Clone, Copy)]
-enum TutorialLayoutEntity {
+pub enum TutorialLayoutEntity {
     Top,
     Middle,
     Bottom,
@@ -470,7 +470,7 @@ impl LayoutStructure for TutorialTextLayoutEntity {
 
 impl LayoutStructureWithFont for TutorialTextLayoutEntity {
     type FontContext = ();
-    fn font_size(&self,_: &()) -> f32 {
+    fn font_size(&self, _: &()) -> f32 {
         30.0
     }
 }

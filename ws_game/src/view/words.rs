@@ -50,7 +50,7 @@ impl MavericNode for WordsNode {
                             completion,
                             rect,
                             font_size,
-                            selfie_mode
+                            selfie_mode,
                         },
                         &(),
                     );
@@ -66,7 +66,7 @@ pub struct WordNode {
     pub completion: Completion,
     pub rect: LayoutRectangle,
     pub font_size: f32,
-    pub selfie_mode: bool
+    pub selfie_mode: bool,
 }
 
 impl MavericNode for WordNode {
@@ -97,16 +97,16 @@ impl MavericNode for WordNode {
                 Completion::Complete => 1.0,
             };
 
-
             let centre = node.rect.centre();
 
             let text_translation = centre.extend(crate::z_indices::WORD_TEXT);
 
-            let color = if node.selfie_mode{
+            let color = if node.selfie_mode {
                 palette::WORD_TEXT_SELFIE
-            }else{
+            } else {
                 palette::WORD_TEXT_NORMAL
-            }.convert_color();
+            }
+            .convert_color();
 
             commands.add_child(
                 "text",
@@ -127,7 +127,7 @@ impl MavericNode for WordNode {
             let shape_translation = centre.extend(crate::z_indices::WORD_BACKGROUND);
             let _shape_border_translation = centre.extend(crate::z_indices::WORD_BACKGROUND + 1.0);
 
-            let second_color = match node.completion{
+            let second_color = match node.completion {
                 Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color(),
                 Completion::ManualHinted(_) => palette::WORD_BACKGROUND_MANUAL_HINT.convert_color(),
                 Completion::Complete => palette::WORD_BACKGROUND_COMPLETE.convert_color(),

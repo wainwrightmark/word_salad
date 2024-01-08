@@ -4,9 +4,7 @@ use ws_core::{
     LayoutStructure, LayoutStructureWithFont, LayoutStructureWithStaticText,
 };
 
-use super::{
-    MENU_BUTTON_FONT_SIZE, MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH,
-};
+use super::{MENU_BUTTON_FONT_SIZE, MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Default)]
 pub struct MainMenuBackButton;
@@ -24,7 +22,7 @@ impl LayoutStructure for MainMenuBackButton {
     fn location(&self, _context: &Self::Context) -> Vec2 {
         Vec2 {
             x: (IDEAL_WIDTH - MENU_BUTTON_WIDTH) / 2.,
-            y: IDEAL_HEIGHT - ((MENU_BUTTON_HEIGHT + MENU_BUTTON_SPACING) * 2.0 ),
+            y: IDEAL_HEIGHT - ((MENU_BUTTON_HEIGHT + MENU_BUTTON_SPACING) * 2.0),
         }
     }
 
@@ -35,7 +33,7 @@ impl LayoutStructure for MainMenuBackButton {
 
 impl LayoutStructureWithFont for MainMenuBackButton {
     type FontContext = ();
-    fn font_size(&self,_: &()) -> f32 {
+    fn font_size(&self, _: &()) -> f32 {
         MENU_BUTTON_FONT_SIZE
     }
 }

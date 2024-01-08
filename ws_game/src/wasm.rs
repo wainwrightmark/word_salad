@@ -76,13 +76,11 @@ async fn share_game_async(data: String) {
         .try_log_async1(device_id.clone().into())
         .await;
 
-
     let result = capacitor_bindings::share::Share::share(
         ShareOptions::builder()
             .title("Word Salad")
             .text(data)
             //.url("https://wordsalad.online/")
-
             .build(),
     )
     .await;

@@ -219,7 +219,7 @@ impl MavericNode for GridTile {
                 &context,
             );
             if !node.timer_paused {
-                if let HintStatus::ManualHinted = node.hint_status{
+                if let HintStatus::ManualHinted = node.hint_status {
                     let (count1, count2) = (4.0, 3.0);
                     let seed = node.tile.inner() as f32 * 123.456;
 
@@ -242,7 +242,6 @@ impl MavericNode for GridTile {
                     );
                 }
             }
-
         })
     }
 

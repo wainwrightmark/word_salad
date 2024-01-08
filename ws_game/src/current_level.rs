@@ -1,8 +1,8 @@
 use itertools::Either;
 use nice_bevy_utils::TrackableResource;
 use serde::{Deserialize, Serialize};
-use strum::EnumIs;
 use std::sync::OnceLock;
+use strum::EnumIs;
 use ws_levels::{all_levels::get_tutorial_level, level_sequence::LevelSequence};
 
 use crate::{completion::TotalCompletion, prelude::*};
@@ -19,16 +19,18 @@ pub enum CurrentLevel {
     DailyChallenge {
         index: usize,
     },
-    Custom {name: String},
+    Custom {
+        name: String,
+    },
     NonLevel(NonLevel),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, EnumIs)]
-pub enum NonLevel{
+pub enum NonLevel {
     BeforeTutorial,
     AfterCustomLevel,
     NoMoreDailyChallenge,
-    NoMoreLevelSequence(LevelSequence)
+    NoMoreLevelSequence(LevelSequence),
 }
 
 impl Into<CurrentLevel> for NonLevel {
@@ -50,34 +52,29 @@ impl Default for CurrentLevel {
 pub static CUSTOM_LEVEL: OnceLock<DesignedLevel> = OnceLock::new();
 
 impl CurrentLevel {
-    pub fn level<'c>(&self, daily_challenges: &'c DailyChallenges) -> Either<&'c DesignedLevel, NonLevel> {
+    pub fn level<'c>(
+        &self,
+        daily_challenges: &'c DailyChallenges,
+    ) -> Either<&'c DesignedLevel, NonLevel> {
         match self {
             CurrentLevel::Fixed {
                 level_index,
                 sequence,
-            } => {
-                match sequence.get_level(*level_index){
-                    Some(level) => Either::Left(level),
-                    None => Either::Right(NonLevel::NoMoreLevelSequence(*sequence)),
-                }
+            } => match sequence.get_level(*level_index) {
+                Some(level) => Either::Left(level),
+                None => Either::Right(NonLevel::NoMoreLevelSequence(*sequence)),
             },
-            CurrentLevel::Custom { .. } => {
-                match  CUSTOM_LEVEL.get(){
-                    Some(cl) => Either::Left(cl),
-                    None => Either::Right(NonLevel::AfterCustomLevel),
-                }
+            CurrentLevel::Custom { .. } => match CUSTOM_LEVEL.get() {
+                Some(cl) => Either::Left(cl),
+                None => Either::Right(NonLevel::AfterCustomLevel),
             },
-            CurrentLevel::Tutorial { index } => {
-                match get_tutorial_level(*index){
-                    Some(cl) => Either::Left(cl),
-                    None => Either::Right(NonLevel::BeforeTutorial),
-                }
+            CurrentLevel::Tutorial { index } => match get_tutorial_level(*index) {
+                Some(cl) => Either::Left(cl),
+                None => Either::Right(NonLevel::BeforeTutorial),
             },
-            CurrentLevel::DailyChallenge { index } => {
-                match daily_challenges.levels.get(*index){
-                    Some(cl) => Either::Left(cl),
-                    None => Either::Right(NonLevel::NoMoreDailyChallenge),
-                }
+            CurrentLevel::DailyChallenge { index } => match daily_challenges.levels.get(*index) {
+                Some(cl) => Either::Left(cl),
+                None => Either::Right(NonLevel::NoMoreDailyChallenge),
             },
             CurrentLevel::NonLevel(nl) => Either::Right(*nl),
         }
@@ -100,7 +97,6 @@ impl CurrentLevel {
                 level_index: _,
                 sequence,
             } => {
-
                 if let Some(index) = total_completion.get_next_level_index(*sequence) {
                     if index > 0 {
                         if let Some(..) = sequence.get_level(index) {
@@ -110,7 +106,6 @@ impl CurrentLevel {
                             };
                         }
                     }
-
                 }
 
                 return NonLevel::NoMoreLevelSequence(*sequence).into();
@@ -121,9 +116,8 @@ impl CurrentLevel {
                     None => CurrentLevel::NonLevel(NonLevel::NoMoreDailyChallenge),
                 }
             }
-            CurrentLevel::Custom{..} => NonLevel::AfterCustomLevel.into(),
-            CurrentLevel::NonLevel(x) => (*x).into(),//No change
-
+            CurrentLevel::Custom { .. } => NonLevel::AfterCustomLevel.into(),
+            CurrentLevel::NonLevel(x) => (*x).into(), //No change
         }
     }
 }

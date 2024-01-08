@@ -14,12 +14,10 @@ pub enum GameLayoutEntity {
     ThemeInfo,
     Grid,
     WordList,
-
 }
 
 impl LayoutStructure for GameLayoutEntity {
     type Context = ();
-
 
     fn iter_all(_context: &Self::Context) -> impl Iterator<Item = Self> {
         Self::iter()
@@ -36,7 +34,8 @@ impl LayoutStructure for GameLayoutEntity {
             GameLayoutEntity::Theme => Vec2 {
                 x: THEME_WIDTH,
                 y: THEME_HEIGHT,
-            },GameLayoutEntity::ThemeInfo => Vec2 {
+            },
+            GameLayoutEntity::ThemeInfo => Vec2 {
                 x: THEME_INFO_WIDTH,
                 y: THEME_INFO_HEIGHT,
             },
@@ -65,24 +64,22 @@ impl LayoutStructure for GameLayoutEntity {
             },
             GameLayoutEntity::ThemeInfo => Vec2 {
                 x: ((IDEAL_WIDTH - GRID_SIZE) * 0.5) + TIMER_WIDTH,
-                y: TOP_BAR_HEIGHT + THEME_HEIGHT ,
+                y: TOP_BAR_HEIGHT + THEME_HEIGHT,
             },
 
             GameLayoutEntity::Timer => Vec2 {
                 x: (IDEAL_WIDTH - GRID_SIZE) * 0.5,
-                y: TOP_BAR_HEIGHT + THEME_HEIGHT ,
+                y: TOP_BAR_HEIGHT + THEME_HEIGHT,
             },
 
             GameLayoutEntity::Grid => Vec2 {
                 x: (IDEAL_WIDTH - GRID_SIZE) * 0.5,
-                y: TOP_BAR_HEIGHT + THEME_HEIGHT + TIMER_HEIGHT  + (GRID_TILE_SIZE * 0.5),
+                y: TOP_BAR_HEIGHT + THEME_HEIGHT + TIMER_HEIGHT + (GRID_TILE_SIZE * 0.5),
             },
             GameLayoutEntity::WordList => Vec2 {
                 x: (IDEAL_WIDTH - GRID_SIZE) / 2.,
                 y: TOP_BAR_HEIGHT + THEME_HEIGHT + TIMER_HEIGHT + GRID_SIZE + GRID_TILE_SIZE,
             },
-
-
         }
     }
 }

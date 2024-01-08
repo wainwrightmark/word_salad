@@ -62,7 +62,6 @@ pub fn go() {
     app.add_plugins(StreakPlugin);
     app.add_plugins(MotionBlurPlugin);
 
-
     app.register_transition::<BackgroundColorLens>();
     app.register_transition::<TransformRotationYLens>();
     app.register_transition::<TransformTranslationLens>();
@@ -95,7 +94,6 @@ pub fn go() {
     app.add_systems(Update, watch_lifecycle);
     app.add_systems(Startup, set_status_bar.after(hide_splash));
 
-
     app.insert_resource(bevy::winit::WinitSettings {
         return_from_run: false,
         focused_mode: bevy::winit::UpdateMode::Continuous,
@@ -106,7 +104,6 @@ pub fn go() {
 
     app.run();
 }
-
 
 fn setup_system(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
@@ -120,8 +117,6 @@ fn choose_level_on_game_load(
     completion: Res<TotalCompletion>,
     daily_challenges: Res<DailyChallenges>,
 ) {
-    return;
-
     #[cfg(target_arch = "wasm32")]
     {
         match crate::wasm::get_game_from_location() {

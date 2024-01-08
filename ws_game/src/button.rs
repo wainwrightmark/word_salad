@@ -217,8 +217,7 @@ impl ButtonInteraction {
                 *current_level.as_mut() = CurrentLevel::NonLevel(NonLevel::BeforeTutorial);
                 menu_state.close();
             }
-            #[cfg(target_arch= "wasm32")]
-
+            #[cfg(target_arch = "wasm32")]
             ButtonInteraction::MainMenu(MainMenuLayoutEntity::PlaySteks) => {
                 crate::wasm::open_link("https://steks.net");
             }
@@ -343,13 +342,11 @@ impl ButtonInteraction {
 
             #[cfg(target_arch = "wasm32")]
             ButtonInteraction::Congrats(CongratsButton::Share) => {
-
-                if let Either::Left(level) = current_level.level(daily_challenges){
-                    let share_text = generate_share_text(level, level_time.as_ref(), found_words.as_ref());
+                if let Either::Left(level) = current_level.level(daily_challenges) {
+                    let share_text =
+                        generate_share_text(level, level_time.as_ref(), found_words.as_ref());
                     crate::wasm::share(share_text);
                 }
-
-
             }
 
             ButtonInteraction::BuyMoreHints => {
@@ -366,9 +363,12 @@ impl ButtonInteraction {
 
 #[allow(dead_code)]
 
-fn generate_share_text(level: &DesignedLevel, time: &LevelTime, found_words_state: &FoundWordsState)-> String{
-
-    let first_lines = match level.numbering{
+fn generate_share_text(
+    level: &DesignedLevel,
+    time: &LevelTime,
+    found_words_state: &FoundWordsState,
+) -> String {
+    let first_lines = match level.numbering {
         Some(Numbering::WordSaladNumber(num)) => format!("Word Salad #{num}\n{}", level.name),
         Some(Numbering::SequenceNumber(..)) => level.full_name().to_string(),
         None => level.full_name().to_string(),

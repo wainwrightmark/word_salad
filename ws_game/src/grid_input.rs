@@ -129,7 +129,11 @@ impl GridInputState {
         }
     }
 
-    pub fn handle_input_end(&mut self, chosen_state: &mut impl AnyResMut<ChosenState>, location: Tile) {
+    pub fn handle_input_end(
+        &mut self,
+        chosen_state: &mut impl AnyResMut<ChosenState>,
+        location: Tile,
+    ) {
         if self.last_tile == Some(location) {
             match self.multi_click {
                 Some(MultiClick::DeleteOnEndThenStop) => {
@@ -197,19 +201,23 @@ pub mod tests {
 
         let found_words = FoundWordsState::default();
 
-        let mut chosen_state = TestResMut{
-            value:&mut ChosenState::default(),
+        let mut chosen_state = TestResMut {
+            value: &mut ChosenState::default(),
             added: false,
-            last_changed: None
-        } ;
+            last_changed: None,
+        };
 
-        let grid = Grid::from_fn(|_|Character::A);
+        let grid = Grid::from_fn(|_| Character::A);
 
         for input in input_list.into_iter() {
             match input {
                 Input::EndNoLocation => state.handle_input_end_no_location(),
-                Input::Start(tile) => state.handle_input_start(&mut chosen_state, tile, &grid, &found_words),
-                Input::Move(tile) => state.handle_input_move(&mut chosen_state, tile, &grid, &found_words),
+                Input::Start(tile) => {
+                    state.handle_input_start(&mut chosen_state, tile, &grid, &found_words)
+                }
+                Input::Move(tile) => {
+                    state.handle_input_move(&mut chosen_state, tile, &grid, &found_words)
+                }
                 Input::End(tile) => state.handle_input_end(&mut chosen_state, tile),
             }
         }

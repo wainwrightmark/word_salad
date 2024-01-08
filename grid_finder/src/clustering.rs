@@ -23,8 +23,6 @@ pub struct ClusterScore {
     /// The total sum of the item count of all elements
     /// Higher is better
     pub total_element_items: u32,
-
-
 }
 
 impl ClusterScore {
@@ -79,27 +77,28 @@ impl<'a> From<&'a [WordsSet]> for ClusterScore {
         }
     }
 }
-#[derive(Debug, Clone, Copy,  PartialEq)]
-pub struct AdjacencyScore{
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct AdjacencyScore {
     pub max_adjacent: u32,
-    pub mean_adjacency: f32
+    pub mean_adjacency: f32,
 }
 
-impl AdjacencyScore{
-    pub fn calculate(slice: &[WordsSet])-> Self{
+impl AdjacencyScore {
+    pub fn calculate(slice: &[WordsSet]) -> Self {
         let mut max = 0u32;
         let mut total = 0f32;
         let mut count = 0f32;
-        for (a,b) in slice.iter().tuple_windows(){
+        for (a, b) in slice.iter().tuple_windows() {
             count += 1.0;
             let overlap = a.intersect(b).count();
-            max  = max.max(overlap);
+            max = max.max(overlap);
             total += overlap as f32;
         }
 
-
-
-        Self { max_adjacent: max, mean_adjacency: total / count }
+        Self {
+            max_adjacent: max,
+            mean_adjacency: total / count,
+        }
     }
 }
 
@@ -107,7 +106,7 @@ impl AdjacencyScore{
 pub struct Cluster {
     pub grids: Vec<GridResult>,
     pub score: ClusterScore,
-    pub adjacency_score: AdjacencyScore
+    pub adjacency_score: AdjacencyScore,
 }
 
 impl Cluster {
@@ -116,14 +115,17 @@ impl Cluster {
         let score: ClusterScore = ClusterScore::calculate(points.as_slice());
         let adjacency_score = AdjacencyScore::calculate(&points.as_slice());
 
-
         let grids = points
             .iter()
             .flat_map(|p| map.get(p))
             .cloned()
             .collect_vec();
 
-        Self { grids, score, adjacency_score }
+        Self {
+            grids,
+            score,
+            adjacency_score,
+        }
     }
 }
 

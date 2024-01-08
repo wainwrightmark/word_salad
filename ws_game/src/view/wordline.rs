@@ -75,8 +75,6 @@ impl MavericNode for WordLine {
                 let rect = args.context.get_rect(&LayoutGridTile(*tile), &());
                 let color = index_to_color(0);
 
-
-
                 commands.add_child(
                     0,
                     ShaderBundle::<WordLineSegmentShader> {
@@ -86,7 +84,7 @@ impl MavericNode for WordLine {
                                 is_final_segment: true,
                             },
                             ShaderColor { color },
-                            ShaderSecondColor{color}
+                            ShaderSecondColor { color },
                         ),
                         transform: Transform {
                             translation: rect.centre().extend(z_indices::WORD_LINE),
@@ -102,7 +100,8 @@ impl MavericNode for WordLine {
                     let rect_f = args.context.get_rect(&LayoutGridTile(*from), &());
                     let rect_t = args.context.get_rect(&LayoutGridTile(*to), &());
 
-                    let translation = ((rect_f.centre() + rect_t.centre()) * 0.5).extend(z_indices::WORD_LINE);
+                    let translation =
+                        ((rect_f.centre() + rect_t.centre()) * 0.5).extend(z_indices::WORD_LINE);
                     let color = index_to_color(index);
                     let color2 = index_to_color(index + 1);
 
@@ -117,7 +116,7 @@ impl MavericNode for WordLine {
                                     is_final_segment: index + 2 == solution.len(),
                                 },
                                 ShaderColor { color },
-                                ShaderSecondColor{color: color2}
+                                ShaderSecondColor { color: color2 },
                             ),
                             transform: Transform {
                                 translation,
@@ -206,7 +205,11 @@ struct WordLineSegmentShader;
 
 impl ParameterizedShader for WordLineSegmentShader {
     type Params = WordLineSegmentShaderParams;
-    type ParamsQuery<'a> = (&'a WordLineDirection, &'a ShaderColor, &'a ShaderSecondColor);
+    type ParamsQuery<'a> = (
+        &'a WordLineDirection,
+        &'a ShaderColor,
+        &'a ShaderSecondColor,
+    );
     type ParamsBundle = (WordLineDirection, ShaderColor, ShaderSecondColor);
     type ResourceParams<'w> = Res<'w, WordLineGlobalValues>;
 

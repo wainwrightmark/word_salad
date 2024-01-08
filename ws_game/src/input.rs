@@ -1,6 +1,9 @@
 use crate::{
     completion::TotalCompletion,
-    menu_layout::{main_menu_back_button::MainMenuBackButton, word_salad_menu_layout::WordSaladMenuLayoutEntity},
+    menu_layout::{
+        main_menu_back_button::MainMenuBackButton,
+        word_salad_menu_layout::WordSaladMenuLayoutEntity,
+    },
     prelude::{
         level_group_layout::LevelGroupLayoutEntity, levels_menu_layout::LevelsMenuLayoutEntity,
         main_menu_layout::MainMenuLayoutEntity, *,
@@ -88,7 +91,9 @@ impl InteractionEntity {
                         return Self::try_get_button::<CongratsLayoutEntity>(
                             position,
                             size,
-                            &SelfieMode{is_selfie_mode: video_resource.is_selfie_mode},
+                            &SelfieMode {
+                                is_selfie_mode: video_resource.is_selfie_mode,
+                            },
                         );
                     }
 
@@ -159,7 +164,8 @@ impl InteractionEntity {
                 }
 
                 Self::try_get_button::<LevelsMenuLayoutEntity>(position, size, &())
-            }MenuState::WordSaladLevels => {
+            }
+            MenuState::WordSaladLevels => {
                 if let Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &())
                 {
                     return Some(back);
@@ -175,7 +181,6 @@ impl InteractionEntity {
 
                 Self::try_get_button::<LevelGroupLayoutEntity>(position, size, group)
             }
-
         }
     }
 }
