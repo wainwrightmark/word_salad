@@ -51,6 +51,7 @@ pub fn go() {
         )
         .add_systems(Startup, setup_system);
 
+    app.add_plugins(WordlinePlugin);
     app.register_maveric::<ViewRoot>();
     app.add_plugins(StatePlugin);
     app.add_plugins(LevelTimePlugin);
@@ -60,6 +61,7 @@ pub fn go() {
     app.add_plugins(DailyChallengePlugin);
     app.add_plugins(StreakPlugin);
     app.add_plugins(MotionBlurPlugin);
+
 
     app.register_transition::<BackgroundColorLens>();
     app.register_transition::<TransformRotationYLens>();

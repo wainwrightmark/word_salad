@@ -12,8 +12,7 @@ use crate::prelude::FireworksShader;
 maveric::define_lens!(RoundingLens, ShaderRounding, f32, rounding);
 maveric::define_lens!(ProgressLens, ShaderProgress, f32, progress);
 maveric::define_lens!(ShaderColorLens, ShaderColor, Color, color);
-maveric::define_lens!(WordLineWidthLens, WordLineParams, f32, line_width);
-maveric::define_lens!(WordLineProgressLens, WordLineParams, f32, progress);
+
 
 pub struct ShapesPlugin;
 
@@ -25,18 +24,16 @@ impl Plugin for ShapesPlugin {
         //app.add_plugins(ParamShaderPlugin::<PlayPauseShader>::default());
         app.add_plugins(ParamShaderPlugin::<CircleShader>::default());
         app.add_plugins(ParamShaderPlugin::<SparkleShader>::default());
-        app.add_plugins(ParamShaderPlugin::<WordLineShader>::default());
+
         app.add_plugins(ParamShaderPlugin::<FireworksShader>::default());
 
         app.register_transition::<ProgressLens>();
         app.register_transition::<RoundingLens>();
         app.register_transition::<ShaderColorLens>();
-        app.register_transition::<WordLineWidthLens>();
-        app.register_transition::<WordLineProgressLens>();
+
         app.register_transition::<TextColorLens<0>>();
     }
 }
-
 
 #[repr(C)]
 #[derive(Debug, Reflect, Clone, Copy, TypeUuid, Default, PartialEq)]
@@ -62,7 +59,7 @@ impl ParameterizedShader for BoxShader {
 
     fn get_params<'w, 'a>(
         query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
-        _r: &()
+        _r: &(),
     ) -> Self::Params {
         BoxShaderParams {
             color: query_item.0.color.into(),
@@ -92,14 +89,27 @@ pub struct HorizontalGradientBoxShader;
 
 impl ParameterizedShader for HorizontalGradientBoxShader {
     type Params = HorizontalGradientBoxShaderParams;
-    type ParamsQuery<'a> = (&'a ShaderColor, &'a ShaderRounding, &'a ShaderAspectRatio, &'a ShaderProgress, &'a ShaderSecondColor);
-    type ParamsBundle = (ShaderColor, ShaderRounding, ShaderAspectRatio, ShaderProgress, ShaderSecondColor);
+    type ParamsQuery<'a> = (
+        &'a ShaderColor,
+        &'a ShaderRounding,
+        &'a ShaderAspectRatio,
+        &'a ShaderProgress,
+        &'a ShaderSecondColor,
+    );
+    type ParamsBundle = (
+        ShaderColor,
+        ShaderRounding,
+        ShaderAspectRatio,
+        ShaderProgress,
+        ShaderSecondColor,
+    );
     type ResourceParams<'w> = ();
 
     fn fragment_body() -> impl Into<String> {
         SDFColorCall {
             sdf: "shaders::box::sdf(in.pos, in.height, in.rounding)",
-            fill_color: "fill::horizontal_gradient::fill(d, in.color, in.pos, in.progress, in.color2)",
+            fill_color:
+                "fill::horizontal_gradient::fill(d, in.color, in.pos, in.progress, in.color2)",
         }
     }
 
@@ -109,14 +119,14 @@ impl ParameterizedShader for HorizontalGradientBoxShader {
 
     fn get_params<'w, 'a>(
         query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
-        _r: &()
+        _r: &(),
     ) -> Self::Params {
         HorizontalGradientBoxShaderParams {
             color: query_item.0.color.into(),
             rounding: query_item.1.rounding,
             height: query_item.2.height,
             progress: query_item.3.progress,
-            color2: query_item.4.color.into()
+            color2: query_item.4.color.into(),
         }
     }
 
@@ -131,7 +141,7 @@ pub struct HorizontalGradientBoxShaderParams {
     pub height: f32,
     pub rounding: f32,
     pub progress: f32,
-    pub color2: LinearRGB
+    pub color2: LinearRGB,
 }
 
 impl ShaderParams for HorizontalGradientBoxShaderParams {}
@@ -181,10 +191,6 @@ impl From<f32> for ShaderAspectRatio {
     }
 }
 
-
-
-
-
 #[repr(C)]
 #[derive(Debug, Reflect, Clone, Copy, TypeUuid, Default, PartialEq)]
 #[uuid = "df3562db-60d2-471a-81ac-616fb633c7e7"]
@@ -214,7 +220,7 @@ impl ParameterizedShader for BoxWithBorderShader {
 
     fn get_params<'w, 'a>(
         query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
-        _r: &()
+        _r: &(),
     ) -> Self::Params {
         BoxWithBorderShaderParams {
             color: query_item.0.color.into(),
@@ -272,7 +278,7 @@ impl ParameterizedShader for PlayPauseShader {
 
     fn get_params<'w, 'a>(
         query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
-        _r: &()
+        _r: &(),
     ) -> Self::Params {
         *query_item
     }
@@ -305,7 +311,6 @@ impl ParameterizedShader for CircleShader {
     type ParamsBundle = ShaderColor;
     type ResourceParams<'w> = ();
 
-
     fn fragment_body() -> impl Into<String> {
         SDFColorCall {
             sdf: "sdf::circle::sdf(in.pos)",
@@ -319,7 +324,7 @@ impl ParameterizedShader for CircleShader {
 
     fn get_params<'w, 'a>(
         query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
-        _r: &()
+        _r: &(),
     ) -> Self::Params {
         ColorParams {
             color: query_item.color.into(),
@@ -358,9 +363,9 @@ impl ParameterizedShader for SparkleShader {
 
     fn get_params<'w, 'a>(
         q: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
-        r :&Res<Time>
+        r: &Res<Time>,
     ) -> Self::Params {
-        SparkleShaderParams{
+        SparkleShaderParams {
             count1: q.count1,
             count2: q.count2,
             seed: q.seed,
@@ -374,19 +379,15 @@ impl ParameterizedShader for SparkleShader {
 }
 
 #[repr(C)]
-#[derive(
-    Debug, Clone, Copy, PartialEq, Default, Reflect, bytemuck::Pod, bytemuck::Zeroable,
-)]
-pub struct SparkleShaderParams{
+#[derive(Debug, Clone, Copy, PartialEq, Default, Reflect, bytemuck::Pod, bytemuck::Zeroable)]
+pub struct SparkleShaderParams {
     pub count1: f32,
     pub count2: f32,
     pub seed: f32,
-    pub time: f32
+    pub time: f32,
 }
 
-#[derive(
-    Debug, Clone, Copy, PartialEq, Default, Component,
-)]
+#[derive(Debug, Clone, Copy, PartialEq, Default, Component)]
 pub struct SparkleParams {
     pub count1: f32,
     pub count2: f32,
@@ -395,68 +396,68 @@ pub struct SparkleParams {
 
 impl ShaderParams for SparkleShaderParams {}
 
-#[repr(C)]
-#[derive(Debug, Reflect, Clone, Copy, TypeUuid, Default, PartialEq)]
-#[uuid = "874f0666-0214-49b0-8e5a-b576fe098072"]
-pub struct WordLineShader;
+// #[repr(C)]
+// #[derive(Debug, Reflect, Clone, Copy, TypeUuid, Default, PartialEq)]
+// #[uuid = "874f0666-0214-49b0-8e5a-b576fe098072"]
+// pub struct WordLineShader;
 
-impl ParameterizedShader for WordLineShader {
-    type Params = WordLineParams;
-    type ParamsQuery<'a> = &'a WordLineParams;
-    type ParamsBundle = WordLineParams;
-    type ResourceParams<'w> = ();
+// impl ParameterizedShader for WordLineShader {
+//     type Params = WordLineParams;
+//     type ParamsQuery<'a> = &'a WordLineParams;
+//     type ParamsBundle = WordLineParams;
+//     type ResourceParams<'w> = ();
 
-    fn get_params<'w, 'a>(
-        query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
-        _r: &()
-    ) -> Self::Params {
-        *query_item
-    }
+//     fn get_params<'w, 'a>(
+//         query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
+//         _r: &()
+//     ) -> Self::Params {
+//         *query_item
+//     }
 
-    fn fragment_body() -> impl Into<String> {
-        "return word_line::fill(in.pos, in.line_width, in.progress, in.points1, in.points2, in.points3, in.points4);"
-    }
+//     fn fragment_body() -> impl Into<String> {
+//         "return word_line::fill(in.pos, in.line_width, in.progress, in.points1, in.points2, in.points3, in.points4);"
+//     }
 
-    fn imports() -> impl Iterator<Item = bevy_param_shaders::prelude::FragmentImport> {
-        const WORDLINE_IMPORT: FragmentImport = FragmentImport {
-            path: "shaders/fill/word_line.wgsl",
-            import_path: "word_line",
-        };
+//     fn imports() -> impl Iterator<Item = bevy_param_shaders::prelude::FragmentImport> {
+//         const WORDLINE_IMPORT: FragmentImport = FragmentImport {
+//             path: "shaders/fill/word_line.wgsl",
+//             import_path: "word_line",
+//         };
 
-        [WORDLINE_IMPORT].into_iter()
-    }
+//         [WORDLINE_IMPORT].into_iter()
+//     }
 
-    const FRAME: Frame = Frame::square(1.0);
-}
+//     const FRAME: Frame = Frame::square(1.0);
+// }
 
-#[repr(C)]
-#[derive(
-    Debug, Clone, Copy, PartialEq, Default, Reflect, bytemuck::Pod, bytemuck::Zeroable, Component,
-)]
-pub struct WordLineParams {
-    pub line_width: f32,
-    pub progress: f32,
-    pub points1: u32,
-    pub points2: u32,
-    pub points3: u32,
-    pub points4: u32,
-}
+// #[repr(C)]
+// #[derive(
+//     Debug, Clone, Copy, PartialEq, Default, Reflect, bytemuck::Pod, bytemuck::Zeroable, Component,
+// )]
+// pub struct WordLineParams {
+//     pub line_width: f32,
+//     pub progress: f32,
+//     pub points1: u32,
+//     pub points2: u32,
+//     pub points3: u32,
+//     pub points4: u32,
+// }
 
-impl ShaderParams for WordLineParams {}
+// impl ShaderParams for WordLineParams {}
+
+
 
 // const CUBIC_FALLOFF_IMPORT: FragmentImport = FragmentImport {
 //     path: "shaders/fill/cubic_falloff.wgsl",
 //     import_path: "smud::default_fill",
 // };
 
-
-
-const SIMPLE_FILL_IMPORT: FragmentImport = FragmentImport{
+pub (crate) const SIMPLE_FILL_IMPORT: FragmentImport = FragmentImport {
     path: "shaders/fill/simple.wgsl",
     import_path: "fill::simple",
 };
 
-const HORIZONTAL_GRADIENT_FILL: FragmentImport = FragmentImport{
+const HORIZONTAL_GRADIENT_FILL: FragmentImport = FragmentImport {
     path: "shaders/fill/horizontal_gradient.wgsl",
     import_path: "fill::horizontal_gradient",
 };

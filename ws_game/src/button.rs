@@ -362,7 +362,6 @@ impl ButtonInteraction {
 #[allow(dead_code)]
 
 fn generate_share_text(level: &DesignedLevel, time: &LevelTime, found_words_state: &FoundWordsState)-> String{
-    use std::fmt::format;
 
     let first_lines = match level.numbering{
         Some(Numbering::WordSaladNumber(num)) => format!("Word Salad #{num}\n{}", level.name),

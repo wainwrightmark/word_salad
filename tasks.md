@@ -13,4 +13,4 @@
 - transition easing
 - split total completion into multiple resources
 - Share text
-- Store level metadata (number / index) differently
+- Change previous to "Play #23"
