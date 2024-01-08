@@ -1,6 +1,3 @@
-- Different word line shader
-
-
 - Optimize Colours on selfie mode
 - Make Logo
 - Popup the first time you enter selfie mode

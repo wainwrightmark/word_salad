@@ -86,6 +86,7 @@ impl MavericNode for WordLine {
                                 is_final_segment: true,
                             },
                             ShaderColor { color },
+                            ShaderSecondColor{color}
                         ),
                         transform: Transform {
                             translation: rect.centre().extend(z_indices::WORD_LINE),
@@ -103,6 +104,7 @@ impl MavericNode for WordLine {
 
                     let translation = ((rect_f.centre() + rect_t.centre()) * 0.5).extend(z_indices::WORD_LINE);
                     let color = index_to_color(index);
+                    let color2 = index_to_color(index + 1);
 
                     let direction = get_direction(from, to);
 
@@ -115,6 +117,7 @@ impl MavericNode for WordLine {
                                     is_final_segment: index + 2 == solution.len(),
                                 },
                                 ShaderColor { color },
+                                ShaderSecondColor{color: color2}
                             ),
                             transform: Transform {
                                 translation,
@@ -203,8 +206,8 @@ struct WordLineSegmentShader;
 
 impl ParameterizedShader for WordLineSegmentShader {
     type Params = WordLineSegmentShaderParams;
-    type ParamsQuery<'a> = (&'a WordLineDirection, &'a ShaderColor);
-    type ParamsBundle = (WordLineDirection, ShaderColor);
+    type ParamsQuery<'a> = (&'a WordLineDirection, &'a ShaderColor, &'a ShaderSecondColor);
+    type ParamsBundle = (WordLineDirection, ShaderColor, ShaderSecondColor);
     type ResourceParams<'w> = Res<'w, WordLineGlobalValues>;
 
     fn get_params<'w, 'a>(
@@ -221,7 +224,8 @@ impl ParameterizedShader for WordLineSegmentShader {
             line_width: res.line_width,
             direction: query_item.0.direction,
 
-            color: query_item.1.color.into(),
+            color1: query_item.1.color.into(),
+            color2: query_item.2.color.into(),
             progress,
         }
     }
@@ -229,7 +233,7 @@ impl ParameterizedShader for WordLineSegmentShader {
     fn fragment_body() -> impl Into<String> {
         SDFColorCall {
             sdf: "sdf::word_line_segment::sdf(in.pos, in.line_width, in.direction, in.progress)",
-            fill_color: "fill::simple::fill(d, in.color, in.pos)",
+            fill_color: "fill::simple::fill(d, mix(in.color1, in.color2, in.progress) , in.pos)",
         }
     }
 
@@ -257,7 +261,8 @@ pub struct WordLineSegmentShaderParams {
     pub line_width: f32,
     pub direction: u32,
     pub progress: f32,
-    pub color: LinearRGBA,
+    pub color1: LinearRGBA,
+    pub color2: LinearRGBA,
 }
 
 impl ShaderParams for WordLineSegmentShaderParams {}
