@@ -254,37 +254,6 @@ pub struct ShaderBorder {
 
 impl ShaderParams for BoxWithBorderShaderParams {}
 
-#[repr(C)]
-#[derive(Debug, Reflect, Clone, Copy, TypeUuid, Default, PartialEq)]
-#[uuid = "67e11165-1873-42c2-9d6d-bfe7384eedc1"]
-pub struct PlayPauseShader;
-
-impl ParameterizedShader for PlayPauseShader {
-    type Params = ShaderProgress;
-    type ParamsQuery<'a> = &'a ShaderProgress;
-    type ParamsBundle = ShaderProgress;
-    type ResourceParams<'w> = ();
-
-    fn fragment_body() -> impl Into<String> {
-        SDFColorCall {
-            sdf: "shaders::play_pause::sdf(in.pos, in.progress)",
-            fill_color: "fill::simple::fill(d, vec4<f32>(0.0,0.0,0.0,1.0), in.pos)",
-        }
-    }
-
-    fn imports() -> impl Iterator<Item = FragmentImport> {
-        [SIMPLE_FILL_IMPORT, PLAY_PAUSE_IMPORT].into_iter()
-    }
-
-    fn get_params<'w, 'a>(
-        query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
-        _r: &(),
-    ) -> Self::Params {
-        *query_item
-    }
-
-    const FRAME: Frame = Frame::square(1.0);
-}
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Default, Reflect, Pod, Zeroable, Component)]
@@ -396,62 +365,6 @@ pub struct SparkleParams {
 
 impl ShaderParams for SparkleShaderParams {}
 
-// #[repr(C)]
-// #[derive(Debug, Reflect, Clone, Copy, TypeUuid, Default, PartialEq)]
-// #[uuid = "874f0666-0214-49b0-8e5a-b576fe098072"]
-// pub struct WordLineShader;
-
-// impl ParameterizedShader for WordLineShader {
-//     type Params = WordLineParams;
-//     type ParamsQuery<'a> = &'a WordLineParams;
-//     type ParamsBundle = WordLineParams;
-//     type ResourceParams<'w> = ();
-
-//     fn get_params<'w, 'a>(
-//         query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
-//         _r: &()
-//     ) -> Self::Params {
-//         *query_item
-//     }
-
-//     fn fragment_body() -> impl Into<String> {
-//         "return word_line::fill(in.pos, in.line_width, in.progress, in.points1, in.points2, in.points3, in.points4);"
-//     }
-
-//     fn imports() -> impl Iterator<Item = bevy_param_shaders::prelude::FragmentImport> {
-//         const WORDLINE_IMPORT: FragmentImport = FragmentImport {
-//             path: "shaders/fill/word_line.wgsl",
-//             import_path: "word_line",
-//         };
-
-//         [WORDLINE_IMPORT].into_iter()
-//     }
-
-//     const FRAME: Frame = Frame::square(1.0);
-// }
-
-// #[repr(C)]
-// #[derive(
-//     Debug, Clone, Copy, PartialEq, Default, Reflect, bytemuck::Pod, bytemuck::Zeroable, Component,
-// )]
-// pub struct WordLineParams {
-//     pub line_width: f32,
-//     pub progress: f32,
-//     pub points1: u32,
-//     pub points2: u32,
-//     pub points3: u32,
-//     pub points4: u32,
-// }
-
-// impl ShaderParams for WordLineParams {}
-
-
-
-// const CUBIC_FALLOFF_IMPORT: FragmentImport = FragmentImport {
-//     path: "shaders/fill/cubic_falloff.wgsl",
-//     import_path: "smud::default_fill",
-// };
-
 pub (crate) const SIMPLE_FILL_IMPORT: FragmentImport = FragmentImport {
     path: "shaders/fill/simple.wgsl",
     import_path: "fill::simple",
@@ -470,11 +383,6 @@ const BOX_SDF_IMPORT: FragmentImport = FragmentImport {
 const FILL_WITH_OUTLINE_IMPORT: FragmentImport = FragmentImport {
     path: "shaders/fill/fill_with_outline.wgsl",
     import_path: "fill::fill_with_outline",
-};
-
-const PLAY_PAUSE_IMPORT: FragmentImport = FragmentImport {
-    path: "shaders/sdf/play_pause.wgsl",
-    import_path: "shaders::play_pause",
 };
 
 const SPARKLE_IMPORT: FragmentImport = FragmentImport {

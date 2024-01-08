@@ -40,7 +40,7 @@ pub type ViewContext = (
     TotalCompletion,
     VideoResource,
     DailyChallenges,
-    Streak
+    Streak,
 );
 #[derive(MavericRoot)]
 pub struct ViewRoot;
@@ -98,38 +98,18 @@ impl MavericRootChildren for ViewRoot {
                         let total_seconds = context.4.as_ref().total_elapsed().as_secs();
                         let time_text = format_seconds(total_seconds);
                         commands.add_child("ui_timer", UITimer { time_text }, &context.3);
-
-                        // if let Some(progress) = match context.4.as_ref() {
-                        //     LevelTime::Running { .. } => Some(0.0), //if running show pause
-                        //     LevelTime::Paused { .. } => Some(1.0),  // if paused show running
-                        //     LevelTime::Finished { .. } => None,
-                        // } {
-                        //     let timer_rect = context.3.get_rect(&GameLayoutEntity::Timer, &());
-                        //     // commands.add_child(
-                        //     //     "timer_play_pause",
-                        //     //     ShaderBundle::<PlayPauseShader> {
-                        //     //         parameters: ShaderProgress { progress },
-                        //     //         transform: Transform {
-                        //     //             translation: (timer_rect.centre_right()
-                        //     //                 - Vec2 {
-                        //     //                     x: timer_rect.height(),
-                        //     //                     y: 0.0,
-                        //     //                 })
-                        //     //             .extend(crate::z_indices::TIMER),
-                        //     //             rotation: Default::default(),
-                        //     //             scale: Vec3::ONE * timer_rect.height(),
-                        //     //         },
-                        //     //         ..default()
-                        //     //     }
-                        //     //     .with_transition_to::<ProgressLens>(progress, 2.0.into()),
-                        //     //     &(),
-                        //     // )
-                        // }
                     }
                 }
                 itertools::Either::Right(non_level) => {
                     let selfie_mode = SelfieMode(context.8.is_selfie_mode);
-                    commands.add_child("non_level", NonLevelView { non_level, selfie_mode }, &context.3);
+                    commands.add_child(
+                        "non_level",
+                        NonLevelView {
+                            non_level,
+                            selfie_mode,
+                        },
+                        &context.3,
+                    );
                 }
             }
         } else {
