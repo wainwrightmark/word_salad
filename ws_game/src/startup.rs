@@ -95,15 +95,10 @@ pub fn go() {
     app.add_systems(Update, watch_lifecycle);
     app.add_systems(Startup, set_status_bar.after(hide_splash));
 
-    // app.add_systems(Last, stack_frames);
-    // app.init_resource::<FrameStack>();
 
     app.insert_resource(bevy::winit::WinitSettings {
         return_from_run: false,
         focused_mode: bevy::winit::UpdateMode::Continuous,
-        // focused_mode: bevy::winit::UpdateMode::Reactive {
-        //     wait: std::time::Duration::from_secs(1),
-        // },
         unfocused_mode: bevy::winit::UpdateMode::Reactive {
             wait: std::time::Duration::from_secs(60),
         },
@@ -112,35 +107,6 @@ pub fn go() {
     app.run();
 }
 
-// #[derive(Debug, Resource)]
-// pub struct FrameStack {
-//     pub remaining: u16,
-// }
-
-// impl Default for FrameStack {
-//     fn default() -> Self {
-//         Self { remaining: 360 }
-//     }
-// }
-
-// fn stack_frames(
-//     mouse: Res<Input<MouseButton>>,
-//     mut touch_events: EventReader<TouchInput>,
-//     mut frames: ResMut<FrameStack>,
-//     mut events: EventWriter<RequestRedraw>,
-// ) {
-//     if !touch_events.is_empty() {
-//         touch_events.clear();
-//         frames.remaining = FrameStack::default().remaining;
-//     } else if mouse.is_changed() {
-//         frames.remaining = FrameStack::default().remaining;
-//     }
-
-//     if let Some(new_remaining) = frames.remaining.checked_sub(1) {
-//         frames.remaining = new_remaining;
-//         events.send(RequestRedraw);
-//     }
-// }
 
 fn setup_system(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
@@ -185,13 +151,12 @@ fn choose_level_on_game_load(
     }
 
     match current_level.as_ref() {
-        CurrentLevel::NonLevel(NonLevel::BeforeTutorial) => {
+        CurrentLevel::NonLevel(_) => {
             return;
         }
 
         CurrentLevel::Tutorial { .. }
         | CurrentLevel::DailyChallenge { .. }
-        | CurrentLevel::NonLevel(_)
         | CurrentLevel::Custom { .. } => {
             if let Some(index) = completion.get_next_incomplete_daily_challenge_from_today() {
                 let today_level = CurrentLevel::DailyChallenge { index };
@@ -243,17 +208,21 @@ fn set_status_bar() {
 
 fn watch_lifecycle(
     mut events: EventReader<AppLifeCycleEvent>,
-    mut video: ResMut<VideoResource>,
+    // mut video: ResMut<VideoResource>,
     mut menu: ResMut<MenuState>,
     mut popup: ResMut<PopupState>,
 ) {
     for event in events.read() {
         match event {
-            AppLifeCycleEvent::StateChange { is_active } => {
+            AppLifeCycleEvent::StateChange { .. } => {
                 //info!("State change is_active {is_active}");
-                if *is_active && video.is_selfie_mode {
-                    video.is_selfie_mode = false;
-                }
+                // if *is_active && video.is_selfie_mode {
+                //     video.is_selfie_mode = false;
+
+                //     #[cfg(target_arch="wasm32")]{
+                //         crate::wasm::stop_video();
+                //     }
+                // }
             }
             AppLifeCycleEvent::BackPressed => {
                 if popup.is_buy_more_hints() {

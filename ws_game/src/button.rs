@@ -217,6 +217,11 @@ impl ButtonInteraction {
                 *current_level.as_mut() = CurrentLevel::NonLevel(NonLevel::BeforeTutorial);
                 menu_state.close();
             }
+            #[cfg(target_arch= "wasm32")]
+
+            ButtonInteraction::MainMenu(MainMenuLayoutEntity::PlaySteks) => {
+                crate::wasm::open_link("https://steks.net");
+            }
 
             ButtonInteraction::LevelsMenu(LevelsMenuLayoutEntity::WordSalad) => {
                 *menu_state.as_mut() = MenuState::WordSaladLevels;

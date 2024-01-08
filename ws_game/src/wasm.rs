@@ -109,6 +109,25 @@ pub fn get_game_from_location() -> Option<DesignedLevel> {
     DesignedLevel::try_from_path(path)
 }
 
+pub fn open_link(url: &str) {
+    use web_sys::window;
+
+    let window = match window() {
+        Some(window) => window,
+        None => {
+            error!("Could not get window to open link");
+            return;
+        }
+    };
+
+    match window.open_with_url_and_target(url, "_top") {
+        Ok(_) => {}
+        Err(err) => {
+            error!("{err:?}")
+        }
+    }
+}
+
 #[wasm_bindgen::prelude::wasm_bindgen(module = "/video.js")]
 extern "C" {
     #[wasm_bindgen(catch, final, js_name = "startVideo")]

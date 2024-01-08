@@ -16,6 +16,8 @@ pub enum MainMenuLayoutEntity {
     SelfieMode = 2,
     Tutorial = 3,
     ResetPuzzle = 4,
+    #[cfg(target_arch= "wasm32")]
+    PlaySteks = 5
 }
 
 impl MainMenuLayoutEntity {
@@ -68,6 +70,7 @@ impl LayoutStructureWithStaticText for MainMenuLayoutEntity {
             SelfieMode => "Selfie Mode",
             Tutorial => "Tutorial",
             ResetPuzzle => "Reset Puzzle",
+            PlaySteks => "Play Steks"
         }
     }
 }
