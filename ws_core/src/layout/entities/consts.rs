@@ -33,7 +33,7 @@ pub const WORD_CROSS_PAD: f32 = 5.;
 
 /// Extra top offset while streaming
 
-pub const SELFIE_MODE_CONGRATS_TOP_OFFSET:f32 = 75.0;
+pub const SELFIE_MODE_CONGRATS_TOP_OFFSET:f32 = 150.0;
 
 
 pub const CONGRATS_ENTITY_STATISTIC_HEIGHT: f32 = 70.0;

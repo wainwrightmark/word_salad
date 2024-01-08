@@ -94,10 +94,11 @@ impl MavericNode for CongratsView {
 
                 for (index, statistic) in CongratsStatistic::iter().enumerate() {
                     let data = match (statistic, data) {
-                        (_, Data::None) |
-                        (CongratsStatistic::Left, Data::JustHints)
+                        (_, Data::None)
+                        | (CongratsStatistic::Left, Data::JustHints)
                         | (CongratsStatistic::Right, Data::JustHints) => None,
-                        (CongratsStatistic::Left, _) | (CongratsStatistic::Middle, Data::JustHints) => {
+                        (CongratsStatistic::Left, _)
+                        | (CongratsStatistic::Middle, Data::JustHints) => {
                             Some((context.2.hints_used, "Hints"))
                         }
                         (CongratsStatistic::Middle, Data::TodaysChallenge { streak, .. }) => {
@@ -159,39 +160,41 @@ impl MavericNode for CongratsView {
                     );
                 }
 
-                for (index, button) in CongratsButton::iter().enumerate() {
+                let button_count  = if selfie_mode.0{
+                    1
+                } else{
+                     3
+                };
 
-
-
-
-
+                for (index, button) in CongratsButton::iter().enumerate().take(button_count) {
                     let text = match button {
                         CongratsButton::Next => {
-
                             let next_level = context.1.get_next_level(context.7.as_ref());
 
-                            match next_level{
-                                CurrentLevel::Tutorial { .. } => "Next",
-                                CurrentLevel::Fixed { ..  } => "Next",
-                                CurrentLevel::DailyChallenge { index:next_index } => {
-                                    if let CurrentLevel::DailyChallenge { index:current_index } = context.1.as_ref(){
-                                        if next_index > *current_index{
-                                            "Today's Puzzle"
+                            match next_level {
+                                CurrentLevel::Tutorial { .. } => "Next".to_string(),
+                                CurrentLevel::Fixed { .. } => "Next".to_string(),
+                                CurrentLevel::DailyChallenge { index: next_index } => {
+                                    if let CurrentLevel::DailyChallenge {
+                                        index: current_index,
+                                    } = context.1.as_ref()
+                                    {
+                                        if next_index > *current_index {
+                                            "Today's Puzzle".to_string()
+                                        } else {
+                                            format!("Play #{}", next_index + 1)
                                         }
-                                        else{
-                                            "Previous"
-                                        }
-                                    }else{
-                                        "Previous"
+                                    } else {
+                                        format!("Play #{}", next_index + 1)
                                     }
-                                },
-                                CurrentLevel::Custom { .. } => "Next",
-                                CurrentLevel::NonLevel(_) => "Finish",
+                                }
+                                CurrentLevel::Custom { .. } => "Next".to_string(),
+                                CurrentLevel::NonLevel(_) => "Finish".to_string(),
                             }
-                        },
-                        CongratsButton::MoreLevels => "More Puzzles",
+                        }
+                        CongratsButton::MoreLevels => "More Puzzles".to_string(),
                         #[cfg(target_arch = "wasm32")]
-                        CongratsButton::Share => "Share",
+                        CongratsButton::Share => "Share".to_string(),
                     };
 
                     let text_color = if selfie_mode.0 {
@@ -305,12 +308,15 @@ impl MavericNode for StatisticNode {
                 &(),
             );
 
+
+
             commands.add_child(
                 "box",
                 ShaderBundle::<BoxShader> {
                     parameters: (
                         (*background_color).into(),
-                        0.1.into(),
+
+                        crate::rounding::OTHER_BUTTON_NORMAL.into(),
                         (rect.width() / rect.height()).into(),
                     ),
 
@@ -389,7 +395,7 @@ impl ParameterizedShader for FireworksShader {
 
     fn get_params<'w, 'a>(
         query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
-        _r: &()
+        _r: &(),
     ) -> Self::Params {
         FireworksParams {
             color: query_item.0.color.into(),

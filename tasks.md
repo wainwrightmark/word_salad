@@ -10,4 +10,5 @@
 - transition easing
 - split total completion into multiple resources
 - Share text
-- Change previous to "Play #23"
+- Additional buttons in Non-Level
+- Different level transition when you load game on non-level

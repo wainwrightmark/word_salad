@@ -48,13 +48,22 @@ impl LayoutStructure for CongratsLayoutEntity {
     }
 
     fn location(&self, context: &Self::Context) -> Vec2 {
-        let top_offset = if context.0 {
-            TOP_BAR_HEIGHT + THEME_HEIGHT + GRID_TILE_SIZE + SELFIE_MODE_CONGRATS_TOP_OFFSET
-        } else {
-            TOP_BAR_HEIGHT + THEME_HEIGHT + GRID_TILE_SIZE
+
+        let extra_offset = if context.0{
+            SELFIE_MODE_CONGRATS_TOP_OFFSET
+        }else{
+            0.0
         };
 
+        let top_offset = TOP_BAR_HEIGHT + THEME_HEIGHT + GRID_TILE_SIZE + extra_offset;
+
         pub const MENU_BUTTON_SPACING: f32 = 40.0 * 0.1;
+
+        let button_count = if context.0{
+            1
+        } else{
+            CongratsButton::COUNT
+        };
 
         match self {
             CongratsLayoutEntity::Statistic(statistic) => Vec2 {
@@ -75,19 +84,27 @@ impl LayoutStructure for CongratsLayoutEntity {
                         GRID_SIZE
                             - CONGRATS_ENTITY_STATISTIC_HEIGHT
                             - CONGRATS_ENTITY_VERTICAL_GAP
-                            - SELFIE_MODE_CONGRATS_TOP_OFFSET,
+                            - extra_offset,
                         CONGRATS_ENTITY_BUTTON_HEIGHT + MENU_BUTTON_SPACING,
-                        CongratsButton::COUNT,
+                        button_count,
                         *button as usize,
                     ),
             },
         }
     }
 
-    fn iter_all(_context: &Self::Context) -> impl Iterator<Item = Self> {
+    fn iter_all(context: &Self::Context) -> impl Iterator<Item = Self> {
+        let take =
+        if context.0{
+            4
+        }
+        else{
+            6
+        };
+
         CongratsStatistic::iter()
             .map(|x| Self::Statistic(x))
-            .chain(CongratsButton::iter().map(|x| Self::Button(x)))
+            .chain(CongratsButton::iter().map(|x| Self::Button(x))).take(take)
     }
 }
 
