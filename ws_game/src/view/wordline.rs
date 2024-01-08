@@ -69,9 +69,14 @@ impl MavericNode for WordLine {
                 }
             };
 
+            const SCALE_FACTOR: f32 = ((GRID_GAP / 3.0) + GRID_TILE_SIZE) / GRID_TILE_SIZE;
+
             if let Ok(tile) = solution.iter().exactly_one() {
                 let rect = args.context.get_rect(&LayoutGridTile(*tile), &());
                 let color = index_to_color(0);
+
+
+
                 commands.add_child(
                     0,
                     ShaderBundle::<WordLineSegmentShader> {
@@ -85,7 +90,7 @@ impl MavericNode for WordLine {
                         transform: Transform {
                             translation: rect.centre().extend(z_indices::WORD_LINE),
                             rotation: Default::default(),
-                            scale: Vec3::ONE * rect.width(),
+                            scale: Vec3::ONE * rect.width() * SCALE_FACTOR,
                         },
                         ..Default::default()
                     },
@@ -93,7 +98,10 @@ impl MavericNode for WordLine {
                 );
             } else {
                 for (index, (from, to)) in solution.iter().tuple_windows().enumerate() {
-                    let rect = args.context.get_rect(&LayoutGridTile(*from), &());
+                    let rect_f = args.context.get_rect(&LayoutGridTile(*from), &());
+                    let rect_t = args.context.get_rect(&LayoutGridTile(*to), &());
+
+                    let translation = ((rect_f.centre() + rect_t.centre()) * 0.5).extend(z_indices::WORD_LINE);
                     let color = index_to_color(index);
 
                     let direction = get_direction(from, to);
@@ -109,9 +117,9 @@ impl MavericNode for WordLine {
                                 ShaderColor { color },
                             ),
                             transform: Transform {
-                                translation: rect.centre().extend(z_indices::WORD_LINE),
+                                translation,
                                 rotation: Default::default(),
-                                scale: Vec3::ONE * rect.width() * 2.0,
+                                scale: Vec3::ONE * rect_f.width() * SCALE_FACTOR,
                             },
                             ..Default::default()
                         },
@@ -119,15 +127,6 @@ impl MavericNode for WordLine {
                     );
                 }
             }
-
-            // let final_segment_length = final_segment_length as f32;
-            // let speed = 4.0;
-
-            // let progress = commands
-            //     .transition_value::<ProgressLens>(final_segment_length, speed.into())
-            //     .min(final_segment_length + 1.0) // don't go more than half past the last tile
-            //     .min(solution.len() as f32) //don't show more tiles than we know
-            //     .max(final_segment_length - 0.75); //always be relatively close to the end
         });
     }
 
@@ -171,36 +170,6 @@ impl MavericNode for WordLine {
                 target_progress,
                 target_line_width,
             });
-        // let line_width = if should_hide {
-        //     commands.transition_value::<WordLineWidthLens>(
-        //         -DEFAULT_WIDTH,
-        //         (DEFAULT_WIDTH * 1.2).into(),
-        //     )
-        // } else if args
-        //     .previous
-        //     .is_some_and(|x| !x.solution.is_empty() && !x.should_hide)
-        // {
-        //     if self.close_to_solution {
-        //         let cycle = TransitionBuilder::<WordLineWidthLens>::default()
-        //             .then_tween(DEFAULT_WIDTH * 1.05, 0.03.into())
-        //             .then_tween(DEFAULT_WIDTH, 0.03.into())
-        //             .build_loop();
-
-        //         commands.insert(cycle)
-        //     } else {
-        //         commands.remove::<Transition<WordLineWidthLens>>();
-        //     }
-        //     DEFAULT_WIDTH
-        // } else {
-        //     //info!("Word line newly visible");
-        //     commands.insert(
-        //         TransitionBuilder::<WordLineWidthLens>::default()
-        //             .then_tween(DEFAULT_WIDTH, (DEFAULT_WIDTH * 4.0).into())
-        //             .build(),
-        //     );
-
-        //     DEFAULT_WIDTH * 0.25
-        // };
     }
 }
 
@@ -259,7 +228,7 @@ impl ParameterizedShader for WordLineSegmentShader {
 
     fn fragment_body() -> impl Into<String> {
         SDFColorCall {
-            sdf: "sdf::word_line_segment::sdf(in.pos, in.line_width, in.direction, in.progress, in.color)",
+            sdf: "sdf::word_line_segment::sdf(in.pos, in.line_width, in.direction, in.progress)",
             fill_color: "fill::simple::fill(d, in.color, in.pos)",
         }
     }
@@ -273,7 +242,7 @@ impl ParameterizedShader for WordLineSegmentShader {
         [WORDLINE_IMPORT, SIMPLE_FILL_IMPORT].into_iter()
     }
 
-    const FRAME: Frame = Frame::square(1.0);
+    const FRAME: Frame = Frame::square(2.0);
 }
 
 #[derive(Debug, Clone, Component, PartialEq, Default)]
@@ -293,7 +262,7 @@ pub struct WordLineSegmentShaderParams {
 
 impl ShaderParams for WordLineSegmentShaderParams {}
 
-const FULL_LINE_WIDTH: f32 = 0.15;
+const FULL_LINE_WIDTH: f32 = 0.30;
 const PULSED_LINE_WIDTH: f32 = FULL_LINE_WIDTH * 1.2;
 const ZERO_LINE_WIDTH: f32 = -0.01; //slightly below zero to prevent artifacts
 const LINE_WIDTH_DECREASE_SPEED: f32 = FULL_LINE_WIDTH * 1.2;
