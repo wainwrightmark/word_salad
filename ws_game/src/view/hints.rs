@@ -88,7 +88,7 @@ impl MavericNode for HintsViewNode {
                 "2",
                 TextStyle {
                     font_size: hint_font_size,
-                    color: palette::BUTTON_TEXT_COLOR.convert_color(),
+                    color: palette::HINT_TEXT_COLOR.convert_color(),
                     font,
                 },
             )
@@ -198,7 +198,7 @@ impl MavericNode for HintsViewNode {
                     Text2DNode {
                         text,
                         font_size: hint_font_size,
-                        color: palette::BUTTON_TEXT_COLOR.convert_color(),
+                        color: palette::HINT_TEXT_COLOR.convert_color(),
                         font: BUTTONS_FONT_PATH,
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,

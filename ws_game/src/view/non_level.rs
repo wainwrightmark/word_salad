@@ -33,14 +33,19 @@ impl MavericNode for NonLevelView {
                 }
             };
 
-            //let full_rect = size.get_rect(GameLayoutEntity::, context)
+            let text_color = if selfie_mode.0 {
+                palette::CONGRATS_BUTTON_TEXT_SELFIE
+            } else {
+                palette::CONGRATS_BUTTON_TEXT_NORMAL
+            }
+            .convert_color();
 
             commands.add_child(
                 "text",
                 Text2DNode {
                     text,
                     font_size: size.font_size(&NonLevelLayoutEntity::Text),
-                    color: palette::BUTTON_TEXT_COLOR.convert_color(),
+                    color: text_color,
                     font: BUTTONS_FONT_PATH,
                     alignment: TextAlignment::Center,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -62,12 +67,7 @@ impl MavericNode for NonLevelView {
                 NonLevel::NoMoreLevelSequence(_) => "Reset",
             };
 
-            let text_color = if selfie_mode.0 {
-                palette::CONGRATS_BUTTON_TEXT_SELFIE
-            } else {
-                palette::CONGRATS_BUTTON_TEXT_NORMAL
-            }
-            .convert_color();
+
 
             let fill_color = if selfie_mode.0 {
                 palette::CONGRATS_BUTTON_FILL_SELFIE

@@ -54,6 +54,7 @@ impl MavericRootChildren for ViewRoot {
     ) {
         commands.add_child("Top Bar", TopBar, context);
 
+        let is_selfie_mode = context.8.is_selfie_mode;
         if context.5.is_closed() {
             let level_complete = context.2.is_level_complete();
 
@@ -85,23 +86,46 @@ impl MavericRootChildren for ViewRoot {
                         commands.add_child("tutorial", TutorialNode { text }, &context.3);
                     } else {
                         let theme = level.full_name();
-                        commands.add_child("ui_theme", LevelName { theme }, &context.3);
+                        commands.add_child(
+                            "ui_theme",
+                            LevelName {
+                                theme,
+                                is_selfie_mode,
+                            },
+                            &context.3,
+                        );
 
                         if let Some(info) = &level.extra_info {
                             commands.add_child(
                                 "ui_theme_info",
-                                LevelExtraInfo { info: info.clone() },
+                                LevelExtraInfo {
+                                    info: info.clone(),
+                                    is_selfie_mode,
+                                },
                                 &context.3,
                             );
                         }
 
                         let total_seconds = context.4.as_ref().total_elapsed().as_secs();
                         let time_text = format_seconds(total_seconds);
-                        commands.add_child("ui_timer", UITimer { time_text }, &context.3);
+                        commands.add_child(
+                            "ui_timer",
+                            UITimer {
+                                time_text,
+                                is_selfie_mode,
+                            },
+                            &context.3,
+                        );
+
+                        //Draw a box around the theme - looks rubbish
+                        // if context.8.is_selfie_mode{
+                        //     let rect = context.3.get_rect(&GameLayoutEntity::Theme, &());
+                        //     commands.add_child("theme_box", box_node1(rect.width(), rect.height(), rect.centre().extend(z_indices::CONGRATS_BUTTON), palette::CONGRATS_STATISTIC_FILL_SELFIE.convert_color(), 0.1), &());
+                        // }
                     }
                 }
                 itertools::Either::Right(non_level) => {
-                    let selfie_mode = SelfieMode(context.8.is_selfie_mode);
+                    let selfie_mode = SelfieMode(is_selfie_mode);
                     commands.add_child(
                         "non_level",
                         NonLevelView {

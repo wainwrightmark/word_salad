@@ -7,6 +7,7 @@ use ws_core::prelude::*;
 #[derive(Debug, Clone, PartialEq)]
 pub struct LevelName {
     pub theme: Ustr,
+    pub is_selfie_mode: bool
 }
 
 impl MavericNode for LevelName {
@@ -24,12 +25,18 @@ impl MavericNode for LevelName {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
             let theme_font_size = context.font_size(&GameLayoutEntity::Theme);
 
+            let color = if node.is_selfie_mode{
+                palette::THEME_TEXT_COLOR_SELFIE
+            } else{
+                palette::THEME_TEXT_COLOR_NORMAL
+            }.convert_color();
+
             commands.add_child(
                 "theme",
                 Text2DNode {
                     text: node.theme.to_string(),
                     font_size: theme_font_size,
-                    color: palette::BUTTON_TEXT_COLOR.convert_color(),
+                    color,
                     font: TITLE_FONT_PATH,
                     alignment: TextAlignment::Left,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,

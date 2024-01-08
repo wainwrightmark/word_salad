@@ -41,8 +41,12 @@ pub mod palette {
     pub const ANIMATED_SOLUTION_NEW: Color = FULL_GREEN;
     pub const ANIMATED_SOLUTION_OLD: Color = Color::rgba(0.17, 0.48, 0.71, 1.0);
 
-    pub const BUTTON_TEXT_COLOR: Color = MY_BLACK;
-    pub const BUTTON_BORDER: Color = MY_BLACK;
+    pub const TOP_BAR_BURGER: Color = MY_BLACK;
+    pub const TOP_BAR_LOGO: Color = MY_BLACK;
+
+    pub const THEME_TEXT_COLOR_NORMAL: Color = MY_BLACK;
+    pub const THEME_TEXT_COLOR_SELFIE: Color = LIGHT_GRAY;
+
 
     pub const CONGRATS_BUTTON_TEXT_NORMAL: Color = MY_BLACK;
     pub const CONGRATS_BUTTON_FILL_NORMAL: Color = LIGHT_GREEN;
@@ -83,6 +87,10 @@ pub mod palette {
     pub const POPUP_BOX_BORDER: Color = MY_BLACK;
 
     pub const HINT_COUNTER_COLOR: Color = LIGHT_GREEN;
+    pub const HINT_TEXT_COLOR: Color = MY_BLACK;
+
+    pub const WORD_TEXT_NORMAL: Color = MY_BLACK;
+    pub const WORD_TEXT_SELFIE: Color = MY_BLACK.with_a(0.95);
 
     pub const MY_BLACK: Color = Color::rgba(0.12, 0., 0., 1.);
     pub const MY_WHITE: Color = Color::rgba(1.0, 1.0, 1.0, 1.);

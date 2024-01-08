@@ -40,6 +40,8 @@ impl MavericNode for WordsNode {
                         CurrentLevel::DailyChallenge { index } => (3, *index as u16),
                         CurrentLevel::NonLevel(..) => (4, 0),
                     };
+                    let selfie_mode = context.8.is_selfie_mode;
+
                     commands.add_child(
                         (index as u16, level_indices.0, level_indices.1),
                         WordNode {
@@ -48,6 +50,7 @@ impl MavericNode for WordsNode {
                             completion,
                             rect,
                             font_size,
+                            selfie_mode
                         },
                         &(),
                     );
@@ -63,6 +66,7 @@ pub struct WordNode {
     pub completion: Completion,
     pub rect: LayoutRectangle,
     pub font_size: f32,
+    pub selfie_mode: bool
 }
 
 impl MavericNode for WordNode {
@@ -93,23 +97,23 @@ impl MavericNode for WordNode {
                 Completion::Complete => 1.0,
             };
 
-            // let fill_color = node.completion.color();
-            // let amount_per_second = if node.completion.is_unstarted() {
-            //     100.0
-            // } else {
-            //     1.0
-            // };
 
             let centre = node.rect.centre();
 
             let text_translation = centre.extend(crate::z_indices::WORD_TEXT);
+
+            let color = if node.selfie_mode{
+                palette::WORD_TEXT_SELFIE
+            }else{
+                palette::WORD_TEXT_NORMAL
+            }.convert_color();
 
             commands.add_child(
                 "text",
                 Text2DNode {
                     text,
                     font_size: node.font_size,
-                    color: palette::BUTTON_TEXT_COLOR.convert_color(),
+                    color,
                     font: SOLUTIONS_FONT_PATH,
                     alignment: TextAlignment::Center,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,

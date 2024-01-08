@@ -46,7 +46,7 @@ impl MavericNode for TopBar {
                         text: "\u{e800}",
                         font_size: size
                             .font_size::<LayoutTopBar>(&LayoutTopBar::WordSaladLogo),
-                        color: palette::BUTTON_TEXT_COLOR.convert_color(),
+                        color: palette::TOP_BAR_BURGER.convert_color(),
                         font: ICON_FONT_PATH,
                         alignment: TextAlignment::Left,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -75,7 +75,7 @@ impl MavericNode for TopBar {
                         text: "Word Salad",
                         font_size: size
                             .font_size::<LayoutTopBar>(&LayoutTopBar::WordSaladLogo),
-                        color: palette::BUTTON_TEXT_COLOR.convert_color(),
+                        color: palette::TOP_BAR_LOGO.convert_color(),
                         font: WORD_SALAD_LOGO_FONT_PATH,
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,

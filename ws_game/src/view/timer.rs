@@ -8,6 +8,7 @@ use ws_core::prelude::*;
 #[derive(Debug, Clone, PartialEq)]
 pub struct UITimer {
     pub time_text: String,
+    pub is_selfie_mode: bool
 }
 
 impl MavericNode for UITimer {
@@ -24,12 +25,18 @@ impl MavericNode for UITimer {
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
             let timer_font_size = context.font_size(&GameLayoutEntity::Timer);
+
+            let color = if node.is_selfie_mode{
+                palette::THEME_TEXT_COLOR_SELFIE
+            } else{
+                palette::THEME_TEXT_COLOR_NORMAL
+            }.convert_color();
             commands.add_child(
                 "timer",
                 Text2DNode {
                     text: node.time_text.clone(),
                     font_size: timer_font_size,
-                    color: palette::BUTTON_TEXT_COLOR.convert_color(),
+                    color,
                     font: TITLE_FONT_PATH,
                     alignment: TextAlignment::Left,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
