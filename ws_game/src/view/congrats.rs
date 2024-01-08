@@ -47,7 +47,7 @@ impl MavericNode for CongratsView {
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
                 let size = &context.3;
-                let selfie_mode = SelfieMode(context.8.is_selfie_mode);
+                let selfie_mode = SelfieMode{is_selfie_mode: context.8.is_selfie_mode};
 
                 const TRANSITION_SECS: f32 = 1.0;
 
@@ -120,17 +120,17 @@ impl MavericNode for CongratsView {
                     };
                     let rect =
                         size.get_rect(&CongratsLayoutEntity::Statistic(statistic), &selfie_mode);
-                    let number_font_size = size.font_size(&StatisticNumber);
-                    let text_font_size = size.font_size(&StatisticLabel);
+                    let number_font_size = size.font_size(&StatisticNumber, &selfie_mode);
+                    let text_font_size = size.font_size(&StatisticLabel, &selfie_mode);
 
-                    let text_color = if selfie_mode.0 {
+                    let text_color = if selfie_mode.is_selfie_mode {
                         palette::CONGRATS_STATISTIC_TEXT_SELFIE
                     } else {
                         palette::CONGRATS_STATISTIC_TEXT_NORMAL
                     }
                     .convert_color();
 
-                    let fill_color = if selfie_mode.0 {
+                    let fill_color = if selfie_mode.is_selfie_mode {
                         palette::CONGRATS_STATISTIC_FILL_SELFIE
                     } else {
                         palette::CONGRATS_STATISTIC_FILL_NORMAL
@@ -160,7 +160,7 @@ impl MavericNode for CongratsView {
                     );
                 }
 
-                let button_count  = if selfie_mode.0{
+                let button_count  = if selfie_mode.is_selfie_mode{
                     1
                 } else{
                      3
@@ -197,14 +197,14 @@ impl MavericNode for CongratsView {
                         CongratsButton::Share => "Share".to_string(),
                     };
 
-                    let text_color = if selfie_mode.0 {
+                    let text_color = if selfie_mode.is_selfie_mode {
                         palette::CONGRATS_BUTTON_TEXT_SELFIE
                     } else {
                         palette::CONGRATS_BUTTON_TEXT_NORMAL
                     }
                     .convert_color();
 
-                    let fill_color = if selfie_mode.0 {
+                    let fill_color = if selfie_mode.is_selfie_mode {
                         palette::CONGRATS_BUTTON_FILL_SELFIE
                     } else {
                         palette::CONGRATS_BUTTON_FILL_NORMAL
@@ -215,7 +215,7 @@ impl MavericNode for CongratsView {
                         (1u16, index as u16),
                         WSButtonNode {
                             text,
-                            font_size: size.font_size(&CongratsLayoutEntity::Button(button)),
+                            font_size: size.font_size(&CongratsLayoutEntity::Button(button), &()),
                             rect: size
                                 .get_rect(&CongratsLayoutEntity::Button(button), &selfie_mode),
                             interaction: ButtonInteraction::Congrats(button),

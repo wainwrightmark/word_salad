@@ -125,7 +125,7 @@ impl MavericRootChildren for ViewRoot {
                     }
                 }
                 itertools::Either::Right(non_level) => {
-                    let selfie_mode = SelfieMode(is_selfie_mode);
+                    let selfie_mode = SelfieMode{is_selfie_mode};
                     commands.add_child(
                         "non_level",
                         NonLevelView {

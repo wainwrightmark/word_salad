@@ -23,7 +23,7 @@ impl MavericNode for LevelExtraInfo {
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
-            let theme_font_size = context.font_size(&GameLayoutEntity::ThemeInfo);
+            let theme_font_size = context.font_size(&GameLayoutEntity::ThemeInfo, &());
 
             let color = if node.is_selfie_mode{
                 palette::THEME_TEXT_COLOR_SELFIE

@@ -43,7 +43,7 @@ pub fn animate_solution(
     let word_destination_centre = word_destination_rect.centre();
 
     let font = asset_server.load(SOLUTIONS_FONT_PATH);
-    let font_size = size.font_size::<LayoutGridTile>(&LayoutGridTile::default());
+    let font_size = size.font_size::<LayoutGridTile>(&LayoutGridTile::default(), &());
 
     let speed_one_scale = calculate_speed(
         &Vec3::ONE,

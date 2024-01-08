@@ -147,7 +147,7 @@ impl MavericNode for GridTiles {
 
                 let size = context.3.as_ref();
                 let tile_size = size.tile_size();
-                let font_size = size.font_size::<LayoutGridTile>(&LayoutGridTile::default());
+                let font_size = size.font_size::<LayoutGridTile>(&LayoutGridTile::default(), &());
                 let centre = size.get_rect(&LayoutGridTile(tile), &()).centre();
 
                 commands.add_child(

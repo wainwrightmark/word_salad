@@ -63,7 +63,8 @@ impl LayoutStructure for LayoutTopBar {
 }
 
 impl LayoutStructureWithFont for LayoutTopBar {
-    fn font_size(&self) -> f32 {
+    type FontContext = ();
+    fn font_size(&self,_: &()) -> f32 {
         match self {
             LayoutTopBar::MenuBurgerButton => 40.0,
             LayoutTopBar::WordSaladLogo => 20.0,

@@ -24,7 +24,7 @@ impl MavericNode for UITimer {
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
-            let timer_font_size = context.font_size(&GameLayoutEntity::Timer);
+            let timer_font_size = context.font_size(&GameLayoutEntity::Timer, &());
 
             let color = if node.is_selfie_mode{
                 palette::THEME_TEXT_COLOR_SELFIE

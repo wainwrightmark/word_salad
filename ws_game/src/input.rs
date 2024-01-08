@@ -88,7 +88,7 @@ impl InteractionEntity {
                         return Self::try_get_button::<CongratsLayoutEntity>(
                             position,
                             size,
-                            &SelfieMode(video_resource.is_selfie_mode),
+                            &SelfieMode{is_selfie_mode: video_resource.is_selfie_mode},
                         );
                     }
 

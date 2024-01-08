@@ -7,18 +7,29 @@ use ws_core::{
 
 use super::{MENU_BUTTON_FONT_SIZE, MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
 
-#[derive(
-    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter, EnumCount, Display,
-)]
+#[cfg(target_arch="wasm32")]
+#[derive( Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter, EnumCount, Display,)]
 pub enum MainMenuLayoutEntity {
     Puzzles = 0,
     Store = 1,
     SelfieMode = 2,
     Tutorial = 3,
     ResetPuzzle = 4,
-    #[cfg(target_arch= "wasm32")]
     PlaySteks = 5
 }
+
+#[cfg(not(target_arch="wasm32"))]
+#[derive( Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter, EnumCount, Display,)]
+pub enum MainMenuLayoutEntity {
+    Puzzles = 0,
+    Store = 1,
+    SelfieMode = 2,
+    Tutorial = 3,
+    ResetPuzzle = 4,
+}
+
+//#[cfg_attr(target_arch = "wasm32", derive( Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter, EnumCount, Display,))]
+
 
 impl MainMenuLayoutEntity {
     pub fn index(&self) -> usize {
@@ -55,7 +66,8 @@ impl LayoutStructure for MainMenuLayoutEntity {
 }
 
 impl LayoutStructureWithFont for MainMenuLayoutEntity {
-    fn font_size(&self) -> f32 {
+    type FontContext = ();
+    fn font_size(&self,_: &()) -> f32 {
         MENU_BUTTON_FONT_SIZE
     }
 }

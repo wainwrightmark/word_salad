@@ -120,6 +120,7 @@ fn choose_level_on_game_load(
     completion: Res<TotalCompletion>,
     daily_challenges: Res<DailyChallenges>,
 ) {
+    return;
 
     #[cfg(target_arch = "wasm32")]
     {

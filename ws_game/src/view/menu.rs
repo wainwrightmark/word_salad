@@ -140,7 +140,7 @@ impl MavericNode for Menu {
 
 fn add_menu_items<
     R: MavericRoot,
-    L: LayoutStructureWithFont + LayoutStructureWithStaticText + Into<ButtonInteraction>,
+    L: LayoutStructureWithFont<FontContext = ()> + LayoutStructureWithStaticText + Into<ButtonInteraction>,
 >(
     context: &<L as LayoutStructure>::Context,
     commands: &mut UnorderedChildCommands<R>,
@@ -149,7 +149,7 @@ fn add_menu_items<
     fill_color: Color,
 ) {
     for (index, entity) in L::iter_all(context).enumerate() {
-        let font_size = size.font_size::<L>(&entity);
+        let font_size = size.font_size::<L>(&entity, &());
         let rect = size.get_rect(&entity, context);
         commands.add_child(
             (index as u16, page),
@@ -168,7 +168,7 @@ fn add_menu_items<
 
 fn add_double_text_menu_items<
     R: MavericRoot,
-    L: LayoutStructureWithFont + LayoutStructure + Into<ButtonInteraction>,
+    L: LayoutStructureWithFont<FontContext = ()> + LayoutStructure + Into<ButtonInteraction>,
 >(
     context: &<L as LayoutStructure>::Context,
     commands: &mut UnorderedChildCommands<R>,
@@ -180,7 +180,7 @@ fn add_double_text_menu_items<
     right_font: &'static str,
 ) {
     for (index, entity) in L::iter_all(context).enumerate() {
-        let font_size = size.font_size::<L>(&entity);
+        let font_size = size.font_size::<L>(&entity, &());
         let (left_text, right_text) = func(&entity);
 
         let rect = size.get_rect(&entity, context);

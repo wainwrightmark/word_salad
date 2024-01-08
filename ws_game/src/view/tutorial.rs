@@ -109,7 +109,7 @@ impl MavericNode for TutorialPopupNode {
             let TutorialPopupNode { text, entity } = node;
 
             let rect = context.get_rect(entity, &());
-            let font_size = context.font_size(&TutorialTextLayoutEntity(*entity));
+            let font_size = context.font_size(&TutorialTextLayoutEntity(*entity), &());
             let text_rect = context.get_rect(&TutorialTextLayoutEntity(*entity), &());
 
             let background = crate::shapes::box_with_border_node(
@@ -469,7 +469,8 @@ impl LayoutStructure for TutorialTextLayoutEntity {
 }
 
 impl LayoutStructureWithFont for TutorialTextLayoutEntity {
-    fn font_size(&self) -> f32 {
+    type FontContext = ();
+    fn font_size(&self,_: &()) -> f32 {
         30.0
     }
 }

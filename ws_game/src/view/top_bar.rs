@@ -45,7 +45,7 @@ impl MavericNode for TopBar {
                     Text2DNode {
                         text: "\u{e800}",
                         font_size: size
-                            .font_size::<LayoutTopBar>(&LayoutTopBar::WordSaladLogo),
+                            .font_size::<LayoutTopBar>(&LayoutTopBar::WordSaladLogo, &()),
                         color: palette::TOP_BAR_BURGER.convert_color(),
                         font: ICON_FONT_PATH,
                         alignment: TextAlignment::Left,
@@ -74,7 +74,7 @@ impl MavericNode for TopBar {
                     Text2DNode {
                         text: "Word Salad",
                         font_size: size
-                            .font_size::<LayoutTopBar>(&LayoutTopBar::WordSaladLogo),
+                            .font_size::<LayoutTopBar>(&LayoutTopBar::WordSaladLogo, &()),
                         color: palette::TOP_BAR_LOGO.convert_color(),
                         font: WORD_SALAD_LOGO_FONT_PATH,
                         alignment: TextAlignment::Center,

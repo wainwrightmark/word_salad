@@ -102,7 +102,8 @@ impl LayoutStructure for WordSaladMenuLayoutEntity {
 }
 
 impl LayoutStructureWithFont for WordSaladMenuLayoutEntity {
-    fn font_size(&self) -> f32 {
+    type FontContext = ();
+    fn font_size(&self,_: &()) -> f32 {
         MENU_BUTTON_FONT_SIZE_SMALL
     }
 }

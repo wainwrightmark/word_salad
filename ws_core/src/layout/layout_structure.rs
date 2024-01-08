@@ -27,7 +27,8 @@ pub trait LayoutStructure: Sized + PartialEq + Debug {
 }
 
 pub trait LayoutStructureWithFont {
-    fn font_size(&self) -> f32;
+    type FontContext;
+    fn font_size(&self, context: &Self::FontContext) -> f32;
 }
 
 pub trait LayoutStructureWithStaticText: LayoutStructure {

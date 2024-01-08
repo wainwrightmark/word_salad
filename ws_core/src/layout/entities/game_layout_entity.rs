@@ -88,7 +88,9 @@ impl LayoutStructure for GameLayoutEntity {
 }
 
 impl LayoutStructureWithFont for GameLayoutEntity {
-    fn font_size(&self) -> f32 {
+    type FontContext = ();
+
+    fn font_size(&self, _: &()) -> f32 {
         match self {
             GameLayoutEntity::TopBar => f32::NAN,
             GameLayoutEntity::Theme => 36.0,

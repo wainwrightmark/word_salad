@@ -33,7 +33,7 @@ impl MavericNode for NonLevelView {
                 }
             };
 
-            let text_color = if selfie_mode.0 {
+            let text_color = if selfie_mode.is_selfie_mode {
                 palette::CONGRATS_BUTTON_TEXT_SELFIE
             } else {
                 palette::CONGRATS_BUTTON_TEXT_NORMAL
@@ -44,7 +44,7 @@ impl MavericNode for NonLevelView {
                 "text",
                 Text2DNode {
                     text,
-                    font_size: size.font_size(&NonLevelLayoutEntity::Text),
+                    font_size: size.font_size(&NonLevelLayoutEntity::Text, &()),
                     color: text_color,
                     font: BUTTONS_FONT_PATH,
                     alignment: TextAlignment::Center,
@@ -69,7 +69,7 @@ impl MavericNode for NonLevelView {
 
 
 
-            let fill_color = if selfie_mode.0 {
+            let fill_color = if selfie_mode.is_selfie_mode {
                 palette::CONGRATS_BUTTON_FILL_SELFIE
             } else {
                 palette::CONGRATS_BUTTON_FILL_NORMAL
@@ -80,7 +80,7 @@ impl MavericNode for NonLevelView {
                 "interaction",
                 WSButtonNode {
                     text: interaction_text,
-                    font_size: size.font_size(&NonLevelLayoutEntity::InteractButton),
+                    font_size: size.font_size(&NonLevelLayoutEntity::InteractButton, &()),
                     rect: size.get_rect(&NonLevelLayoutEntity::InteractButton, &()),
                     interaction: ButtonInteraction::NonLevelInteractionButton,
                     text_color,
