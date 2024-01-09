@@ -1,4 +1,4 @@
-use std::num::NonZeroUsize;
+use std::{num::NonZeroUsize, default};
 
 use crate::{
     completion::{track_level_completion, TotalCompletion},
@@ -219,8 +219,9 @@ impl FoundWordsState {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Copy, Eq, Serialize, Deserialize, EnumIs)]
+#[derive(Debug, PartialEq, Clone, Copy, Eq, Serialize, Deserialize, EnumIs, Default)]
 pub enum Completion {
+    #[default]
     Unstarted,
     // AutoHinted(NonZeroUsize),
     ManualHinted(NonZeroUsize),

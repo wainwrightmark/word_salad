@@ -39,7 +39,7 @@ pub mod palette {
     use crate::BasicColor as Color;
 
     pub const ANIMATED_SOLUTION_NEW: Color = FULL_GREEN;
-    pub const ANIMATED_SOLUTION_OLD: Color = Color::rgba(0.17, 0.48, 0.71, 1.0);
+    pub const ANIMATED_SOLUTION_OLD: Color = MY_BLUE;
 
     pub const TOP_BAR_BURGER: Color = MY_BLACK;
     pub const TOP_BAR_LOGO: Color = MY_BLACK;
@@ -65,6 +65,7 @@ pub mod palette {
     pub const WORD_BACKGROUND_UNSTARTED: Color = LIGHT_GRAY;
     pub const WORD_BACKGROUND_MANUAL_HINT: Color = LIGHT_GREEN;
     pub const WORD_BACKGROUND_COMPLETE: Color = FULL_GREEN;
+    pub const WORD_BACKGROUND_PROGRESS: Color = MY_BLUE;
 
     pub const WORD_LINE_COLOR: Color = FULL_GREEN.with_a(1.0);
 
@@ -90,6 +91,8 @@ pub mod palette {
 
     pub const MY_BLACK: Color = Color::rgba(0.12, 0., 0., 1.);
     pub const MY_WHITE: Color = Color::rgba(1.0, 1.0, 1.0, 1.);
+
+    pub const MY_BLUE: Color = Color::rgba(0.17, 0.48, 0.71, 1.0);
     pub const FULL_GREEN: Color = Color::rgba(0.17, 0.71, 0.35, 1.);
     pub const LIGHT_GREEN: Color = Color::rgba(0.463, 0.851, 0.596, 1.);
     pub const LIGHT_GRAY: Color = Color::rgba(0.91, 0.89, 0.89, 1.);

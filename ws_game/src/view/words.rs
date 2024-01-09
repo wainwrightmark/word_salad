@@ -6,6 +6,7 @@ use itertools::Either;
 use maveric::widgets::text2d_node::Text2DNode;
 use maveric::with_bundle::CanWithBundle;
 use ws_core::layout::entities::*;
+use ws_core::palette::WORD_BACKGROUND_PROGRESS;
 use ws_core::prelude::*;
 
 pub struct WordsPlugin;
@@ -99,7 +100,9 @@ impl MavericNode for WordNode {
                 Completion::Complete => node.word.text.to_uppercase().to_string(),
             };
 
-            let progress = match node.completion {
+            let completion = node.completion;
+
+            let progress = match completion {
                 Completion::Unstarted => 0.0,
                 Completion::ManualHinted(hints) => {
                     (hints.get() + 1) as f32 / (node.word.graphemes.len() + 2) as f32
@@ -137,22 +140,15 @@ impl MavericNode for WordNode {
             let shape_translation = centre.extend(crate::z_indices::WORD_BACKGROUND);
             let _shape_border_translation = centre.extend(crate::z_indices::WORD_BACKGROUND + 1.0);
 
-            let second_color = match node.completion {
-                Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color(),
-                Completion::ManualHinted(_) => palette::WORD_BACKGROUND_MANUAL_HINT.convert_color(),
-                Completion::Complete => palette::WORD_BACKGROUND_COMPLETE.convert_color(),
-            };
-
             commands.add_child(
                 "shape_fill",
                 (
                     ShaderBundle {
                         shape: ShaderShape::<WordButtonBoxShader>::default(),
                         parameters: (
-                            palette::WORD_BACKGROUND_UNSTARTED.convert_color().into(),
+                            WordButtonCompletion { completion, tile: node.tile },
                             (node.rect.extents.y.abs() / node.rect.extents.x.abs()).into(),
                             ShaderProgress { progress },
-                            second_color.into(),
                         ),
                         transform: Transform {
                             translation: shape_translation,
@@ -173,6 +169,14 @@ impl MavericNode for WordNode {
     }
 }
 
+#[derive(Debug, PartialEq, Clone, Component, Default)]
+pub struct WordButtonCompletion {
+    pub completion: Completion,
+    pub tile: LayoutWordTile,
+}
+
+pub const WORD_BUTTON_HOLD_SECONDS:f32 = 1.0;
+
 #[repr(C)]
 #[derive(Debug, Reflect, Clone, Copy, TypeUuid, Default, PartialEq)]
 #[uuid = "266b0619-b913-4cce-be86-7470ef0b129b"]
@@ -181,18 +185,12 @@ pub struct WordButtonBoxShader;
 impl ParameterizedShader for WordButtonBoxShader {
     type Params = HorizontalGradientBoxShaderParams;
     type ParamsQuery<'a> = (
-        &'a ShaderColor,
+        &'a WordButtonCompletion,
         &'a ShaderAspectRatio,
         &'a ShaderProgress,
-        &'a ShaderSecondColor,
     );
-    type ParamsBundle = (
-        ShaderColor,
-        ShaderAspectRatio,
-        ShaderProgress,
-        ShaderSecondColor,
-    );
-    type ResourceParams<'w> = ();
+    type ParamsBundle = (WordButtonCompletion, ShaderAspectRatio, ShaderProgress);
+    type ResourceParams<'w> = Res<'w, PressedButton>;
 
     fn fragment_body() -> impl Into<String> {
         SDFColorCall {
@@ -208,14 +206,57 @@ impl ParameterizedShader for WordButtonBoxShader {
 
     fn get_params<'w, 'a>(
         query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
-        _r: &(),
+        pressed_button: &Res<PressedButton>,
     ) -> Self::Params {
-        HorizontalGradientBoxShaderParams {
-            color: query_item.0.color.into(),
-            height: query_item.1.height,
-            progress: query_item.2.progress,
-            color2: query_item.3.color.into(),
-            rounding: crate::rounding::WORD_BUTTON_NORMAL.into(),
+        let (
+            WordButtonCompletion { completion, tile },
+            ShaderAspectRatio { height },
+            ShaderProgress { progress },
+        ) = query_item;
+
+        if let Some(pressed_duration) = match pressed_button.as_ref() {
+            PressedButton::None => None,
+            PressedButton::Pressed {
+                interaction,
+                duration,
+            } => {
+                if interaction == &ButtonInteraction::WordButton(*tile) {
+                    Some(duration)
+                } else {
+                    None
+                }
+            }
+            PressedButton::PressedAfterActivated { .. } => None,
+        } {
+            let color = palette::WORD_BACKGROUND_UNSTARTED.convert_color().into();
+
+            let color2 = WORD_BACKGROUND_PROGRESS.convert_color();
+
+            let progress = (pressed_duration.as_secs_f32() / WORD_BUTTON_HOLD_SECONDS).clamp(0.0, 1.0);
+
+            HorizontalGradientBoxShaderParams {
+                color,
+                height: *height,
+                progress,
+                color2: color2.into(),
+                rounding: crate::rounding::WORD_BUTTON_NORMAL.into(),
+            }
+        } else {
+            let color = palette::WORD_BACKGROUND_UNSTARTED.convert_color().into();
+
+            let color2 = match completion {
+                Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color(),
+                Completion::ManualHinted(_) => palette::WORD_BACKGROUND_MANUAL_HINT.convert_color(),
+                Completion::Complete => palette::WORD_BACKGROUND_COMPLETE.convert_color(),
+            };
+
+            HorizontalGradientBoxShaderParams {
+                color,
+                height: *height,
+                progress: *progress,
+                color2: color2.into(),
+                rounding: crate::rounding::WORD_BUTTON_NORMAL.into(),
+            }
         }
     }
 

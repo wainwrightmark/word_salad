@@ -139,7 +139,7 @@ pub enum ButtonInteraction {
 impl ButtonInteraction {
     pub fn button_press_type(&self) -> ButtonPressType {
         if self.is_word_button() {
-            ButtonPressType::OnHold(Duration::from_secs(1))
+            ButtonPressType::OnHold(Duration::from_secs_f32(WORD_BUTTON_HOLD_SECONDS))
         } else if self.is_congrats() {
             ButtonPressType::OnStart
         } else {
