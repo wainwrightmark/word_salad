@@ -12,3 +12,4 @@
 - Additional buttons in Non-Level
 - Different level transition when you load game on non-level
 - social images etc
+- must hold down clue button

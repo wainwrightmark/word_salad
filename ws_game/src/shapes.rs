@@ -18,18 +18,14 @@ pub struct ShapesPlugin;
 impl Plugin for ShapesPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(ParamShaderPlugin::<BoxShader>::default());
-        app.add_plugins(ParamShaderPlugin::<HorizontalGradientBoxShader>::default());
         app.add_plugins(ParamShaderPlugin::<BoxWithBorderShader>::default());
-        //app.add_plugins(ParamShaderPlugin::<PlayPauseShader>::default());
         app.add_plugins(ParamShaderPlugin::<CircleShader>::default());
         app.add_plugins(ParamShaderPlugin::<SparkleShader>::default());
-
         app.add_plugins(ParamShaderPlugin::<FireworksShader>::default());
 
         app.register_transition::<ProgressLens>();
         app.register_transition::<RoundingLens>();
         app.register_transition::<ShaderColorLens>();
-
         app.register_transition::<TextColorLens<0>>();
     }
 }
@@ -80,57 +76,6 @@ pub struct BoxShaderParams {
 }
 
 impl ShaderParams for BoxShaderParams {}
-
-#[repr(C)]
-#[derive(Debug, Reflect, Clone, Copy, TypeUuid, Default, PartialEq)]
-#[uuid = "266b0619-b913-4cce-be86-7470ef0b129b"]
-pub struct HorizontalGradientBoxShader;
-
-impl ParameterizedShader for HorizontalGradientBoxShader {
-    type Params = HorizontalGradientBoxShaderParams;
-    type ParamsQuery<'a> = (
-        &'a ShaderColor,
-        &'a ShaderRounding,
-        &'a ShaderAspectRatio,
-        &'a ShaderProgress,
-        &'a ShaderSecondColor,
-    );
-    type ParamsBundle = (
-        ShaderColor,
-        ShaderRounding,
-        ShaderAspectRatio,
-        ShaderProgress,
-        ShaderSecondColor,
-    );
-    type ResourceParams<'w> = ();
-
-    fn fragment_body() -> impl Into<String> {
-        SDFColorCall {
-            sdf: "shaders::box::sdf(in.pos, in.height, in.rounding)",
-            fill_color:
-                "fill::horizontal_gradient::fill(d, in.color, in.pos, in.progress, in.color2)",
-        }
-    }
-
-    fn imports() -> impl Iterator<Item = FragmentImport> {
-        [HORIZONTAL_GRADIENT_FILL, BOX_SDF_IMPORT].into_iter()
-    }
-
-    fn get_params<'w, 'a>(
-        query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
-        _r: &(),
-    ) -> Self::Params {
-        HorizontalGradientBoxShaderParams {
-            color: query_item.0.color.into(),
-            rounding: query_item.1.rounding,
-            height: query_item.2.height,
-            progress: query_item.3.progress,
-            color2: query_item.4.color.into(),
-        }
-    }
-
-    const FRAME: Frame = Frame::square(1.0);
-}
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Default, Reflect, Pod, Zeroable)]
@@ -368,12 +313,13 @@ pub(crate) const SIMPLE_FILL_IMPORT: FragmentImport = FragmentImport {
     import_path: "fill::simple",
 };
 
-const HORIZONTAL_GRADIENT_FILL: FragmentImport = FragmentImport {
+pub const HORIZONTAL_GRADIENT_FILL: FragmentImport = FragmentImport {
+    //TODO rename
     path: "shaders/fill/horizontal_gradient.wgsl",
     import_path: "fill::horizontal_gradient",
 };
 
-const BOX_SDF_IMPORT: FragmentImport = FragmentImport {
+pub const BOX_SDF_IMPORT: FragmentImport = FragmentImport {
     path: "shaders/sdf/box.wgsl",
     import_path: "shaders::box",
 };

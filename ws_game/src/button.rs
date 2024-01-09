@@ -1,7 +1,7 @@
-use bevy::ecs::system::EntityCommands;
 use bevy::prelude::*;
 use itertools::Either;
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
+use std::time::Duration;
 use strum::EnumIs;
 use ws_core::layout::entities::{
     CongratsButton, CongratsLayoutEntity, LayoutTopBar, LayoutWordTile,
@@ -13,26 +13,109 @@ use crate::menu_layout::word_salad_menu_layout::WordSaladMenuLayoutEntity;
 use crate::prelude::level_group_layout::LevelGroupLayoutEntity;
 use crate::prelude::levels_menu_layout::LevelsMenuLayoutEntity;
 use crate::prelude::main_menu_layout::MainMenuLayoutEntity;
-use crate::{prelude::*, rounding};
+use crate::{input, prelude::*};
 
 pub struct ButtonPlugin;
 
 impl Plugin for ButtonPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(PressedButton::default());
-        app.add_systems(Update, track_pressed_button);
+        app.add_systems(Update, track_held_button);
         app.register_transition::<TransformScaleLens>();
+
+        app.add_event::<ButtonActivated>();
+
+        app.add_systems(
+            Update,
+            handle_button_activations
+                .after(input::handle_mouse_input)
+                .after(input::handle_touch_input)
+                .after(track_held_button)
+                ,
+        );
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Resource, Default)]
-pub struct PressedButton {
-    pub interaction: Option<ButtonInteraction>,
+fn track_held_button(
+    mut pressed_button: ResMut<PressedButton>,
+    time: Res<Time>,
+    mut event_writer: EventWriter<ButtonActivated>,
+){
+    if pressed_button.is_none(){
+        return;
+    }
+
+    let PressedButton::Pressed { interaction, duration } = pressed_button.as_ref() else{return;};
+    let interaction = interaction.clone();
+    let duration = *duration + time.delta();
+
+    //info!("{duration:?}");
+
+    let ButtonPressType::OnHold(hold_duration) = interaction.button_press_type() else{
+        *pressed_button.as_mut() = PressedButton::Pressed { interaction, duration };
+        return;
+    };
+
+    if duration >= hold_duration{
+
+        *pressed_button = PressedButton::PressedAfterActivated { interaction};
+        event_writer.send(ButtonActivated(interaction));
+    }else{
+        *pressed_button.as_mut() = PressedButton::Pressed { interaction, duration };
+    }
+}
+
+fn handle_button_activations(
+    mut events: EventReader<ButtonActivated>,
+    mut current_level: ResMut<CurrentLevel>,
+    mut menu_state: ResMut<MenuState>,
+    mut chosen_state: ResMut<ChosenState>,
+    mut found_words: ResMut<FoundWordsState>,
+    mut hint_state: ResMut<HintState>,
+    mut popup_state: ResMut<PopupState>,
+    video_state: Res<VideoResource>,
+    video_events: AsyncEventWriter<VideoEvent>,
+    mut total_completion: ResMut<TotalCompletion>,
+    daily_challenges: Res<DailyChallenges>,
+    mut level_time: ResMut<LevelTime>,
+) {
+    for ev in events.read() {
+        ev.0.on_activated(
+            &mut current_level,
+            &mut menu_state,
+            &mut chosen_state,
+            &mut found_words,
+            &mut hint_state,
+            &mut popup_state,
+            &mut total_completion,
+            video_state.as_ref(),
+            &video_events,
+            daily_challenges.as_ref(),
+            &mut level_time,
+        )
+    }
+}
+
+#[derive(Debug, PartialEq, Event)]
+pub struct ButtonActivated(pub ButtonInteraction);
+
+#[derive(Debug, Clone, Copy, PartialEq, Resource, Default, EnumIs)]
+pub enum PressedButton {
+    #[default]
+    None,
+    Pressed {
+        interaction: ButtonInteraction,
+        duration: Duration,
+    },
+    PressedAfterActivated{
+        interaction: ButtonInteraction,
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, EnumIs)]
 pub enum ButtonPressType {
     OnStart,
+    OnHold(Duration),
     OnEnd,
 }
 
@@ -55,7 +138,9 @@ pub enum ButtonInteraction {
 
 impl ButtonInteraction {
     pub fn button_press_type(&self) -> ButtonPressType {
-        if self.is_congrats() {
+        if self.is_word_button() {
+            ButtonPressType::OnHold(Duration::from_secs(1))
+        } else if self.is_congrats() {
             ButtonPressType::OnStart
         } else {
             ButtonPressType::OnEnd
@@ -115,69 +200,71 @@ impl From<MainMenuBackButton> for ButtonInteraction {
     }
 }
 
-fn track_pressed_button(
-    mut commands: Commands,
-    pressed_button: Res<PressedButton>,
-    mut prev: Local<PressedButton>,
-    query: Query<(Entity, &ButtonInteraction)>,
-) {
-    if !pressed_button.is_changed() {
-        return;
-    }
-    let previous = *prev;
-    *prev = *pressed_button;
+// fn track_pressed_button(
+//     mut commands: Commands,
+//     pressed_button: Res<PressedButton>,
+//     mut prev: Local<PressedButton>,
+//     time: Res<Time>,
+//     query: Query<(Entity, &ButtonInteraction)>,
+// ) {
+//     if !pressed_button.is_changed() {
+//         return;
+//     }
+//     let previous = *prev;
+//     *prev = *pressed_button;
 
-    if let Some(prev_interaction) = previous.interaction {
-        if Some(prev_interaction) == pressed_button.interaction {
-            return;
-        }
+//     if let Some(prev_interaction) = previous.interaction {
+//         if Some(prev_interaction) == pressed_button.interaction {
+//             return;
+//         }
 
-        for (entity, i) in query.iter() {
-            if i == &prev_interaction {
-                let mut ec = commands.entity(entity);
-                i.on_interact(&mut ec, InteractionType::EndPress);
-            }
-        }
-    }
+//         for (entity, i) in query.iter() {
+//             if i == &prev_interaction {
+//                 let mut ec = commands.entity(entity);
+//                 i.on_interact(&mut ec, InteractionType::EndPress);
+//             }
+//         }
+//     }
 
-    if let Some(interaction) = pressed_button.interaction {
-        for (entity, i) in query.iter() {
-            if i == &interaction {
-                let mut ec = commands.entity(entity);
-                i.on_interact(&mut ec, InteractionType::Press);
-            }
-        }
-    }
-}
+//     if let Some(interaction) = pressed_button.interaction {
+//         for (entity, i) in query.iter() {
+//             if i == &interaction {
+//                 let mut ec = commands.entity(entity);
+//                 i.on_interact(&mut ec, InteractionType::Press);
+//             }
+//         }
+//     }
+// }
 
-#[derive(Debug, Clone, Copy, PartialEq, EnumIs)]
-pub enum InteractionType {
-    Press,
-    EndPress,
-}
+// #[derive(Debug, Clone, Copy, PartialEq, EnumIs)]
+// pub enum InteractionType {
+//     Press,
+//     EndPress,
+// }
 
 impl ButtonInteraction {
-    pub fn on_interact(&self, commands: &mut EntityCommands, interaction_type: InteractionType) {
-        let new_rounding = match (self, interaction_type) {
-            (ButtonInteraction::WordButton(_), InteractionType::Press) => {
-                rounding::WORD_BUTTON_PRESSED
-            }
-            (ButtonInteraction::WordButton(_), InteractionType::EndPress) => {
-                rounding::WORD_BUTTON_NORMAL
-            }
+    // pub fn on_interact(&self, commands: &mut EntityCommands, interaction_type: InteractionType) {
+    //     let new_rounding = match (self, interaction_type) {
+    //         (ButtonInteraction::WordButton(_), InteractionType::Press) => {
+    //             rounding::WORD_BUTTON_PRESSED
+    //         }
+    //         (ButtonInteraction::WordButton(_), InteractionType::EndPress) => {
+    //             rounding::WORD_BUTTON_NORMAL
+    //         }
 
-            (_, InteractionType::Press) => rounding::OTHER_BUTTON_PRESSED,
-            (_, InteractionType::EndPress) => rounding::OTHER_BUTTON_NORMAL,
-        };
+    //         (_, InteractionType::Press) => rounding::OTHER_BUTTON_PRESSED,
+    //         (_, InteractionType::EndPress) => rounding::OTHER_BUTTON_NORMAL,
+    //     };
 
-        commands.insert(
-            TransitionBuilder::<RoundingLens>::default()
-                .then_tween(new_rounding, 1.0.into())
-                .build(),
-        );
-    }
+    //     commands.insert(
+    //         TransitionBuilder::<RoundingLens>::default()
+    //             .then_tween(new_rounding, 1.0.into())
+    //             .build(),
+    //     );
+    // }
 
-    pub fn on_pressed(
+    /// Called when the button action is activated
+    fn on_activated(
         &self,
         current_level: &mut ResMut<CurrentLevel>,
         menu_state: &mut ResMut<MenuState>,

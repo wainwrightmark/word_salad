@@ -1,5 +1,6 @@
+use std::time::Duration;
+
 use crate::{
-    completion::TotalCompletion,
     menu_layout::{
         main_menu_back_button::MainMenuBackButton,
         word_salad_menu_layout::WordSaladMenuLayoutEntity,
@@ -10,7 +11,6 @@ use crate::{
     },
 };
 use bevy::{prelude::*, window::PrimaryWindow};
-use nice_bevy_utils::async_event_writer::AsyncEventWriter;
 use strum::EnumIs;
 use ws_core::layout::entities::*;
 pub struct InputPlugin;
@@ -190,19 +190,16 @@ impl InputType {
         &self,
 
         size: &Size,
-        current_level: &mut ResMut<CurrentLevel>,
-        menu_state: &mut ResMut<MenuState>,
+        current_level: &CurrentLevel,
+        menu_state: &MenuState,
         chosen_state: &mut ResMut<ChosenState>,
         input_state: &mut Local<GridInputState>,
-        found_words: &mut ResMut<FoundWordsState>,
-        total_completion: &mut ResMut<TotalCompletion>,
+        found_words: &FoundWordsState,
         pressed_button: &mut ResMut<PressedButton>,
-        hint_state: &mut ResMut<HintState>,
-        popup_state: &mut ResMut<PopupState>,
+        popup_state: &PopupState,
         video_resource: &VideoResource,
         daily_challenges: &DailyChallenges,
-        video_events: &AsyncEventWriter<VideoEvent>,
-        level_time: &mut ResMut<LevelTime>,
+        event_writer: &mut EventWriter<ButtonActivated>,
     ) {
         let is_level_complete = found_words.is_level_complete();
 
@@ -221,20 +218,9 @@ impl InputType {
                 ) {
                     match interaction {
                         InteractionEntity::Button(button) => {
+                            //TODO handle held buttons
                             if button.button_press_type().is_on_start() {
-                                button.on_pressed(
-                                    current_level,
-                                    menu_state,
-                                    chosen_state,
-                                    found_words,
-                                    hint_state,
-                                    popup_state,
-                                    total_completion,
-                                    video_resource,
-                                    video_events,
-                                    daily_challenges,
-                                    level_time,
-                                );
+                                event_writer.send(ButtonActivated(button));
                             }
 
                             Some(button)
@@ -302,19 +288,7 @@ impl InputType {
                     match interaction {
                         InteractionEntity::Button(button) => {
                             if button.button_press_type().is_on_end() {
-                                button.on_pressed(
-                                    current_level,
-                                    menu_state,
-                                    chosen_state,
-                                    found_words,
-                                    hint_state,
-                                    popup_state,
-                                    total_completion,
-                                    video_resource,
-                                    video_events,
-                                    daily_challenges,
-                                    level_time,
-                                );
+                                event_writer.send(ButtonActivated(button));
                             }
 
                             input_state.handle_input_end_no_location();
@@ -336,28 +310,45 @@ impl InputType {
             }
         };
 
-        pressed_button.interaction = button_interaction;
+        match button_interaction {
+            Some(new_interaction) =>
+            {
+                let should_change =
+                match pressed_button.as_ref(){
+                    PressedButton::None => true,
+                    PressedButton::Pressed { interaction, .. } => *interaction != new_interaction,
+                    PressedButton::PressedAfterActivated { interaction } => *interaction != new_interaction,
+                };
+
+                if should_change{
+                    *pressed_button.as_mut() = PressedButton::Pressed {
+                        interaction: new_interaction,
+                        duration: Duration::ZERO,
+                    };
+                }
+            }
+
+             ,
+            None => {pressed_button.set_if_neq(PressedButton::None);},
+        };
     }
 }
 
-fn handle_mouse_input(
+pub fn handle_mouse_input(
     mouse_input: Res<Input<MouseButton>>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
 
     size: Res<Size>,
-    mut current_level: ResMut<CurrentLevel>,
-    mut menu_state: ResMut<MenuState>,
+    current_level: Res<CurrentLevel>,
+    menu_state: Res<MenuState>,
     mut chosen_state: ResMut<ChosenState>,
     mut input_state: Local<GridInputState>,
-    mut found_words: ResMut<FoundWordsState>,
+    found_words: Res<FoundWordsState>,
     mut pressed_button: ResMut<PressedButton>,
-    mut hint_state: ResMut<HintState>,
-    mut popup_state: ResMut<PopupState>,
+    popup_state: Res<PopupState>,
     video_state: Res<VideoResource>,
     daily_challenges: Res<DailyChallenges>,
-    video_events: AsyncEventWriter<VideoEvent>,
-    mut total_completion: ResMut<TotalCompletion>,
-    mut level_time: ResMut<LevelTime>,
+    mut event_writer: EventWriter<ButtonActivated>,
 ) {
     let input_type = if mouse_input.just_released(MouseButton::Left) {
         let position_option = get_cursor_position(q_windows);
@@ -378,40 +369,34 @@ fn handle_mouse_input(
 
     input_type.handle(
         &size,
-        &mut current_level,
-        &mut menu_state,
+        &current_level,
+        &menu_state,
         &mut chosen_state,
         &mut input_state,
-        &mut found_words,
-        &mut total_completion,
+        &found_words,
         &mut pressed_button,
-        &mut hint_state,
-        &mut popup_state,
+        &popup_state,
         &video_state,
         &daily_challenges,
-        &video_events,
-        &mut level_time,
+        &mut event_writer,
     );
 }
 
-fn handle_touch_input(
+pub fn handle_touch_input(
     mut touch_events: EventReader<TouchInput>,
     q_camera: Query<(&Camera, &GlobalTransform)>,
     size: Res<Size>,
 
-    mut current_level: ResMut<CurrentLevel>,
-    mut menu_state: ResMut<MenuState>,
+    current_level: Res<CurrentLevel>,
+    menu_state: Res<MenuState>,
     mut chosen_state: ResMut<ChosenState>,
     mut input_state: Local<GridInputState>,
-    mut found_words: ResMut<FoundWordsState>,
+    found_words: Res<FoundWordsState>,
     mut pressed_button: ResMut<PressedButton>,
-    mut hint_state: ResMut<HintState>,
-    mut popup_state: ResMut<PopupState>,
+    popup_state: Res<PopupState>,
     video_state: Res<VideoResource>,
-    video_events: AsyncEventWriter<VideoEvent>,
-    mut total_completion: ResMut<TotalCompletion>,
     daily_challenges: Res<DailyChallenges>,
-    mut level_time: ResMut<LevelTime>,
+    mut event_writer: EventWriter<ButtonActivated>,
 ) {
     for ev in touch_events.read() {
         let input_type: InputType = match ev.phase {
@@ -436,19 +421,16 @@ fn handle_touch_input(
 
         input_type.handle(
             &size,
-            &mut current_level,
-            &mut menu_state,
+            &current_level,
+            &menu_state,
             &mut chosen_state,
             &mut input_state,
-            &mut found_words,
-            &mut total_completion,
+            &found_words,
             &mut pressed_button,
-            &mut hint_state,
-            &mut popup_state,
+            &popup_state,
             &video_state,
             &daily_challenges,
-            &video_events,
-            &mut level_time,
+            &mut event_writer,
         );
     }
 }

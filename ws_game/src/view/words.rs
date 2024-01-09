@@ -1,10 +1,20 @@
 use crate::{animated_solutions, prelude::*};
+use bevy::reflect::TypeUuid;
+use bevy_param_shaders::parameterized_shader::{FragmentImport, ParameterizedShader, SDFColorCall};
 use bevy_param_shaders::*;
 use itertools::Either;
 use maveric::widgets::text2d_node::Text2DNode;
 use maveric::with_bundle::CanWithBundle;
 use ws_core::layout::entities::*;
 use ws_core::prelude::*;
+
+pub struct WordsPlugin;
+
+impl Plugin for WordsPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugins(ParamShaderPlugin::<WordButtonBoxShader>::default());
+    }
+}
 
 #[derive(Debug, PartialEq)]
 pub struct WordsNode;
@@ -101,7 +111,7 @@ impl MavericNode for WordNode {
 
             let text_translation = centre.extend(crate::z_indices::WORD_TEXT);
 
-            let color = if node.selfie_mode {
+            let text_color = if node.selfie_mode {
                 palette::WORD_TEXT_SELFIE
             } else {
                 palette::WORD_TEXT_NORMAL
@@ -113,7 +123,7 @@ impl MavericNode for WordNode {
                 Text2DNode {
                     text,
                     font_size: node.font_size,
-                    color,
+                    color: text_color,
                     font: SOLUTIONS_FONT_PATH,
                     alignment: TextAlignment::Center,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -137,10 +147,9 @@ impl MavericNode for WordNode {
                 "shape_fill",
                 (
                     ShaderBundle {
-                        shape: ShaderShape::<HorizontalGradientBoxShader>::default(),
+                        shape: ShaderShape::<WordButtonBoxShader>::default(),
                         parameters: (
                             palette::WORD_BACKGROUND_UNSTARTED.convert_color().into(),
-                            crate::rounding::WORD_BUTTON_NORMAL.into(),
                             (node.rect.extents.y.abs() / node.rect.extents.x.abs()).into(),
                             ShaderProgress { progress },
                             second_color.into(),
@@ -162,4 +171,53 @@ impl MavericNode for WordNode {
             );
         })
     }
+}
+
+#[repr(C)]
+#[derive(Debug, Reflect, Clone, Copy, TypeUuid, Default, PartialEq)]
+#[uuid = "266b0619-b913-4cce-be86-7470ef0b129b"]
+pub struct WordButtonBoxShader;
+
+impl ParameterizedShader for WordButtonBoxShader {
+    type Params = HorizontalGradientBoxShaderParams;
+    type ParamsQuery<'a> = (
+        &'a ShaderColor,
+        &'a ShaderAspectRatio,
+        &'a ShaderProgress,
+        &'a ShaderSecondColor,
+    );
+    type ParamsBundle = (
+        ShaderColor,
+        ShaderAspectRatio,
+        ShaderProgress,
+        ShaderSecondColor,
+    );
+    type ResourceParams<'w> = ();
+
+    fn fragment_body() -> impl Into<String> {
+        SDFColorCall {
+            sdf: "shaders::box::sdf(in.pos, in.height, in.rounding)",
+            fill_color:
+                "fill::horizontal_gradient::fill(d, in.color, in.pos, in.progress, in.color2)",
+        }
+    }
+
+    fn imports() -> impl Iterator<Item = FragmentImport> {
+        [HORIZONTAL_GRADIENT_FILL, BOX_SDF_IMPORT].into_iter()
+    }
+
+    fn get_params<'w, 'a>(
+        query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
+        _r: &(),
+    ) -> Self::Params {
+        HorizontalGradientBoxShaderParams {
+            color: query_item.0.color.into(),
+            height: query_item.1.height,
+            progress: query_item.2.progress,
+            color2: query_item.3.color.into(),
+            rounding: crate::rounding::WORD_BUTTON_NORMAL.into(),
+        }
+    }
+
+    const FRAME: Frame = Frame::square(1.0);
 }
