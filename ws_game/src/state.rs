@@ -1,4 +1,4 @@
-use std::{num::NonZeroUsize, default};
+use std::num::NonZeroUsize;
 
 use crate::{
     completion::{track_level_completion, TotalCompletion},

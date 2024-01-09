@@ -311,16 +311,16 @@ impl InputType {
         };
 
         match button_interaction {
-            Some(new_interaction) =>
-            {
-                let should_change =
-                match pressed_button.as_ref(){
+            Some(new_interaction) => {
+                let should_change = match pressed_button.as_ref() {
                     PressedButton::None => true,
                     PressedButton::Pressed { interaction, .. } => *interaction != new_interaction,
-                    PressedButton::PressedAfterActivated { interaction } => *interaction != new_interaction,
+                    PressedButton::PressedAfterActivated { interaction } => {
+                        *interaction != new_interaction
+                    }
                 };
 
-                if should_change{
+                if should_change {
                     *pressed_button.as_mut() = PressedButton::Pressed {
                         interaction: new_interaction,
                         duration: Duration::ZERO,
@@ -328,8 +328,9 @@ impl InputType {
                 }
             }
 
-             ,
-            None => {pressed_button.set_if_neq(PressedButton::None);},
+            None => {
+                pressed_button.set_if_neq(PressedButton::None);
+            }
         };
     }
 }

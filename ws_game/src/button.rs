@@ -30,8 +30,7 @@ impl Plugin for ButtonPlugin {
             handle_button_activations
                 .after(input::handle_mouse_input)
                 .after(input::handle_touch_input)
-                .after(track_held_button)
-                ,
+                .after(track_held_button),
         );
     }
 }
@@ -40,28 +39,39 @@ fn track_held_button(
     mut pressed_button: ResMut<PressedButton>,
     time: Res<Time>,
     mut event_writer: EventWriter<ButtonActivated>,
-){
-    if pressed_button.is_none(){
+) {
+    if pressed_button.is_none() {
         return;
     }
 
-    let PressedButton::Pressed { interaction, duration } = pressed_button.as_ref() else{return;};
+    let PressedButton::Pressed {
+        interaction,
+        duration,
+    } = pressed_button.as_ref()
+    else {
+        return;
+    };
     let interaction = interaction.clone();
     let duration = *duration + time.delta();
 
     //info!("{duration:?}");
 
-    let ButtonPressType::OnHold(hold_duration) = interaction.button_press_type() else{
-        *pressed_button.as_mut() = PressedButton::Pressed { interaction, duration };
+    let ButtonPressType::OnHold(hold_duration) = interaction.button_press_type() else {
+        *pressed_button.as_mut() = PressedButton::Pressed {
+            interaction,
+            duration,
+        };
         return;
     };
 
-    if duration >= hold_duration{
-
-        *pressed_button = PressedButton::PressedAfterActivated { interaction};
+    if duration >= hold_duration {
+        *pressed_button = PressedButton::PressedAfterActivated { interaction };
         event_writer.send(ButtonActivated(interaction));
-    }else{
-        *pressed_button.as_mut() = PressedButton::Pressed { interaction, duration };
+    } else {
+        *pressed_button.as_mut() = PressedButton::Pressed {
+            interaction,
+            duration,
+        };
     }
 }
 
@@ -107,9 +117,9 @@ pub enum PressedButton {
         interaction: ButtonInteraction,
         duration: Duration,
     },
-    PressedAfterActivated{
+    PressedAfterActivated {
         interaction: ButtonInteraction,
-    }
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, EnumIs)]

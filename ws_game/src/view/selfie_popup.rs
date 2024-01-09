@@ -46,7 +46,10 @@ impl MavericNode for SelfiePopupNode {
                     TutorialPopupNode {
                         text: "Welcome to Selfie Mode!\nTry using a screen recorder app",
                         entity: TutorialLayoutEntity::Top,
-                    }.with_bundle(ScheduledForDeletion{remaining: Duration::from_secs(5)})
+                    }
+                    .with_bundle(ScheduledForDeletion {
+                        remaining: Duration::from_secs(5),
+                    })
                     .with_transition_in::<TransformScaleLens>(
                         Vec3::ZERO,
                         Vec3::ONE,

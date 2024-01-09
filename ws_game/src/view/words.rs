@@ -146,7 +146,10 @@ impl MavericNode for WordNode {
                     ShaderBundle {
                         shape: ShaderShape::<WordButtonBoxShader>::default(),
                         parameters: (
-                            WordButtonCompletion { completion, tile: node.tile },
+                            WordButtonCompletion {
+                                completion,
+                                tile: node.tile,
+                            },
                             (node.rect.extents.y.abs() / node.rect.extents.x.abs()).into(),
                             ShaderProgress { progress },
                         ),
@@ -175,7 +178,7 @@ pub struct WordButtonCompletion {
     pub tile: LayoutWordTile,
 }
 
-pub const WORD_BUTTON_HOLD_SECONDS:f32 = 1.0;
+pub const WORD_BUTTON_HOLD_SECONDS: f32 = 1.0;
 
 #[repr(C)]
 #[derive(Debug, Reflect, Clone, Copy, TypeUuid, Default, PartialEq)]
@@ -232,7 +235,8 @@ impl ParameterizedShader for WordButtonBoxShader {
 
             let color2 = WORD_BACKGROUND_PROGRESS.convert_color();
 
-            let progress = (pressed_duration.as_secs_f32() / WORD_BUTTON_HOLD_SECONDS).clamp(0.0, 1.0);
+            let progress =
+                (pressed_duration.as_secs_f32() / WORD_BUTTON_HOLD_SECONDS).clamp(0.0, 1.0);
 
             HorizontalGradientBoxShaderParams {
                 color,
