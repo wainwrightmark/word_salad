@@ -115,7 +115,6 @@ async fn load_levels_async(writer: AsyncEventWriter<DailyChallengeDataLoadedEven
         Ok(()) => {}
         Err(err) => {
             error!("{err}");
-            return;
         }
     }
 }

@@ -47,21 +47,14 @@ fn update_state_on_level_change(
 }
 
 #[derive(Debug, Clone, Resource, Serialize, Deserialize, MavericContext, PartialEq)]
+#[derive(Default)]
 pub struct HintState {
     pub hints_remaining: usize,
     pub total_earned_hints: usize,
     pub total_bought_hints: usize,
 }
 
-impl Default for HintState {
-    fn default() -> Self {
-        Self {
-            hints_remaining: 0,
-            total_earned_hints: 0,
-            total_bought_hints: 0,
-        }
-    }
-}
+
 
 impl TrackableResource for HintState {
     const KEY: &'static str = "HintState";
@@ -301,7 +294,7 @@ fn track_found_words(
         is_first_time,
         &asset_server,
         &size,
-        &level,
+        level,
     );
 
     if is_first_time {
@@ -455,9 +448,7 @@ impl FoundWordsState {
                 .iter()
                 .zip(level.words.iter())
                 .take(word_index)
-                .flat_map(|(c, w)| c.known_characters(w))
-                .rev()
-                .next()
+                .flat_map(|(c, w)| c.known_characters(w)).next_back()
                 .unwrap_or_default();
 
             let successor: &[Character] = self
@@ -530,7 +521,7 @@ impl FoundWordsState {
             }
         }
 
-        return 0;
+        0
     }
 }
 

@@ -51,7 +51,7 @@ fn track_held_button(
     else {
         return;
     };
-    let interaction = interaction.clone();
+    let interaction = *interaction;
     let duration = *duration + time.delta();
 
     //info!("{duration:?}");
@@ -381,10 +381,8 @@ impl ButtonInteraction {
             ButtonInteraction::WordButton(word) => {
                 if hint_state.hints_remaining == 0 {
                     *popup_state.as_mut() = PopupState::BuyMoreHints;
-                } else {
-                    if let Either::Left(level) = current_level.level(daily_challenges) {
-                        found_words.try_hint_word(hint_state, level, word.0, chosen_state);
-                    }
+                } else if let Either::Left(level) = current_level.level(daily_challenges) {
+                    found_words.try_hint_word(hint_state, level, word.0, chosen_state);
                 }
             }
             ButtonInteraction::TopMenuItem(LayoutTopBar::HintCounter) => {

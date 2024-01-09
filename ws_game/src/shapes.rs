@@ -52,8 +52,8 @@ impl ParameterizedShader for BoxShader {
         [SIMPLE_FILL_IMPORT, BOX_SDF_IMPORT].into_iter()
     }
 
-    fn get_params<'w, 'a>(
-        query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
+    fn get_params(
+        query_item: <Self::ParamsQuery<'_> as bevy::ecs::query::WorldQuery>::Item<'_>,
         _r: &(),
     ) -> Self::Params {
         BoxShaderParams {
@@ -162,8 +162,8 @@ impl ParameterizedShader for BoxWithBorderShader {
         [FILL_WITH_OUTLINE_IMPORT, BOX_SDF_IMPORT].into_iter()
     }
 
-    fn get_params<'w, 'a>(
-        query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
+    fn get_params(
+        query_item: <Self::ParamsQuery<'_> as bevy::ecs::query::WorldQuery>::Item<'_>,
         _r: &(),
     ) -> Self::Params {
         BoxWithBorderShaderParams {
@@ -234,8 +234,8 @@ impl ParameterizedShader for CircleShader {
         [SIMPLE_FILL_IMPORT, CIRCLE_IMPORT].into_iter()
     }
 
-    fn get_params<'w, 'a>(
-        query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
+    fn get_params(
+        query_item: <Self::ParamsQuery<'_> as bevy::ecs::query::WorldQuery>::Item<'_>,
         _r: &(),
     ) -> Self::Params {
         ColorParams {
@@ -273,8 +273,8 @@ impl ParameterizedShader for SparkleShader {
         [SPARKLE_IMPORT].into_iter()
     }
 
-    fn get_params<'w, 'a>(
-        q: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
+    fn get_params(
+        q: <Self::ParamsQuery<'_> as bevy::ecs::query::WorldQuery>::Item<'_>,
         r: &Res<Time>,
     ) -> Self::Params {
         SparkleShaderParams {

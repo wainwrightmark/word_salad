@@ -388,8 +388,8 @@ impl ParameterizedShader for FireworksShader {
     type ParamsBundle = (ShaderColor, ShaderProgress);
     type ResourceParams<'w> = ();
 
-    fn get_params<'w, 'a>(
-        query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
+    fn get_params(
+        query_item: <Self::ParamsQuery<'_> as bevy::ecs::query::WorldQuery>::Item<'_>,
         _r: &(),
     ) -> Self::Params {
         FireworksParams {

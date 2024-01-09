@@ -158,7 +158,7 @@ impl TotalCompletion {
         if index >= sequence.level_count() {
             return None;
         }
-        return Some(index);
+        Some(index)
     }
 
     pub fn get_number_complete(&self, sequence: &LevelSequence) -> usize {

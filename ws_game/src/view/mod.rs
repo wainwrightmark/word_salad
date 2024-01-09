@@ -100,7 +100,7 @@ impl MavericRootChildren for ViewRoot {
                             commands.add_child(
                                 "ui_theme_info",
                                 LevelExtraInfo {
-                                    info: info.clone(),
+                                    info: *info,
                                     is_selfie_mode,
                                 },
                                 &context.3,

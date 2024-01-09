@@ -42,8 +42,8 @@ impl LevelTime {
                 //info!("{now:?}");
                 let elapsed = now.signed_duration_since(since) + additional;
 
-                let elapsed = elapsed.to_std().unwrap_or_default();
-                elapsed
+                
+                elapsed.to_std().unwrap_or_default()
             }
             LevelTime::Paused { elapsed } => *elapsed,
             LevelTime::Finished { elapsed } => *elapsed,
@@ -79,8 +79,7 @@ impl TrackableResource for LevelTime {
                     since: now,
                     additional: new_additional,
                 }
-            } else {
-            }
+            } 
         }
     }
 }
@@ -159,7 +158,7 @@ pub struct TimeCounterMarker;
 
 pub fn format_seconds(total_seconds: u64) -> String {
     if total_seconds >= 3600 {
-        return "60:00".to_string();
+        "60:00".to_string()
     } else {
         let mm = (total_seconds / 60) % 60;
         let ss = total_seconds % 60;

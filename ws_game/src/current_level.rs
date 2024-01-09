@@ -33,9 +33,9 @@ pub enum NonLevel {
     NoMoreLevelSequence(LevelSequence),
 }
 
-impl Into<CurrentLevel> for NonLevel {
-    fn into(self) -> CurrentLevel {
-        CurrentLevel::NonLevel(self)
+impl From<NonLevel> for CurrentLevel {
+    fn from(val: NonLevel) -> Self {
+        CurrentLevel::NonLevel(val)
     }
 }
 
@@ -98,17 +98,15 @@ impl CurrentLevel {
                 sequence,
             } => {
                 if let Some(index) = total_completion.get_next_level_index(*sequence) {
-                    if index > 0 {
-                        if let Some(..) = sequence.get_level(index) {
-                            return Self::Fixed {
-                                level_index: index,
-                                sequence: *sequence,
-                            };
-                        }
+                    if index > 0 && sequence.get_level(index).is_some() {
+                        return Self::Fixed {
+                            level_index: index,
+                            sequence: *sequence,
+                        };
                     }
                 }
 
-                return NonLevel::NoMoreLevelSequence(*sequence).into();
+                NonLevel::NoMoreLevelSequence(*sequence).into()
             }
             CurrentLevel::DailyChallenge { .. } => {
                 match total_completion.get_next_incomplete_daily_challenge_from_today() {

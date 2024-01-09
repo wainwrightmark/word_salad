@@ -71,7 +71,7 @@ impl GridInputState {
                 if allow_tile(tile, grid, found_words) {
                     //info!("His4");
                     if self.multi_click == Some(MultiClick::SwitchOnStart(tile)) {
-                        chosen_state.solution = ArrayVec::from_iter([tile].into_iter());
+                        chosen_state.solution = ArrayVec::from_iter([tile]);
                     } else {
                         chosen_state.solution.push(tile);
                     }

@@ -207,8 +207,8 @@ impl ParameterizedShader for WordButtonBoxShader {
         [HORIZONTAL_GRADIENT_FILL, BOX_SDF_IMPORT].into_iter()
     }
 
-    fn get_params<'w, 'a>(
-        query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
+    fn get_params(
+        query_item: <Self::ParamsQuery<'_> as bevy::ecs::query::WorldQuery>::Item<'_>,
         pressed_button: &Res<PressedButton>,
     ) -> Self::Params {
         let (
@@ -243,7 +243,7 @@ impl ParameterizedShader for WordButtonBoxShader {
                 height: *height,
                 progress,
                 color2: color2.into(),
-                rounding: crate::rounding::WORD_BUTTON_NORMAL.into(),
+                rounding: crate::rounding::WORD_BUTTON_NORMAL,
             }
         } else {
             let color = palette::WORD_BACKGROUND_UNSTARTED.convert_color().into();
@@ -259,7 +259,7 @@ impl ParameterizedShader for WordButtonBoxShader {
                 height: *height,
                 progress: *progress,
                 color2: color2.into(),
-                rounding: crate::rounding::WORD_BUTTON_NORMAL.into(),
+                rounding: crate::rounding::WORD_BUTTON_NORMAL,
             }
         }
     }

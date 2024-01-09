@@ -132,7 +132,7 @@ impl MavericNode for TutorialPopupNode {
             let text = Text2DNode {
                 text: *text,
                 font: TITLE_FONT_PATH,
-                font_size: font_size,
+                font_size,
                 color: Color::BLACK,
                 alignment: TextAlignment::Left,
                 linebreak_behavior: bevy::text::BreakLineOn::WordBoundary,
@@ -378,7 +378,7 @@ impl TutorialText {
             }
         };
 
-        return Some(result);
+        Some(result)
     }
 }
 
@@ -464,7 +464,7 @@ impl LayoutStructure for TutorialTextLayoutEntity {
     }
 
     fn iter_all(_context: &Self::Context) -> impl Iterator<Item = Self> {
-        TutorialLayoutEntity::iter().map(|x| Self(x))
+        TutorialLayoutEntity::iter().map(Self)
     }
 }
 

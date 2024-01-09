@@ -18,7 +18,7 @@ impl<'a, T: Resource> AnyResMut<T> for TestResMut<'a, T> {}
 
 impl<'a, T> AsRef<T> for TestResMut<'a, T> {
     fn as_ref(&self) -> &T {
-        &self.value
+        self.value
     }
 }
 

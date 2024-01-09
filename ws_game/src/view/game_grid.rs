@@ -216,7 +216,7 @@ impl MavericNode for GridTile {
                     selected: node.selectability.is_selected(),
                     visible: !node.timer_paused,
                 },
-                &context,
+                context,
             );
             if !node.timer_paused {
                 if let HintStatus::ManualHinted = node.hint_status {

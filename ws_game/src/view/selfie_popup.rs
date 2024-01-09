@@ -55,7 +55,7 @@ impl MavericNode for SelfiePopupNode {
                         Vec3::ONE,
                         Duration::from_secs_f32(0.5),
                     ),
-                    &args.context,
+                    args.context,
                 );
             }
         })

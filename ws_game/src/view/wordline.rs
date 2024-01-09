@@ -213,8 +213,8 @@ impl ParameterizedShader for WordLineSegmentShader {
     type ParamsBundle = (WordLineDirection, ShaderColor, ShaderSecondColor);
     type ResourceParams<'w> = Res<'w, WordLineGlobalValues>;
 
-    fn get_params<'w, 'a>(
-        query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w>,
+    fn get_params(
+        query_item: <Self::ParamsQuery<'_> as bevy::ecs::query::WorldQuery>::Item<'_>,
         res: &Res<WordLineGlobalValues>,
     ) -> Self::Params {
         let progress = if query_item.0.is_final_segment {
