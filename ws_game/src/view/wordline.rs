@@ -10,7 +10,7 @@ pub struct WordlinePlugin;
 impl Plugin for WordlinePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<WordLineGlobalTargets>();
-        app.add_plugins(ParamShaderPlugin::<WordLineSegmentShader>::default());
+        app.add_plugins(ExtractToShaderPlugin::<WordLineSegmentShader>::default());
 
         app.insert_resource(WordLineGlobalValues::default());
         app.add_systems(Update, transition_word_line);
@@ -203,8 +203,8 @@ fn index_to_color(index: usize) -> Color {
 #[uuid = "a68d3916-1385-4269-a512-4561eccd664d"]
 struct WordLineSegmentShader;
 
-impl ParameterizedShader for WordLineSegmentShader {
-    type Params = WordLineSegmentShaderParams;
+impl ExtractToShader for WordLineSegmentShader {
+    type Shader = Self;
     type ParamsQuery<'a> = (
         &'a WordLineDirection,
         &'a ShaderColor,
@@ -213,18 +213,18 @@ impl ParameterizedShader for WordLineSegmentShader {
     type ParamsBundle = (WordLineDirection, ShaderColor, ShaderSecondColor);
     type ResourceParams<'w> = Res<'w, WordLineGlobalValues>;
 
-    fn get_params(
-        query_item: <Self::ParamsQuery<'_> as bevy::ecs::query::WorldQuery>::Item<'_>,
-        res: &Res<WordLineGlobalValues>,
-    ) -> Self::Params {
+    fn get_params<'w, 'w1, 'w2, 's2, 'a, 'r>(
+        query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w1>,
+        resource: &'r <Self::ResourceParams<'w> as bevy::ecs::system::SystemParam>::Item<'w2, 's2>,
+    ) -> <Self::Shader as ParameterizedShader>::Params {
         let progress = if query_item.0.is_final_segment {
-            res.progress
+            resource.progress
         } else {
             1.0
         };
 
         WordLineSegmentShaderParams {
-            line_width: res.line_width,
+            line_width: resource.line_width,
             direction: query_item.0.direction,
 
             color1: query_item.1.color.into(),
@@ -232,6 +232,10 @@ impl ParameterizedShader for WordLineSegmentShader {
             progress,
         }
     }
+}
+
+impl ParameterizedShader for WordLineSegmentShader {
+    type Params = WordLineSegmentShaderParams;
 
     fn fragment_body() -> impl Into<String> {
         SDFColorCall {

@@ -382,21 +382,25 @@ fn create_firework(
 #[uuid = "3b76cd37-5f82-4fcc-9d26-ea6f60d616e3"]
 pub struct FireworksShader;
 
-impl ParameterizedShader for FireworksShader {
-    type Params = FireworksParams;
+impl ExtractToShader for FireworksShader {
+    type Shader = Self;
     type ParamsQuery<'a> = (&'a ShaderColor, &'a ShaderProgress);
     type ParamsBundle = (ShaderColor, ShaderProgress);
     type ResourceParams<'w> = ();
 
-    fn get_params(
-        query_item: <Self::ParamsQuery<'_> as bevy::ecs::query::WorldQuery>::Item<'_>,
-        _r: &(),
-    ) -> Self::Params {
+    fn get_params<'w, 'w1, 'w2, 's2, 'a, 'r>(
+        query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w1>,
+        resource: &'r <Self::ResourceParams<'w> as bevy::ecs::system::SystemParam>::Item<'w2, 's2>,
+    ) -> <Self::Shader as ParameterizedShader>::Params {
         FireworksParams {
             color: query_item.0.color.into(),
             progress: query_item.1.progress,
         }
     }
+}
+
+impl ParameterizedShader for FireworksShader {
+    type Params = FireworksParams;
 
     fn fragment_body() -> impl Into<String> {
         "return fill::fireworks::fill(in.color, in.pos, in.progress);"

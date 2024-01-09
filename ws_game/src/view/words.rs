@@ -1,6 +1,9 @@
 use crate::{animated_solutions, prelude::*};
 use bevy::reflect::TypeUuid;
-use bevy_param_shaders::parameterized_shader::{FragmentImport, ParameterizedShader, SDFColorCall};
+use bevy_param_shaders::frame::Frame;
+use bevy_param_shaders::parameterized_shader::{
+    ExtractToShader, FragmentImport, ParameterizedShader, SDFColorCall,
+};
 use bevy_param_shaders::*;
 use itertools::Either;
 use maveric::widgets::text2d_node::Text2DNode;
@@ -13,7 +16,7 @@ pub struct WordsPlugin;
 
 impl Plugin for WordsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(ParamShaderPlugin::<WordButtonBoxShader>::default());
+        app.add_plugins(ExtractToShaderPlugin::<WordButtonBoxShader>::default());
     }
 }
 
@@ -143,8 +146,7 @@ impl MavericNode for WordNode {
             commands.add_child(
                 "shape_fill",
                 (
-                    ShaderBundle {
-                        shape: ShaderShape::<WordButtonBoxShader>::default(),
+                    ShaderBundle::<WordButtonBoxShader> {
                         parameters: (
                             WordButtonCompletion {
                                 completion,
@@ -178,15 +180,15 @@ pub struct WordButtonCompletion {
     pub tile: LayoutWordTile,
 }
 
-pub const WORD_BUTTON_HOLD_SECONDS: f32 = 1.0;
+pub const WORD_BUTTON_HOLD_SECONDS: f32 = 0.5;
 
 #[repr(C)]
 #[derive(Debug, Reflect, Clone, Copy, TypeUuid, Default, PartialEq)]
 #[uuid = "266b0619-b913-4cce-be86-7470ef0b129b"]
 pub struct WordButtonBoxShader;
 
-impl ParameterizedShader for WordButtonBoxShader {
-    type Params = HorizontalGradientBoxShaderParams;
+impl ExtractToShader for WordButtonBoxShader {
+    type Shader = Self;
     type ParamsQuery<'a> = (
         &'a WordButtonCompletion,
         &'a ShaderAspectRatio,
@@ -195,29 +197,17 @@ impl ParameterizedShader for WordButtonBoxShader {
     type ParamsBundle = (WordButtonCompletion, ShaderAspectRatio, ShaderProgress);
     type ResourceParams<'w> = Res<'w, PressedButton>;
 
-    fn fragment_body() -> impl Into<String> {
-        SDFColorCall {
-            sdf: "shaders::box::sdf(in.pos, in.height, in.rounding)",
-            fill_color:
-                "fill::horizontal_gradient::fill(d, in.color, in.pos, in.progress, in.color2)",
-        }
-    }
-
-    fn imports() -> impl Iterator<Item = FragmentImport> {
-        [HORIZONTAL_GRADIENT_FILL, BOX_SDF_IMPORT].into_iter()
-    }
-
-    fn get_params(
-        query_item: <Self::ParamsQuery<'_> as bevy::ecs::query::WorldQuery>::Item<'_>,
-        pressed_button: &Res<PressedButton>,
-    ) -> Self::Params {
+    fn get_params<'w, 'w1, 'w2, 's2, 'a, 'r>(
+        query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w1>,
+        resource: &'r <Self::ResourceParams<'w> as bevy::ecs::system::SystemParam>::Item<'w2, 's2>,
+    ) -> <Self::Shader as ParameterizedShader>::Params {
         let (
             WordButtonCompletion { completion, tile },
             ShaderAspectRatio { height },
             ShaderProgress { progress },
         ) = query_item;
 
-        if let Some(pressed_duration) = match pressed_button.as_ref() {
+        if let Some(pressed_duration) = match resource.as_ref() {
             PressedButton::None => None,
             PressedButton::Pressed {
                 interaction,
@@ -262,6 +252,22 @@ impl ParameterizedShader for WordButtonBoxShader {
                 rounding: crate::rounding::WORD_BUTTON_NORMAL,
             }
         }
+    }
+}
+
+impl ParameterizedShader for WordButtonBoxShader {
+    type Params = HorizontalGradientBoxShaderParams;
+
+    fn fragment_body() -> impl Into<String> {
+        SDFColorCall {
+            sdf: "shaders::box::sdf(in.pos, in.height, in.rounding)",
+            fill_color:
+                "fill::horizontal_gradient::fill(d, in.color, in.pos, in.progress, in.color2)",
+        }
+    }
+
+    fn imports() -> impl Iterator<Item = FragmentImport> {
+        [HORIZONTAL_GRADIENT_FILL, BOX_SDF_IMPORT].into_iter()
     }
 
     const FRAME: Frame = Frame::square(1.0);
