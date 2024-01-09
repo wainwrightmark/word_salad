@@ -42,7 +42,6 @@ impl LevelTime {
                 //info!("{now:?}");
                 let elapsed = now.signed_duration_since(since) + additional;
 
-                
                 elapsed.to_std().unwrap_or_default()
             }
             LevelTime::Paused { elapsed } => *elapsed,
@@ -79,7 +78,7 @@ impl TrackableResource for LevelTime {
                     since: now,
                     additional: new_additional,
                 }
-            } 
+            }
         }
     }
 }

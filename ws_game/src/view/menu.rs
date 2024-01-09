@@ -7,7 +7,10 @@ use maveric::{
 };
 use strum::EnumIs;
 
-use ws_core::{palette, LayoutStructure, LayoutStructureWithFont, LayoutStructureWithStaticText};
+use ws_core::{
+    palette::{self, BUTTON_CLICK_FILL},
+    LayoutStructure, LayoutStructureWithFont, LayoutStructureWithStaticText,
+};
 use ws_levels::level_group::LevelGroup;
 
 use crate::{
@@ -162,6 +165,7 @@ fn add_menu_items<
                 interaction: entity.into(),
                 text_color: palette::MENU_BUTTON_TEXT.convert_color(),
                 fill_color,
+                clicked_fill_color: BUTTON_CLICK_FILL.convert_color(),
             },
             &(),
         );
@@ -198,6 +202,7 @@ fn add_double_text_menu_items<
                 fill_color,
                 left_font,
                 right_font,
+                clicked_fill_color: BUTTON_CLICK_FILL.convert_color(),
             },
             &(),
         );

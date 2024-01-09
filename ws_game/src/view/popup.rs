@@ -8,7 +8,7 @@ use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
 use strum::{Display, EnumCount, EnumIs, EnumIter, IntoEnumIterator};
 use ws_core::{
     layout::entities::*,
-    palette::{POPUP_BOX_BACKGROUND, POPUP_BOX_BORDER},
+    palette::{BUTTON_CLICK_FILL, POPUP_BOX_BACKGROUND, POPUP_BOX_BORDER},
     LayoutStructure, LayoutStructureWithFont, Spacing,
 };
 
@@ -44,7 +44,7 @@ impl MavericRootChildren for PopupStateRoot {
             PopupState::BuyMoreHints => {
                 commands.add_child(
                     "grey out",
-                    shapes::box_node1(
+                    shapes::basic_box_node1(
                         size.scaled_width.max(size.scaled_height),
                         size.scaled_width.max(size.scaled_height),
                         Vec3::Z * z_indices::POPUP_BOX_GREY_OUT,
@@ -64,6 +64,7 @@ impl MavericRootChildren for PopupStateRoot {
                 for item in BuyMoreHintsLayoutEntity::iter() {
                     let font_size = size.font_size::<BuyMoreHintsLayoutEntity>(&item, &());
                     let rect: LayoutRectangle = size.get_rect(&item, &());
+                    info!("{rect:?}");
                     match item {
                         BuyMoreHintsLayoutEntity::Title => {
                             let text = Text2DNode {
@@ -83,19 +84,17 @@ impl MavericRootChildren for PopupStateRoot {
                             commands.add_child("title text", text, &());
                         }
                         BuyMoreHintsLayoutEntity::BuyMoreHintsButton => {
-                            let button = shapes::box_node1(
+                            let button = shapes::button_box_node(
                                 rect.width(),
                                 rect.height(),
                                 rect.centre().extend(crate::z_indices::POPUP_BOX_BUTTON),
-                                Color::BLUE,
+                                palette::MENU_BUTTON_FILL.convert_color(),
+                                BUTTON_CLICK_FILL.convert_color(),
                                 OTHER_BUTTON_NORMAL,
+                                ButtonInteraction::BuyMoreHints,
                             );
 
-                            commands.add_child(
-                                "buy_more_hints_box",
-                                button.with_bundle(ButtonInteraction::BuyMoreHints),
-                                &(),
-                            );
+                            commands.add_child("buy_more_hints_box", button, &());
 
                             let text = Text2DNode {
                                 text: "Buy more",
@@ -114,14 +113,15 @@ impl MavericRootChildren for PopupStateRoot {
                             commands.add_child("buy_more_hints_text", text, &());
                         }
                         BuyMoreHintsLayoutEntity::SufferAloneButton => {
-                            let button = shapes::box_node1(
+                            let button = shapes::button_box_node(
                                 rect.width(),
                                 rect.height(),
                                 rect.centre().extend(crate::z_indices::POPUP_BOX_BUTTON),
-                                Color::GRAY,
+                                palette::LIGHT_GRAY.convert_color(),
+                                BUTTON_CLICK_FILL.convert_color(),
                                 OTHER_BUTTON_NORMAL,
-                            )
-                            .with_bundle(ButtonInteraction::ClosePopups);
+                                ButtonInteraction::ClosePopups,
+                            );
 
                             commands.add_child("suffer_alone_box", button, &());
 

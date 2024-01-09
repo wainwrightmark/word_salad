@@ -46,15 +46,12 @@ fn update_state_on_level_change(
     }
 }
 
-#[derive(Debug, Clone, Resource, Serialize, Deserialize, MavericContext, PartialEq)]
-#[derive(Default)]
+#[derive(Debug, Clone, Resource, Serialize, Deserialize, MavericContext, PartialEq, Default)]
 pub struct HintState {
     pub hints_remaining: usize,
     pub total_earned_hints: usize,
     pub total_bought_hints: usize,
 }
-
-
 
 impl TrackableResource for HintState {
     const KEY: &'static str = "HintState";
@@ -448,7 +445,8 @@ impl FoundWordsState {
                 .iter()
                 .zip(level.words.iter())
                 .take(word_index)
-                .flat_map(|(c, w)| c.known_characters(w)).next_back()
+                .flat_map(|(c, w)| c.known_characters(w))
+                .next_back()
                 .unwrap_or_default();
 
             let successor: &[Character] = self

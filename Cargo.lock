@@ -717,7 +717,7 @@ dependencies = [
 [[package]]
 name = "bevy_param_shaders"
 version = "0.1.0"
-source = "git+https://github.com/wainwrightmark/bevy_param_shaders/#7cb33ed60752f31913eab2135432d207c2ecf37e"
+source = "git+https://github.com/wainwrightmark/bevy_param_shaders/#949af1421f73f7d6c55de46c333b4c1c53717b99"
 dependencies = [
  "bevy",
  "bitflags 2.4.1",

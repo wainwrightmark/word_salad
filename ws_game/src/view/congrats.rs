@@ -7,7 +7,7 @@ use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
 use num_traits::Zero;
 use rand::{rngs::ThreadRng, Rng};
 use strum::IntoEnumIterator;
-use ws_core::layout::entities::*;
+use ws_core::{layout::entities::*, palette::BUTTON_CLICK_FILL};
 #[derive(Debug, Clone, PartialEq)]
 pub struct CongratsView;
 
@@ -219,6 +219,7 @@ impl MavericNode for CongratsView {
                             interaction: ButtonInteraction::Congrats(button),
                             text_color,
                             fill_color,
+                            clicked_fill_color: BUTTON_CLICK_FILL.convert_color(),
                         }
                         .with_transition_in::<TransformScaleLens>(
                             Vec3::ZERO,
@@ -308,16 +309,13 @@ impl MavericNode for StatisticNode {
 
             commands.add_child(
                 "box",
-                ShaderBundle::<BoxShader> {
-                    parameters: (
-                        (*background_color).into(),
-                        crate::rounding::OTHER_BUTTON_NORMAL.into(),
-                        (rect.width() / rect.height()).into(),
-                    ),
-
-                    transform: Transform::from_scale(Vec3::ONE * node.rect.height() * 0.5),
-                    ..Default::default()
-                },
+                basic_box_node1(
+                    rect.width(),
+                    rect.height(),
+                    Vec3::ZERO,
+                    *background_color,
+                    crate::rounding::OTHER_BUTTON_NORMAL,
+                ),
                 &(),
             );
         });
@@ -390,7 +388,7 @@ impl ExtractToShader for FireworksShader {
 
     fn get_params<'w, 'w1, 'w2, 's2, 'a, 'r>(
         query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w1>,
-        resource: &'r <Self::ResourceParams<'w> as bevy::ecs::system::SystemParam>::Item<'w2, 's2>,
+        _resource: &'r <Self::ResourceParams<'w> as bevy::ecs::system::SystemParam>::Item<'w2, 's2>,
     ) -> <Self::Shader as ParameterizedShader>::Params {
         FireworksParams {
             color: query_item.0.color.into(),

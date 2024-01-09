@@ -7,7 +7,9 @@ use maveric::node::MavericNode;
 use maveric::prelude::*;
 use std::fmt::Debug;
 
+use crate::prelude::ButtonInteraction;
 use crate::prelude::FireworksShader;
+use crate::prelude::PressedButton;
 
 maveric::define_lens!(RoundingLens, ShaderRounding, f32, rounding);
 maveric::define_lens!(ProgressLens, ShaderProgress, f32, progress);
@@ -17,7 +19,8 @@ pub struct ShapesPlugin;
 
 impl Plugin for ShapesPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(ExtractToShaderPlugin::<BoxShader>::default());
+        app.add_plugins(ExtractToShaderPlugin::<BasicBoxShaderExtraction>::default());
+        app.add_plugins(ExtractToShaderPlugin::<ButtonBoxShaderExtraction>::default());
         app.add_plugins(ExtractToShaderPlugin::<BoxWithBorderShader>::default());
         app.add_plugins(ExtractToShaderPlugin::<CircleShader>::default());
         app.add_plugins(ExtractToShaderPlugin::<SparkleShader>::default());
@@ -30,13 +33,79 @@ impl Plugin for ShapesPlugin {
     }
 }
 
-#[repr(C)]
-#[derive(Debug, Reflect, Clone, Copy, TypeUuid, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, TypeUuid, Default, PartialEq)]
 #[uuid = "a31d800c-02a2-4db7-8aaf-1caa2bd1dc37"]
 pub struct BoxShader;
 
-impl ExtractToShader for BoxShader {
-    type Shader = Self;
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
+struct ButtonBoxShaderExtraction;
+
+impl ExtractToShader for ButtonBoxShaderExtraction {
+    type Shader = BoxShader;
+    type ParamsQuery<'a> = (
+        &'a ShaderColor,
+        &'a ShaderRounding,
+        &'a ShaderAspectRatio,
+        &'a ShaderSecondColor,
+        &'a ButtonInteraction,
+    );
+    type ParamsBundle = (
+        ShaderColor,
+        ShaderRounding,
+        ShaderAspectRatio,
+        ShaderSecondColor,
+        ButtonInteraction,
+    );
+    type ResourceParams<'w> = Res<'w, PressedButton>;
+
+    fn get_params<'w, 'w1, 'w2, 's2, 'a, 'r>(
+        query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w1>,
+        resource: &'r <Self::ResourceParams<'w> as bevy::ecs::system::SystemParam>::Item<'w2, 's2>,
+    ) -> <Self::Shader as ParameterizedShader>::Params {
+        let (color, rounding, height, color2, button_interaction) = query_item;
+
+        if let Some(duration) = match resource.as_ref() {
+            PressedButton::None => None,
+            PressedButton::Pressed {
+                interaction,
+                duration,
+            } => {
+                if interaction == button_interaction {
+                    Some(duration)
+                } else {
+                    None
+                }
+            }
+            PressedButton::PressedAfterActivated { .. } => None,
+        } {
+            const TRANSITION_SECS: f32 = 0.2;
+            let ratio = (duration.as_secs_f32() / TRANSITION_SECS).clamp(0.0, 1.0);
+
+            let rgba1: LinearRGBA = color.color.into();
+            let rgba2: LinearRGBA = color2.color.into();
+
+            let new_color = rgba2 * ratio + (rgba1 * (1.0 - ratio));
+
+            BoxShaderParams {
+                color: new_color,
+                rounding: rounding.rounding.into(),
+                height: height.height.into(),
+            }
+        } else {
+            BoxShaderParams {
+                color: color.color.into(),
+                rounding: rounding.rounding.into(),
+                height: height.height.into(),
+            }
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
+struct BasicBoxShaderExtraction;
+
+impl ExtractToShader for BasicBoxShaderExtraction {
+    type Shader = BoxShader;
     type ParamsQuery<'a> = (&'a ShaderColor, &'a ShaderRounding, &'a ShaderAspectRatio);
     type ParamsBundle = (ShaderColor, ShaderRounding, ShaderAspectRatio);
     type ResourceParams<'w> = ();
@@ -139,8 +208,7 @@ impl From<f32> for ShaderAspectRatio {
     }
 }
 
-#[repr(C)]
-#[derive(Debug, Reflect, Clone, Copy, TypeUuid, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, TypeUuid, Default, PartialEq)]
 #[uuid = "df3562db-60d2-471a-81ac-616fb633c7e7"]
 pub struct BoxWithBorderShader;
 
@@ -221,7 +289,6 @@ impl From<f32> for ShaderProgress {
     }
 }
 
-#[repr(C)]
 #[derive(Debug, TypeUuid, Default, PartialEq, Clone, Copy)]
 #[uuid = "6d310234-5019-4cd4-9f60-ebabd7dca30b"]
 pub struct CircleShader;
@@ -267,7 +334,6 @@ pub struct ColorParams {
 
 impl ShaderParams for ColorParams {}
 
-#[repr(C)]
 #[derive(Debug, TypeUuid, Default, PartialEq, Clone, Copy)]
 #[uuid = "a105f872-0a73-4226-a9ee-92518c947847"]
 pub struct SparkleShader;
@@ -356,17 +422,47 @@ const CIRCLE_IMPORT: FragmentImport = FragmentImport {
     import_path: "sdf::circle",
 };
 
-pub fn box_node1(
+pub fn basic_box_node1(
     width: f32,
     height: f32,
     translation: Vec3,
     color: Color,
     rounding: f32,
 ) -> impl MavericNode<Context = ()> {
-    let scale = width;
+    let height = height.abs();
+    let scale = width.abs();
 
-    ShaderBundle::<BoxShader> {
+    ShaderBundle::<BasicBoxShaderExtraction> {
         parameters: (color.into(), rounding.into(), (height / scale).into()),
+        transform: Transform {
+            translation,
+            scale: Vec3::ONE * scale * 0.5,
+            ..Default::default()
+        },
+        ..default()
+    }
+}
+
+pub fn button_box_node(
+    width: f32,
+    height: f32,
+    translation: Vec3,
+    color: Color,
+    color2: Color,
+    rounding: f32,
+    button_interaction: ButtonInteraction,
+) -> impl MavericNode<Context = ()> {
+    let height = height.abs();
+    let scale = width.abs();
+
+    ShaderBundle::<ButtonBoxShaderExtraction> {
+        parameters: (
+            color.into(),
+            rounding.into(),
+            (height / scale).into(),
+            color2.into(),
+            button_interaction,
+        ),
         transform: Transform {
             translation,
             scale: Vec3::ONE * scale * 0.5,

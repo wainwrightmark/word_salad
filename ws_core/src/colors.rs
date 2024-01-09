@@ -59,6 +59,8 @@ pub mod palette {
     pub const CONGRATS_STATISTIC_TEXT_NORMAL: Color = MY_BLACK;
     pub const CONGRATS_STATISTIC_FILL_NORMAL: Color = LIGHT_GRAY;
 
+    pub const BUTTON_CLICK_FILL: Color = MY_BLUE;
+
     pub const ICON_BUTTON_BACKGROUND: Color = Color::NONE;
     pub const TEXT_BUTTON_BACKGROUND: Color = Color::WHITE;
 

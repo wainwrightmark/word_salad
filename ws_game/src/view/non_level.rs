@@ -1,6 +1,6 @@
 use crate::prelude::*;
 use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
-use ws_core::layout::entities::*;
+use ws_core::{layout::entities::*, palette::BUTTON_CLICK_FILL};
 #[derive(Debug, Clone, PartialEq)]
 pub struct NonLevelView {
     pub non_level: NonLevel,
@@ -83,6 +83,7 @@ impl MavericNode for NonLevelView {
                     interaction: ButtonInteraction::NonLevelInteractionButton,
                     text_color,
                     fill_color,
+                    clicked_fill_color: BUTTON_CLICK_FILL.convert_color(),
                 },
                 &(),
             );

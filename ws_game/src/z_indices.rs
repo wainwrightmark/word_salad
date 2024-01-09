@@ -22,6 +22,6 @@ pub const TUTORIAL_POPUP_BOX_BACKGROUND: f32 = 240.0;
 pub const TUTORIAL_POPUP_BOX_TEXT: f32 = 450.0;
 
 pub const POPUP_BOX_GREY_OUT: f32 = 490.0;
-pub const POPUP_BOX_BACKGROUND: f32 = 500.0;
-pub const POPUP_BOX_BUTTON: f32 = 550.0;
+pub const POPUP_BOX_BACKGROUND: f32 = 495.0;
+pub const POPUP_BOX_BUTTON: f32 = 500.0;
 pub const POPUP_BOX_TEXT: f32 = 560.0;

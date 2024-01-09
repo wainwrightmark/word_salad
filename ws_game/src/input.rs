@@ -120,11 +120,7 @@ impl InteractionEntity {
                                 .map(|t| Self::Tile(t.0)),
                         },
                         GameLayoutEntity::WordList => {
-                            Self::try_get_button::<LayoutWordTile>(
-                                position,
-                                size,
-                                &level.words,
-                            )
+                            Self::try_get_button::<LayoutWordTile>(position, size, &level.words)
                         }
                         GameLayoutEntity::Timer => {
                             if current_level.is_tutorial() {
@@ -140,11 +136,9 @@ impl InteractionEntity {
 
                     match non_level_entity {
                         NonLevelLayoutEntity::Text => None,
-                        NonLevelLayoutEntity::InteractButton => {
-                            Some(InteractionEntity::Button(
-                                ButtonInteraction::NonLevelInteractionButton,
-                            ))
-                        }
+                        NonLevelLayoutEntity::InteractButton => Some(InteractionEntity::Button(
+                            ButtonInteraction::NonLevelInteractionButton,
+                        )),
                     }
                 }
             },

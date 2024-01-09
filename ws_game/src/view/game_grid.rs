@@ -30,19 +30,6 @@ impl GridTile {
             palette::GRID_TILE_FILL_NORMAL.convert_color()
         }
     }
-
-    // fn border_proportion(&self) -> f32 {
-    //     0.0
-
-    //     // if self.selectability.is_selected() {
-    //     //     2. / 36.
-    //     // } else {
-    //     //     match self.hint_status {
-    //     //         HintStatus::Inadvisable => 0. / 36.,
-    //     //         _ => 1. / 36.,
-    //     //     }
-    //     // }
-    // }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, EnumIs)]
@@ -197,7 +184,7 @@ impl MavericNode for GridTile {
 
             commands.add_child(
                 "tile",
-                box_node1(
+                basic_box_node1(
                     tile_size,
                     tile_size,
                     Vec3::new(0.0, 0.0, crate::z_indices::GRID_TILE),

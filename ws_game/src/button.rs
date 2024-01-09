@@ -129,8 +129,10 @@ pub enum ButtonPressType {
     OnEnd,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Component, EnumIs)]
+#[derive(Debug, Clone, Copy, PartialEq, Component, EnumIs, Default)]
 pub enum ButtonInteraction {
+    #[default]
+    None,
     MainMenu(MainMenuLayoutEntity),
     LevelsMenu(LevelsMenuLayoutEntity),
     LevelGroupMenu(LevelGroupLayoutEntity),
@@ -143,7 +145,6 @@ pub enum ButtonInteraction {
     MenuBackButton,
     NonLevelInteractionButton,
     TimerButton,
-    None,
 }
 
 impl ButtonInteraction {

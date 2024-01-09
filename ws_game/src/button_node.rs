@@ -8,7 +8,7 @@ use maveric::{
 
 use ws_core::LayoutRectangle;
 
-use crate::prelude::{box_node1, ButtonInteraction, BUTTONS_FONT_PATH};
+use crate::prelude::{button_box_node, ButtonInteraction, BUTTONS_FONT_PATH};
 
 #[derive(Debug, PartialEq)]
 pub struct WSButtonNode<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> {
@@ -17,6 +17,7 @@ pub struct WSButtonNode<T: Into<String> + PartialEq + Debug + Send + Sync + Clon
     pub text: T,
     pub interaction: ButtonInteraction,
     pub fill_color: Color,
+    pub clicked_fill_color: Color,
     pub text_color: Color,
 }
 
@@ -41,6 +42,7 @@ impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> Maveri
                     text,
                     interaction,
                     fill_color,
+                    clicked_fill_color,
                     text_color,
                 } = node;
                 let centre = rect.centre();
@@ -65,14 +67,15 @@ impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> Maveri
                 let shape_translation = centre.extend(crate::z_indices::MENU_BUTTON_BACKGROUND);
                 commands.add_child(
                     "shape_fill",
-                    box_node1(
+                    button_box_node(
                         rect.extents.x.abs(),
                         rect.extents.y.abs(),
                         shape_translation,
                         *fill_color,
+                        *clicked_fill_color,
                         crate::rounding::OTHER_BUTTON_NORMAL,
-                    )
-                    .with_bundle(*interaction),
+                        *interaction,
+                    ),
                     &(),
                 );
             })
@@ -88,6 +91,7 @@ pub struct DoubleTextButtonNode<T: Into<String> + PartialEq + Debug + Send + Syn
     pub right_text: T,
     pub interaction: ButtonInteraction,
     pub fill_color: Color,
+    pub clicked_fill_color: Color,
     pub text_color: Color,
     pub left_font: &'static str,
     pub right_font: &'static str,
@@ -115,6 +119,7 @@ impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> Maveri
                     right_text,
                     interaction,
                     fill_color,
+                    clicked_fill_color,
                     text_color,
                     left_font,
                     right_font,
@@ -168,12 +173,14 @@ impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> Maveri
                 let shape_translation = centre.extend(crate::z_indices::MENU_BUTTON_BACKGROUND);
                 commands.add_child(
                     "shape_fill",
-                    box_node1(
+                    button_box_node(
                         rect.extents.x.abs(),
                         rect.extents.y.abs(),
                         shape_translation,
                         *fill_color,
+                        *clicked_fill_color,
                         crate::rounding::OTHER_BUTTON_NORMAL,
+                        *interaction,
                     )
                     .with_bundle(*interaction),
                     &(),
