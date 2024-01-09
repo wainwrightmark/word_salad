@@ -67,14 +67,16 @@ impl MavericNode for HintsViewNode {
             ..default()
         };
 
+        let transition = TransitionBuilder::<TransformTranslationLens>::default()
+        .then_ease(final_translation, speed, Ease::CubicInOut)
+        .build();
+
         let circle_bundle = (
             circle_bundle,
             ScheduledForDeletion {
                 remaining: Duration::from_secs_f32(ANIMATE_SECONDS),
             },
-            TransitionBuilder::<TransformTranslationLens>::default()
-                .then_tween(final_translation, speed)
-                .build(),
+            transition.clone(),
         );
 
         let text_transform = Transform {
@@ -107,9 +109,7 @@ impl MavericNode for HintsViewNode {
             ScheduledForDeletion {
                 remaining: Duration::from_secs_f32(ANIMATE_SECONDS),
             },
-            TransitionBuilder::<TransformTranslationLens>::default()
-                .then_tween(final_translation, speed)
-                .build(),
+            transition,
         );
 
         let mut circle_entity = Entity::PLACEHOLDER;

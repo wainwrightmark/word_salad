@@ -32,7 +32,7 @@ pub fn animate_solution(
     let time_multiplier = if is_first_time { 1.0 } else { 0.5 };
 
     const SPACING: f32 = 0.4;
-    const MID_SCALE: f32 = 0.75;
+    const MID_SCALE: f32 = 0.5;
 
     let words = &level.words;
 
@@ -82,12 +82,13 @@ pub fn animate_solution(
 
         let transition =
             TransitionBuilder::<(TransformTranslationLens, TransformScaleLens)>::default()
-                .then_tween(
+                .then_ease(
                     (
                         destination_two.extend(crate::z_indices::ANIMATED_SOLUTION),
                         Vec3::ONE * MID_SCALE,
                     ),
                     (speed_one_translation, speed_one_scale),
+                    Ease::SineOut
                 )
                 .build();
 

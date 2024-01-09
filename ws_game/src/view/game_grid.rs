@@ -190,8 +190,8 @@ impl MavericNode for GridTile {
                     Vec3::new(0.0, 0.0, crate::z_indices::GRID_TILE),
                     fill,
                     0.1,
-                )
-                .with_transition_to::<ShaderColorLens>(fill, 0.1.into()),
+                ),
+                // .with_transition_to::<ShaderColorLens>(fill, 0.1.into()),
                 &(),
             );
 
@@ -235,7 +235,7 @@ impl MavericNode for GridTile {
     fn on_deleted(&self, commands: &mut ComponentCommands) -> DeletionPolicy {
         commands.insert(
             TransitionBuilder::<TransformScaleLens>::default()
-                .then_tween(Vec3::ZERO, 1.0.into())
+                .then_ease(Vec3::ZERO, 1.0.into(), Ease::BackIn )
                 .build(),
         );
         DeletionPolicy::Linger(Duration::from_secs(1))
@@ -294,7 +294,7 @@ impl MavericNode for GridLetter {
                     text_2d_bounds: Default::default(),
                     text_anchor: Default::default(),
                 }
-                .with_transition_to::<TextColorLens<0>>(color, 5.0.into())
+                .with_transition_to::<TextColorLens<0>>(color, 5.0.into(), None)
                 .with_bundle(Transform::from_xyz(
                     0.0,
                     0.0,

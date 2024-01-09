@@ -53,7 +53,8 @@ impl MavericNode for SelfiePopupNode {
                     .with_transition_in::<TransformScaleLens>(
                         Vec3::ZERO,
                         Vec3::ONE,
-                        Duration::from_secs_f32(0.5),
+                        Duration::from_secs_f32(crate::view::tutorial::POPUP_TRANSITION_IN_SECONDS),
+                        Some(Ease::CubicOut),
                     ),
                     args.context,
                 );

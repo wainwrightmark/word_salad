@@ -16,6 +16,8 @@ use ws_core::{
 
 use crate::prelude::*;
 
+pub const POPUP_TRANSITION_IN_SECONDS: f32 = 2.0;
+
 #[derive(Debug, PartialEq)]
 pub struct TutorialNode {
     pub text: TutorialText,
@@ -46,7 +48,8 @@ impl MavericNode for TutorialNode {
                     .with_transition_in::<TransformScaleLens>(
                         Vec3::ZERO,
                         Vec3::ONE,
-                        Duration::from_secs_f32(0.5),
+                        Duration::from_secs_f32(POPUP_TRANSITION_IN_SECONDS),
+                        Some(Ease::CubicOut)
                     ),
                     context,
                 );
@@ -61,7 +64,8 @@ impl MavericNode for TutorialNode {
                     .with_transition_in::<TransformScaleLens>(
                         Vec3::ZERO,
                         Vec3::ONE,
-                        Duration::from_secs_f32(0.5),
+                        Duration::from_secs_f32(POPUP_TRANSITION_IN_SECONDS),
+                        Some(Ease::CubicOut)
                     ),
                     context,
                 );
@@ -76,7 +80,8 @@ impl MavericNode for TutorialNode {
                     .with_transition_in::<TransformScaleLens>(
                         Vec3::ZERO,
                         Vec3::ONE,
-                        Duration::from_secs_f32(0.5),
+                        Duration::from_secs_f32(POPUP_TRANSITION_IN_SECONDS),
+                        Some(Ease::CubicOut)
                     ),
                     context,
                 );

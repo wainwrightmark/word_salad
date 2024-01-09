@@ -94,6 +94,12 @@ impl MavericNode for CongratsView {
                     CurrentLevel::NonLevel(_) => Data::None,
                 };
 
+
+
+                let transition = TransitionBuilder::default()
+                .then_wait(Duration::from_secs_f32(1.0))
+                .then_ease(Vec3::ONE, (1.0 / TRANSITION_SECS).into(), Ease::BackOut).build();
+
                 for (index, statistic) in CongratsStatistic::iter().enumerate() {
                     let data = match (statistic, data) {
                         (_, Data::None)
@@ -153,10 +159,10 @@ impl MavericNode for CongratsView {
                         .with_bundle(Transform::from_translation(
                             rect.centre().extend(z_indices::CONGRATS_BUTTON),
                         ))
-                        .with_transition_in::<TransformScaleLens>(
+                        .with_transition::<TransformScaleLens, ()>(
                             Vec3::ZERO,
-                            Vec3::ONE,
-                            Duration::from_secs_f32(TRANSITION_SECS),
+                            transition.clone(),
+                            ()
                         ),
                         &(),
                     );
@@ -221,10 +227,9 @@ impl MavericNode for CongratsView {
                             fill_color,
                             clicked_fill_color: BUTTON_CLICK_FILL.convert_color(),
                         }
-                        .with_transition_in::<TransformScaleLens>(
+                        .with_transition::<TransformScaleLens,()>(
                             Vec3::ZERO,
-                            Vec3::ONE,
-                            Duration::from_secs_f32(TRANSITION_SECS),
+                            transition.clone(),()
                         ),
                         &(),
                     );

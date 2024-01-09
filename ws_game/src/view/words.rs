@@ -167,6 +167,7 @@ impl MavericNode for WordNode {
                     .with_transition_to::<ProgressLens>(
                         progress,
                         (1.0 / animated_solutions::TOTAL_SECONDS).into(),
+                        None
                     ),
                 &(),
             );
