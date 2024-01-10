@@ -6,10 +6,11 @@
 - use ustr in a bunch more places
 - hint reward paths
 - Change Word Salad Menu
-- transition easing
 - split total completion into multiple resources
 - Share text
 - Additional buttons in Non-Level
 - Different level transition when you load game on non-level
 - social images etc
-- must hold down clue button
+- Save incomplete levels
+- selfie popup over tutorial
+- IF ABCD is selected, clicking B should change path to AB, not ABC

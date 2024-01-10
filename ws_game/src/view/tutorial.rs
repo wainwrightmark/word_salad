@@ -17,6 +17,7 @@ use ws_core::{
 use crate::prelude::*;
 
 pub const POPUP_TRANSITION_IN_SECONDS: f32 = 2.0;
+pub const POPUP_TRANSITION_OUT_SECONDS: f32 = 2.0;
 
 #[derive(Debug, PartialEq)]
 pub struct TutorialNode {
@@ -45,11 +46,14 @@ impl MavericNode for TutorialNode {
                         text,
                         entity: TutorialLayoutEntity::Top,
                     }
-                    .with_transition_in::<TransformScaleLens>(
+                    .with_transition_in_out::<TransformScaleLens>(
                         Vec3::ZERO,
                         Vec3::ONE,
+                        Vec3::ZERO,
                         Duration::from_secs_f32(POPUP_TRANSITION_IN_SECONDS),
-                        Some(Ease::CubicOut)
+                        Duration::from_secs_f32(POPUP_TRANSITION_OUT_SECONDS),
+                        Some(Ease::CubicOut),
+                        Some(Ease::CubicOut),
                     ),
                     context,
                 );
@@ -61,11 +65,14 @@ impl MavericNode for TutorialNode {
                         text,
                         entity: TutorialLayoutEntity::Middle,
                     }
-                    .with_transition_in::<TransformScaleLens>(
+                    .with_transition_in_out::<TransformScaleLens>(
                         Vec3::ZERO,
                         Vec3::ONE,
+                        Vec3::ZERO,
                         Duration::from_secs_f32(POPUP_TRANSITION_IN_SECONDS),
-                        Some(Ease::CubicOut)
+                        Duration::from_secs_f32(POPUP_TRANSITION_OUT_SECONDS),
+                        Some(Ease::CubicOut),
+                        Some(Ease::CubicOut),
                     ),
                     context,
                 );
@@ -77,11 +84,14 @@ impl MavericNode for TutorialNode {
                         text,
                         entity: TutorialLayoutEntity::Bottom,
                     }
-                    .with_transition_in::<TransformScaleLens>(
+                    .with_transition_in_out::<TransformScaleLens>(
                         Vec3::ZERO,
                         Vec3::ONE,
+                        Vec3::ZERO,
                         Duration::from_secs_f32(POPUP_TRANSITION_IN_SECONDS),
-                        Some(Ease::CubicOut)
+                        Duration::from_secs_f32(POPUP_TRANSITION_OUT_SECONDS),
+                        Some(Ease::CubicOut),
+                        Some(Ease::CubicOut),
                     ),
                     context,
                 );

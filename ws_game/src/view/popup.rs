@@ -57,6 +57,8 @@ impl MavericRootChildren for PopupStateRoot {
                         Color::GRAY.with_a(0.0),
                         core::time::Duration::from_millis(500),
                         core::time::Duration::from_millis(500),
+                        Some(Ease::CubicOut),
+                        Some(Ease::CubicOut),
                     ),
                     &(),
                 );
