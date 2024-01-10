@@ -53,7 +53,7 @@ impl MavericNode for TutorialNode {
                         Duration::from_secs_f32(POPUP_TRANSITION_IN_SECONDS),
                         Duration::from_secs_f32(POPUP_TRANSITION_OUT_SECONDS),
                         Some(Ease::CubicOut),
-                        Some(Ease::CubicOut),
+                        Some(Ease::CubicIn),
                     ),
                     context,
                 );
@@ -72,7 +72,7 @@ impl MavericNode for TutorialNode {
                         Duration::from_secs_f32(POPUP_TRANSITION_IN_SECONDS),
                         Duration::from_secs_f32(POPUP_TRANSITION_OUT_SECONDS),
                         Some(Ease::CubicOut),
-                        Some(Ease::CubicOut),
+                        Some(Ease::CubicIn),
                     ),
                     context,
                 );
@@ -91,7 +91,7 @@ impl MavericNode for TutorialNode {
                         Duration::from_secs_f32(POPUP_TRANSITION_IN_SECONDS),
                         Duration::from_secs_f32(POPUP_TRANSITION_OUT_SECONDS),
                         Some(Ease::CubicOut),
-                        Some(Ease::CubicOut),
+                        Some(Ease::CubicIn),
                     ),
                     context,
                 );
@@ -109,12 +109,16 @@ pub struct TutorialPopupNode {
 impl MavericNode for TutorialPopupNode {
     type Context = MyWindowSize;
 
-    fn set_components(commands: maveric::prelude::SetComponentCommands<Self, Self::Context>) {
-        commands
-            .ignore_context()
-            .ignore_node()
-            .insert(SpatialBundle::default())
-            .finish()
+    fn set_components(mut commands: maveric::prelude::SetComponentCommands<Self, Self::Context>) {
+        commands.insert_static_bundle((VisibilityBundle::default(), GlobalTransform::default()));
+
+        commands.map_node(|x|&x.entity)
+
+        .insert_with_node_and_context(|entity,context|{
+            let rect = context.get_rect(entity, &());
+
+            Transform::from_translation(rect.centre().extend(0.0))
+        });
     }
 
     fn set_children<R: maveric::prelude::MavericRoot>(
@@ -130,7 +134,7 @@ impl MavericNode for TutorialPopupNode {
             let background = crate::shapes::box_with_border_node(
                 rect.width(),
                 rect.height(),
-                rect.centre()
+                Vec2::ZERO
                     .extend(crate::z_indices::TUTORIAL_POPUP_BOX_BACKGROUND),
                 ws_core::palette::POPUP_BOX_BACKGROUND
                     .convert_color()
@@ -155,8 +159,8 @@ impl MavericNode for TutorialPopupNode {
                 text_anchor: bevy::sprite::Anchor::CenterLeft,
             }
             .with_bundle(Transform::from_translation(
-                text_rect
-                    .centre_left()
+                (text_rect
+                    .centre_left() - rect.centre())
                     .extend(crate::z_indices::TUTORIAL_POPUP_BOX_TEXT),
             ));
 
