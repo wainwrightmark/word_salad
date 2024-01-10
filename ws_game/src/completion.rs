@@ -77,8 +77,8 @@ impl TotalCompletion {
                     completion.total_complete = number_complete;
 
                     if number_complete <= sequence.level_count() {
-                        hints_state.hints_remaining += 2;
-                        hints_state.total_earned_hints += 2;
+                        hints_state.hints_remaining += 1;
+                        hints_state.total_earned_hints += 1;
                     }
                 }
             }
@@ -97,8 +97,8 @@ impl TotalCompletion {
                     completion.total_complete = number_complete;
 
                     if number_complete <= TUTORIAL_LEVEL_COUNT {
-                        hints_state.hints_remaining += 2;
-                        hints_state.total_earned_hints += 2;
+                        hints_state.hints_remaining += 1;
+                        hints_state.total_earned_hints += 1;
                     }
                 }
             }
@@ -117,8 +117,8 @@ impl TotalCompletion {
                         .daily_challenge_completion
                         .total_completion
                         .insert(*index);
-                    hints_state.hints_remaining += 2;
-                    hints_state.total_earned_hints += 2;
+                    hints_state.hints_remaining += 1;
+                    hints_state.total_earned_hints += 1;
 
                     if let Some(today_index) = DailyChallenges::get_today_index() {
                         if streak.last_completed == today_index.checked_sub(1) {

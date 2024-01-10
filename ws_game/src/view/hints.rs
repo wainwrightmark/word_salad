@@ -54,10 +54,10 @@ impl MavericNode for HintsViewNode {
             rotation: Default::default(),
         };
 
-        let Some(asset_server) = world.get_resource::<AssetServer>() else {
-            return;
-        };
-        let font = asset_server.load(BUTTONS_FONT_PATH);
+        // let Some(asset_server) = world.get_resource::<AssetServer>() else {
+        //     return;
+        // };
+        // let font = asset_server.load(BUTTONS_FONT_PATH);
 
         let circle_bundle = ShaderBundle::<CircleShader> {
             transform: circle_transform,
@@ -79,44 +79,44 @@ impl MavericNode for HintsViewNode {
             transition.clone(),
         );
 
-        let text_transform = Transform {
-            translation: initial_translation + Vec3::Z,
-            scale: Vec3::ONE,
-            rotation: Default::default(),
-        };
+        // let text_transform = Transform {
+        //     translation: initial_translation + Vec3::Z,
+        //     scale: Vec3::ONE,
+        //     rotation: Default::default(),
+        // };
 
-        let text_bundle = Text2dBundle {
-            text: Text::from_section(
-                "2",
-                TextStyle {
-                    font_size: hint_font_size,
-                    color: palette::HINT_TEXT_COLOR.convert_color(),
-                    font,
-                },
-            )
-            .with_alignment(TextAlignment::Center)
-            .with_no_wrap(),
+        // let text_bundle = Text2dBundle {
+        //     text: Text::from_section(
+        //         "2",
+        //         TextStyle {
+        //             font_size: hint_font_size,
+        //             color: palette::HINT_TEXT_COLOR.convert_color(),
+        //             font,
+        //         },
+        //     )
+        //     .with_alignment(TextAlignment::Center)
+        //     .with_no_wrap(),
 
-            text_anchor: Anchor::default(),
-            text_2d_bounds: Text2dBounds::default(),
+        //     text_anchor: Anchor::default(),
+        //     text_2d_bounds: Text2dBounds::default(),
 
-            transform: text_transform,
-            ..Default::default()
-        };
+        //     transform: text_transform,
+        //     ..Default::default()
+        // };
 
-        let text_bundle = (
-            text_bundle,
-            ScheduledForDeletion {
-                remaining: Duration::from_secs_f32(ANIMATE_SECONDS),
-            },
-            transition,
-        );
+        // let text_bundle = (
+        //     text_bundle,
+        //     ScheduledForDeletion {
+        //         remaining: Duration::from_secs_f32(ANIMATE_SECONDS),
+        //     },
+        //     transition,
+        // );
 
         let mut circle_entity = Entity::PLACEHOLDER;
 
         entity_commands.with_children(|cb| {
             circle_entity = cb.spawn(circle_bundle).id();
-            cb.spawn(text_bundle);
+            // cb.spawn(text_bundle);
         });
 
         let mut scale = 0.9;

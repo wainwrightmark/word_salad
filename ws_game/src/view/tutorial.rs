@@ -65,13 +65,10 @@ impl MavericNode for TutorialNode {
                         text,
                         entity: TutorialLayoutEntity::BigTop,
                     }
-                    .with_transition_in_out::<TransformScaleLens>(
+                    .with_transition_in::<TransformScaleLens>(
                         Vec3::ZERO,
                         Vec3::ONE,
-                        Vec3::ZERO,
-                        Duration::from_secs_f32(POPUP_TRANSITION_IN_SECONDS),
-                        Duration::from_secs_f32(POPUP_TRANSITION_OUT_SECONDS),
-                        Some(Ease::CubicOut),
+                        Duration::from_secs_f32(POPUP_TRANSITION_IN_SECONDS * 2.0),
                         Some(Ease::CubicIn),
                     ),
                     context,
@@ -326,7 +323,7 @@ impl TutorialText {
                         middle: Some(
                             "\
                             You completed your first Word Salad\n\
-                            You've earned two hints\n\
+                            You've earned a hint\n\
                             Spend a hint to reveal a letter",
                         ),
                         bottom: None,
@@ -352,7 +349,7 @@ impl TutorialText {
                         "\
                         \n\
                     Want help? Use a hint\n\
-                    Click a label to reveal a letter", //TODO actually do one
+                    Press a label to reveal a letter",
                     ),
                 },
                 2 => Self {
@@ -362,7 +359,7 @@ impl TutorialText {
                         "\
                         \n\
                     Want help? Use a hint\n\
-                    Click a label to reveal a letter", //TODO actually do one
+                    Press a label to reveal a letter",
                     ),
                 },
                 3..=4 => Self {

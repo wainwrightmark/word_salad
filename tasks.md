@@ -7,7 +7,6 @@
 - hint reward paths
 - Change Word Salad Menu
 - split total completion into multiple resources
-- Share text
 - Additional buttons in Non-Level
 - Different level transition when you load game on non-level
 - social images etc
