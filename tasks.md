@@ -1,19 +1,20 @@
-- Optimize Colours on selfie mode
+
 - Make Logo
 - Popup the first time you enter selfie mode
-- Boxes around everything in selfie mode
-- Stop selfie mode on wake-up
+
 - use ustr in a bunch more places
-- hint reward paths
-- Change Word Salad Menu
 - split total completion into multiple resources
+- Change hint tracking
+
+- Change Word Salad Menu -last 3, then gap, then next
+
+
 - Additional buttons in Non-Level
-- Different level transition when you load game on non-level
 - social images etc
 - Save incomplete levels
 - IF ABCD is selected, clicking B should change path to AB, not ABC
-- Game elements should be hidden rather than not present when in the menu
-- Change hint tracking
+- pressing menu burger should close menu
+
 - Check letter color (white or black) when line disappears
-- Change system for getting multiple hints
+- Change system for getting multiple hinted letters (if prefix is selected, give next letter)
 - Two separate end screens for each sequence

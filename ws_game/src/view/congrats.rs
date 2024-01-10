@@ -96,15 +96,16 @@ impl MavericNode for CongratsView {
                     CurrentLevel::NonLevel(_) => Data::None,
                 };
 
+                let initial_scale = if context.2.is_changed() {Vec3::ZERO} else{Vec3::ONE};
                 let transition = TransitionBuilder::default()
                     .then_wait(Duration::from_secs_f32(TRANSITION_WAIT_SECS))
                     .then_ease(Vec3::ONE, (1.0 / TRANSITION_SECS).into(), Ease::CubicOut)
                     .build();
 
-                info!(
-                    "Transition: {:?}",
-                    transition.remaining_duration(&Vec3::ZERO)
-                );
+                // info!(
+                //     "Transition: {:?}",
+                //     transition.remaining_duration(&Vec3::ZERO)
+                // );
 
                 for (index, statistic) in CongratsStatistic::iter().enumerate() {
                     let data = match (statistic, data) {
@@ -168,7 +169,7 @@ impl MavericNode for CongratsView {
                             rect.centre().extend(z_indices::CONGRATS_BUTTON),
                         ))
                         .with_transition::<TransformScaleLens, ()>(
-                            Vec3::ZERO,
+                            initial_scale,
                             transition.clone(),
                             (),
                         ),
@@ -239,7 +240,7 @@ impl MavericNode for CongratsView {
                             clicked_fill_color: BUTTON_CLICK_FILL.convert_color(),
                         }
                         .with_transition::<TransformScaleLens, ()>(
-                            Vec3::ZERO,
+                            initial_scale,
                             transition.clone(),
                             (),
                         ),
