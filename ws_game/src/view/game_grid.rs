@@ -1,36 +1,12 @@
 use crate::prelude::*;
 use bevy_param_shaders::ShaderBundle;
 use itertools::Either;
+use maveric::transition::speed::LinearSpeed;
 use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
 use strum::EnumIs;
-
-use std::time::Duration;
 use ws_core::layout::entities::*;
 use ws_core::prelude::*;
 use ws_core::Tile;
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct GridTile {
-    pub tile: Tile,
-    pub character: Character,
-    pub selectability: Selectability,
-    pub hint_status: HintStatus,
-    pub tile_size: f32,
-    pub font_size: f32,
-    pub centre: Vec2,
-
-    pub timer_paused: bool,
-}
-
-impl GridTile {
-    fn fill_color(&self, video: &VideoResource) -> Color {
-        if video.is_selfie_mode {
-            palette::GRID_TILE_FILL_SELFIE.convert_color()
-        } else {
-            palette::GRID_TILE_FILL_NORMAL.convert_color()
-        }
-    }
-}
 
 #[derive(Debug, Clone, Copy, PartialEq, EnumIs)]
 pub enum Selectability {
@@ -61,7 +37,6 @@ impl Selectability {
 #[derive(Debug, Clone, Copy, PartialEq, EnumIs)]
 pub enum HintStatus {
     ManualHinted,
-    //AutoHinted,
     Advisable,
     Inadvisable,
     Unknown,
@@ -91,6 +66,10 @@ impl HintStatus {
 pub struct GridTiles {
     pub level_complete: bool,
 }
+
+const TILE_SCALE_SPEED: LinearSpeed = LinearSpeed {
+    units_per_second: 1.0,
+};
 
 impl MavericNode for GridTiles {
     type Context = ViewContext;
@@ -145,42 +124,83 @@ impl MavericNode for GridTiles {
                         selectability,
                         tile_size,
                         font_size,
-                        centre,
+
                         hint_status,
                         timer_paused: context.4.is_paused(),
-                    },
-                    &context.8,
+                        is_selfie_mode: context.8.is_selfie_mode,
+                    }
+                    .with_bundle(Transform::from_translation(
+                        centre.extend(crate::z_indices::GRID_TILE),
+                    )),
+                    &(),
                 );
             }
         });
     }
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct GridTile {
+    pub tile: Tile,
+    pub character: Character,
+    pub selectability: Selectability,
+    pub hint_status: HintStatus,
+    pub tile_size: f32,
+    pub font_size: f32,
+    pub timer_paused: bool,
+    pub is_selfie_mode: bool,
+}
+
+impl GridTile {
+    fn fill_color(&self) -> Color {
+        if self.is_selfie_mode {
+            palette::GRID_TILE_FILL_SELFIE.convert_color()
+        } else {
+            palette::GRID_TILE_FILL_NORMAL.convert_color()
+        }
+    }
+
+    fn letter_color(is_selfie_mode: bool, is_selected: bool) -> Color {
+        if is_selfie_mode {
+            palette::GRID_LETTER_SELFIE
+        } else if is_selected {
+            palette::MY_WHITE
+        } else {
+            palette::GRID_LETTER_NORMAL
+        }
+        .convert_color()
+    }
+
+    fn get_letter_node(&self) -> impl MavericNode<Context = ()> {
+        let color = Self::letter_color(self.is_selfie_mode, self.selectability.is_selected());
+
+        Text2DNode {
+            text: self.character.to_tile_string(),
+            font: TILE_FONT_PATH,
+            font_size: self.font_size,
+            color,
+            alignment: TextAlignment::Center,
+            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+            text_2d_bounds: Default::default(),
+            text_anchor: Default::default(),
+        }
+        .with_transition_to::<TextColorLens<0>>(color, 5.0.into(), None)
+        .with_bundle(Transform::from_xyz(0.0, 0.0, crate::z_indices::TILE_TEXT))
+    }
+}
+
 impl MavericNode for GridTile {
-    type Context = VideoResource;
+    type Context = ();
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
-        commands
-            .ignore_context()
-            .map_node(|x| &x.centre)
-            .insert_with_node(|n| {
-                TransformBundle::from_transform(Transform::from_translation(
-                    n.extend(crate::z_indices::GRID_TILE),
-                ))
-            })
-            .ignore_node()
-            .advanced(|args, commands| {
-                if args.event == SetEvent::Undeleted {
-                    commands.remove::<Transition<TransformScaleLens>>();
-                }
-            })
-            .insert(VisibilityBundle::default());
+        let mut commands = commands.ignore_context();
+        commands.insert_static_bundle((VisibilityBundle::default(), GlobalTransform::default()));
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
-        commands.unordered_children_with_node_and_context(|node, context, commands| {
+        commands.unordered_children_with_node(|node, commands| {
             let tile_size = node.tile_size;
-            let fill = node.fill_color(context.as_ref());
+            let fill = node.fill_color();
 
             commands.add_child(
                 "tile",
@@ -191,20 +211,10 @@ impl MavericNode for GridTile {
                     fill,
                     0.1,
                 ),
-                // .with_transition_to::<ShaderColorLens>(fill, 0.1.into()),
                 &(),
             );
 
-            commands.add_child(
-                "letter",
-                GridLetter {
-                    character: node.character,
-                    font_size: node.font_size,
-                    selected: node.selectability.is_selected(),
-                    visible: !node.timer_paused,
-                },
-                context,
-            );
+            commands.add_child("letter", node.get_letter_node(), &());
             if !node.timer_paused {
                 if let HintStatus::ManualHinted = node.hint_status {
                     let (count1, count2) = (4.0, 3.0);
@@ -233,75 +243,27 @@ impl MavericNode for GridTile {
     }
 
     fn on_deleted(&self, commands: &mut ComponentCommands) -> DeletionPolicy {
-        commands.insert(
-            TransitionBuilder::<TransformScaleLens>::default()
-                .then_ease(Vec3::ZERO, 1.0.into(), Ease::BackIn )
-                .build(),
-        );
-        DeletionPolicy::Linger(Duration::from_secs(1))
-    }
-}
+        let transition = TransitionBuilder::<TransformScaleLens>::default()
+            .then_ease(Vec3::ZERO, TILE_SCALE_SPEED, Ease::BackIn)
+            .build();
 
-#[derive(Debug, PartialEq)]
-pub struct GridLetter {
-    pub character: Character,
-    pub font_size: f32,
-    pub selected: bool,
-    pub visible: bool,
-}
+        commands.insert(transition);
 
-impl MavericNode for GridLetter {
-    type Context = VideoResource;
-    fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
-        commands.node_to_bundle(|x| {
-            if x.visible {
-                &Visibility::Inherited
-            } else {
-                &Visibility::Hidden
-            }
-        });
-        commands
-            .ignore_context()
-            .ignore_node()
-            .insert((
-                TransformBundle::default(),
-                InheritedVisibility::default(),
-                ViewVisibility::default(),
-            ))
-            .finish();
-    }
+        let letter_color = Self::letter_color(self.is_selfie_mode, false);
 
-    fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
-        commands.unordered_children_with_node_and_context(|args, context, commands| {
-            let color = if context.is_selfie_mode {
-                palette::GRID_LETTER_SELFIE
-            } else if args.selected {
-                palette::MY_WHITE
-            } else {
-                palette::GRID_LETTER_NORMAL
-            }
-            .convert_color();
+        if letter_color != Self::letter_color(self.is_selfie_mode, true) {
+            commands.modify_children(|child, mut ec| {
+                if let Some(text) = child.get::<Text>() {
+                    let mut text = text.clone();
+                    for section in text.sections.iter_mut() {
+                        section.style.color = letter_color;
+                    }
 
-            commands.add_child(
-                0,
-                Text2DNode {
-                    text: args.character.to_tile_string(),
-                    font: TILE_FONT_PATH,
-                    font_size: args.font_size,
-                    color,
-                    alignment: TextAlignment::Center,
-                    linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                    text_2d_bounds: Default::default(),
-                    text_anchor: Default::default(),
+                    ec.insert(text);
                 }
-                .with_transition_to::<TextColorLens<0>>(color, 5.0.into(), None)
-                .with_bundle(Transform::from_xyz(
-                    0.0,
-                    0.0,
-                    crate::z_indices::TILE_TEXT,
-                )),
-                &(),
-            )
-        });
+            });
+        }
+
+        DeletionPolicy::Linger(std::time::Duration::from_secs(1))
     }
 }

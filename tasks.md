@@ -12,8 +12,6 @@
 - Additional buttons in Non-Level
 - social images etc
 - Save incomplete levels
-- pressing menu burger should close menu
 
-- Check letter color (white or black) when line disappears
 - Change system for getting multiple hinted letters (if prefix is selected, give next letter)
 - Two separate end screens for each sequence
