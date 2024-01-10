@@ -63,7 +63,7 @@ impl MavericNode for TutorialNode {
                     "middle",
                     TutorialPopupNode {
                         text,
-                        entity: TutorialLayoutEntity::Middle,
+                        entity: TutorialLayoutEntity::BigTop,
                     }
                     .with_transition_in_out::<TransformScaleLens>(
                         Vec3::ZERO,
@@ -404,6 +404,7 @@ impl TutorialText {
 #[derive(Debug, EnumCount, EnumIter, EnumIs, PartialEq, Clone, Copy)]
 pub enum TutorialLayoutEntity {
     Top,
+    BigTop,
     Middle,
     Bottom,
 }
@@ -418,6 +419,10 @@ impl LayoutStructure for TutorialLayoutEntity {
             TutorialLayoutEntity::Top => Vec2 {
                 x: BOX_WIDTH,
                 y: 70.0,
+            },
+            TutorialLayoutEntity::BigTop => Vec2 {
+                x: BOX_WIDTH,
+                y: 105.0,
             },
             TutorialLayoutEntity::Middle => Vec2 {
                 x: BOX_WIDTH,
@@ -436,9 +441,14 @@ impl LayoutStructure for TutorialLayoutEntity {
                 x: (IDEAL_WIDTH - BOX_WIDTH) * 0.5,
                 y: 52.0,
             },
-            TutorialLayoutEntity::Middle => Vec2 {
+            TutorialLayoutEntity::BigTop => Vec2 {
                 x: (IDEAL_WIDTH - BOX_WIDTH) * 0.5,
                 y: 70.0,
+            },
+
+            TutorialLayoutEntity::Middle => Vec2 {
+                x: (IDEAL_WIDTH - BOX_WIDTH) * 0.5,
+                y: 180.0,
             },
             TutorialLayoutEntity::Bottom => Vec2 {
                 x: (IDEAL_WIDTH - BOX_WIDTH) * 0.5,
