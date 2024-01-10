@@ -14,3 +14,7 @@
 - IF ABCD is selected, clicking B should change path to AB, not ABC
 - Game elements should be hidden rather than not present when in the menu
 - Change hint tracking
+- Check letter color (white or black) when line disappears
+- Change system for getting multiple hints
+- Two separate end screens for each sequence
+- level menu buttons should be a different color when incomplete

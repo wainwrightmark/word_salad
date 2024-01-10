@@ -38,6 +38,8 @@ pub struct SelfieMode {
     pub is_selfie_mode: bool,
 }
 
+
+
 impl LayoutStructure for CongratsLayoutEntity {
     type Context = SelfieMode;
 

@@ -47,11 +47,30 @@ impl WordSaladMenuLayoutEntity {
         (s1.to_string(), "\u{f096}".to_string())
     }
 
+    pub fn is_complete(&self, completion: &TotalCompletion,)-> bool{
+        let Some(today_index) = DailyChallenges::get_today_index() else {return  false;};
+
+        let index = match self {
+            WordSaladMenuLayoutEntity::TodayPuzzle => Some(today_index),
+            WordSaladMenuLayoutEntity::YesterdayPuzzle => today_index.checked_sub(1),
+            WordSaladMenuLayoutEntity::NextPuzzle => {
+                today_index.checked_sub(2).and_then (|x|completion.get_next_incomplete_daily_challenge(x))
+
+            }
+        };
+
+        let Some(index) = index else{return false;};
+
+        let complete = completion.is_daily_challenge_complete(index);
+        complete
+    }
+
     pub fn try_get_text(
         &self,
         completion: &TotalCompletion,
         daily_challenges: &DailyChallenges,
     ) -> Option<(String, String)> {
+
         let today_index = DailyChallenges::get_today_index()?;
 
         let index = match self {
@@ -65,7 +84,6 @@ impl WordSaladMenuLayoutEntity {
         let level: &ws_core::prelude::DesignedLevel = daily_challenges.levels.get(index)?;
 
         let complete = completion.is_daily_challenge_complete(index);
-
         let name = level.full_name();
         let right = if complete { "\u{e802}" } else { "" }.to_string(); //check boxes
 

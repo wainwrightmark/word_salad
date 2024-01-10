@@ -25,6 +25,15 @@ pub enum CurrentLevel {
     NonLevel(NonLevel),
 }
 
+#[derive(Debug, Clone, Copy,  PartialEq, Eq, EnumIs)]
+pub enum LevelType{
+    Tutorial,
+    Fixed,
+    DailyChallenge,
+    Custom,
+    NonLevel
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, EnumIs)]
 pub enum NonLevel {
     BeforeTutorial,
@@ -52,6 +61,16 @@ impl Default for CurrentLevel {
 pub static CUSTOM_LEVEL: OnceLock<DesignedLevel> = OnceLock::new();
 
 impl CurrentLevel {
+
+    pub fn level_type(&self)-> LevelType{
+        match self{
+            CurrentLevel::Tutorial { .. } => LevelType::Tutorial,
+            CurrentLevel::Fixed { .. } => LevelType::Fixed,
+            CurrentLevel::DailyChallenge { .. } => LevelType::DailyChallenge,
+            CurrentLevel::Custom { .. } => LevelType::Custom,
+            CurrentLevel::NonLevel(_) => LevelType::NonLevel,
+        }
+    }
     pub fn level<'c>(
         &self,
         daily_challenges: &'c DailyChallenges,

@@ -26,13 +26,8 @@ impl LevelsMenuLayoutEntity {
 
     pub const COUNT: usize = 1 + LevelGroup::COUNT;
 
-    pub fn get_text(
-        &self,
-        completion: &TotalCompletion,
-        daily_challenges: &DailyChallenges,
-    ) -> (String, String) {
-        let name = self.name();
-        let complete = match self {
+    pub fn is_complete(&self, completion: &TotalCompletion,daily_challenges: &DailyChallenges,)-> bool{
+        let num_complete = match self {
             LevelsMenuLayoutEntity::WordSalad => completion.get_daily_challenges_complete(),
             LevelsMenuLayoutEntity::AdditionalLevel(group) => {
                 completion.get_number_complete_group(group)
@@ -43,7 +38,27 @@ impl LevelsMenuLayoutEntity {
             LevelsMenuLayoutEntity::AdditionalLevel(group) => group.total_count(),
         };
 
-        let complete = complete.min(total);
+        num_complete >= total
+    }
+
+    pub fn get_text(
+        &self,
+        completion: &TotalCompletion,
+        daily_challenges: &DailyChallenges,
+    ) -> (String, String) {
+        let name = self.name();
+        let num_complete = match self {
+            LevelsMenuLayoutEntity::WordSalad => completion.get_daily_challenges_complete(),
+            LevelsMenuLayoutEntity::AdditionalLevel(group) => {
+                completion.get_number_complete_group(group)
+            }
+        };
+        let total = match self {
+            LevelsMenuLayoutEntity::WordSalad => daily_challenges.total_levels(),
+            LevelsMenuLayoutEntity::AdditionalLevel(group) => group.total_count(),
+        };
+
+        let complete = num_complete.min(total);
         let fraction = fmtastic::VulgarFraction::new(complete, total).to_string();
 
         (name.to_string(), fraction)

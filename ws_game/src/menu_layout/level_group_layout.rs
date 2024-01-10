@@ -19,13 +19,21 @@ impl LevelGroupLayoutEntity {
 
         let sequence = group.get_level_sequence(self.index);
 
-        let complete = completion.get_number_complete(&sequence);
+        let num_complete = completion.get_number_complete(&sequence);
         let total = sequence.level_count();
 
-        let complete = complete.min(total);
+        let complete = num_complete.min(total);
         let fraction = format!("{:#}", fmtastic::VulgarFraction::new(complete, total));
 
         (name.to_string(), fraction)
+    }
+
+    pub fn is_complete(&self, completion: &TotalCompletion, group: &LevelGroup)-> bool{
+        let sequence = group.get_level_sequence(self.index);
+
+        let num_complete = completion.get_number_complete(&sequence);
+        let total = sequence.level_count();
+        num_complete >= total
     }
 
     fn name(&self, group: &LevelGroup) -> &'static str {

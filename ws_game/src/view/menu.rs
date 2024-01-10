@@ -99,7 +99,7 @@ impl MavericNode for Menu {
                             size,
                             1,
                             |x| x.get_text(context.7.as_ref(), context.9.as_ref()),
-                            palette::MENU_BUTTON_FILL.convert_color(),
+                            |x| get_variable_fill(x.is_complete(&context.7, context.9.as_ref())),
                             BUTTONS_FONT_PATH,
                             BUTTONS_FONT_PATH,
                         );
@@ -111,7 +111,7 @@ impl MavericNode for Menu {
                             size,
                             2,
                             |x| x.get_text(context.7.as_ref(), group),
-                            palette::MENU_BUTTON_FILL.convert_color(),
+                            |x| get_variable_fill(x.is_complete(&context.7, group)),
                             BUTTONS_FONT_PATH,
                             BUTTONS_FONT_PATH,
                         );
@@ -123,7 +123,7 @@ impl MavericNode for Menu {
                             size,
                             5,
                             |x| x.get_text(context.7.as_ref(), context.9.as_ref()),
-                            palette::MENU_BUTTON_FILL.convert_color(),
+                            |x| get_variable_fill(x.is_complete(&context.7)),
                             BUTTONS_FONT_PATH,
                             ICON_FONT_PATH,
                         )
@@ -141,6 +141,14 @@ impl MavericNode for Menu {
     }
 }
 
+
+fn get_variable_fill(is_complete: bool)-> Color{
+    if is_complete{
+        palette::FULL_GREEN.convert_color()
+    }else{
+        palette::MENU_BUTTON_FILL.convert_color()
+    }
+}
 fn add_menu_items<
     R: MavericRoot,
     L: LayoutStructureWithFont<FontContext = ()>
@@ -180,14 +188,15 @@ fn add_double_text_menu_items<
     commands: &mut UnorderedChildCommands<R>,
     size: &Size,
     page: u16,
-    func: impl Fn(&L) -> (String, String),
-    fill_color: Color,
+    text_func: impl Fn(&L) -> (String, String),
+    fill_color_func: impl Fn(&L) -> Color,
     left_font: &'static str,
     right_font: &'static str,
 ) {
     for (index, entity) in L::iter_all(context).enumerate() {
         let font_size = size.font_size::<L>(&entity, &());
-        let (left_text, right_text) = func(&entity);
+        let (left_text, right_text) = text_func(&entity);
+        let fill_color = fill_color_func(&entity);
 
         let rect = size.get_rect(&entity, context);
         commands.add_child(
