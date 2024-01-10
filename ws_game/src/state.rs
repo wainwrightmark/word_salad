@@ -46,11 +46,23 @@ fn update_state_on_level_change(
     }
 }
 
-#[derive(Debug, Clone, Resource, Serialize, Deserialize, MavericContext, PartialEq, Default)]
+const INITIAL_HINTS: usize = 3;
+
+#[derive(Debug, Clone, Resource, Serialize, Deserialize, MavericContext, PartialEq)]
 pub struct HintState {
     pub hints_remaining: usize,
     pub total_earned_hints: usize,
     pub total_bought_hints: usize,
+}
+
+impl Default for HintState {
+    fn default() -> Self {
+        Self {
+            hints_remaining: INITIAL_HINTS,
+            total_earned_hints: 0,
+            total_bought_hints: 0,
+        }
+    }
 }
 
 impl TrackableResource for HintState {
