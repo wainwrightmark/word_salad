@@ -13,5 +13,7 @@
 - social images etc
 - Save incomplete levels
 
-- Change system for getting multiple hinted letters (if prefix is selected, give next letter)
 - Two separate end screens for each sequence
+
+- animate solution when word is found by hinting
+- greyed out should respond to click start not to click end

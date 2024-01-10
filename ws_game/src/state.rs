@@ -170,28 +170,35 @@ impl FoundWordsState {
             return false;
         };
 
-        let c = self.count_inevitable_characters(level, word_index);
-
-        let Some(completion) = self.word_completions.get_mut(word_index) else {
+        let Some(word) = level.words.get(word_index) else {
             return false;
         };
-        let Some(word) = level.words.get(word_index) else {
+
+
+        let min_hint_count = NonZeroUsize::MIN.saturating_add(self.count_selected_characters(level, word_index, &chosen_state));
+
+        let Some(completion) = self.word_completions.get_mut(word_index) else {
             return false;
         };
 
         let new_count = match completion {
             Completion::Unstarted => {
-                *completion = Completion::ManualHinted(NonZeroUsize::MIN.saturating_add(c));
+                *completion = Completion::ManualHinted(min_hint_count);
                 self.hints_used += 1;
                 hint_state.hints_remaining = new_hints;
 
-                1 + c
+                min_hint_count.get()
             }
             Completion::ManualHinted(hints) => {
                 if hints.get() >= word.characters.len() {
                     return false;
                 }
-                *hints = hints.saturating_add(c + 1);
+                *hints = hints.saturating_add(1);
+
+                if min_hint_count > *hints{
+                    *hints = min_hint_count;
+                }
+
                 self.hints_used += 1;
                 hint_state.hints_remaining = new_hints;
 
@@ -210,6 +217,17 @@ impl FoundWordsState {
             } else {
                 //do not select the full word - let the user do that
                 *completion = Completion::Complete;
+                self.update_unneeded_tiles(level);
+
+                // crate::animated_solutions::animate_solution(
+                //     &mut commands,
+                //     &solution,
+                //     word,
+                //     true,
+                //     &asset_server,
+                //     &size,
+                //     level,
+                // );
 
                 chosen_state.is_just_finished = true; //todo change this slightly
             }
@@ -444,6 +462,29 @@ impl FoundWordsState {
         inadvisable
     }
 
+    fn count_selected_characters(
+        &self,
+        level: &DesignedLevel,
+        word_index: usize,
+        chosen: &ChosenState,
+    ) -> usize {
+        if chosen.solution.len() == 0 {
+            return 0;
+        }
+
+        let Some(word) = level.words.get(word_index) else {
+            return 0;
+        };
+
+        chosen
+            .solution
+            .iter()
+            .zip(word.characters.iter())
+            .take_while(|(tile, character)| level.grid[**tile] == **character)
+            .count()
+    }
+
+    #[allow(dead_code)]
     fn count_inevitable_characters(&self, level: &DesignedLevel, word_index: usize) -> usize {
         if let Some(completion) = self.word_completions.get(word_index) {
             let prefix_characters = match completion {
