@@ -17,4 +17,3 @@
 - Check letter color (white or black) when line disappears
 - Change system for getting multiple hints
 - Two separate end screens for each sequence
-- level menu buttons should be a different color when incomplete

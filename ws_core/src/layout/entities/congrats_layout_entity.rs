@@ -1,7 +1,7 @@
 use glam::Vec2;
 use strum::{Display, EnumCount, EnumIter, IntoEnumIterator};
 
-use crate::prelude::*;
+use crate::{prelude::*, level_type::LevelType};
 
 use super::consts::*;
 
@@ -38,15 +38,23 @@ pub struct SelfieMode {
     pub is_selfie_mode: bool,
 }
 
-
+impl CongratsLayoutEntity{
+    pub fn get_button_count(context: &(SelfieMode, LevelType))-> usize{
+        if context.0.is_selfie_mode || context.1.is_tutorial(){
+            1
+        }else{
+            CongratsButton::COUNT
+        }
+    }
+}
 
 impl LayoutStructure for CongratsLayoutEntity {
-    type Context = SelfieMode;
+    type Context = (SelfieMode, LevelType);
 
     fn size(&self, context: &Self::Context) -> Vec2 {
         match self {
             CongratsLayoutEntity::Statistic(_) => {
-                let stat_size = if context.is_selfie_mode {
+                let stat_size = if context.0.is_selfie_mode {
                     CONGRATS_ENTITY_STATISTIC_SIZE_SELFIE
                 } else {
                     CONGRATS_ENTITY_STATISTIC_SIZE_NORMAL
@@ -57,7 +65,7 @@ impl LayoutStructure for CongratsLayoutEntity {
                 }
             }
             CongratsLayoutEntity::Button(_) => Vec2 {
-                x: if context.is_selfie_mode {
+                x: if context.0.is_selfie_mode {
                     CONGRATS_ENTITY_BUTTON_WIDTH_SELFIE
                 } else {
                     CONGRATS_ENTITY_BUTTON_WIDTH_NORMAL
@@ -68,7 +76,7 @@ impl LayoutStructure for CongratsLayoutEntity {
     }
 
     fn location(&self, context: &Self::Context) -> Vec2 {
-        let extra_offset = if context.is_selfie_mode {
+        let extra_offset = if context.0.is_selfie_mode {
             SELFIE_MODE_CONGRATS_TOP_OFFSET
         } else {
             0.0
@@ -78,18 +86,15 @@ impl LayoutStructure for CongratsLayoutEntity {
 
         pub const MENU_BUTTON_SPACING: f32 = 40.0 * 0.1;
 
-        let button_count = if context.is_selfie_mode {
-            1
-        } else {
-            CongratsButton::COUNT
-        };
-        let button_width = if context.is_selfie_mode {
+        let button_count = Self:: get_button_count(context);
+
+        let button_width = if context.0.is_selfie_mode {
             CONGRATS_ENTITY_BUTTON_WIDTH_SELFIE
         } else {
             CONGRATS_ENTITY_BUTTON_WIDTH_NORMAL
         };
 
-        let stat_size = if context.is_selfie_mode {
+        let stat_size = if context.0.is_selfie_mode {
             CONGRATS_ENTITY_STATISTIC_SIZE_SELFIE
         } else {
             CONGRATS_ENTITY_STATISTIC_SIZE_NORMAL
@@ -121,12 +126,24 @@ impl LayoutStructure for CongratsLayoutEntity {
     }
 
     fn iter_all(context: &Self::Context) -> impl Iterator<Item = Self> {
-        let take = if context.is_selfie_mode { 4 } else { 6 };
+        let button_count = Self::get_button_count(context);
+        let take =  3 + button_count;
 
         CongratsStatistic::iter()
             .map(|x| Self::Statistic(x))
             .chain(CongratsButton::iter().map(|x| Self::Button(x)))
             .take(take)
+    }
+
+    fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
+        Self::iter_all(context).find(|x| x.rect(context).contains(point))
+    }
+
+    fn rect(&self, context: &Self::Context) -> LayoutRectangle {
+        LayoutRectangle {
+            top_left: self.location(context),
+            extents: self.size(context),
+        }
     }
 }
 

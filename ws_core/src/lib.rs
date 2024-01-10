@@ -5,6 +5,7 @@ pub mod display_word;
 pub mod finder;
 pub mod layout;
 pub mod word;
+pub mod level_type;
 pub use crate::prelude::*;
 
 pub mod prelude {

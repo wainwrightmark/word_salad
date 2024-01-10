@@ -1,6 +1,7 @@
 use itertools::Either;
 use nice_bevy_utils::TrackableResource;
 use serde::{Deserialize, Serialize};
+use ws_core::level_type::LevelType;
 use std::sync::OnceLock;
 use strum::EnumIs;
 use ws_levels::{all_levels::get_tutorial_level, level_sequence::LevelSequence};
@@ -25,14 +26,7 @@ pub enum CurrentLevel {
     NonLevel(NonLevel),
 }
 
-#[derive(Debug, Clone, Copy,  PartialEq, Eq, EnumIs)]
-pub enum LevelType{
-    Tutorial,
-    Fixed,
-    DailyChallenge,
-    Custom,
-    NonLevel
-}
+
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, EnumIs)]
 pub enum NonLevel {

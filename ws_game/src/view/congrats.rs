@@ -1,14 +1,14 @@
-use std::time::Duration;
 use crate::{prelude::*, z_indices};
 use bevy::{reflect::TypeUuid, sprite::Anchor, text::Text2dBounds};
 use bevy_param_shaders::prelude::*;
 use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
 use num_traits::Zero;
 use rand::{rngs::ThreadRng, Rng};
+use std::time::Duration;
 use strum::IntoEnumIterator;
 use ws_core::{layout::entities::*, palette::BUTTON_CLICK_FILL};
 
-pub const TRANSITION_WAIT_SECS: f32 =  1.0;
+pub const TRANSITION_WAIT_SECS: f32 = 1.0;
 pub const TRANSITION_SECS: f32 = 1.0;
 #[derive(Debug, Clone, PartialEq)]
 pub struct CongratsView;
@@ -53,7 +53,7 @@ impl MavericNode for CongratsView {
                     is_selfie_mode: context.8.is_selfie_mode,
                 };
 
-
+                let congrats_context = (selfie_mode, context.1.level_type());
 
                 #[derive(Debug, Clone, Copy)]
                 enum Data {
@@ -96,13 +96,15 @@ impl MavericNode for CongratsView {
                     CurrentLevel::NonLevel(_) => Data::None,
                 };
 
-
-
                 let transition = TransitionBuilder::default()
-                .then_wait(Duration::from_secs_f32(TRANSITION_WAIT_SECS))
-                .then_ease(Vec3::ONE, (1.0 / TRANSITION_SECS).into(), Ease::CubicOut).build();
+                    .then_wait(Duration::from_secs_f32(TRANSITION_WAIT_SECS))
+                    .then_ease(Vec3::ONE, (1.0 / TRANSITION_SECS).into(), Ease::CubicOut)
+                    .build();
 
-            info!("Transition: {:?}", transition.remaining_duration(&Vec3::ZERO));
+                info!(
+                    "Transition: {:?}",
+                    transition.remaining_duration(&Vec3::ZERO)
+                );
 
                 for (index, statistic) in CongratsStatistic::iter().enumerate() {
                     let data = match (statistic, data) {
@@ -130,8 +132,10 @@ impl MavericNode for CongratsView {
                     let Some((number, label)) = data else {
                         continue;
                     };
-                    let rect =
-                        size.get_rect(&CongratsLayoutEntity::Statistic(statistic), &selfie_mode);
+                    let rect = size.get_rect(
+                        &CongratsLayoutEntity::Statistic(statistic),
+                        &congrats_context,
+                    );
                     let number_font_size = size.font_size(&StatisticNumber, &selfie_mode);
                     let text_font_size = size.font_size(&StatisticLabel, &selfie_mode);
 
@@ -166,40 +170,43 @@ impl MavericNode for CongratsView {
                         .with_transition::<TransformScaleLens, ()>(
                             Vec3::ZERO,
                             transition.clone(),
-                            ()
+                            (),
                         ),
                         &(),
                     );
                 }
 
-                let button_count = if selfie_mode.is_selfie_mode { 1 } else { 3 };
+                let button_count = CongratsLayoutEntity::get_button_count(&congrats_context);
 
                 for (index, button) in CongratsButton::iter().enumerate().take(button_count) {
                     let text = match button {
-                        CongratsButton::Next => {
-                            let next_level = context.1.get_next_level(context.7.as_ref());
+                        CongratsButton::Next => match context.1.level_type() {
+                            ws_core::level_type::LevelType::Tutorial => "Next".to_string(),
+                            _ => {
+                                let next_level = context.1.get_next_level(context.7.as_ref());
 
-                            match next_level {
-                                CurrentLevel::Tutorial { .. } => "Next".to_string(),
-                                CurrentLevel::Fixed { .. } => "Next".to_string(),
-                                CurrentLevel::DailyChallenge { index: next_index } => {
-                                    if let CurrentLevel::DailyChallenge {
-                                        index: current_index,
-                                    } = context.1.as_ref()
-                                    {
-                                        if next_index > *current_index {
-                                            "Today's Puzzle".to_string()
+                                match next_level {
+                                    CurrentLevel::Tutorial { .. } => "Next".to_string(),
+                                    CurrentLevel::Fixed { .. } => "Next".to_string(),
+                                    CurrentLevel::DailyChallenge { index: next_index } => {
+                                        if let CurrentLevel::DailyChallenge {
+                                            index: current_index,
+                                        } = context.1.as_ref()
+                                        {
+                                            if next_index > *current_index {
+                                                "Today's Puzzle".to_string()
+                                            } else {
+                                                format!("Play #{}", next_index + 1)
+                                            }
                                         } else {
                                             format!("Play #{}", next_index + 1)
                                         }
-                                    } else {
-                                        format!("Play #{}", next_index + 1)
                                     }
+                                    CurrentLevel::Custom { .. } => "Next".to_string(),
+                                    CurrentLevel::NonLevel(_) => "Finish".to_string(),
                                 }
-                                CurrentLevel::Custom { .. } => "Next".to_string(),
-                                CurrentLevel::NonLevel(_) => "Finish".to_string(),
                             }
-                        }
+                        },
                         CongratsButton::MoreLevels => "More Puzzles".to_string(),
                         #[cfg(target_arch = "wasm32")]
                         CongratsButton::Share => "Share".to_string(),
@@ -225,15 +232,16 @@ impl MavericNode for CongratsView {
                             text,
                             font_size: size.font_size(&CongratsLayoutEntity::Button(button), &()),
                             rect: size
-                                .get_rect(&CongratsLayoutEntity::Button(button), &selfie_mode),
+                                .get_rect(&CongratsLayoutEntity::Button(button), &congrats_context),
                             interaction: ButtonInteraction::Congrats(button),
                             text_color,
                             fill_color,
                             clicked_fill_color: BUTTON_CLICK_FILL.convert_color(),
                         }
-                        .with_transition::<TransformScaleLens,()>(
+                        .with_transition::<TransformScaleLens, ()>(
                             Vec3::ZERO,
-                            transition.clone(),()
+                            transition.clone(),
+                            (),
                         ),
                         &(),
                     );
