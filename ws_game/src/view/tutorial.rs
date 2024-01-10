@@ -53,23 +53,26 @@ impl MavericNode for TutorialNode {
                         Duration::from_secs_f32(POPUP_TRANSITION_IN_SECONDS),
                         Duration::from_secs_f32(POPUP_TRANSITION_OUT_SECONDS),
                         Some(Ease::CubicOut),
-                        Some(Ease::CubicIn),
+                        Some(Ease::CubicOut),
                     ),
                     context,
                 );
             }
             if let Some(text) = node.text.middle {
+                let transition = TransitionBuilder::default()
+                .then_wait(Duration::from_secs_f32(TRANSITION_WAIT_SECS))
+                .then_ease(Vec3::ONE, (1.0 / TRANSITION_SECS).into(), Ease::CubicOut).build();
+
                 commands.add_child(
-                    "middle",
+                    "big top",
                     TutorialPopupNode {
                         text,
                         entity: TutorialLayoutEntity::BigTop,
                     }
-                    .with_transition_in::<TransformScaleLens>(
+                    .with_transition::<TransformScaleLens, ()>(
                         Vec3::ZERO,
-                        Vec3::ONE,
-                        Duration::from_secs_f32(POPUP_TRANSITION_IN_SECONDS * 2.0),
-                        Some(Ease::CubicIn),
+                        transition,
+                        (),
                     ),
                     context,
                 );
@@ -88,7 +91,7 @@ impl MavericNode for TutorialNode {
                         Duration::from_secs_f32(POPUP_TRANSITION_IN_SECONDS),
                         Duration::from_secs_f32(POPUP_TRANSITION_OUT_SECONDS),
                         Some(Ease::CubicOut),
-                        Some(Ease::CubicIn),
+                        Some(Ease::CubicOut),
                     ),
                     context,
                 );

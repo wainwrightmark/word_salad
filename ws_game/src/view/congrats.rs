@@ -1,5 +1,4 @@
 use std::time::Duration;
-
 use crate::{prelude::*, z_indices};
 use bevy::{reflect::TypeUuid, sprite::Anchor, text::Text2dBounds};
 use bevy_param_shaders::prelude::*;
@@ -8,6 +7,9 @@ use num_traits::Zero;
 use rand::{rngs::ThreadRng, Rng};
 use strum::IntoEnumIterator;
 use ws_core::{layout::entities::*, palette::BUTTON_CLICK_FILL};
+
+pub const TRANSITION_WAIT_SECS: f32 =  1.0;
+pub const TRANSITION_SECS: f32 = 1.0;
 #[derive(Debug, Clone, PartialEq)]
 pub struct CongratsView;
 
@@ -51,7 +53,7 @@ impl MavericNode for CongratsView {
                     is_selfie_mode: context.8.is_selfie_mode,
                 };
 
-                const TRANSITION_SECS: f32 = 1.0;
+
 
                 #[derive(Debug, Clone, Copy)]
                 enum Data {
@@ -97,8 +99,10 @@ impl MavericNode for CongratsView {
 
 
                 let transition = TransitionBuilder::default()
-                .then_wait(Duration::from_secs_f32(1.0))
-                .then_ease(Vec3::ONE, (1.0 / TRANSITION_SECS).into(), Ease::BackOut).build();
+                .then_wait(Duration::from_secs_f32(TRANSITION_WAIT_SECS))
+                .then_ease(Vec3::ONE, (1.0 / TRANSITION_SECS).into(), Ease::CubicOut).build();
+                ;
+            info!("Transition: {:?}", transition.remaining_duration(&Vec3::ZERO));
 
                 for (index, statistic) in CongratsStatistic::iter().enumerate() {
                     let data = match (statistic, data) {
