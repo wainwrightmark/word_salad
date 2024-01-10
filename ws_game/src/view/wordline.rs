@@ -154,7 +154,7 @@ impl MavericNode for WordLine {
             {
                 target_progress = ProgressTarget::OneThenDecreaseToZero;
             } else {
-                target_progress = ProgressTarget::ZeroThenIncreaseToOne;
+                target_progress = ProgressTarget::ResetThenIncreaseToOne;
             }
         };
 
@@ -281,6 +281,7 @@ const LINE_WIDTH_DECREASE_SPEED: f32 = FULL_LINE_WIDTH * 1.2;
 const LINE_WIDTH_INCREASE_SPEED: f32 = FULL_LINE_WIDTH * 4.0;
 const LINE_WIDTH_PULSE_SPEED: f32 = FULL_LINE_WIDTH * 0.5;
 const PROGRESS_SPEED: f32 = 4.0;
+const RESET_PROGRESS: f32 = 0.25;
 
 #[derive(Debug, Resource, PartialEq)]
 struct WordLineGlobalValues {
@@ -324,7 +325,7 @@ enum ProgressTarget {
     One,
     IncreaseToOne,
     DecreaseToZero,
-    ZeroThenIncreaseToOne,
+    ResetThenIncreaseToOne,
     OneThenDecreaseToZero,
 }
 
@@ -369,9 +370,9 @@ fn transition_word_line(
     let progress = match targets.target_progress {
         ProgressTarget::IncreaseToOne => (values.progress + progress_change).min(1.0),
         ProgressTarget::DecreaseToZero => (values.progress - progress_change).max(0.0),
-        ProgressTarget::ZeroThenIncreaseToOne => {
+        ProgressTarget::ResetThenIncreaseToOne => {
             targets.target_progress = ProgressTarget::IncreaseToOne;
-            progress_change.min(1.0)
+            RESET_PROGRESS + progress_change.min(1.0)
         }
         ProgressTarget::OneThenDecreaseToZero => {
             targets.target_progress = ProgressTarget::DecreaseToZero;

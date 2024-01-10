@@ -13,3 +13,4 @@
 - Save incomplete levels
 - IF ABCD is selected, clicking B should change path to AB, not ABC
 - Game elements should be hidden rather than not present when in the menu
+- Change hint tracking
