@@ -12,7 +12,6 @@
 - Additional buttons in Non-Level
 - social images etc
 - Save incomplete levels
-- IF ABCD is selected, clicking B should change path to AB, not ABC
 - pressing menu burger should close menu
 
 - Check letter color (white or black) when line disappears

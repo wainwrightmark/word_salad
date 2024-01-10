@@ -43,7 +43,7 @@ impl MavericNode for WordLine {
                                 && !previous.should_hide
                                 && previous.solution.starts_with(&args.node.solution)
                             {
-                                solution = previous.solution.as_slice();
+                                solution = &previous.solution.as_slice()[0..(args.node.solution.len() + 1)];
                             } else {
                                 solution = args.node.solution.as_slice();
                             }

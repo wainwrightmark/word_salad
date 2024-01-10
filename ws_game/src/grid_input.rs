@@ -47,22 +47,24 @@ impl GridInputState {
                         chosen_state.solution.clear();
                         chosen_state.solution.push(tile);
                         self.last_truncate = None;
-                        //info!("His1a");
+                        //info!("His1a index: {index}");
                         next_multi_click = None;
                     } else {
                         next_multi_click = Some(MultiClick::DeleteOnEndThenMaybeSwitch(tile));
-                        //info!("His1b");
+                        //info!("His1b index: {index}");
                     }
 
                     self.last_truncate = None;
                 } else if index == 0 {
-                    //info!("His2");
+                    //info!("His2 index: {index}");
                     chosen_state.solution.clear();
                     self.last_truncate = None;
                     next_multi_click = None;
                 } else {
-                    //info!("His3");
+                    //info!("His3 index: {index}");
                     chosen_state.solution.truncate(index + 1);
+
+                    //info!("His3 index: {index}  cs len {}");
                     self.last_truncate = Some(tile);
                     next_multi_click = None;
                 }
@@ -137,28 +139,34 @@ impl GridInputState {
         if self.last_tile == Some(location) {
             match self.multi_click {
                 Some(MultiClick::DeleteOnEndThenStop) => {
+                    //info!("hie1");
                     chosen_state.solution.pop();
                     self.multi_click = None;
                 }
                 Some(MultiClick::DeleteOnEndThenMaybeSwitch(tile)) => {
                     chosen_state.solution.pop();
                     self.multi_click = if tile == location {
+                        //info!("hie2a");
                         Some(MultiClick::SwitchOnStart(tile))
                     } else {
+                        //info!("hie2b");
                         None
                     };
                 }
                 _ => {
+                    //info!("hie3");
                     self.multi_click = None;
                 }
             }
         } else {
+            //info!("hie4");
             self.multi_click = None;
         }
         self.last_tile = None;
     }
 
     pub fn handle_input_end_no_location(&mut self) {
+        //info!("hie no location");
         self.last_tile = None;
         self.multi_click = None;
     }
