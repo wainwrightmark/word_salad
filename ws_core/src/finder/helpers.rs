@@ -21,7 +21,7 @@ pub fn make_words_vec_from_file(text: &str) -> Vec<FinderWord> {
         .collect_vec()
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct FinderWord {
     pub text: String,
     pub array: CharsArray,
