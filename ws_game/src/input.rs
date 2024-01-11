@@ -42,7 +42,7 @@ impl InteractionEntity {
     pub fn try_get_button<T: LayoutStructure + Into<ButtonInteraction>>(
         position: &Vec2,
         size: &Size,
-        context: &T::Context,
+        context: &T::Context<'_>,
     ) -> Option<Self> {
         size.try_pick::<T>(*position, context)
             .map(|x| InteractionEntity::Button(x.into()))
@@ -84,6 +84,10 @@ impl InteractionEntity {
             return tbi;
         }
 
+        let selfie_mode = SelfieMode {
+            is_selfie_mode: video_resource.is_selfie_mode,
+        };
+
         match menu_state {
             MenuState::Closed => match current_level.level(daily_challenges) {
                 itertools::Either::Left(level) => {
@@ -92,15 +96,13 @@ impl InteractionEntity {
                             position,
                             size,
                             &(
-                                SelfieMode {
-                                    is_selfie_mode: video_resource.is_selfie_mode,
-                                },
+                                selfie_mode,
                                 current_level.level_type(),
                             ),
                         );
                     }
 
-                    let Some(layout_entity) = size.try_pick::<GameLayoutEntity>(*position, &())
+                    let Some(layout_entity) = size.try_pick::<GameLayoutEntity>(*position, &selfie_mode)
                     else {
                         return None;
                     };
@@ -115,15 +117,15 @@ impl InteractionEntity {
                                 .try_pick_with_tolerance::<LayoutGridTile>(
                                     *position,
                                     tolerance,
-                                    &(),
+                                    &selfie_mode,
                                 )
                                 .map(|t| Self::Tile(t.0)),
                             None => size
-                                .try_pick::<LayoutGridTile>(*position, &())
+                                .try_pick::<LayoutGridTile>(*position, &selfie_mode)
                                 .map(|t| Self::Tile(t.0)),
                         },
                         GameLayoutEntity::WordList => {
-                            Self::try_get_button::<LayoutWordTile>(position, size, &level.words)
+                            Self::try_get_button::<LayoutWordTile>(position, size, &(level.words.as_slice(), selfie_mode))
                         }
                         GameLayoutEntity::Timer => {
                             if current_level.is_tutorial() {

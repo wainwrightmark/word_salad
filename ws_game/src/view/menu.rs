@@ -155,7 +155,7 @@ fn add_menu_items<
         + LayoutStructureWithStaticText
         + Into<ButtonInteraction>,
 >(
-    context: &<L as LayoutStructure>::Context,
+    context: &<L as LayoutStructure>::Context<'_>,
     commands: &mut UnorderedChildCommands<R>,
     size: &Size,
     page: u16,
@@ -184,7 +184,7 @@ fn add_double_text_menu_items<
     R: MavericRoot,
     L: LayoutStructureWithFont<FontContext = ()> + LayoutStructure + Into<ButtonInteraction>,
 >(
-    context: &<L as LayoutStructure>::Context,
+    context: &<L as LayoutStructure>::Context<'_>,
     commands: &mut UnorderedChildCommands<R>,
     size: &Size,
     page: u16,

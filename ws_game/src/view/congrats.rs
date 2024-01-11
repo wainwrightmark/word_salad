@@ -39,7 +39,7 @@ impl MavericNode for CongratsView {
         entity_commands.with_children(|cb| {
             let mut rng = ThreadRng::default();
             for i in 0..NUM_FIREWORKS {
-                create_firework(cb, &mut rng, SECONDS, size.as_ref(), i <= 1);
+                create_firework(cb, &mut rng, SECONDS, size.as_ref(), i <= 1, context.8.selfie_mode());
             }
         });
     }
@@ -346,8 +346,9 @@ fn create_firework(
     total_seconds: f32,
     size: &Size,
     no_delay: bool,
+    selfie_mode: SelfieMode
 ) {
-    let rect = size.get_rect(&ws_core::layout::entities::GameLayoutEntity::Grid, &());
+    let rect = size.get_rect(&ws_core::layout::entities::GameLayoutEntity::Grid, &selfie_mode);
 
     let delay = if no_delay {
         0.0

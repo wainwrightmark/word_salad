@@ -2,7 +2,7 @@ use crate::prelude::*;
 use glam::Vec2;
 use strum::{Display, EnumCount, EnumIter, IntoEnumIterator};
 
-use super::consts::*;
+use super::{consts::*, SelfieMode};
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter, Display, EnumCount,
@@ -17,15 +17,15 @@ pub enum GameLayoutEntity {
 }
 
 impl LayoutStructure for GameLayoutEntity {
-    type Context = ();
+    type Context<'a> = SelfieMode;
 
-    fn iter_all(_context: &Self::Context) -> impl Iterator<Item = Self> {
+    fn iter_all(_context: &Self::Context<'_>) -> impl Iterator<Item = Self> {
         Self::iter()
     }
 
     //const ROOT: Self = GameLayoutEntity::Root;
     ///The size on a 320x568 canvas
-    fn size(&self, _context: &()) -> Vec2 {
+    fn size(&self, _context: &Self::Context<'_>) -> Vec2 {
         match self {
             GameLayoutEntity::TopBar => Vec2 {
                 x: IDEAL_WIDTH,
@@ -54,7 +54,7 @@ impl LayoutStructure for GameLayoutEntity {
             },
         }
     }
-    fn location(&self, _context: &(), _sizing: &LayoutSizing) -> Vec2 {
+    fn location(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
         match self {
             GameLayoutEntity::TopBar => Vec2::ZERO,
 

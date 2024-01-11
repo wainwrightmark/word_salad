@@ -28,15 +28,16 @@ mod tests {
     #[test]
     fn test_picking_all() {
         let sizing = LayoutSizing::default();
+        let selfie_mode = SelfieMode{is_selfie_mode: false};
 
-        test_picking::<GameLayoutEntity>(&(), &sizing);
+        test_picking::<GameLayoutEntity>(&selfie_mode, &sizing);
         test_picking::<LayoutTopBar>(&(), &sizing);
         // test_picking::<LayoutPuzzleTheme>(&());
-        test_picking::<LayoutGridTile>(&(), &sizing);
+        test_picking::<LayoutGridTile>(&selfie_mode, &sizing);
         //test_picking::<LayoutWordTile>(&()); //TODO test this
     }
 
-    fn test_picking<T: LayoutStructure + Copy>(context: &T::Context, sizing: &LayoutSizing) {
+    fn test_picking<T: LayoutStructure + Copy>(context: &T::Context<'_>, sizing: &LayoutSizing) {
         for entity in T::iter_all(context) {
             let rect = entity.rect(context, sizing);
 
@@ -54,6 +55,7 @@ mod tests {
         };
 
         let layout = LayoutSizing::from_page_size(size, IDEAL_RATIO, IDEAL_WIDTH);
+        let selfie_mode = SelfieMode{is_selfie_mode: false};
 
         let mut svg = format!(
             r#"
@@ -64,9 +66,9 @@ mod tests {
         );
 
         for layout_entity in GameLayoutEntity::iter() {
-            let layout_size = layout.get_size(&layout_entity, &());
+            let layout_size = layout.get_size(&layout_entity, &selfie_mode);
             let (width, height) = (layout_size.x, layout_size.y);
-            let Vec2 { x, y } = layout.get_location(&layout_entity, &());
+            let Vec2 { x, y } = layout.get_location(&layout_entity, &selfie_mode);
 
             let color = match layout_entity {
                 GameLayoutEntity::TopBar => "blue",

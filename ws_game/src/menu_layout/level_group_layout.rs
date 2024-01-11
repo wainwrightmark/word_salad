@@ -46,16 +46,16 @@ impl LevelGroupLayoutEntity {
 }
 
 impl LayoutStructure for LevelGroupLayoutEntity {
-    type Context = LevelGroup;
+    type Context<'a> = LevelGroup;
 
-    fn size(&self, _context: &Self::Context) -> bevy::prelude::Vec2 {
+    fn size(&self, _context: &Self::Context<'_>) -> bevy::prelude::Vec2 {
         Vec2 {
             x: MENU_BUTTON_WIDTH,
             y: super::MENU_BUTTON_HEIGHT,
         }
     }
 
-    fn location(&self, _context: &Self::Context, _sizing: &LayoutSizing) -> bevy::prelude::Vec2 {
+    fn location(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> bevy::prelude::Vec2 {
         Vec2 {
             x: (IDEAL_WIDTH - MENU_BUTTON_WIDTH) / 2.,
             y: TOP_BAR_HEIGHT
@@ -68,7 +68,7 @@ impl LayoutStructure for LevelGroupLayoutEntity {
         }
     }
 
-    fn iter_all(context: &Self::Context) -> impl Iterator<Item = Self> {
+    fn iter_all(context: &Self::Context<'_>) -> impl Iterator<Item = Self> {
         LevelGroupLayoutIter {
             next_index: 0,
             group: *context,

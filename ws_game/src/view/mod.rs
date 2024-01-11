@@ -26,7 +26,6 @@ pub use top_bar::*;
 pub use tutorial::*;
 pub use wordline::*;
 pub use words::*;
-use ws_core::layout::entities::SelfieMode;
 
 use crate::{completion::TotalCompletion, prelude::*};
 
@@ -55,7 +54,7 @@ impl MavericRootChildren for ViewRoot {
     ) {
         commands.add_child("Top Bar", TopBar, context);
 
-        let is_selfie_mode = context.8.is_selfie_mode;
+        let selfie_mode = context.8.selfie_mode();
         if context.5.is_closed() {
             let level_complete = context.2.is_level_complete();
 
@@ -74,6 +73,7 @@ impl MavericRootChildren for ViewRoot {
                                 solution: context.0.solution.clone(),
                                 should_hide: context.0.is_just_finished,
                                 close_to_solution,
+                                selfie_mode
                             },
                             &context.3,
                         );
@@ -91,7 +91,7 @@ impl MavericRootChildren for ViewRoot {
                             "ui_theme",
                             LevelName {
                                 theme,
-                                is_selfie_mode,
+                                selfie_mode,
                             },
                             &context.3,
                         );
@@ -101,7 +101,7 @@ impl MavericRootChildren for ViewRoot {
                                 "ui_theme_info",
                                 LevelExtraInfo {
                                     info: *info,
-                                    is_selfie_mode,
+                                    selfie_mode,
                                 },
                                 &context.3,
                             );
@@ -113,7 +113,7 @@ impl MavericRootChildren for ViewRoot {
                             "ui_timer",
                             UITimer {
                                 time_text,
-                                is_selfie_mode,
+                                selfie_mode,
                             },
                             &context.3,
                         );
@@ -126,7 +126,6 @@ impl MavericRootChildren for ViewRoot {
                     }
                 }
                 itertools::Either::Right(non_level) => {
-                    let selfie_mode = SelfieMode { is_selfie_mode };
                     commands.add_child(
                         "non_level",
                         NonLevelView {

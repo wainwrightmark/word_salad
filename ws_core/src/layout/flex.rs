@@ -11,7 +11,7 @@ impl FlexLayout {
         &self,
         full_size: Vec2,
         point: Vec2,
-        context: &T::Context,
+        context: &T::Context<'_>,
         main_axis_padding: f32,
         cross_axis_padding: f32,
     ) -> Option<T> {
@@ -52,7 +52,7 @@ impl FlexLayout {
         &self,
         full_size: Vec2,
         to_find: &T,
-        context: &T::Context,
+        context: &T::Context<'_>,
         main_axis_padding: f32,
         cross_axis_padding: f32,
     ) -> Vec2 {

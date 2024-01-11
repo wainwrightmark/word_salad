@@ -49,7 +49,7 @@ impl LayoutSizing {
         &self,
         position: Vec2,
         tolerance: f32,
-        context: &T::Context,
+        context: &T::Context<'_>,
     ) -> Option<T> {
         let x = position.x - self.left_pad;
         let y = position.y;
@@ -76,12 +76,12 @@ impl LayoutSizing {
         return None;
     }
 
-    pub fn get_size<T: LayoutStructure>(&self, entity: &T, context: &T::Context) -> Vec2 {
+    pub fn get_size<T: LayoutStructure>(&self, entity: &T, context: &T::Context<'_>) -> Vec2 {
         let v2: Vec2 = entity.size(context);
         v2 * self.size_ratio
     }
 
-    pub fn get_location<T: LayoutStructure>(&self, entity: &T, context: &T::Context) -> glam::Vec2 {
+    pub fn get_location<T: LayoutStructure>(&self, entity: &T, context: &T::Context<'_>) -> glam::Vec2 {
         let Vec2 { x, y } = entity.location(context, &self);
 
         Vec2 {
@@ -93,7 +93,7 @@ impl LayoutSizing {
     pub fn get_rect<T: LayoutStructure>(
         &self,
         entity: &T,
-        context: &T::Context,
+        context: &T::Context<'_>,
     ) -> LayoutRectangle {
         LayoutRectangle {
             top_left: self.get_location(entity, context),

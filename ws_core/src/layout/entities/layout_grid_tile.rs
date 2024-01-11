@@ -7,9 +7,9 @@ use std::ops::Add;
 pub struct LayoutGridTile(pub Tile);
 
 impl LayoutStructure for LayoutGridTile {
-    type Context = ();
+    type Context<'a> = SelfieMode;
 
-    fn pick(point: Vec2, context: &Self::Context, sizing: &LayoutSizing) -> Option<Self> {
+    fn pick(point: Vec2, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Option<Self> {
         let grid_rect = GameLayoutEntity::Grid.rect(context, sizing);
 
         let scaled = grid_rect.scaled_inside(point)?;
@@ -25,14 +25,14 @@ impl LayoutStructure for LayoutGridTile {
         return None;
     }
 
-    fn size(&self, _context: &Self::Context) -> Vec2 {
+    fn size(&self, _context: &Self::Context<'_>) -> Vec2 {
         Vec2 {
             x: GRID_TILE_SIZE,
             y: GRID_TILE_SIZE,
         }
     }
 
-    fn location(&self, context: &Self::Context, sizing: &LayoutSizing) -> Vec2 {
+    fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
         GameLayoutEntity::Grid.location(context, sizing).add(tile_offset(
             self.0,
             Spacing::SpaceBetween,
@@ -42,7 +42,7 @@ impl LayoutStructure for LayoutGridTile {
         ))
     }
 
-    fn iter_all(_context: &Self::Context) -> impl Iterator<Item = Self> {
+    fn iter_all(_context: &Self::Context<'_>) -> impl Iterator<Item = Self> {
         LayoutGridTileIter::default()
     }
 }

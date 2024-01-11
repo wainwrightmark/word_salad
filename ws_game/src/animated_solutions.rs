@@ -21,9 +21,9 @@ pub struct AnimateSolutionsEvent{
     pub level: DesignedLevel,
 }
 
-pub fn animate_solutions(mut commands: Commands, mut events: EventReader<AnimateSolutionsEvent>, asset_server: Res<AssetServer>, size: Res<Size>){
+pub fn animate_solutions(mut commands: Commands, mut events: EventReader<AnimateSolutionsEvent>, asset_server: Res<AssetServer>, size: Res<Size>, video: Res<VideoResource>){
     for ev in events.read(){
-        animate_solution(&mut commands, &ev.solution, &ev.word, ev. is_first_time, asset_server.as_ref(), size.as_ref(), &ev.level);
+        animate_solution(&mut commands, &ev.solution, &ev.word, ev. is_first_time, asset_server.as_ref(), size.as_ref(), &ev.level, video.selfie_mode());
     }
 }
 
@@ -36,6 +36,7 @@ fn animate_solution(
     asset_server: &AssetServer,
     size: &Size,
     level: &DesignedLevel,
+    selfie_mode: SelfieMode
 ) {
     //info!("Animate solution");
     let color = if is_first_time {
@@ -49,12 +50,12 @@ fn animate_solution(
     const SPACING: f32 = 0.4;
     const MID_SCALE: f32 = 0.5;
 
-    let words = &level.words;
+    let words = level.words.as_slice();
 
     let Some(layout_word_tile) = words.iter().position(|x| x == word).map(LayoutWordTile) else {
         return;
     };
-    let word_destination_rect = size.get_rect(&layout_word_tile, words);
+    let word_destination_rect = size.get_rect(&layout_word_tile, &(words, selfie_mode));
     let word_destination_centre = word_destination_rect.centre();
 
     let font = asset_server.load(SOLUTIONS_FONT_PATH);
@@ -87,7 +88,7 @@ fn animate_solution(
                 y: 0.0,
             };
 
-        let start_position = size.get_rect(&LayoutGridTile(*tile), &()).centre();
+        let start_position = size.get_rect(&LayoutGridTile(*tile), &selfie_mode).centre();
 
         let speed_one_translation = calculate_speed(
             &start_position,

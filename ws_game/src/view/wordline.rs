@@ -22,6 +22,7 @@ pub struct WordLine {
     pub solution: Solution,
     pub should_hide: bool,
     pub close_to_solution: bool,
+    pub selfie_mode: SelfieMode
 }
 
 impl MavericNode for WordLine {
@@ -72,7 +73,7 @@ impl MavericNode for WordLine {
             const SCALE_FACTOR: f32 = ((GRID_GAP / 3.0) + GRID_TILE_SIZE) / GRID_TILE_SIZE;
 
             if let Ok(tile) = solution.iter().exactly_one() {
-                let rect = args.context.get_rect(&LayoutGridTile(*tile), &());
+                let rect = args.context.get_rect(&LayoutGridTile(*tile), &args.node.selfie_mode);
                 let color = index_to_color(0);
 
                 commands.add_child(
@@ -97,8 +98,8 @@ impl MavericNode for WordLine {
                 );
             } else {
                 for (index, (from, to)) in solution.iter().tuple_windows().enumerate() {
-                    let rect_f = args.context.get_rect(&LayoutGridTile(*from), &());
-                    let rect_t = args.context.get_rect(&LayoutGridTile(*to), &());
+                    let rect_f = args.context.get_rect(&LayoutGridTile(*from), &args.node.selfie_mode);
+                    let rect_t = args.context.get_rect(&LayoutGridTile(*to), &args.node.selfie_mode);
 
                     let translation =
                         ((rect_f.centre() + rect_t.centre()) * 0.5).extend(z_indices::WORD_LINE);

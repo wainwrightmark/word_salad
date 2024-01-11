@@ -96,6 +96,8 @@ impl MavericNode for GridTiles {
 
             let hint_set = &context.2.manual_hint_set(level, solution); //TODO this should reveal if a tile is previously hinted
 
+            let selfie_mode = context.8.selfie_mode();
+
             let inadvisable_tiles = inadvisable_tiles.intersect(&hint_set.negate());
             for (tile, character) in level.grid.enumerate() {
                 if character.is_blank() {
@@ -112,9 +114,9 @@ impl MavericNode for GridTiles {
                     HintStatus::new(tile, selectability, hint_set, &inadvisable_tiles);
 
                 let size = context.3.as_ref();
-                let tile_size = size.tile_size();
+                let tile_size = size.tile_size(&selfie_mode);
                 let font_size = size.font_size::<LayoutGridTile>(&LayoutGridTile::default(), &());
-                let centre = size.get_rect(&LayoutGridTile(tile), &()).centre();
+                let centre = size.get_rect(&LayoutGridTile(tile), &selfie_mode).centre();
 
                 commands.add_child(
                     tile.inner() as u32,

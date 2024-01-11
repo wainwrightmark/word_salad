@@ -24,9 +24,9 @@ impl LayoutTopBar {
 }
 
 impl LayoutStructure for LayoutTopBar {
-    type Context = ();
+    type Context<'a> = ();
 
-    fn size(&self, _context: &Self::Context) -> Vec2 {
+    fn size(&self, _context: &Self::Context<'_>) -> Vec2 {
         use LayoutTopBar::*;
         match self {
             MenuBurgerButton | HintCounter => Vec2 {
@@ -40,7 +40,7 @@ impl LayoutStructure for LayoutTopBar {
         }
     }
 
-    fn location(&self, _context: &Self::Context, _sizing: &LayoutSizing) -> Vec2 {
+    fn location(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
         match self {
             LayoutTopBar::MenuBurgerButton => Vec2 {
                 x: (IDEAL_WIDTH - GRID_SIZE) * 0.5,
@@ -57,7 +57,7 @@ impl LayoutStructure for LayoutTopBar {
         }
     }
 
-    fn iter_all(_context: &Self::Context) -> impl Iterator<Item = Self> {
+    fn iter_all(_context: &Self::Context<'_>) -> impl Iterator<Item = Self> {
         Self::iter()
     }
 }

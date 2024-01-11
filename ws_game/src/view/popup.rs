@@ -181,9 +181,9 @@ impl BuyMoreHintsLayoutEntity {
 }
 
 impl LayoutStructure for BuyMoreHintsLayoutEntity {
-    type Context = ();
+    type Context<'a> = ();
 
-    fn size(&self, _context: &Self::Context) -> Vec2 {
+    fn size(&self, _context: &Self::Context<'_>) -> Vec2 {
         use BuyMoreHintsLayoutEntity::*;
         match self {
             Title => Vec2 {
@@ -205,7 +205,7 @@ impl LayoutStructure for BuyMoreHintsLayoutEntity {
         }
     }
 
-    fn location(&self, _context: &Self::Context, _sizing: &LayoutSizing) -> Vec2 {
+    fn location(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
         use BuyMoreHintsLayoutEntity::*;
         match self {
             Title | BuyMoreHintsButton | SufferAloneButton => Vec2 {
@@ -225,7 +225,7 @@ impl LayoutStructure for BuyMoreHintsLayoutEntity {
         }
     }
 
-    fn iter_all(_context: &Self::Context) -> impl Iterator<Item = Self> {
+    fn iter_all(_context: &Self::Context<'_>) -> impl Iterator<Item = Self> {
         Self::iter()
     }
 }

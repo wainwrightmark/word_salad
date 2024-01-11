@@ -5,6 +5,7 @@ use nice_bevy_utils::{
     TrackableResource,
 };
 use serde::{Deserialize, Serialize};
+use ws_core::layout::entities::SelfieMode;
 
 use crate::prelude::selfie_popup::SelfiePopup;
 
@@ -35,6 +36,12 @@ pub enum VideoEvent {
 #[derive(Default, Resource, MavericContext)]
 pub struct VideoResource {
     pub is_selfie_mode: bool,
+}
+
+impl VideoResource {
+    pub fn selfie_mode(&self)-> SelfieMode{
+        SelfieMode { is_selfie_mode: self.is_selfie_mode }
+    }
 }
 
 #[derive(Default, Resource, Clone, PartialEq, Serialize, Deserialize, MavericContext)]

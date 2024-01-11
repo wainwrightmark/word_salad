@@ -10,23 +10,23 @@ use super::{MENU_BUTTON_FONT_SIZE, MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU
 pub struct MainMenuBackButton;
 
 impl LayoutStructure for MainMenuBackButton {
-    type Context = ();
+    type Context<'a> = ();
 
-    fn size(&self, _context: &Self::Context) -> Vec2 {
+    fn size(&self, _context: &Self::Context<'_>) -> Vec2 {
         Vec2 {
             x: MENU_BUTTON_WIDTH,
             y: MENU_BUTTON_HEIGHT,
         }
     }
 
-    fn location(&self, _context: &Self::Context, _sizing: &LayoutSizing) -> Vec2 {
+    fn location(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
         Vec2 {
             x: (IDEAL_WIDTH - MENU_BUTTON_WIDTH) / 2.,
             y: IDEAL_HEIGHT - ((MENU_BUTTON_HEIGHT + MENU_BUTTON_SPACING) * 2.0),
         }
     }
 
-    fn iter_all(_context: &Self::Context) -> impl Iterator<Item = Self> {
+    fn iter_all(_context: &Self::Context<'_>) -> impl Iterator<Item = Self> {
         std::iter::once(MainMenuBackButton)
     }
 }
@@ -39,7 +39,7 @@ impl LayoutStructureWithFont for MainMenuBackButton {
 }
 
 impl LayoutStructureWithStaticText for MainMenuBackButton {
-    fn text(&self, _context: &Self::Context) -> &'static str {
+    fn text(&self, _context: &Self::Context<'_>) -> &'static str {
         "Back"
     }
 }

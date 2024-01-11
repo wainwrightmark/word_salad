@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use glam::Vec2;
 
-use super::consts::*;
+use super::{consts::*, SelfieMode};
 
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct LayoutWordTile(pub usize);
@@ -12,21 +12,22 @@ impl From<usize> for LayoutWordTile {
     }
 }
 
-impl LayoutStructure for LayoutWordTile {
-    type Context = Vec<DisplayWord>;
 
-    fn iter_all(context: &Self::Context) -> impl Iterator<Item = Self> {
+impl LayoutStructure for LayoutWordTile {
+    type Context<'a> = (&'a [DisplayWord], SelfieMode);
+
+    fn iter_all(context: &Self::Context<'_>) -> impl Iterator<Item = Self> {
         LayoutWordTileIter {
             inner: 0,
-            total_count: context.len(),
+            total_count: context.0.len(),
         }
     }
 
-    fn pick(point: Vec2, context: &Self::Context, sizing: &LayoutSizing) -> Option<Self> {
-        let parent_loc = super::GameLayoutEntity::WordList.location(&(), sizing);
+    fn pick(point: Vec2, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Option<Self> {
+        let parent_loc = super::GameLayoutEntity::WordList.location(&context.1, sizing);
         let point = point - parent_loc;
         FlexLayout::Row.try_pick(
-            super::GameLayoutEntity::WordList.size(&()),
+            super::GameLayoutEntity::WordList.size(&context.1),
             point,
             context,
             WORD_MAIN_PAD,
@@ -34,8 +35,8 @@ impl LayoutStructure for LayoutWordTile {
         )
     }
 
-    fn size(&self, context: &Self::Context) -> Vec2 {
-        let num_letters = context
+    fn size(&self, context: &Self::Context<'_>) -> Vec2 {
+        let num_letters = context.0
             .get(self.0)
             .map(|x| x.graphemes.len())
             .unwrap_or_default();
@@ -48,11 +49,11 @@ impl LayoutStructure for LayoutWordTile {
         }
     }
 
-    fn location(&self, context: &Self::Context, sizing: &LayoutSizing) -> Vec2 {
-        let parent_loc = super::GameLayoutEntity::WordList.location(&(), sizing);
+    fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
+        let parent_loc = super::GameLayoutEntity::WordList.location(&context.1, sizing);
 
         let offset = FlexLayout::Row.get_location(
-            super::GameLayoutEntity::WordList.size(&()),
+            super::GameLayoutEntity::WordList.size(&context.1),
             self,
             context,
             WORD_MAIN_PAD,

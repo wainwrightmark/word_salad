@@ -49,9 +49,9 @@ impl CongratsLayoutEntity {
 }
 
 impl LayoutStructure for CongratsLayoutEntity {
-    type Context = (SelfieMode, LevelType);
+    type Context<'a> = (SelfieMode, LevelType);
 
-    fn size(&self, context: &Self::Context) -> Vec2 {
+    fn size(&self, context: &Self::Context<'_>) -> Vec2 {
         match self {
             CongratsLayoutEntity::Statistic(_) => {
                 let stat_size = if context.0.is_selfie_mode {
@@ -75,7 +75,7 @@ impl LayoutStructure for CongratsLayoutEntity {
         }
     }
 
-    fn location(&self, context: &Self::Context, _sizing: &LayoutSizing) -> Vec2 {
+    fn location(&self, context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
         let extra_offset = if context.0.is_selfie_mode {
             SELFIE_MODE_CONGRATS_TOP_OFFSET
         } else {
@@ -125,7 +125,7 @@ impl LayoutStructure for CongratsLayoutEntity {
         }
     }
 
-    fn iter_all(context: &Self::Context) -> impl Iterator<Item = Self> {
+    fn iter_all(context: &Self::Context<'_>) -> impl Iterator<Item = Self> {
         let button_count = Self::get_button_count(context);
         let take = 3 + button_count;
 

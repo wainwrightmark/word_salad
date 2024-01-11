@@ -5,13 +5,13 @@ use glam::Vec2;
 use crate::{LayoutRectangle, LayoutSizing};
 
 pub trait LayoutStructure: Sized + PartialEq + Debug {
-    type Context;
+    type Context<'a>;
 
-    fn pick(point: Vec2, context: &Self::Context, sizing: &LayoutSizing) -> Option<Self> {
+    fn pick(point: Vec2, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Option<Self> {
         Self::iter_all(context).find(|x| x.rect(context, sizing).contains(point))
     }
 
-    fn rect(&self, context: &Self::Context, sizing: &LayoutSizing) -> LayoutRectangle {
+    fn rect(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> LayoutRectangle {
         LayoutRectangle {
             top_left: self.location(context, sizing),
             extents: self.size(context),
@@ -19,11 +19,11 @@ pub trait LayoutStructure: Sized + PartialEq + Debug {
     }
 
     ///The size on a 320x568 canvas
-    fn size(&self, context: &Self::Context) -> Vec2;
+    fn size(&self, context: &Self::Context<'_>) -> Vec2;
 
-    fn location(&self, context: &Self::Context, sizing: &LayoutSizing) -> Vec2;
+    fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2;
 
-    fn iter_all(context: &Self::Context) -> impl Iterator<Item = Self>;
+    fn iter_all(context: &Self::Context<'_>) -> impl Iterator<Item = Self>;
 }
 
 pub trait LayoutStructureWithFont {
@@ -32,5 +32,5 @@ pub trait LayoutStructureWithFont {
 }
 
 pub trait LayoutStructureWithStaticText: LayoutStructure {
-    fn text(&self, context: &Self::Context) -> &'static str;
+    fn text(&self, context: &Self::Context<'_>) -> &'static str;
 }

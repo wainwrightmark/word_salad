@@ -7,7 +7,7 @@ use ws_core::prelude::*;
 #[derive(Debug, Clone, PartialEq)]
 pub struct UITimer {
     pub time_text: String,
-    pub is_selfie_mode: bool,
+    pub selfie_mode: SelfieMode,
 }
 
 impl MavericNode for UITimer {
@@ -25,7 +25,7 @@ impl MavericNode for UITimer {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
             let timer_font_size = context.font_size(&GameLayoutEntity::Timer, &());
 
-            let color = if node.is_selfie_mode {
+            let color = if node.selfie_mode.is_selfie_mode {
                 palette::THEME_TEXT_COLOR_SELFIE
             } else {
                 palette::THEME_TEXT_COLOR_NORMAL
@@ -46,7 +46,7 @@ impl MavericNode for UITimer {
                 .with_bundle((
                     Transform::from_translation(
                         context
-                            .get_rect(&GameLayoutEntity::Timer, &())
+                            .get_rect(&GameLayoutEntity::Timer, &node.selfie_mode)
                             .centre_left()
                             .extend(crate::z_indices::TIMER),
                     ),

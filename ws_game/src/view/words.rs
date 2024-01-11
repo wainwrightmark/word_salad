@@ -40,13 +40,15 @@ impl MavericNode for WordsNode {
                 let Either::Left(level) = context.1.level(&context.9) else {
                     return;
                 };
-                let words = &level.words;
+                let words = level.words.as_slice();
+
+                let selfie_mode = context.8.selfie_mode();
 
                 for (index, word) in words.iter().enumerate() {
                     let completion = context.2.get_completion(index);
                     let tile = LayoutWordTile(index);
                     let font_size = context.3.font_size::<LayoutWordTile>(&tile, &());
-                    let rect = context.3.get_rect(&tile, words);
+                    let rect = context.3.get_rect(&tile, &(words, selfie_mode));
                     let level_indices: (u16, u16) = match context.1.as_ref() {
                         CurrentLevel::Fixed { level_index, .. } => (0, *level_index as u16),
                         CurrentLevel::Custom { .. } => (1, 0),
@@ -54,7 +56,7 @@ impl MavericNode for WordsNode {
                         CurrentLevel::DailyChallenge { index } => (3, *index as u16),
                         CurrentLevel::NonLevel(..) => (4, 0),
                     };
-                    let selfie_mode = context.8.is_selfie_mode;
+
 
                     commands.add_child(
                         (index as u16, level_indices.0, level_indices.1),
@@ -80,7 +82,7 @@ pub struct WordNode {
     pub completion: Completion,
     pub rect: LayoutRectangle,
     pub font_size: f32,
-    pub selfie_mode: bool,
+    pub selfie_mode: SelfieMode,
 }
 
 impl MavericNode for WordNode {
@@ -117,7 +119,7 @@ impl MavericNode for WordNode {
 
             let text_translation = centre.extend(crate::z_indices::WORD_TEXT);
 
-            let text_color = if node.selfie_mode {
+            let text_color = if node.selfie_mode.is_selfie_mode {
                 palette::WORD_TEXT_SELFIE
             } else {
                 palette::WORD_TEXT_NORMAL

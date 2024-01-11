@@ -29,16 +29,16 @@ pub trait SaladWindowSize {
     fn scale(&self) -> f32;
 
     fn font_size<T: LayoutStructureWithFont>(&self, entity: &T, context: &T::FontContext) -> f32;
-    fn tile_size(&self) -> f32;
+    fn tile_size(&self, selfie_mode: &SelfieMode) -> f32;
 
-    fn get_rect<T: LayoutStructure>(&self, entity: &T, context: &T::Context) -> LayoutRectangle;
+    fn get_rect<T: LayoutStructure>(&self, entity: &T, context: &T::Context<'_>) -> LayoutRectangle;
     fn try_pick_with_tolerance<T: LayoutStructure>(
         &self,
         p: Vec2,
         tolerance: f32,
-        context: &T::Context,
+        context: &T::Context<'_>,
     ) -> Option<T>;
-    fn try_pick<T: LayoutStructure>(&self, p: Vec2, context: &T::Context) -> Option<T>;
+    fn try_pick<T: LayoutStructure>(&self, p: Vec2, context: &T::Context<'_>) -> Option<T>;
 }
 
 fn layout(size: &Size) -> LayoutSizing {
@@ -54,7 +54,7 @@ fn layout(size: &Size) -> LayoutSizing {
 }
 
 impl SaladWindowSize for Size {
-    fn get_rect<T: LayoutStructure>(&self, entity: &T, context: &T::Context) -> LayoutRectangle {
+    fn get_rect<T: LayoutStructure>(&self, entity: &T, context: &T::Context<'_>) -> LayoutRectangle {
         let mut rect = layout(self).get_rect(entity, context);
 
         rect.top_left = Vec2 {
@@ -67,7 +67,7 @@ impl SaladWindowSize for Size {
         rect
     }
 
-    fn try_pick<T: LayoutStructure>(&self, p: Vec2, context: &T::Context) -> Option<T> {
+    fn try_pick<T: LayoutStructure>(&self, p: Vec2, context: &T::Context<'_>) -> Option<T> {
         layout(self).try_pick_entity(p, 1.0, context)
     }
 
@@ -75,7 +75,7 @@ impl SaladWindowSize for Size {
         &self,
         p: Vec2,
         tolerance: f32,
-        context: &T::Context,
+        context: &T::Context<'_>,
     ) -> Option<T> {
         layout(self).try_pick_entity(p, tolerance, context)
     }
@@ -88,8 +88,8 @@ impl SaladWindowSize for Size {
         layout(self).font_size(entity, context)
     }
 
-    fn tile_size(&self) -> f32 {
-        layout(self).get_size(&LayoutGridTile::default(), &()).x
+    fn tile_size(&self, selfie_mode: &SelfieMode) -> f32 {
+        layout(self).get_size(&LayoutGridTile::default(), &selfie_mode).x
     }
 }
 
