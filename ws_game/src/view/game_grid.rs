@@ -137,6 +137,10 @@ impl MavericNode for GridTiles {
             }
         });
     }
+
+    fn should_recreate(&self, _previous: &Self, context: &<Self::Context as NodeContext>::Wrapper<'_>,)-> bool {
+        context.1.is_changed()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
