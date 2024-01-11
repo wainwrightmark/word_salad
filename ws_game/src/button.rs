@@ -88,7 +88,9 @@ fn handle_button_activations(
     mut total_completion: ResMut<TotalCompletion>,
     daily_challenges: Res<DailyChallenges>,
     mut level_time: ResMut<LevelTime>,
-    mut ew: EventWriter<AnimateSolutionsEvent>
+    mut selfie_mode_history: ResMut<SelfieModeHistory>,
+    mut ew: EventWriter<AnimateSolutionsEvent>,
+
 ) {
     for ev in events.read() {
         ev.0.on_activated(
@@ -103,7 +105,9 @@ fn handle_button_activations(
             &video_events,
             daily_challenges.as_ref(),
             &mut level_time,
-            &mut ew
+            &mut selfie_mode_history,
+            &mut ew,
+
         )
     }
 }
@@ -131,6 +135,17 @@ pub enum ButtonPressType {
     OnEnd,
 }
 
+
+#[derive(Debug, Clone, Copy, PartialEq, Component, EnumIs)]
+pub enum PopupInteraction{
+    ClickGreyedOut,
+    ClickClose,
+    HintsBuyMore,
+    SelfieInformation,
+    SelfieDontShowAgain
+
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Component, EnumIs, Default)]
 pub enum ButtonInteraction {
     #[default]
@@ -142,9 +157,7 @@ pub enum ButtonInteraction {
     WordButton(LayoutWordTile),
     TopMenuItem(LayoutTopBar),
     Congrats(CongratsButton),
-    BuyMoreHints,
-    PopupClose,
-    PopupGreyedOut,
+    Popup(PopupInteraction),
     MenuBackButton,
     NonLevelInteractionButton,
     TimerButton,
@@ -154,7 +167,7 @@ impl ButtonInteraction {
     pub fn button_press_type(&self) -> ButtonPressType {
         if self.is_word_button() {
             ButtonPressType::OnHold(Duration::from_secs_f32(WORD_BUTTON_HOLD_SECONDS))
-        } else if self.is_congrats() || self.is_popup_greyed_out() {
+        } else if self.is_congrats() || *self == Self::Popup(PopupInteraction::ClickGreyedOut) {
             ButtonPressType::OnStart
         } else {
             ButtonPressType::OnEnd
@@ -231,6 +244,7 @@ impl ButtonInteraction {
         video_events: &AsyncEventWriter<VideoEvent>,
         daily_challenges: &DailyChallenges,
         level_time: &mut ResMut<LevelTime>,
+        selfie_mode_history: &mut ResMut<SelfieModeHistory>,
 
         ew: &mut EventWriter<AnimateSolutionsEvent>
     ) {
@@ -328,13 +342,13 @@ impl ButtonInteraction {
             },
             ButtonInteraction::WordButton(word) => {
                 if hint_state.hints_remaining == 0 {
-                    *popup_state.as_mut() = PopupState::BuyMoreHints;
+                    popup_state.0 = Some(PopupType::BuyMoreHints);
                 } else if let Either::Left(level) = current_level.level(daily_challenges) {
                     found_words.try_hint_word(hint_state, level, word.0, chosen_state, ew);
                 }
             }
             ButtonInteraction::TopMenuItem(LayoutTopBar::HintCounter) => {
-                *popup_state.as_mut() = PopupState::BuyMoreHints;
+                popup_state.0 = Some(PopupType::BuyMoreHints);
             }
             ButtonInteraction::TopMenuItem(LayoutTopBar::MenuBurgerButton) => menu_state.toggle(),
             ButtonInteraction::NonLevelInteractionButton => {
@@ -407,14 +421,34 @@ impl ButtonInteraction {
                     crate::wasm::share(share_text);
                 }
             }
+            ButtonInteraction::Popup(PopupInteraction::ClickClose | PopupInteraction::ClickGreyedOut) =>{
+                popup_state.0 = None;
+            }
 
-            ButtonInteraction::BuyMoreHints => {
+            ButtonInteraction::Popup(PopupInteraction::HintsBuyMore) => {
                 hint_state.hints_remaining += 3; //TODO actually make them buy them!
                 hint_state.total_bought_hints += 3;
-                *popup_state.as_mut() = PopupState::None;
+                popup_state.0 = None;
             }
-            ButtonInteraction::PopupClose | ButtonInteraction::PopupGreyedOut => {
-                *popup_state.as_mut() = PopupState::None;
+
+            ButtonInteraction::Popup(PopupInteraction::SelfieInformation) => {
+
+                #[cfg(target_arch="wasm32")]{
+                    let url = match Platform::CURRENT{
+                        Platform::IOs => "https://support.apple.com/en-gb/HT207935#:~:text=Go%20to%20Settings%20%3E%20Control%20Centre,iPhone%2C%20or%20on%20your%20iPad.&text=%2C%20then%20wait%20for%20the%203%2Dsecond%20countdown",
+                        Platform::Android => "https://support.google.com/android/answer/9075928?hl=en-GB",
+                        Platform::Web => "https://support.apple.com/en-gb/HT207935#:~:text=Go%20to%20Settings%20%3E%20Control%20Centre,iPhone%2C%20or%20on%20your%20iPad.&text=%2C%20then%20wait%20for%20the%203%2Dsecond%20countdown", // todo look at device type
+                        Platform::Other => "https://support.apple.com/en-gb/HT207935#:~:text=Go%20to%20Settings%20%3E%20Control%20Centre,iPhone%2C%20or%20on%20your%20iPad.&text=%2C%20then%20wait%20for%20the%203%2Dsecond%20countdown", //todo better links
+                    };
+
+                    crate::wasm::open_link(url);
+                }
+
+            }
+
+            ButtonInteraction::Popup(PopupInteraction::SelfieDontShowAgain) => {
+                selfie_mode_history.do_not_show_selfie_mode_tutorial = true;
+                popup_state.0 = None;
             }
         }
     }

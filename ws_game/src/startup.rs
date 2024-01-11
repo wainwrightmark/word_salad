@@ -222,8 +222,8 @@ fn watch_lifecycle(
                 // }
             }
             AppLifeCycleEvent::BackPressed => {
-                if popup.is_buy_more_hints() {
-                    *popup.as_mut() = PopupState::None;
+                if popup.0.is_some() {
+                    popup.0 = None;
                 } else if !menu.is_closed() {
                     menu.close();
                 }

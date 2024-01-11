@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use maveric::{helpers::MavericContext, plugin::CanRegisterMaveric};
+use maveric::helpers::MavericContext;
 use nice_bevy_utils::{
     async_event_writer::AsyncEventWriter, CanInitTrackedResource, CanRegisterAsyncEvent,
     TrackableResource,
@@ -7,9 +7,7 @@ use nice_bevy_utils::{
 use serde::{Deserialize, Serialize};
 use ws_core::layout::entities::SelfieMode;
 
-use crate::prelude::selfie_popup::SelfiePopup;
-
-//use crate::{asynchronous, wasm::JsException};
+use crate::prelude::PopupState;
 
 pub struct VideoPlugin;
 
@@ -18,12 +16,8 @@ impl Plugin for VideoPlugin {
         app.insert_resource(VideoResource::default());
         app.init_tracked_resource::<SelfieModeHistory>();
 
-        app.register_maveric::<SelfiePopup>();
         app.register_async_event::<VideoEvent>();
-        #[cfg(target_arch = "wasm32")]
-        {
-            app.add_systems(Update, handle_video_event);
-        }
+        app.add_systems(Update, handle_video_event);
     }
 }
 
@@ -39,34 +33,37 @@ pub struct VideoResource {
 }
 
 impl VideoResource {
-    pub fn selfie_mode(&self)-> SelfieMode{
-        SelfieMode { is_selfie_mode: self.is_selfie_mode }
+    pub fn selfie_mode(&self) -> SelfieMode {
+        SelfieMode {
+            is_selfie_mode: self.is_selfie_mode,
+        }
     }
 }
 
 #[derive(Default, Resource, Clone, PartialEq, Serialize, Deserialize, MavericContext)]
 pub struct SelfieModeHistory {
-    pub has_entered_selfie_mode: bool,
+    pub do_not_show_selfie_mode_tutorial : bool
 }
 
 impl TrackableResource for SelfieModeHistory {
     const KEY: &'static str = "SelfieModeHistory";
 }
 
-#[allow(unused_variables)]
-#[allow(dead_code)]
+// #[allow(unused_variables)]
+// #[allow(dead_code)]
 fn handle_video_event(
     mut res: ResMut<VideoResource>,
-    mut history: ResMut<SelfieModeHistory>,
+    history: Res<SelfieModeHistory>,
     mut events: EventReader<VideoEvent>,
+    mut popup_state: ResMut<PopupState>
 ) {
     for ev in events.read() {
         match ev {
             VideoEvent::VideoStarted => {
                 res.is_selfie_mode = true;
 
-                if !history.has_entered_selfie_mode {
-                    history.has_entered_selfie_mode = true;
+                if !history.do_not_show_selfie_mode_tutorial{
+                    popup_state.0 = Some(crate::prelude::PopupType::SelfieModeHelp);
                 }
             }
             VideoEvent::VideoStopped => res.is_selfie_mode = false,

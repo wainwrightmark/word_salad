@@ -6,7 +6,6 @@ pub mod level_name;
 pub mod menu;
 pub mod non_level;
 pub mod popup;
-pub mod selfie_popup;
 pub mod timer;
 pub mod top_bar;
 pub mod tutorial;

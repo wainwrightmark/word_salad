@@ -21,11 +21,13 @@ impl Plugin for PopupPlugin {
     }
 }
 
-#[derive(Debug, Clone, Copy, Resource, MavericContext, PartialEq, Eq, Default, EnumIs)]
-pub enum PopupState {
-    #[default]
-    None,
+#[derive(Debug, Clone, Copy, Resource, MavericContext, PartialEq, Eq, Default)]
+pub struct PopupState(pub Option<PopupType>);
+
+#[derive(Debug, Clone, Copy, Resource, MavericContext, PartialEq, Eq, EnumIs)]
+pub enum PopupType {
     BuyMoreHints,
+    SelfieModeHelp,
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, Eq, MavericRoot)]
@@ -39,38 +41,44 @@ impl MavericRootChildren for PopupStateRoot {
         commands: &mut impl ChildCommands,
     ) {
         let size = &context.0;
-        match context.1.as_ref() {
-            PopupState::None => {}
-            PopupState::BuyMoreHints => {
-                commands.add_child(
-                    "grey out",
-                    shapes::basic_box_node1(
-                        size.scaled_width.max(size.scaled_height),
-                        size.scaled_width.max(size.scaled_height),
-                        Vec3::Z * z_indices::POPUP_BOX_GREY_OUT,
-                        Color::GRAY.with_a(0.9),
-                        0.0,
-                    )
-                    .with_transition_in_out::<ShaderColorLens>(
-                        Color::GRAY.with_a(0.0),
-                        Color::GRAY.with_a(0.9),
-                        Color::GRAY.with_a(0.0),
-                        core::time::Duration::from_millis(500),
-                        core::time::Duration::from_millis(500),
-                        Some(Ease::CubicOut),
-                        Some(Ease::CubicOut),
-                    ),
-                    &(),
-                );
 
-                for item in BuyMoreHintsLayoutEntity::iter() {
-                    let font_size = size.font_size::<BuyMoreHintsLayoutEntity>(&item, &());
+        let Some(popup_type) = context.1 .0 else {
+            return;
+        };
+
+        commands.add_child(
+            "grey out",
+            shapes::basic_box_node1(
+                size.scaled_width.max(size.scaled_height),
+                size.scaled_width.max(size.scaled_height),
+                Vec3::Z * z_indices::POPUP_BOX_GREY_OUT,
+                Color::GRAY.with_a(0.9),
+                0.0,
+            )
+            .with_transition_in_out::<ShaderColorLens>(
+                Color::GRAY.with_a(0.0),
+                Color::GRAY.with_a(0.9),
+                Color::GRAY.with_a(0.0),
+                core::time::Duration::from_millis(500),
+                core::time::Duration::from_millis(500),
+                Some(Ease::CubicOut),
+                Some(Ease::CubicOut),
+            ),
+            &(),
+        );
+
+        match popup_type {
+            PopupType::BuyMoreHints => {
+                for item in HintsPopupLayoutEntity::iter() {
+                    let font_size = size.font_size::<HintsPopupLayoutEntity>(&item, &());
                     let rect: LayoutRectangle = size.get_rect(&item, &());
                     info!("{rect:?}");
                     match item {
-                        BuyMoreHintsLayoutEntity::Title => {
-                            let text = Text2DNode {
-                                text: "Need some help?",
+                        HintsPopupLayoutEntity::Text => {
+                            let text = "Need some help?";
+
+                            let text_node = Text2DNode {
+                                text,
                                 font: TITLE_FONT_PATH,
                                 font_size,
                                 color: Color::BLACK,
@@ -83,9 +91,9 @@ impl MavericRootChildren for PopupStateRoot {
                                 rect.centre().extend(POPUP_BOX_TEXT),
                             ));
 
-                            commands.add_child("title text", text, &());
+                            commands.add_child("title text", text_node, &());
                         }
-                        BuyMoreHintsLayoutEntity::BuyMoreHintsButton => {
+                        HintsPopupLayoutEntity::BuyMoreButton => {
                             let button = shapes::button_box_node(
                                 rect.width(),
                                 rect.height(),
@@ -93,13 +101,15 @@ impl MavericRootChildren for PopupStateRoot {
                                 palette::MENU_BUTTON_FILL.convert_color(),
                                 BUTTON_CLICK_FILL.convert_color(),
                                 OTHER_BUTTON_NORMAL,
-                                ButtonInteraction::BuyMoreHints,
+                                ButtonInteraction::Popup(PopupInteraction::HintsBuyMore),
                             );
 
                             commands.add_child("buy_more_hints_box", button, &());
 
-                            let text = Text2DNode {
-                                text: "Buy more",
+                            let text = "Buy More Hints";
+
+                            let text_node = Text2DNode {
+                                text,
                                 font: BUTTONS_FONT_PATH,
                                 font_size,
                                 color: Color::BLACK,
@@ -112,9 +122,9 @@ impl MavericRootChildren for PopupStateRoot {
                                 rect.centre().extend(POPUP_BOX_TEXT),
                             ));
 
-                            commands.add_child("buy_more_hints_text", text, &());
+                            commands.add_child("buy_more_hints_text", text_node, &());
                         }
-                        BuyMoreHintsLayoutEntity::SufferAloneButton => {
+                        HintsPopupLayoutEntity::SufferAloneButton => {
                             let button = shapes::button_box_node(
                                 rect.width(),
                                 rect.height(),
@@ -122,13 +132,15 @@ impl MavericRootChildren for PopupStateRoot {
                                 palette::LIGHT_GRAY.convert_color(),
                                 BUTTON_CLICK_FILL.convert_color(),
                                 OTHER_BUTTON_NORMAL,
-                                ButtonInteraction::PopupClose,
+                                ButtonInteraction::Popup(PopupInteraction::ClickClose),
                             );
 
-                            commands.add_child("suffer_alone_box", button, &());
+                            commands.add_child("secondary_action_box", button, &());
 
-                            let text = Text2DNode {
-                                text: "Suffer Alone",
+                            let text = "Suffer Alone";
+
+                            let text_box = Text2DNode {
+                                text,
                                 font: BUTTONS_FONT_PATH,
                                 font_size,
                                 color: Color::BLACK,
@@ -141,9 +153,145 @@ impl MavericRootChildren for PopupStateRoot {
                                 rect.centre().extend(POPUP_BOX_TEXT),
                             ));
 
-                            commands.add_child("suffer_alone_text", text, &());
+                            commands.add_child("secondary_action_text", text_box, &());
                         }
-                        BuyMoreHintsLayoutEntity::Box => {
+                        HintsPopupLayoutEntity::PopupBox => {
+                            let node = shapes::box_with_border_node(
+                                rect.width(),
+                                rect.height(),
+                                rect.centre().extend(crate::z_indices::POPUP_BOX_BACKGROUND),
+                                POPUP_BOX_BACKGROUND.convert_color(),
+                                POPUP_BOX_BORDER.convert_color(),
+                                0.1,
+                                0.01,
+                            );
+
+                            commands.add_child("background", node, &())
+                        }
+                    }
+                }
+            }
+            PopupType::SelfieModeHelp => {
+                for item in SelfiePopupLayoutEntity::iter() {
+                    let font_size = size.font_size::<SelfiePopupLayoutEntity>(&item, &());
+                    let rect: LayoutRectangle = size.get_rect(&item, &());
+                    info!("{rect:?}");
+                    match item {
+                        SelfiePopupLayoutEntity::Text => {
+                            let text = "Wanna film yourself playing?\n\
+                            Use your device's screen recorder app";
+
+                            let text_node = Text2DNode {
+                                text,
+                                font: TITLE_FONT_PATH,
+                                font_size,
+                                color: Color::BLACK,
+                                alignment: TextAlignment::Center,
+                                linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                                text_2d_bounds: Default::default(),
+                                text_anchor: Default::default(),
+                            }
+                            .with_bundle(Transform::from_translation(
+                                rect.centre().extend(POPUP_BOX_TEXT),
+                            ));
+
+                            commands.add_child("title text", text_node, &());
+                        }
+                        SelfiePopupLayoutEntity::MoreInformationButton => {
+                            let button = shapes::button_box_node(
+                                rect.width(),
+                                rect.height(),
+                                rect.centre().extend(crate::z_indices::POPUP_BOX_BUTTON),
+                                palette::MENU_BUTTON_FILL.convert_color(),
+                                BUTTON_CLICK_FILL.convert_color(),
+                                OTHER_BUTTON_NORMAL,
+                                ButtonInteraction::Popup(PopupInteraction::SelfieInformation),
+                            );
+
+                            commands.add_child("more_info_box", button, &());
+
+                            let text = "More Information";
+
+                            let text_node = Text2DNode {
+                                text,
+                                font: BUTTONS_FONT_PATH,
+                                font_size,
+                                color: Color::BLACK,
+                                alignment: TextAlignment::Center,
+                                linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                                text_2d_bounds: Default::default(),
+                                text_anchor: Default::default(),
+                            }
+                            .with_bundle(Transform::from_translation(
+                                rect.centre().extend(POPUP_BOX_TEXT),
+                            ));
+
+                            commands.add_child("more_info_text", text_node, &());
+                        }
+
+                        SelfiePopupLayoutEntity::OkButton => {
+                            let button = shapes::button_box_node(
+                                rect.width(),
+                                rect.height(),
+                                rect.centre().extend(crate::z_indices::POPUP_BOX_BUTTON),
+                                palette::MENU_BUTTON_FILL.convert_color(),
+                                BUTTON_CLICK_FILL.convert_color(),
+                                OTHER_BUTTON_NORMAL,
+                                ButtonInteraction::Popup(PopupInteraction::ClickClose),
+                            );
+
+                            commands.add_child("ok_box", button, &());
+
+                            let text = "Ok";
+
+                            let text_node = Text2DNode {
+                                text,
+                                font: BUTTONS_FONT_PATH,
+                                font_size,
+                                color: Color::BLACK,
+                                alignment: TextAlignment::Center,
+                                linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                                text_2d_bounds: Default::default(),
+                                text_anchor: Default::default(),
+                            }
+                            .with_bundle(Transform::from_translation(
+                                rect.centre().extend(POPUP_BOX_TEXT),
+                            ));
+
+                            commands.add_child("ok_text", text_node, &());
+                        }
+                        SelfiePopupLayoutEntity::DontShowAgainButton => {
+                            let button = shapes::button_box_node(
+                                rect.width(),
+                                rect.height(),
+                                rect.centre().extend(crate::z_indices::POPUP_BOX_BUTTON),
+                                palette::LIGHT_GRAY.convert_color(),
+                                BUTTON_CLICK_FILL.convert_color(),
+                                OTHER_BUTTON_NORMAL,
+                                ButtonInteraction::Popup(PopupInteraction::SelfieDontShowAgain),
+                            );
+
+                            commands.add_child("no_show_box", button, &());
+
+                            let text = "Don't Show Again";
+
+                            let text_box = Text2DNode {
+                                text,
+                                font: BUTTONS_FONT_PATH,
+                                font_size,
+                                color: Color::BLACK,
+                                alignment: TextAlignment::Center,
+                                linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                                text_2d_bounds: Default::default(),
+                                text_anchor: Default::default(),
+                            }
+                            .with_bundle(Transform::from_translation(
+                                rect.centre().extend(POPUP_BOX_TEXT),
+                            ));
+
+                            commands.add_child("no_show_text", text_box, &());
+                        }
+                        SelfiePopupLayoutEntity::PopupBox => {
                             let node = shapes::box_with_border_node(
                                 rect.width(),
                                 rect.height(),
@@ -164,41 +312,35 @@ impl MavericRootChildren for PopupStateRoot {
 }
 
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter, EnumCount, Display,
+    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumCount, Display, EnumIter,
 )]
-pub enum BuyMoreHintsLayoutEntity {
-    Title = 0,
-
-    BuyMoreHintsButton = 1,
+pub enum HintsPopupLayoutEntity {
+    Text = 0,
+    BuyMoreButton = 1,
     SufferAloneButton = 2,
-    Box = 3,
+    PopupBox = 3,
 }
 
-impl BuyMoreHintsLayoutEntity {
+impl HintsPopupLayoutEntity {
     pub fn index(&self) -> usize {
         *self as usize
     }
 }
 
-impl LayoutStructure for BuyMoreHintsLayoutEntity {
+impl LayoutStructure for HintsPopupLayoutEntity {
     type Context<'a> = ();
 
     fn size(&self, _context: &Self::Context<'_>) -> Vec2 {
-        use BuyMoreHintsLayoutEntity::*;
         match self {
-            Title => Vec2 {
+            Self::Text => Vec2 {
                 x: HINTS_POPUP_BOX_TITLE_WIDTH,
                 y: HINTS_POPUP_BOX_TITLE_HEIGHT,
             },
-            BuyMoreHintsButton => Vec2 {
+            Self::BuyMoreButton | Self::SufferAloneButton => Vec2 {
                 x: HINTS_POPUP_BOX_BUTTON_WIDTH,
                 y: HINTS_POPUP_BOX_BUTTON_HEIGHT,
             },
-            SufferAloneButton => Vec2 {
-                x: HINTS_POPUP_BOX_BUTTON_WIDTH,
-                y: HINTS_POPUP_BOX_BUTTON_HEIGHT,
-            },
-            Box => Vec2 {
+            Self::PopupBox => Vec2 {
                 x: HINTS_POPUP_BOX_WIDTH,
                 y: HINTS_POPUP_BOX_HEIGHT,
             },
@@ -206,9 +348,8 @@ impl LayoutStructure for BuyMoreHintsLayoutEntity {
     }
 
     fn location(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
-        use BuyMoreHintsLayoutEntity::*;
         match self {
-            Title | BuyMoreHintsButton | SufferAloneButton => Vec2 {
+            Self::Text | Self::BuyMoreButton | Self::SufferAloneButton => Vec2 {
                 x: (IDEAL_WIDTH - HINTS_POPUP_BOX_TITLE_WIDTH) / 2.,
                 y: HINTS_POPUP_BOX_TOP
                     + Spacing::Centre.apply(
@@ -218,7 +359,7 @@ impl LayoutStructure for BuyMoreHintsLayoutEntity {
                         self.index(),
                     ),
             },
-            Box => Vec2 {
+            Self::PopupBox => Vec2 {
                 x: (IDEAL_WIDTH - HINTS_POPUP_BOX_WIDTH) / 2.0,
                 y: HINTS_POPUP_BOX_TOP,
             },
@@ -230,9 +371,85 @@ impl LayoutStructure for BuyMoreHintsLayoutEntity {
     }
 }
 
-impl LayoutStructureWithFont for BuyMoreHintsLayoutEntity {
+impl LayoutStructureWithFont for HintsPopupLayoutEntity {
     type FontContext = ();
-    fn font_size(&self, _: &()) -> f32 {
+    fn font_size(&self, _context: &Self::FontContext) -> f32 {
         MENU_BUTTON_FONT_SIZE
+    }
+}
+
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumCount, Display, EnumIter,
+)]
+pub enum SelfiePopupLayoutEntity {
+    Text = 0,
+    MoreInformationButton = 1,
+    OkButton = 2,
+    DontShowAgainButton = 3,
+    PopupBox = 4,
+}
+
+impl SelfiePopupLayoutEntity {
+    pub fn index(&self) -> usize {
+        *self as usize
+    }
+}
+
+impl LayoutStructure for SelfiePopupLayoutEntity {
+    type Context<'a> = ();
+
+    fn size(&self, _context: &Self::Context<'_>) -> Vec2 {
+        match self {
+            Self::Text => Vec2 {
+                x: SELFIE_POPUP_BOX_TITLE_WIDTH,
+                y: SELFIE_POPUP_BOX_TITLE_HEIGHT,
+            },
+            Self::MoreInformationButton | Self::OkButton | Self::DontShowAgainButton => Vec2 {
+                x: SELFIE_POPUP_BOX_BUTTON_WIDTH,
+                y: SELFIE_POPUP_BOX_BUTTON_HEIGHT,
+            },
+            Self::PopupBox => Vec2 {
+                x: SELFIE_POPUP_BOX_WIDTH,
+                y: SELFIE_POPUP_BOX_HEIGHT,
+            },
+        }
+    }
+
+    fn location(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
+        match self {
+            Self::Text =>{
+                Vec2 {
+                    x: (IDEAL_WIDTH - SELFIE_POPUP_BOX_TITLE_WIDTH) / 2.,
+                    y: SELFIE_POPUP_BOX_TOP + (SELFIE_POPUP_BOX_TITLE_HEIGHT * 0.2),
+                }
+            }
+            Self::MoreInformationButton
+            | Self::OkButton
+            | Self::DontShowAgainButton => Vec2 {
+                x: (IDEAL_WIDTH - SELFIE_POPUP_BOX_TITLE_WIDTH) / 2.,
+                y: SELFIE_POPUP_BOX_TOP + (SELFIE_POPUP_BOX_TITLE_HEIGHT * 1.4)
+                    + Spacing::Centre.apply(
+                        SELFIE_POPUP_BOX_HEIGHT - (SELFIE_POPUP_BOX_TITLE_HEIGHT * 1.4),
+                        SELFIE_POPUP_BOX_BUTTON_HEIGHT * 1.2,
+                        Self::COUNT - 2,
+                        self.index() - 1,
+                    ),
+            },
+            Self::PopupBox => Vec2 {
+                x: (IDEAL_WIDTH - SELFIE_POPUP_BOX_WIDTH) / 2.0,
+                y: SELFIE_POPUP_BOX_TOP,
+            },
+        }
+    }
+
+    fn iter_all(_context: &Self::Context<'_>) -> impl Iterator<Item = Self> {
+        Self::iter()
+    }
+}
+
+impl LayoutStructureWithFont for SelfiePopupLayoutEntity {
+    type FontContext = ();
+    fn font_size(&self, _context: &Self::FontContext) -> f32 {
+        MENU_BUTTON_FONT_SIZE_SMALL
     }
 }

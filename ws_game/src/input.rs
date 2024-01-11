@@ -60,24 +60,48 @@ impl InteractionEntity {
         grid_tolerance: Option<f32>,
     ) -> Option<Self> {
         //info!("Try find input");
-        match popup_state {
-            PopupState::None => {}
-            PopupState::BuyMoreHints => {
-                return match size.try_pick::<BuyMoreHintsLayoutEntity>(*position, &()) {
-                    Some(entity) => match entity {
-                        BuyMoreHintsLayoutEntity::Title => None,
-                        BuyMoreHintsLayoutEntity::BuyMoreHintsButton => {
-                            Some(InteractionEntity::Button(ButtonInteraction::BuyMoreHints))
-                        }
-                        BuyMoreHintsLayoutEntity::SufferAloneButton => {
-                            Some(InteractionEntity::Button(ButtonInteraction::PopupClose))
-                        }
-                        BuyMoreHintsLayoutEntity::Box => None,
-                    },
-                    None => Some(InteractionEntity::Button(ButtonInteraction::PopupGreyedOut)),
-                }
+        if let Some(popup_type) = popup_state.0{
+
+            match popup_type{
+                PopupType::BuyMoreHints => {
+                    return match size.try_pick::<HintsPopupLayoutEntity>(*position, &()) {
+                        Some(entity) => match entity {
+                            HintsPopupLayoutEntity::Text => None,
+                            HintsPopupLayoutEntity::BuyMoreButton => {
+                                Some(InteractionEntity::Button(ButtonInteraction::Popup(PopupInteraction::HintsBuyMore)))
+                            }
+                            HintsPopupLayoutEntity::SufferAloneButton => {
+                                Some(InteractionEntity::Button(ButtonInteraction::Popup(PopupInteraction::ClickClose)))
+                            }
+                            HintsPopupLayoutEntity::PopupBox => None,
+                        },
+                        None => Some(InteractionEntity::Button(ButtonInteraction::Popup(PopupInteraction::ClickGreyedOut))),
+                    }
+                },
+                PopupType::SelfieModeHelp => {
+                    return match size.try_pick::<SelfiePopupLayoutEntity>(*position, &()) {
+                        Some(entity) => match entity {
+                            SelfiePopupLayoutEntity::Text => None,
+                            SelfiePopupLayoutEntity::MoreInformationButton => {
+                                Some(InteractionEntity::Button(ButtonInteraction::Popup(PopupInteraction::SelfieInformation)))
+                            }
+                            SelfiePopupLayoutEntity::DontShowAgainButton => {
+                                Some(InteractionEntity::Button(ButtonInteraction::Popup(PopupInteraction::SelfieDontShowAgain)))
+                            }
+                            SelfiePopupLayoutEntity::OkButton => {
+                                Some(InteractionEntity::Button(ButtonInteraction::Popup(PopupInteraction::ClickClose)))
+                            }
+                            SelfiePopupLayoutEntity::PopupBox => None,
+                        },
+                        None => Some(InteractionEntity::Button(ButtonInteraction::Popup(PopupInteraction::ClickGreyedOut))),
+                    }
+                },
             }
+
+
+
         }
+
 
         let tbi = Self::try_get_button::<LayoutTopBar>(position, size, &());
         if tbi.is_some() {
