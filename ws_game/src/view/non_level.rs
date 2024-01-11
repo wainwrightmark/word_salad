@@ -25,12 +25,16 @@ impl MavericNode for NonLevelView {
                     "Welcome to Word Salad\nLet's find some Chess Pieces".to_string()
                 }
                 NonLevel::AfterCustomLevel => "Custom Level Complete".to_string(),
-                NonLevel::NoMoreDailyChallenge => {
-                    "You have completed\nAll daily challenges".to_string()
-                }
-                NonLevel::NoMoreLevelSequence(ls) => {
-                    format!("You have completed\nAll {}", ls.name())
-                }
+                NonLevel::DailyChallengeFinished => "You have completed\nAll daily challenges".to_string(),
+                NonLevel::DailyChallengeReset => "You have completed\nAll daily challenges".to_string(),
+                NonLevel::LevelSequenceFinished(ls) => format!("You have completed\nAll {}", ls.name()),
+                NonLevel::LevelSequenceReset(ls) => format!("You have completed\nAll {}", ls.name()),
+                // NonLevel::NoMoreDailyChallenge => {
+                //     "You have completed\nAll daily challenges".to_string()
+                // }
+                // NonLevel::NoMoreLevelSequence(ls) => {
+                //
+                // }
             };
 
             let text_color = if selfie_mode.is_selfie_mode {
@@ -63,8 +67,9 @@ impl MavericNode for NonLevelView {
             let interaction_text = match node.non_level {
                 NonLevel::BeforeTutorial => "Ok",
                 NonLevel::AfterCustomLevel => "Restart",
-                NonLevel::NoMoreDailyChallenge => "Reset",
-                NonLevel::NoMoreLevelSequence(_) => "Reset",
+                NonLevel::DailyChallengeFinished => "Next",
+                NonLevel::DailyChallengeReset | NonLevel::LevelSequenceReset(_) => "Reset",
+                NonLevel::LevelSequenceFinished(_) => "Next",
             };
 
             let fill_color = if selfie_mode.is_selfie_mode {

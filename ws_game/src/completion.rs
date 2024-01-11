@@ -3,6 +3,7 @@ use fixedbitset::FixedBitSet;
 use maveric::helpers::MavericContext;
 use nice_bevy_utils::TrackableResource;
 use serde::{Deserialize, Serialize};
+use strum::IntoEnumIterator;
 use ws_levels::{level_group::LevelGroup, level_sequence::LevelSequence};
 
 use crate::{
@@ -37,11 +38,24 @@ impl TrackableResource for TotalCompletion {
 }
 
 impl TotalCompletion {
+
+    pub fn get_next_level_sequence(&self, current: Option<LevelSequence>)-> Option<(LevelSequence, usize)>
+    {
+        let first_index = current.map(|x|x.index() + 1).unwrap_or_default();
+
+        for sequence in LevelSequence::iter().filter(|x|x.index() >= first_index) {
+            if let Some(index) = self.get_next_level_index(sequence){
+                return Some((sequence, index));
+            }
+        }
+        None
+    }
+
     pub fn reset_daily_challenge_completion(&mut self) {
         self.daily_challenge_completion.current_completion.clear();
     }
     pub fn restart_level_sequence_completion(&mut self, sequence: LevelSequence) {
-        if let Some(lc) = self.completions.get_mut(sequence as usize) {
+        if let Some(lc) = self.completions.get_mut(sequence.index()) {
             lc.current_index = 0;
         }
     }

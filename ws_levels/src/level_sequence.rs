@@ -45,6 +45,10 @@ pub enum LevelSequence {
 }
 
 impl LevelSequence {
+
+    pub fn index(&self)-> usize{
+        *self as usize
+    }
     pub fn get_next(self) -> Option<Self> {
         let current_index = self as usize;
         let next_index = (current_index + 1) % Self::COUNT;

@@ -88,6 +88,7 @@ fn handle_button_activations(
     mut total_completion: ResMut<TotalCompletion>,
     daily_challenges: Res<DailyChallenges>,
     mut level_time: ResMut<LevelTime>,
+    mut ew: EventWriter<AnimateSolutionsEvent>
 ) {
     for ev in events.read() {
         ev.0.on_activated(
@@ -102,6 +103,7 @@ fn handle_button_activations(
             &video_events,
             daily_challenges.as_ref(),
             &mut level_time,
+            &mut ew
         )
     }
 }
@@ -211,68 +213,7 @@ impl From<MainMenuBackButton> for ButtonInteraction {
     }
 }
 
-// fn track_pressed_button(
-//     mut commands: Commands,
-//     pressed_button: Res<PressedButton>,
-//     mut prev: Local<PressedButton>,
-//     time: Res<Time>,
-//     query: Query<(Entity, &ButtonInteraction)>,
-// ) {
-//     if !pressed_button.is_changed() {
-//         return;
-//     }
-//     let previous = *prev;
-//     *prev = *pressed_button;
-
-//     if let Some(prev_interaction) = previous.interaction {
-//         if Some(prev_interaction) == pressed_button.interaction {
-//             return;
-//         }
-
-//         for (entity, i) in query.iter() {
-//             if i == &prev_interaction {
-//                 let mut ec = commands.entity(entity);
-//                 i.on_interact(&mut ec, InteractionType::EndPress);
-//             }
-//         }
-//     }
-
-//     if let Some(interaction) = pressed_button.interaction {
-//         for (entity, i) in query.iter() {
-//             if i == &interaction {
-//                 let mut ec = commands.entity(entity);
-//                 i.on_interact(&mut ec, InteractionType::Press);
-//             }
-//         }
-//     }
-// }
-
-// #[derive(Debug, Clone, Copy, PartialEq, EnumIs)]
-// pub enum InteractionType {
-//     Press,
-//     EndPress,
-// }
-
 impl ButtonInteraction {
-    // pub fn on_interact(&self, commands: &mut EntityCommands, interaction_type: InteractionType) {
-    //     let new_rounding = match (self, interaction_type) {
-    //         (ButtonInteraction::WordButton(_), InteractionType::Press) => {
-    //             rounding::WORD_BUTTON_PRESSED
-    //         }
-    //         (ButtonInteraction::WordButton(_), InteractionType::EndPress) => {
-    //             rounding::WORD_BUTTON_NORMAL
-    //         }
-
-    //         (_, InteractionType::Press) => rounding::OTHER_BUTTON_PRESSED,
-    //         (_, InteractionType::EndPress) => rounding::OTHER_BUTTON_NORMAL,
-    //     };
-
-    //     commands.insert(
-    //         TransitionBuilder::<RoundingLens>::default()
-    //             .then_tween(new_rounding, 1.0.into())
-    //             .build(),
-    //     );
-    // }
 
     /// Called when the button action is activated
     fn on_activated(
@@ -289,6 +230,8 @@ impl ButtonInteraction {
         video_events: &AsyncEventWriter<VideoEvent>,
         daily_challenges: &DailyChallenges,
         level_time: &mut ResMut<LevelTime>,
+
+        ew: &mut EventWriter<AnimateSolutionsEvent>
     ) {
         match self {
             ButtonInteraction::None => {}
@@ -345,6 +288,9 @@ impl ButtonInteraction {
                 {
                     current_level.set_if_neq(CurrentLevel::DailyChallenge { index });
                 }
+                else{
+                    current_level.set_if_neq(CurrentLevel::NonLevel(NonLevel::DailyChallengeReset));
+                }
                 menu_state.close();
             }
 
@@ -372,7 +318,7 @@ impl ButtonInteraction {
                             };
                         } else {
                             *current_level.as_mut() =
-                                CurrentLevel::NonLevel(NonLevel::NoMoreLevelSequence(sequence));
+                                CurrentLevel::NonLevel(NonLevel::LevelSequenceReset(sequence));
                         }
 
                         menu_state.close();
@@ -383,7 +329,7 @@ impl ButtonInteraction {
                 if hint_state.hints_remaining == 0 {
                     *popup_state.as_mut() = PopupState::BuyMoreHints;
                 } else if let Either::Left(level) = current_level.level(daily_challenges) {
-                    found_words.try_hint_word(hint_state, level, word.0, chosen_state);
+                    found_words.try_hint_word(hint_state, level, word.0, chosen_state, ew);
                 }
             }
             ButtonInteraction::TopMenuItem(LayoutTopBar::HintCounter) => {
@@ -403,7 +349,7 @@ impl ButtonInteraction {
                                 };
                             }
                         }
-                        NonLevel::NoMoreDailyChallenge => {
+                        NonLevel::DailyChallengeReset => {
                             total_completion.reset_daily_challenge_completion();
                             if let Some(index) =
                                 total_completion.get_next_incomplete_daily_challenge_from_today()
@@ -411,13 +357,29 @@ impl ButtonInteraction {
                                 *current_level.as_mut() = CurrentLevel::DailyChallenge { index };
                             }
                         }
-                        NonLevel::NoMoreLevelSequence(ls) => {
+                        NonLevel::LevelSequenceReset(ls) => {
                             total_completion.restart_level_sequence_completion(ls);
                             *current_level.as_mut() = CurrentLevel::Fixed {
                                 level_index: 0,
                                 sequence: ls,
                             };
                         }
+                        NonLevel::DailyChallengeFinished => {
+                            let new_current_level = match total_completion.get_next_level_sequence(None){
+                                Some((sequence, level_index)) => CurrentLevel::Fixed { level_index, sequence },
+                                None => CurrentLevel::NonLevel(NonLevel::DailyChallengeReset),
+                            };
+
+                            *current_level.as_mut() = new_current_level;
+                        },
+                        NonLevel::LevelSequenceFinished(seq) => {
+                            let new_current_level = match total_completion.get_next_level_sequence(Some(seq)){
+                                Some((sequence, level_index)) => CurrentLevel::Fixed { level_index, sequence },
+                                None => CurrentLevel::NonLevel(NonLevel::LevelSequenceReset(seq)),
+                            };
+
+                            *current_level.as_mut() = new_current_level;
+                        },
                     }
                 }
             }

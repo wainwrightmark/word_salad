@@ -143,7 +143,7 @@ fn choose_level_on_game_load(
         }
     }
 
-    if !found_words.is_level_complete() {
+    if !found_words.is_level_complete() && found_words.is_level_started() {
         return;
     }
 
@@ -162,7 +162,7 @@ fn choose_level_on_game_load(
                     *current_level = today_level;
                 }
             } else {
-                *current_level = CurrentLevel::NonLevel(NonLevel::NoMoreDailyChallenge);
+                *current_level = CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished);
             }
         }
         CurrentLevel::Fixed { sequence, .. } => {
@@ -172,7 +172,7 @@ fn choose_level_on_game_load(
                     sequence: *sequence,
                 };
             } else {
-                *current_level = CurrentLevel::NonLevel(NonLevel::NoMoreLevelSequence(*sequence));
+                *current_level = CurrentLevel::NonLevel(NonLevel::LevelSequenceFinished(*sequence));
             }
         }
     }

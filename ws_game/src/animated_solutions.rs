@@ -13,7 +13,22 @@ const STEP_ONE_TRANSLATION_SECONDS: f32 = 1.5;
 
 pub const TOTAL_SECONDS: f32 = STEP_ONE_TRANSLATION_SECONDS;
 
-pub fn animate_solution(
+#[derive(Debug, Event)]
+pub struct AnimateSolutionsEvent{
+    pub solution: Solution,
+    pub is_first_time: bool,
+    pub word: DisplayWord,
+    pub level: DesignedLevel,
+}
+
+pub fn animate_solutions(mut commands: Commands, mut events: EventReader<AnimateSolutionsEvent>, asset_server: Res<AssetServer>, size: Res<Size>){
+    for ev in events.read(){
+        animate_solution(&mut commands, &ev.solution, &ev.word, ev. is_first_time, asset_server.as_ref(), size.as_ref(), &ev.level);
+    }
+}
+
+
+fn animate_solution(
     commands: &mut Commands,
     solution: &Solution,
     word: &DisplayWord,

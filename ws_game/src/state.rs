@@ -20,9 +20,12 @@ impl Plugin for StatePlugin {
         app.init_tracked_resource::<TotalCompletion>();
         app.init_tracked_resource::<HintState>();
 
+        app.add_event::<AnimateSolutionsEvent>();
+
         app.add_systems(Update, track_found_words);
         app.add_systems(Update, track_level_completion);
         app.add_systems(Update, update_state_on_level_change);
+        app.add_systems(Update, animate_solutions.after(track_found_words));
     }
 }
 
@@ -152,6 +155,10 @@ impl FoundWordsState {
         self.word_completions.iter().all(|x| x.is_complete())
     }
 
+    pub fn is_level_started(&self)-> bool{
+        self.word_completions.iter().all(|x|x.is_unstarted())
+    }
+
     pub fn get_completion(&self, word_index: usize) -> Completion {
         *self
             .word_completions
@@ -165,6 +172,7 @@ impl FoundWordsState {
         level: &DesignedLevel,
         word_index: usize,
         chosen_state: &mut ChosenState,
+        ew: &mut EventWriter<AnimateSolutionsEvent>,
     ) -> bool {
         let Some(new_hints) = hint_state.hints_remaining.checked_sub(1) else {
             return false;
@@ -174,8 +182,11 @@ impl FoundWordsState {
             return false;
         };
 
-
-        let min_hint_count = NonZeroUsize::MIN.saturating_add(self.count_selected_characters(level, word_index, &chosen_state));
+        let min_hint_count = NonZeroUsize::MIN.saturating_add(self.count_selected_characters(
+            level,
+            word_index,
+            &chosen_state,
+        ));
 
         let Some(completion) = self.word_completions.get_mut(word_index) else {
             return false;
@@ -195,7 +206,7 @@ impl FoundWordsState {
                 }
                 *hints = hints.saturating_add(1);
 
-                if min_hint_count > *hints{
+                if min_hint_count > *hints {
                     *hints = min_hint_count;
                 }
 
@@ -219,15 +230,12 @@ impl FoundWordsState {
                 *completion = Completion::Complete;
                 self.update_unneeded_tiles(level);
 
-                // crate::animated_solutions::animate_solution(
-                //     &mut commands,
-                //     &solution,
-                //     word,
-                //     true,
-                //     &asset_server,
-                //     &size,
-                //     level,
-                // );
+                ew.send(AnimateSolutionsEvent {
+                    solution,
+                    is_first_time: true,
+                    word: word.clone(),
+                    level: level.clone(),
+                });
 
                 chosen_state.is_just_finished = true; //todo change this slightly
             }
@@ -253,13 +261,11 @@ impl Completion {
         const UNSTARTED: &Color = &convert_color_const(palette::WORD_BACKGROUND_UNSTARTED);
         const MANUAL: &Color = &convert_color_const(palette::WORD_BACKGROUND_MANUAL_HINT);
         const COMPLETE: &Color = &convert_color_const(palette::WORD_BACKGROUND_COMPLETE);
-        // const AUTO: &'static Color = &palette::WORD_BACKGROUND_AUTO_HINT.convert_color();
 
         match self {
             Completion::Unstarted => UNSTARTED,
             Completion::ManualHinted(_) => MANUAL,
             Completion::Complete => COMPLETE,
-            // Completion::AutoHinted(_) => AUTO,
         }
     }
 
@@ -277,13 +283,11 @@ impl Completion {
 }
 
 fn track_found_words(
-    mut commands: Commands,
     mut chosen: ResMut<ChosenState>,
     current_level: Res<CurrentLevel>,
     mut found_words: ResMut<FoundWordsState>,
-    asset_server: Res<AssetServer>,
-    size: Res<Size>,
     daily_challenges: Res<DailyChallenges>,
+    mut ew: EventWriter<AnimateSolutionsEvent>,
 ) {
     if !chosen.is_changed() || chosen.is_just_finished {
         return;
@@ -314,15 +318,22 @@ fn track_found_words(
         found_words.update_unneeded_tiles(level);
     }
 
-    crate::animated_solutions::animate_solution(
-        &mut commands,
-        &chosen.solution,
-        word,
+    ew.send(AnimateSolutionsEvent {
+        solution: chosen.solution.clone(),
         is_first_time,
-        &asset_server,
-        &size,
-        level,
-    );
+        word: word.clone(),
+        level: level.clone(),
+    });
+
+    // crate::animated_solutions::animate_solution(
+    //     &mut commands,
+    //     &chosen.solution,
+    //     word,
+    //     is_first_time,
+    //     &asset_server,
+    //     &size,
+    //     level,
+    // );
 
     if is_first_time {
         chosen.is_just_finished = true;
@@ -726,14 +737,15 @@ pub mod tests {
             total_bought_hints: 0,
         };
         let mut chosen_state = ChosenState::default();
-        let hinted = found_words.try_hint_word(&mut hint_state, &level, 4, &mut chosen_state);
+        panic!("Need to feed in event writer")
+        // let hinted = found_words.try_hint_word(&mut hint_state, &level, 4, &mut chosen_state);
 
-        assert!(hinted);
-        assert_eq!(hint_state.hints_remaining, 9);
+        // assert!(hinted);
+        // assert_eq!(hint_state.hints_remaining, 9);
 
-        assert_eq!(
-            found_words.word_completions.get(4).unwrap(),
-            &Completion::ManualHinted(NonZeroUsize::new(1).unwrap())
-        );
+        // assert_eq!(
+        //     found_words.word_completions.get(4).unwrap(),
+        //     &Completion::ManualHinted(NonZeroUsize::new(1).unwrap())
+        // );
     }
 }
