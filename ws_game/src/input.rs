@@ -70,11 +70,11 @@ impl InteractionEntity {
                             Some(InteractionEntity::Button(ButtonInteraction::BuyMoreHints))
                         }
                         BuyMoreHintsLayoutEntity::SufferAloneButton => {
-                            Some(InteractionEntity::Button(ButtonInteraction::ClosePopups))
+                            Some(InteractionEntity::Button(ButtonInteraction::PopupClose))
                         }
                         BuyMoreHintsLayoutEntity::Box => None,
                     },
-                    None => Some(InteractionEntity::Button(ButtonInteraction::ClosePopups)),
+                    None => Some(InteractionEntity::Button(ButtonInteraction::PopupGreyedOut)),
                 }
             }
         }

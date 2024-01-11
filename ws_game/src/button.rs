@@ -143,7 +143,8 @@ pub enum ButtonInteraction {
     TopMenuItem(LayoutTopBar),
     Congrats(CongratsButton),
     BuyMoreHints,
-    ClosePopups,
+    PopupClose,
+    PopupGreyedOut,
     MenuBackButton,
     NonLevelInteractionButton,
     TimerButton,
@@ -153,7 +154,7 @@ impl ButtonInteraction {
     pub fn button_press_type(&self) -> ButtonPressType {
         if self.is_word_button() {
             ButtonPressType::OnHold(Duration::from_secs_f32(WORD_BUTTON_HOLD_SECONDS))
-        } else if self.is_congrats() {
+        } else if self.is_congrats() || self.is_popup_greyed_out() {
             ButtonPressType::OnStart
         } else {
             ButtonPressType::OnEnd
@@ -412,7 +413,7 @@ impl ButtonInteraction {
                 hint_state.total_bought_hints += 3;
                 *popup_state.as_mut() = PopupState::None;
             }
-            ButtonInteraction::ClosePopups => {
+            ButtonInteraction::PopupClose | ButtonInteraction::PopupGreyedOut => {
                 *popup_state.as_mut() = PopupState::None;
             }
         }

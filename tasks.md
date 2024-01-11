@@ -10,9 +10,6 @@
 - social images etc
 - Save incomplete levels
 
-
-- greyed out should respond to click start not to click end
-
 - reorder level sequence
 
 - Build a tool to reorder grids based on distance from a given list of grids

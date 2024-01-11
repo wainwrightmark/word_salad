@@ -122,7 +122,7 @@ impl MavericRootChildren for PopupStateRoot {
                                 palette::LIGHT_GRAY.convert_color(),
                                 BUTTON_CLICK_FILL.convert_color(),
                                 OTHER_BUTTON_NORMAL,
-                                ButtonInteraction::ClosePopups,
+                                ButtonInteraction::PopupClose,
                             );
 
                             commands.add_child("suffer_alone_box", button, &());
