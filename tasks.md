@@ -1,12 +1,11 @@
 
 - Make Logo
-- Popup the first time you enter selfie mode
 
 - use ustr in a bunch more places
 - split total completion into multiple resources
 - Change hint tracking
 
-- Change Word Salad Menu -last 3, then gap, then next
+
 - social images etc
 - Save incomplete levels
 

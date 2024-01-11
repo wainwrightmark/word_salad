@@ -296,9 +296,17 @@ impl ButtonInteraction {
                 }
                 menu_state.close();
             }
+            ButtonInteraction::WordSaladMenu(WordSaladMenuLayoutEntity::EreYesterdayPuzzle) => {
+                if let Some(index) = DailyChallenges::get_today_index() {
+                    current_level.set_if_neq(CurrentLevel::DailyChallenge {
+                        index: index.saturating_sub(1),
+                    });
+                }
+                menu_state.close();
+            }
             ButtonInteraction::WordSaladMenu(WordSaladMenuLayoutEntity::NextPuzzle) => {
                 if let Some(index) = DailyChallenges::get_today_index()
-                    .and_then(|x| x.checked_sub(2))
+                    .and_then(|x| x.checked_sub(3))
                     .and_then(|x| total_completion.get_next_incomplete_daily_challenge(x))
                 {
                     current_level.set_if_neq(CurrentLevel::DailyChallenge { index });

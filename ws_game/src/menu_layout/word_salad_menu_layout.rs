@@ -18,7 +18,8 @@ use super::{
 pub enum WordSaladMenuLayoutEntity {
     TodayPuzzle = 0,
     YesterdayPuzzle = 1,
-    NextPuzzle = 2,
+    EreYesterdayPuzzle = 2,
+    NextPuzzle = 4,
 }
 
 impl WordSaladMenuLayoutEntity {
@@ -41,7 +42,9 @@ impl WordSaladMenuLayoutEntity {
             //TODO better text
             WordSaladMenuLayoutEntity::TodayPuzzle => "Today's Puzzle",
             WordSaladMenuLayoutEntity::YesterdayPuzzle => "Yesterday's Puzzle",
+            WordSaladMenuLayoutEntity::EreYesterdayPuzzle => "Ere-yesterday's Puzzle",
             WordSaladMenuLayoutEntity::NextPuzzle => "Next Incomplete",
+
         };
 
         (s1.to_string(), "\u{f096}".to_string())
@@ -53,10 +56,12 @@ impl WordSaladMenuLayoutEntity {
         let index = match self {
             WordSaladMenuLayoutEntity::TodayPuzzle => Some(today_index),
             WordSaladMenuLayoutEntity::YesterdayPuzzle => today_index.checked_sub(1),
+            WordSaladMenuLayoutEntity::EreYesterdayPuzzle => today_index.checked_sub(2),
             WordSaladMenuLayoutEntity::NextPuzzle => {
-                today_index.checked_sub(2).and_then (|x|completion.get_next_incomplete_daily_challenge(x))
+                today_index.checked_sub(3).and_then (|x|completion.get_next_incomplete_daily_challenge(x))
 
             }
+
         };
 
         let Some(index) = index else{return false;};
@@ -76,8 +81,9 @@ impl WordSaladMenuLayoutEntity {
         let index = match self {
             WordSaladMenuLayoutEntity::TodayPuzzle => today_index,
             WordSaladMenuLayoutEntity::YesterdayPuzzle => today_index.checked_sub(1)?,
+            WordSaladMenuLayoutEntity::EreYesterdayPuzzle => today_index.checked_sub(2)?,
             WordSaladMenuLayoutEntity::NextPuzzle => {
-                completion.get_next_incomplete_daily_challenge(today_index.checked_sub(2)?)?
+                completion.get_next_incomplete_daily_challenge(today_index.checked_sub(3)?)?
             }
         };
 
