@@ -1,7 +1,7 @@
 use glam::Vec2;
 use strum::{Display, EnumCount, EnumIter, IntoEnumIterator};
 
-use crate::{prelude::*, level_type::LevelType};
+use crate::{level_type::LevelType, prelude::*};
 
 use super::consts::*;
 
@@ -38,11 +38,11 @@ pub struct SelfieMode {
     pub is_selfie_mode: bool,
 }
 
-impl CongratsLayoutEntity{
-    pub fn get_button_count(context: &(SelfieMode, LevelType))-> usize{
-        if context.0.is_selfie_mode || context.1.is_tutorial(){
+impl CongratsLayoutEntity {
+    pub fn get_button_count(context: &(SelfieMode, LevelType)) -> usize {
+        if context.0.is_selfie_mode || context.1.is_tutorial() {
             1
-        }else{
+        } else {
             CongratsButton::COUNT
         }
     }
@@ -75,7 +75,7 @@ impl LayoutStructure for CongratsLayoutEntity {
         }
     }
 
-    fn location(&self, context: &Self::Context) -> Vec2 {
+    fn location(&self, context: &Self::Context, _sizing: &LayoutSizing) -> Vec2 {
         let extra_offset = if context.0.is_selfie_mode {
             SELFIE_MODE_CONGRATS_TOP_OFFSET
         } else {
@@ -86,7 +86,7 @@ impl LayoutStructure for CongratsLayoutEntity {
 
         pub const MENU_BUTTON_SPACING: f32 = 40.0 * 0.1;
 
-        let button_count = Self:: get_button_count(context);
+        let button_count = Self::get_button_count(context);
 
         let button_width = if context.0.is_selfie_mode {
             CONGRATS_ENTITY_BUTTON_WIDTH_SELFIE
@@ -127,23 +127,12 @@ impl LayoutStructure for CongratsLayoutEntity {
 
     fn iter_all(context: &Self::Context) -> impl Iterator<Item = Self> {
         let button_count = Self::get_button_count(context);
-        let take =  3 + button_count;
+        let take = 3 + button_count;
 
         CongratsStatistic::iter()
             .map(|x| Self::Statistic(x))
             .chain(CongratsButton::iter().map(|x| Self::Button(x)))
             .take(take)
-    }
-
-    fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
-        Self::iter_all(context).find(|x| x.rect(context).contains(point))
-    }
-
-    fn rect(&self, context: &Self::Context) -> LayoutRectangle {
-        LayoutRectangle {
-            top_left: self.location(context),
-            extents: self.size(context),
-        }
     }
 }
 

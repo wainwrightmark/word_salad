@@ -1,35 +1,48 @@
 use crate::layout::prelude::*;
 use glam::Vec2;
 
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct LayoutSizing {
     pub size_ratio: f32,
     pub left_pad: f32,
+    pub bottom_pad: f32
+}
+
+impl Default for LayoutSizing{
+    fn default() -> Self {
+        Self { size_ratio: 1.0, left_pad: 0.0, bottom_pad: 0.0 }
+    }
 }
 
 impl LayoutSizing {
     pub fn from_page_size(page_size: Vec2, ideal_ratio: f32, ideal_width: f32) -> Self {
         let ratio = page_size.x / page_size.y;
 
-        //let used_y: f32;
+        let used_y: f32;
         let used_x: f32;
 
         if ratio >= ideal_ratio {
             // There is additional x, so just left pad everything
-            //used_y = page_size.y;
-            used_x = page_size.y as f32 * ideal_ratio;
+            used_y = page_size.y;
+            used_x = page_size.y * ideal_ratio;
         } else {
             // There is additional y, so don't use the bottom area
-            used_x = page_size.x as f32;
-            //used_y = page_size.x / IDEAL_RATIO;
+            used_x = page_size.x;
+            used_y = page_size.x / ideal_ratio;
         }
 
-        let left_pad = ((page_size.x as f32 - used_x) / 2.).round();
-        let size_ratio = used_x / ideal_width as f32;
+        let left_pad = ((page_size.x - used_x) / 2.).round();
+        let bottom_pad = page_size.y - used_y;
+        let size_ratio = used_x / ideal_width;
 
-        Self {
+        let r =  Self {
             size_ratio,
             left_pad,
-        }
+            bottom_pad
+        };
+
+        //info!("{r:?}");
+        r
     }
 
     pub fn try_pick_entity<T: LayoutStructure>(
@@ -46,13 +59,13 @@ impl LayoutSizing {
 
         let location = Vec2 { x, y };
 
-        let entity = T::pick(location, context)?;
+        let entity = T::pick(location, context, self)?;
 
         if tolerance >= 1.0 {
             return Some(entity);
         }
 
-        let rect: LayoutRectangle = entity.rect(context).into();
+        let rect: LayoutRectangle = entity.rect(context, self).into();
 
         let dist = rect.centre().distance(location);
         let size_squared = rect.extents.length();
@@ -69,7 +82,7 @@ impl LayoutSizing {
     }
 
     pub fn get_location<T: LayoutStructure>(&self, entity: &T, context: &T::Context) -> glam::Vec2 {
-        let Vec2 { x, y } = entity.location(context);
+        let Vec2 { x, y } = entity.location(context, &self);
 
         Vec2 {
             x: self.left_pad + (self.size_ratio * x as f32),

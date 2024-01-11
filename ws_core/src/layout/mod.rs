@@ -27,22 +27,20 @@ mod tests {
 
     #[test]
     fn test_picking_all() {
-        test_picking::<GameLayoutEntity>(&());
-        test_picking::<LayoutTopBar>(&());
+        let sizing = LayoutSizing::default();
+
+        test_picking::<GameLayoutEntity>(&(), &sizing);
+        test_picking::<LayoutTopBar>(&(), &sizing);
         // test_picking::<LayoutPuzzleTheme>(&());
-        test_picking::<LayoutGridTile>(&());
+        test_picking::<LayoutGridTile>(&(), &sizing);
         //test_picking::<LayoutWordTile>(&()); //TODO test this
     }
 
-    fn test_picking<T: LayoutStructure + Copy>(context: &T::Context) {
+    fn test_picking<T: LayoutStructure + Copy>(context: &T::Context, sizing: &LayoutSizing) {
         for entity in T::iter_all(context) {
-            let rect = entity.rect(context);
+            let rect = entity.rect(context, sizing);
 
-            // let top_left_expected = T::pick(rect.top_left, context);
-
-            // assert_eq!(Some(entity), top_left_expected, "Top left");
-
-            let centre_expected = T::pick(rect.centre(), context);
+            let centre_expected = T::pick(rect.centre(), context, sizing);
 
             assert_eq!(Some(entity), centre_expected, "Centre");
         }

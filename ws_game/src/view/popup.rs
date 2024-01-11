@@ -205,7 +205,7 @@ impl LayoutStructure for BuyMoreHintsLayoutEntity {
         }
     }
 
-    fn location(&self, _context: &Self::Context) -> Vec2 {
+    fn location(&self, _context: &Self::Context, _sizing: &LayoutSizing) -> Vec2 {
         use BuyMoreHintsLayoutEntity::*;
         match self {
             Title | BuyMoreHintsButton | SufferAloneButton => Vec2 {

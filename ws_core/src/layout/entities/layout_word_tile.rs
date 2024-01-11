@@ -22,8 +22,8 @@ impl LayoutStructure for LayoutWordTile {
         }
     }
 
-    fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
-        let parent_loc = super::GameLayoutEntity::WordList.location(&());
+    fn pick(point: Vec2, context: &Self::Context, sizing: &LayoutSizing) -> Option<Self> {
+        let parent_loc = super::GameLayoutEntity::WordList.location(&(), sizing);
         let point = point - parent_loc;
         FlexLayout::Row.try_pick(
             super::GameLayoutEntity::WordList.size(&()),
@@ -48,8 +48,8 @@ impl LayoutStructure for LayoutWordTile {
         }
     }
 
-    fn location(&self, context: &Self::Context) -> Vec2 {
-        let parent_loc = super::GameLayoutEntity::WordList.location(&());
+    fn location(&self, context: &Self::Context, sizing: &LayoutSizing) -> Vec2 {
+        let parent_loc = super::GameLayoutEntity::WordList.location(&(), sizing);
 
         let offset = FlexLayout::Row.get_location(
             super::GameLayoutEntity::WordList.size(&()),

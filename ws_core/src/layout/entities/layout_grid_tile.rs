@@ -9,8 +9,8 @@ pub struct LayoutGridTile(pub Tile);
 impl LayoutStructure for LayoutGridTile {
     type Context = ();
 
-    fn pick(point: Vec2, context: &Self::Context) -> Option<Self> {
-        let grid_rect = GameLayoutEntity::Grid.rect(context);
+    fn pick(point: Vec2, context: &Self::Context, sizing: &LayoutSizing) -> Option<Self> {
+        let grid_rect = GameLayoutEntity::Grid.rect(context, sizing);
 
         let scaled = grid_rect.scaled_inside(point)?;
 
@@ -19,7 +19,7 @@ impl LayoutStructure for LayoutGridTile {
 
         let tile = Self(Tile::try_new(x, y)?);
 
-        if tile.rect(context).contains(point) {
+        if tile.rect(context, sizing).contains(point) {
             return Some(tile);
         }
         return None;
@@ -32,8 +32,8 @@ impl LayoutStructure for LayoutGridTile {
         }
     }
 
-    fn location(&self, context: &Self::Context) -> Vec2 {
-        GameLayoutEntity::Grid.location(context).add(tile_offset(
+    fn location(&self, context: &Self::Context, sizing: &LayoutSizing) -> Vec2 {
+        GameLayoutEntity::Grid.location(context, sizing).add(tile_offset(
             self.0,
             Spacing::SpaceBetween,
             Spacing::SpaceBetween,

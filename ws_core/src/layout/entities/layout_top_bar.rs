@@ -40,7 +40,7 @@ impl LayoutStructure for LayoutTopBar {
         }
     }
 
-    fn location(&self, _context: &Self::Context) -> Vec2 {
+    fn location(&self, _context: &Self::Context, _sizing: &LayoutSizing) -> Vec2 {
         match self {
             LayoutTopBar::MenuBurgerButton => Vec2 {
                 x: (IDEAL_WIDTH - GRID_SIZE) * 0.5,

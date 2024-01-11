@@ -1,7 +1,7 @@
 use bevy::math::Vec2;
 use ws_core::{
     layout::entities::{IDEAL_HEIGHT, IDEAL_WIDTH},
-    LayoutStructure, LayoutStructureWithFont, LayoutStructureWithStaticText,
+    LayoutStructure, LayoutStructureWithFont, LayoutStructureWithStaticText, LayoutSizing,
 };
 
 use super::{MENU_BUTTON_FONT_SIZE, MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
@@ -19,7 +19,7 @@ impl LayoutStructure for MainMenuBackButton {
         }
     }
 
-    fn location(&self, _context: &Self::Context) -> Vec2 {
+    fn location(&self, _context: &Self::Context, _sizing: &LayoutSizing) -> Vec2 {
         Vec2 {
             x: (IDEAL_WIDTH - MENU_BUTTON_WIDTH) / 2.,
             y: IDEAL_HEIGHT - ((MENU_BUTTON_HEIGHT + MENU_BUTTON_SPACING) * 2.0),

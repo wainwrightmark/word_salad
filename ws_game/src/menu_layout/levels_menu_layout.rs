@@ -2,7 +2,7 @@ use bevy::math::Vec2;
 use strum::{Display, EnumCount};
 use ws_core::{
     layout::entities::{IDEAL_HEIGHT, IDEAL_WIDTH, TOP_BAR_HEIGHT},
-    LayoutStructure, LayoutStructureWithFont, Spacing,
+    LayoutStructure, LayoutStructureWithFont, Spacing, LayoutSizing,
 };
 use ws_levels::level_group::LevelGroup;
 
@@ -82,7 +82,7 @@ impl LayoutStructure for LevelsMenuLayoutEntity {
         }
     }
 
-    fn location(&self, _context: &Self::Context) -> Vec2 {
+    fn location(&self, _context: &Self::Context, _sizing: &LayoutSizing) -> Vec2 {
         Vec2 {
             x: (IDEAL_WIDTH - MENU_BUTTON_WIDTH) / 2.,
             y: TOP_BAR_HEIGHT

@@ -35,7 +35,7 @@ impl LayoutStructure for NonLevelLayoutEntity {
         }
     }
 
-    fn location(&self, _context: &Self::Context) -> Vec2 {
+    fn location(&self, _context: &Self::Context, _sizing: &LayoutSizing) -> Vec2 {
         let top_offset = GRID_TILE_SIZE + TOP_BAR_HEIGHT;
 
         match self {

@@ -54,7 +54,7 @@ impl LayoutStructure for GameLayoutEntity {
             },
         }
     }
-    fn location(&self, _context: &()) -> Vec2 {
+    fn location(&self, _context: &(), _sizing: &LayoutSizing) -> Vec2 {
         match self {
             GameLayoutEntity::TopBar => Vec2::ZERO,
 

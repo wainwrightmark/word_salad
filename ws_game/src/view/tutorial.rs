@@ -435,7 +435,7 @@ impl LayoutStructure for TutorialLayoutEntity {
         }
     }
 
-    fn location(&self, _context: &Self::Context) -> bevy::prelude::Vec2 {
+    fn location(&self, _context: &Self::Context, _sizing: &LayoutSizing) -> bevy::prelude::Vec2 {
         match self {
             TutorialLayoutEntity::Top => Vec2 {
                 x: (IDEAL_WIDTH - BOX_WIDTH) * 0.5,
@@ -482,14 +482,14 @@ impl LayoutStructure for TutorialTextLayoutEntity {
         self.0.size(context) - Vec2 { x, y }
     }
 
-    fn location(&self, context: &Self::Context) -> Vec2 {
+    fn location(&self, context: &Self::Context, sizing: &LayoutSizing) -> Vec2 {
         let x = TEXT_LEFT_MARGIN; //note this is different from in 'size'
         let y = if self.0.is_bottom() {
             BOTTOM_TEXT_TOP_OFFSET
         } else {
             0.0
         };
-        self.0.location(context) + Vec2 { x, y }
+        self.0.location(context, sizing) + Vec2 { x, y }
     }
 
     fn iter_all(_context: &Self::Context) -> impl Iterator<Item = Self> {
