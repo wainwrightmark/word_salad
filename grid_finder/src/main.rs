@@ -198,7 +198,19 @@ fn do_finder(options: Options) {
             master_words.retain(|x| !word_set.contains(x.array.as_slice()));
             let new_master_count = master_words.len();
 
-            info!("Found {total_master_count} words on the master list. {new_master_count} will be treated as exclusions")
+            info!("Found {total_master_count} words on the master list. {new_master_count} will be treated as exclusions");
+
+            if !master_words.is_empty(){
+                for word in word_map.iter(){
+                    for master_word in master_words.iter(){
+
+                        if word.is_strict_substring(master_word){
+                            warn!("{} is a substring of {} so will be impossible", word.text, master_word.text);
+                        }
+                    }
+                }
+            }
+
         }
 
         let grids_write_path = Path::new(write_path.as_str());

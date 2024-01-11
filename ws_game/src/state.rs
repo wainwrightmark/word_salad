@@ -172,7 +172,7 @@ impl FoundWordsState {
         level: &DesignedLevel,
         word_index: usize,
         chosen_state: &mut ChosenState,
-        ew: &mut EventWriter<AnimateSolutionsEvent>,
+        ew: &mut impl AnyEventWriter<AnimateSolutionsEvent>,
     ) -> bool {
         let Some(new_hints) = hint_state.hints_remaining.checked_sub(1) else {
             return false;
@@ -678,7 +678,7 @@ pub mod tests {
 
     use crate::{
         chosen_state::ChosenState,
-        prelude::{Completion, DesignedLevel, FoundWordsState},
+        prelude::{Completion, DesignedLevel, FoundWordsState, TestEventWriter},
         state::HintState,
     };
 
@@ -737,15 +737,18 @@ pub mod tests {
             total_bought_hints: 0,
         };
         let mut chosen_state = ChosenState::default();
-        panic!("Need to feed in event writer")
-        // let hinted = found_words.try_hint_word(&mut hint_state, &level, 4, &mut chosen_state);
 
-        // assert!(hinted);
-        // assert_eq!(hint_state.hints_remaining, 9);
+        let mut event_writer = TestEventWriter::default();
 
-        // assert_eq!(
-        //     found_words.word_completions.get(4).unwrap(),
-        //     &Completion::ManualHinted(NonZeroUsize::new(1).unwrap())
-        // );
+
+        let hinted = found_words.try_hint_word(&mut hint_state, &level, 4, &mut chosen_state, &mut event_writer);
+
+        assert!(hinted);
+        assert_eq!(hint_state.hints_remaining, 9);
+
+        assert_eq!(
+            found_words.word_completions.get(4).unwrap(),
+            &Completion::ManualHinted(NonZeroUsize::new(1).unwrap())
+        );
     }
 }

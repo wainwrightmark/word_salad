@@ -28,6 +28,24 @@ pub struct FinderWord {
     pub counts: PrimeBag128<Character>,
 }
 
+impl FinderWord {
+    pub fn is_strict_substring(&self, super_string: &Self) -> bool {
+        if self.array.len() >= super_string.array.len() {
+            return false;
+        }
+        if !self.counts.is_subset(&super_string.counts) {
+            return false;
+        }
+
+        for start in 0..=(super_string.array.len() - self.array.len()) {
+            if super_string.array.as_slice()[start..].starts_with(self.array.as_slice()) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
 impl std::fmt::Display for FinderWord {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.text)
@@ -70,4 +88,23 @@ pub fn count_adjacent_indexes(word: &FinderWord, char: Character) -> usize {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use std::str::FromStr;
+
+    use test_case::test_case;
+
+    use super::FinderWord;
+
+    #[test_case("abcd", "bcde", false)]
+    #[test_case("abcd", "abcde", true)]
+    #[test_case("bcde", "abcde", true)]
+    #[test_case("abcd", "abcd", false)]
+    fn test_substring(sub: &str, super_string: &str, expected: bool) {
+        let sub = FinderWord::from_str(sub).unwrap();
+        let ss = FinderWord::from_str(super_string).unwrap();
+
+        let actual = sub.is_strict_substring(&ss);
+
+        assert_eq!(actual, expected)
+    }
+}

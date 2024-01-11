@@ -1,7 +1,7 @@
 use indicatif::{ProgressBar, ProgressStyle};
 use itertools::Itertools;
 use log::info;
-use ws_core::{DesignedLevel, LayoutStructure};
+use ws_core::{DesignedLevel, LayoutStructure, LayoutSizing};
 
 pub fn do_word_layout() {
     let folder = std::fs::read_dir("grids").unwrap();
@@ -17,6 +17,8 @@ pub fn do_word_layout() {
     let mut most_lines: (usize, Option<DesignedLevel>) = Default::default();
     let mut max_diff: (isize, Option<DesignedLevel>) = Default::default();
 
+    let sizing = LayoutSizing::default();
+
     for path in paths.iter() {
         let grids_path = path.as_ref().unwrap().path();
         let grid_file_text = std::fs::read_to_string(grids_path.clone()).unwrap();
@@ -31,11 +33,11 @@ pub fn do_word_layout() {
             let context = &level.words;
             let data: Vec<GroupData> =
                 ws_core::layout::entities::layout_word_tile::LayoutWordTile::iter_all(&context)
-                    .group_by(|tile| tile.location(&context).y)
+                    .group_by(|tile| tile.location(&context, &sizing).y)
                     .into_iter()
                     .map(|(_, group)| GroupData {
                         rightmost: group
-                            .map(|t| t.rect(context).centre_right().x.ceil() as isize)
+                            .map(|t| t.rect(context, &sizing).centre_right().x.ceil() as isize)
                             .max()
                             .unwrap_or_default(),
                     })
