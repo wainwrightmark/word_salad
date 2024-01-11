@@ -479,13 +479,15 @@ impl FoundWordsState {
         word_index: usize,
         chosen: &ChosenState,
     ) -> usize {
-        if chosen.solution.len() == 0 {
+        if chosen.solution.len() == 0 || chosen.is_just_finished {
             return 0;
         }
 
         let Some(word) = level.words.get(word_index) else {
             return 0;
         };
+
+
 
         chosen
             .solution
