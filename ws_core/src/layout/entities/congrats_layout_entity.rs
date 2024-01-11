@@ -1,7 +1,7 @@
 use glam::Vec2;
 use strum::{Display, EnumCount, EnumIter, IntoEnumIterator};
 
-use crate::{level_type::LevelType, prelude::*};
+use crate::{level_type::LevelType, prelude::*, layout::entities::GameLayoutEntity};
 
 use super::consts::*;
 
@@ -75,15 +75,26 @@ impl LayoutStructure for CongratsLayoutEntity {
         }
     }
 
-    fn location(&self, context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
-        let extra_offset = if context.0.is_selfie_mode {
-            SELFIE_MODE_CONGRATS_TOP_OFFSET
+    fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
+
+        let stat_size = if context.0.is_selfie_mode {
+            CONGRATS_ENTITY_STATISTIC_SIZE_SELFIE
         } else {
-            0.0
+            CONGRATS_ENTITY_STATISTIC_SIZE_NORMAL
         };
 
-        let top_offset = TOP_BAR_HEIGHT + THEME_HEIGHT + GRID_TILE_SIZE + extra_offset;
+        let button_height = if context.0.is_selfie_mode{
+             CONGRATS_ENTITY_BUTTON_HEIGHT + MENU_BUTTON_SPACING
+        } else{
+            GRID_SIZE - stat_size - CONGRATS_ENTITY_VERTICAL_GAP
+        };
 
+        let top_offset = if context.0.is_selfie_mode {
+            let word_list_top = GameLayoutEntity::WordList.location(&context.0, sizing).y;
+            word_list_top - (button_height + stat_size + CONGRATS_ENTITY_VERTICAL_GAP)
+        } else {
+            TOP_BAR_HEIGHT + THEME_HEIGHT + GRID_TILE_SIZE
+        };
         pub const MENU_BUTTON_SPACING: f32 = 40.0 * 0.1;
 
         let button_count = Self::get_button_count(context);
@@ -94,11 +105,7 @@ impl LayoutStructure for CongratsLayoutEntity {
             CONGRATS_ENTITY_BUTTON_WIDTH_NORMAL
         };
 
-        let stat_size = if context.0.is_selfie_mode {
-            CONGRATS_ENTITY_STATISTIC_SIZE_SELFIE
-        } else {
-            CONGRATS_ENTITY_STATISTIC_SIZE_NORMAL
-        };
+
 
         match self {
             CongratsLayoutEntity::Statistic(statistic) => Vec2 {
@@ -116,7 +123,7 @@ impl LayoutStructure for CongratsLayoutEntity {
                     + stat_size
                     + CONGRATS_ENTITY_VERTICAL_GAP
                     + Spacing::Centre.apply(
-                        GRID_SIZE - stat_size - CONGRATS_ENTITY_VERTICAL_GAP - extra_offset,
+                        button_height,
                         CONGRATS_ENTITY_BUTTON_HEIGHT + MENU_BUTTON_SPACING,
                         button_count,
                         *button as usize,

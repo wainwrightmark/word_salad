@@ -41,7 +41,7 @@ impl LayoutSizing {
             bottom_pad
         };
 
-        //info!("{r:?}");
+        log::info!("page size {page_size} Used x {used_x} Used y {used_y} ratio: {ratio}");
         r
     }
 

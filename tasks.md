@@ -1,7 +1,6 @@
 
 - Make Logo
 - Popup the first time you enter selfie mode
-- selfie mode layout
 
 - use ustr in a bunch more places
 - split total completion into multiple resources

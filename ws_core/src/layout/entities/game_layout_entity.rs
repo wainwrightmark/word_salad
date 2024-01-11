@@ -54,7 +54,7 @@ impl LayoutStructure for GameLayoutEntity {
             },
         }
     }
-    fn location(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
+    fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
         match self {
             GameLayoutEntity::TopBar => Vec2::ZERO,
 
@@ -76,10 +76,19 @@ impl LayoutStructure for GameLayoutEntity {
                 x: (IDEAL_WIDTH - GRID_SIZE) * 0.5,
                 y: TOP_BAR_HEIGHT + THEME_HEIGHT + TIMER_HEIGHT + (GRID_TILE_SIZE * 0.5),
             },
-            GameLayoutEntity::WordList => Vec2 {
+            GameLayoutEntity::WordList =>{
+                let y = if context.is_selfie_mode{
+                    IDEAL_HEIGHT + (sizing.bottom_pad / sizing.size_ratio) - WORD_LIST_HEIGHT
+                }else{
+                    TOP_BAR_HEIGHT + THEME_HEIGHT + TIMER_HEIGHT + GRID_SIZE + GRID_TILE_SIZE
+                };
+
+
+
+                 Vec2 {
                 x: (IDEAL_WIDTH - GRID_SIZE) / 2.,
-                y: TOP_BAR_HEIGHT + THEME_HEIGHT + TIMER_HEIGHT + GRID_SIZE + GRID_TILE_SIZE,
-            },
+                y
+            }},
         }
     }
 }
