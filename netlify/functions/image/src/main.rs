@@ -33,10 +33,10 @@ async fn image_request_handler(
     let daily: u32 = get_parameter(&lambda_event, "daily").and_then(|x| x.parse().ok()).expect("Could not parse daily index");
     let width: u32 = get_parameter(&lambda_event, "width")
         .and_then(|x| x.parse().ok())
-        .unwrap_or(1080);
+        .unwrap_or(512);
     let height: u32 = get_parameter(&lambda_event, "height")
         .and_then(|x| x.parse().ok())
-        .unwrap_or(1080);
+        .unwrap_or(512);
 
 
 
@@ -89,9 +89,6 @@ fn draw_image(daily_index: u32, width: u32, height: u32) -> Vec<u8> {
     font_database.load_font_data(font_data);
 
     tree.convert_text(&font_database);
-    // const WIDTH: u32 = 1080;
-    // const HEIGHT: u32 = 1080;
-
 
 
     let x_scale = width as f32 / tree.size.width();
