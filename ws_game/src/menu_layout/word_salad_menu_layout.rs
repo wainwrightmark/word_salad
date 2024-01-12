@@ -67,8 +67,8 @@ impl WordSaladMenuLayoutEntity {
             return false;
         };
 
-        let complete = completion.is_daily_challenge_complete(index);
-        complete
+        
+        completion.is_daily_challenge_complete(index)
     }
 
     pub fn try_get_text(

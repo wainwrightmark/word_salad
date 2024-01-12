@@ -185,7 +185,7 @@ impl FoundWordsState {
         let min_hint_count = NonZeroUsize::MIN.saturating_add(self.count_selected_characters(
             level,
             word_index,
-            &chosen_state,
+            chosen_state,
         ));
 
         let Some(completion) = self.word_completions.get_mut(word_index) else {
@@ -479,7 +479,7 @@ impl FoundWordsState {
         word_index: usize,
         chosen: &ChosenState,
     ) -> usize {
-        if chosen.solution.len() == 0 || chosen.is_just_finished {
+        if chosen.solution.is_empty() || chosen.is_just_finished {
             return 0;
         }
 

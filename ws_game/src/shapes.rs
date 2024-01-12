@@ -60,9 +60,9 @@ impl ExtractToShader for ButtonBoxShaderExtraction {
     );
     type ResourceParams<'w> = Res<'w, PressedButton>;
 
-    fn get_params<'w, 'w1, 'w2, 's2, 'a, 'r>(
-        query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w1>,
-        resource: &'r <Self::ResourceParams<'w> as bevy::ecs::system::SystemParam>::Item<'w2, 's2>,
+    fn get_params(
+        query_item: <Self::ParamsQuery<'_> as bevy::ecs::query::WorldQuery>::Item<'_>,
+        resource: &<Self::ResourceParams<'_> as bevy::ecs::system::SystemParam>::Item<'_, '_>,
     ) -> <Self::Shader as ParameterizedShader>::Params {
         let (color, rounding, height, color2, button_interaction) = query_item;
 
@@ -90,14 +90,14 @@ impl ExtractToShader for ButtonBoxShaderExtraction {
 
             BoxShaderParams {
                 color: new_color,
-                rounding: rounding.rounding.into(),
-                height: height.height.into(),
+                rounding: rounding.rounding,
+                height: height.height,
             }
         } else {
             BoxShaderParams {
                 color: color.color.into(),
-                rounding: rounding.rounding.into(),
-                height: height.height.into(),
+                rounding: rounding.rounding,
+                height: height.height,
             }
         }
     }
@@ -112,9 +112,9 @@ impl ExtractToShader for BasicBoxShaderExtraction {
     type ParamsBundle = (ShaderColor, ShaderRounding, ShaderAspectRatio);
     type ResourceParams<'w> = ();
 
-    fn get_params<'w, 'w1, 'w2, 's2, 'a, 'r>(
-        query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w1>,
-        _resource: &'r <Self::ResourceParams<'w> as bevy::ecs::system::SystemParam>::Item<'w2, 's2>,
+    fn get_params(
+        query_item: <Self::ParamsQuery<'_> as bevy::ecs::query::WorldQuery>::Item<'_>,
+        _resource: &<Self::ResourceParams<'_> as bevy::ecs::system::SystemParam>::Item<'_, '_>,
     ) -> <Self::Shader as ParameterizedShader>::Params {
         BoxShaderParams {
             color: query_item.0.color.into(),
@@ -226,9 +226,9 @@ impl ExtractToShader for BoxWithBorderShader {
     type ParamsBundle = (ShaderColor, ShaderRounding, ShaderAspectRatio, ShaderBorder);
     type ResourceParams<'w> = ();
 
-    fn get_params<'w, 'w1, 'w2, 's2, 'a, 'r>(
-        query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w1>,
-        _resource: &'r <Self::ResourceParams<'w> as bevy::ecs::system::SystemParam>::Item<'w2, 's2>,
+    fn get_params(
+        query_item: <Self::ParamsQuery<'_> as bevy::ecs::query::WorldQuery>::Item<'_>,
+        _resource: &<Self::ResourceParams<'_> as bevy::ecs::system::SystemParam>::Item<'_, '_>,
     ) -> <Self::Shader as ParameterizedShader>::Params {
         BoxWithBorderShaderParams {
             color: query_item.0.color.into(),
@@ -301,9 +301,9 @@ impl ExtractToShader for CircleShader {
     type ParamsBundle = ShaderColor;
     type ResourceParams<'w> = ();
 
-    fn get_params<'w, 'w1, 'w2, 's2, 'a, 'r>(
-        query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w1>,
-        _resource: &'r <Self::ResourceParams<'w> as bevy::ecs::system::SystemParam>::Item<'w2, 's2>,
+    fn get_params(
+        query_item: <Self::ParamsQuery<'_> as bevy::ecs::query::WorldQuery>::Item<'_>,
+        _resource: &<Self::ResourceParams<'_> as bevy::ecs::system::SystemParam>::Item<'_, '_>,
     ) -> <Self::Shader as ParameterizedShader>::Params {
         ColorParams {
             color: query_item.color.into(),
@@ -346,9 +346,9 @@ impl ExtractToShader for SparkleShader {
     type ParamsBundle = SparkleParams;
     type ResourceParams<'w> = Res<'w, Time>;
 
-    fn get_params<'w, 'w1, 'w2, 's2, 'a, 'r>(
-        q: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w1>,
-        r: &'r <Self::ResourceParams<'w> as bevy::ecs::system::SystemParam>::Item<'w2, 's2>,
+    fn get_params(
+        q: <Self::ParamsQuery<'_> as bevy::ecs::query::WorldQuery>::Item<'_>,
+        r: &<Self::ResourceParams<'_> as bevy::ecs::system::SystemParam>::Item<'_, '_>,
     ) -> <Self::Shader as ParameterizedShader>::Params {
         ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 
