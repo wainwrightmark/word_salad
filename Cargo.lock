@@ -167,9 +167,9 @@ checksum = "4b46cbb362ab8752921c97e041f5e366ee6297bd428a31275b9fcf1e380f7299"
 
 [[package]]
 name = "anstream"
-version = "0.6.5"
+version = "0.6.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d664a92ecae85fd0a7392615844904654d1d5f5514837f471ddef4a057aba1b6"
+checksum = "4cd2405b3ac1faab2990b74d728624cd9fd115651fcecc7c2d8daf01376275ba"
 dependencies = [
  "anstyle",
  "anstyle-parse",
@@ -380,9 +380,9 @@ dependencies = [
 
 [[package]]
 name = "base64"
-version = "0.21.6"
+version = "0.21.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c79fed4cdb43e993fcdadc7e58a09fd0e3e649c4436fa11da71c9f1f3ee7feb9"
+checksum = "9d297deb1925b89f2ccc13d7635fa0714f12c87adce1c75356b39ca9b7178567"
 
 [[package]]
 name = "bevy"
@@ -755,9 +755,9 @@ dependencies = [
 
 [[package]]
 name = "bevy_pkv"
-version = "0.9.0"
+version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3244c1ecb6931888e9ebb8d4424ec0b12aa9fa405f82f6a58b6b7695f2a7847c"
+checksum = "c91c1f9dc84f86cb77ba29677e9fa45975e3de72aeb8e9bf72abd637a7fe6dd6"
 dependencies = [
  "bevy_ecs",
  "cfg_aliases",
@@ -1305,9 +1305,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.4.14"
+version = "4.4.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "33e92c5c1a78c62968ec57dbc2440366a2d6e5a23faf829970ff1585dc6b18e2"
+checksum = "58e54881c004cec7895b0068a0a954cd5d62da01aef83fa35b1e594497bf5445"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -1315,9 +1315,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.4.14"
+version = "4.4.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f4323769dc8a61e2c39ad7dc26f6f2800524691a44d74fe3d1071a5c24db6370"
+checksum = "59cb82d7f531603d2fd1f507441cdd35184fa81beff7bd489570de7f773460bb"
 dependencies = [
  "anstream",
  "anstyle",
@@ -2602,7 +2602,7 @@ dependencies = [
 [[package]]
 name = "maveric"
 version = "0.1.0"
-source = "git+https://github.com/wainwrightmark/maveric#30bd19ef15c047c158209c76f6f1de05a61bf5ac"
+source = "git+https://github.com/wainwrightmark/maveric#f531f0c7b15ae11c040beffff7d65640df4dc5d3"
 dependencies = [
  "allocator-api2",
  "bevy",
@@ -2614,7 +2614,7 @@ dependencies = [
 [[package]]
 name = "maveric-macro"
 version = "0.1.0"
-source = "git+https://github.com/wainwrightmark/maveric#30bd19ef15c047c158209c76f6f1de05a61bf5ac"
+source = "git+https://github.com/wainwrightmark/maveric#f531f0c7b15ae11c040beffff7d65640df4dc5d3"
 dependencies = [
  "proc-macro2",
  "quote",

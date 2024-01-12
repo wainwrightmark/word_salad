@@ -72,7 +72,7 @@ impl MavericRootChildren for PopupStateRoot {
                 for item in HintsPopupLayoutEntity::iter() {
                     let font_size = size.font_size::<HintsPopupLayoutEntity>(&item, &());
                     let rect: LayoutRectangle = size.get_rect(&item, &());
-                    info!("{rect:?}");
+                    //info!("{rect:?}");
                     match item {
                         HintsPopupLayoutEntity::Text => {
                             let text = "Need some help?";

@@ -1,6 +1,8 @@
+use std::sync::atomic::AtomicUsize;
+
 pub use crate::prelude::*;
 use crate::{completion::TotalCompletion, input::InputPlugin, motion_blur::MotionBlurPlugin};
-use bevy::log::LogPlugin;
+use bevy::{ log::LogPlugin, window::RequestRedraw};
 use itertools::Either;
 use nice_bevy_utils::{async_event_writer, window_size::WindowSizePlugin, CanRegisterAsyncEvent};
 use ws_core::layout::entities::*;
@@ -97,17 +99,60 @@ pub fn go() {
 
     app.insert_resource(bevy::winit::WinitSettings {
         return_from_run: false,
-        focused_mode: bevy::winit::UpdateMode::Continuous,
-        unfocused_mode: bevy::winit::UpdateMode::Reactive {
+        focused_mode: bevy::winit::UpdateMode::Reactive {
+            wait: std::time::Duration::from_secs(1),
+        },
+        //focused_mode: bevy::winit::UpdateMode::Continuous,
+        unfocused_mode: bevy::winit::UpdateMode::ReactiveLowPower {
             wait: std::time::Duration::from_secs(60),
         },
     });
+
+    app.add_systems(PostUpdate, print_maveric_tracking);
+    app.add_systems(PostUpdate, maybe_request_redraw);
 
     app.run();
 }
 
 fn setup_system(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
+}
+
+fn print_maveric_tracking() {
+    let graph_updates = maveric::tracing::count_graph_updates();
+    let scheduled_changes = maveric::tracing::count_scheduled_changes();
+    let scheduled_deletions = maveric::tracing::count_scheduled_deletions();
+    let transitions = maveric::tracing::count_transitions();
+    let additional = ADDITIONAL_TRACKING.load(std::sync::atomic::Ordering::SeqCst);
+
+    if graph_updates > 0
+        || scheduled_changes > 0
+        || scheduled_deletions > 0
+        || transitions > 0
+        || additional > 0
+    {
+        info!("Graph Updates: {graph_updates:3} Scheduled Changes: {scheduled_changes:3} Scheduled Deletions: {scheduled_deletions:3} Transitions: {transitions:3} Additional: {additional:3}");
+    } else {
+        info!("No updates");
+    }
+}
+
+pub(crate) static ADDITIONAL_TRACKING: AtomicUsize = AtomicUsize::new(0);
+
+fn maybe_request_redraw(mut writer: EventWriter<RequestRedraw>, mut buffer: Local<bool>) {
+    let should_redraw = maveric::tracing::count_transitions() > 0
+        || maveric::tracing::count_graph_updates() > 0
+        || maveric::tracing::count_scheduled_deletions() > 0
+        || maveric::tracing::count_scheduled_changes() > 0
+        || ADDITIONAL_TRACKING.load(std::sync::atomic::Ordering::SeqCst) > 0;
+
+    if should_redraw || *buffer {
+        writer.send(RequestRedraw);
+    }
+
+    *buffer = should_redraw;
+
+    ADDITIONAL_TRACKING.store(0, std::sync::atomic::Ordering::SeqCst)
 }
 
 #[allow(unused_variables, unused_mut)]
@@ -205,22 +250,12 @@ fn set_status_bar() {
 
 fn watch_lifecycle(
     mut events: EventReader<AppLifeCycleEvent>,
-    // mut video: ResMut<VideoResource>,
     mut menu: ResMut<MenuState>,
     mut popup: ResMut<PopupState>,
 ) {
     for event in events.read() {
         match event {
-            AppLifeCycleEvent::StateChange { .. } => {
-                //info!("State change is_active {is_active}");
-                // if *is_active && video.is_selfie_mode {
-                //     video.is_selfie_mode = false;
-
-                //     #[cfg(target_arch="wasm32")]{
-                //         crate::wasm::stop_video();
-                //     }
-                // }
-            }
+            AppLifeCycleEvent::StateChange { .. } => {}
             AppLifeCycleEvent::BackPressed => {
                 if popup.0.is_some() {
                     popup.0 = None;

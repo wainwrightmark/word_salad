@@ -1,4 +1,4 @@
-use crate::{prelude::*, z_indices};
+use crate::{prelude::*, z_indices, startup};
 use bevy::reflect::TypeUuid;
 use bevy_param_shaders::prelude::*;
 use itertools::Itertools;
@@ -373,11 +373,11 @@ fn transition_word_line(
         ProgressTarget::DecreaseToZero => (values.progress - progress_change).max(0.0),
         ProgressTarget::ResetThenIncreaseToOne => {
             targets.target_progress = ProgressTarget::IncreaseToOne;
-            RESET_PROGRESS + progress_change.min(1.0)
+            RESET_PROGRESS// + progress_change.min(1.0)
         }
         ProgressTarget::OneThenDecreaseToZero => {
             targets.target_progress = ProgressTarget::DecreaseToZero;
-            (1.0 - progress_change).max(0.0)
+            1.0
         }
         ProgressTarget::One => {
             targets.target_progress = ProgressTarget::IncreaseToOne;
@@ -390,5 +390,7 @@ fn transition_word_line(
         progress,
     };
 
-    values.set_if_neq(new_values);
+    if values.set_if_neq(new_values){
+        startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    }
 }

@@ -13,7 +13,7 @@ use crate::menu_layout::word_salad_menu_layout::WordSaladMenuLayoutEntity;
 use crate::prelude::level_group_layout::LevelGroupLayoutEntity;
 use crate::prelude::levels_menu_layout::LevelsMenuLayoutEntity;
 use crate::prelude::main_menu_layout::MainMenuLayoutEntity;
-use crate::{input, prelude::*};
+use crate::{input, prelude::*, startup};
 
 pub struct ButtonPlugin;
 
@@ -51,6 +51,7 @@ fn track_held_button(
     else {
         return;
     };
+    startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     let interaction = *interaction;
     let duration = *duration + time.delta();
 

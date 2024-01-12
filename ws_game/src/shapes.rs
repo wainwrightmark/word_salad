@@ -10,6 +10,7 @@ use std::fmt::Debug;
 use crate::prelude::ButtonInteraction;
 use crate::prelude::FireworksShader;
 use crate::prelude::PressedButton;
+use crate::startup::ADDITIONAL_TRACKING;
 
 maveric::define_lens!(RoundingLens, ShaderRounding, f32, rounding);
 maveric::define_lens!(ProgressLens, ShaderProgress, f32, progress);
@@ -348,6 +349,8 @@ impl ExtractToShader for SparkleShader {
         q: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w1>,
         r: &'r <Self::ResourceParams<'w> as bevy::ecs::system::SystemParam>::Item<'w2, 's2>,
     ) -> <Self::Shader as ParameterizedShader>::Params {
+        ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+
         SparkleShaderParams {
             count1: q.count1,
             count2: q.count2,
@@ -369,8 +372,6 @@ impl ParameterizedShader for SparkleShader {
     }
 
     const FRAME: Frame = Frame::square(1.0);
-
-    const USE_TIME: bool = true; //TODO remove
 }
 
 #[repr(C)]
