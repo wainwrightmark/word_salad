@@ -102,39 +102,6 @@ impl DesignedLevel {
     }
 }
 
-impl DesignedLevel {
-    pub fn try_from_path(path: String) -> Option<Self> {
-        //info!("path: {path}");
-
-        if path.is_empty() || path.eq_ignore_ascii_case("/") {
-            return None;
-        }
-
-        if path.to_ascii_lowercase().starts_with("/game/") {
-            //log::info!("Path starts with game");
-            let data = path[6..].to_string();
-            //log::info!("{data}");
-
-            use base64::Engine;
-
-            let data = base64::engine::general_purpose::URL_SAFE
-                .decode(data)
-                .ok()?;
-
-            let data = String::from_utf8(data).ok()?;
-
-            match DesignedLevel::from_tsv_line(&data.trim()) {
-                Ok(data) => Some(data),
-                Err(err) => {
-                    log::error!("{err}");
-                    None
-                }
-            }
-        } else {
-            None
-        }
-    }
-}
 
 impl DesignedLevel {
     pub fn calculate_unneeded_tiles<F: Fn(usize) -> bool>(

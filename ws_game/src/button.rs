@@ -427,9 +427,12 @@ impl ButtonInteraction {
 
             #[cfg(target_arch = "wasm32")]
             ButtonInteraction::Congrats(CongratsButton::Share) => {
-                if let Either::Left(level) = current_level.level(daily_challenges) {
-                    let share_text =
-                        generate_share_text(level, level_time.as_ref(), found_words.as_ref());
+                if let Some(share_text) = try_generate_share_text(
+                    current_level,
+                    level_time.as_ref(),
+                    found_words.as_ref(),
+                    daily_challenges,
+                ) {
                     crate::wasm::share(share_text);
                 }
             }
@@ -469,11 +472,13 @@ impl ButtonInteraction {
 
 #[allow(dead_code)]
 
-fn generate_share_text(
-    level: &DesignedLevel,
+fn try_generate_share_text(
+    current_level: &CurrentLevel,
     time: &LevelTime,
     found_words_state: &FoundWordsState,
-) -> String {
+    daily_challenges: &DailyChallenges,
+) -> Option<String> {
+    let level = current_level.level(daily_challenges).left()?;
     let first_lines = match level.numbering {
         Some(Numbering::WordSaladNumber(num)) => format!("Word Salad #{num}\n{}", level.name),
         Some(Numbering::SequenceNumber(..)) => level.full_name().to_string(),
@@ -485,5 +490,15 @@ fn generate_share_text(
     let hints = found_words_state.hints_used;
     let second_line = format!("⌛{minutes}m {seconds}s, ❓{hints}");
 
-    format!("{first_lines}\n{second_line}\nhttps://wordsalad.online/")
+    let url = match current_level {
+        CurrentLevel::DailyChallenge { index } => {
+            format!("https://wordsalad.online/daily/{}", index + 1)
+        }
+        _ => {
+            //todo data for sequence levels?
+            "https://wordsalad.online/".to_string()
+        }
+    };
+
+    Some(format!("{first_lines}\n{second_line}\n{url}"))
 }

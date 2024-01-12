@@ -108,7 +108,7 @@ pub fn go() {
         },
     });
 
-    app.add_systems(PostUpdate, print_maveric_tracking);
+    //app.add_systems(PostUpdate, print_maveric_tracking);
     app.add_systems(PostUpdate, maybe_request_redraw);
 
     app.run();
@@ -118,24 +118,24 @@ fn setup_system(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
 
-fn print_maveric_tracking() {
-    let graph_updates = maveric::tracing::count_graph_updates();
-    let scheduled_changes = maveric::tracing::count_scheduled_changes();
-    let scheduled_deletions = maveric::tracing::count_scheduled_deletions();
-    let transitions = maveric::tracing::count_transitions();
-    let additional = ADDITIONAL_TRACKING.load(std::sync::atomic::Ordering::SeqCst);
+// fn print_maveric_tracking() {
+//     let graph_updates = maveric::tracing::count_graph_updates();
+//     let scheduled_changes = maveric::tracing::count_scheduled_changes();
+//     let scheduled_deletions = maveric::tracing::count_scheduled_deletions();
+//     let transitions = maveric::tracing::count_transitions();
+//     let additional = ADDITIONAL_TRACKING.load(std::sync::atomic::Ordering::SeqCst);
 
-    if graph_updates > 0
-        || scheduled_changes > 0
-        || scheduled_deletions > 0
-        || transitions > 0
-        || additional > 0
-    {
-        info!("Graph Updates: {graph_updates:3} Scheduled Changes: {scheduled_changes:3} Scheduled Deletions: {scheduled_deletions:3} Transitions: {transitions:3} Additional: {additional:3}");
-    } else {
-        info!("No updates");
-    }
-}
+//     if graph_updates > 0
+//         || scheduled_changes > 0
+//         || scheduled_deletions > 0
+//         || transitions > 0
+//         || additional > 0
+//     {
+//         info!("Graph Updates: {graph_updates:3} Scheduled Changes: {scheduled_changes:3} Scheduled Deletions: {scheduled_deletions:3} Transitions: {transitions:3} Additional: {additional:3}");
+//     } else {
+//         info!("No updates");
+//     }
+// }
 
 pub(crate) static ADDITIONAL_TRACKING: AtomicUsize = AtomicUsize::new(0);
 
@@ -165,26 +165,36 @@ fn choose_level_on_game_load(
 ) {
     #[cfg(target_arch = "wasm32")]
     {
-        match crate::wasm::get_game_from_location() {
-            Some(level) => {
-                info!("Loaded custom level from path");
-                if !current_level.as_ref().eq(&CurrentLevel::Custom {
-                    name: level.full_name().to_string(),
-                }) {
-                    *current_level = CurrentLevel::Custom {
-                        name: level.full_name().to_string(),
-                    };
-                    *found_words = FoundWordsState::new_from_level(&level);
-                }
+        if let Some(daily_index) = crate::wasm::get_daily_from_location(){
+            info!("Loaded daily challenge {daily_index} from path");
 
-                if let Err(err) = CUSTOM_LEVEL.set(level) {
-                    error!("{err}");
+            if current_level.set_if_neq(CurrentLevel::DailyChallenge { index: daily_index }){
+                if let Some(level) = current_level.level(&daily_challenges).left(){
+                    *found_words = FoundWordsState::new_from_level(level);
+                    *timer = LevelTime::default();
                 }
-
-                *timer = LevelTime::default();
-                return;
             }
-            None => {}
+
+            return;
+        }
+
+        if let Some(level) = crate::wasm::get_game_from_location() {
+            info!("Loaded custom level from path");
+            if !current_level.as_ref().eq(&CurrentLevel::Custom {
+                name: level.full_name().to_string(),
+            }) {
+                *current_level = CurrentLevel::Custom {
+                    name: level.full_name().to_string(),
+                };
+                *found_words = FoundWordsState::new_from_level(&level);
+            }
+
+            if let Err(err) = CUSTOM_LEVEL.set(level) {
+                error!("{err}");
+            }
+
+            *timer = LevelTime::default();
+            return;
         }
     }
 

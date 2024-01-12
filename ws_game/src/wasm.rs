@@ -99,12 +99,77 @@ async fn share_game_async(data: String) {
     }
 }
 
+pub fn get_daily_from_location() -> Option<usize> {
+    let window = web_sys::window()?;
+    let location = window.location();
+    let path = location.pathname().ok()?;
+
+    try_daily_index_from_path(path)
+}
+
+
+
+fn try_daily_index_from_path(path: String)-> Option<usize>{
+    //info!("{path}");
+    if path.is_empty() || path.eq_ignore_ascii_case("/") {
+        return None;
+    }
+
+    if path.to_ascii_lowercase().starts_with("/daily/") {
+        //info!("{path} starts with daily");
+        let data = path[7..].to_string();
+
+        let index = usize::from_str_radix(data.trim(), 10).ok()?.checked_sub(1)?;
+
+        let today_index = DailyChallenges::get_today_index()?;
+
+        if index <= today_index{
+            //info!("{path} index is legit");
+            return Some(index);
+        }
+
+    }
+    return None;
+}
+
 pub fn get_game_from_location() -> Option<DesignedLevel> {
     let window = web_sys::window()?;
     let location = window.location();
     let path = location.pathname().ok()?;
 
-    DesignedLevel::try_from_path(path)
+    designed_level_try_from_path(path)
+}
+
+fn designed_level_try_from_path(path: String) -> Option<DesignedLevel> {
+    //info!("path: {path}");
+
+    if path.is_empty() || path.eq_ignore_ascii_case("/") {
+        return None;
+    }
+
+    if path.to_ascii_lowercase().starts_with("/game/") {
+        //log::info!("Path starts with game");
+        let data = path[6..].to_string();
+        //log::info!("{data}");
+
+        use base64::Engine;
+
+        let data = base64::engine::general_purpose::URL_SAFE
+            .decode(data)
+            .ok()?;
+
+        let data = String::from_utf8(data).ok()?;
+
+        match DesignedLevel::from_tsv_line(&data.trim()) {
+            Ok(data) => Some(data),
+            Err(err) => {
+                error!("{err}");
+                None
+            }
+        }
+    } else {
+        None
+    }
 }
 
 pub fn open_link(url: &str) {
