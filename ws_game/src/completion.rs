@@ -135,8 +135,11 @@ impl TotalCompletion {
                     hints_state.hints_remaining += 1;
                     hints_state.total_earned_hints += 1;
 
-                    if let Some(today_index) = DailyChallenges::get_today_index() {
-                        if streak.last_completed == today_index.checked_sub(1) {
+                    if Some(*index) == DailyChallenges::get_today_index() {
+                        if streak.last_completed == Some(*index){
+                            warn!("Daily challenge completed for the first time again?");
+                        }
+                         else if streak.last_completed == index.checked_sub(1) {
                             info!("Streak increased by one");
                             streak.current += 1;
                         } else {
@@ -144,7 +147,7 @@ impl TotalCompletion {
                             streak.current = 1;
                         }
 
-                        streak.last_completed = Some(today_index);
+                        streak.last_completed = Some(*index);
                         streak.longest = streak.current.max(streak.longest);
                     }
                 }
