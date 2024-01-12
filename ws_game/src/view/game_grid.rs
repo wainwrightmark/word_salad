@@ -224,8 +224,10 @@ impl MavericNode for GridTile {
                 &(),
             );
 
-            commands.add_child("letter", node.get_letter_node(), &());
+
             if !node.timer_paused {
+                commands.add_child("letter", node.get_letter_node(), &());
+
                 if let HintStatus::ManualHinted = node.hint_status {
                     let (count1, count2) = (4.0, 3.0);
                     let seed = node.tile.inner() as f32 * 123.456;
