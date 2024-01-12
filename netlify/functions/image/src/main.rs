@@ -30,15 +30,15 @@ async fn image_request_handler(
     let mut headers = HeaderMap::new();
     headers.insert("Content-Type", HeaderValue::from_static("image/png"));
 
-    let daily: u32 = get_parameter(&lambda_event, "daily").and_then(|x| x.parse().ok()).expect("Could not parse daily index");
+    let daily: u32 = get_parameter(&lambda_event, "daily")
+        .and_then(|x| x.parse().ok())
+        .expect("Could not parse daily index");
     let width: u32 = get_parameter(&lambda_event, "width")
         .and_then(|x| x.parse().ok())
         .unwrap_or(512);
     let height: u32 = get_parameter(&lambda_event, "height")
         .and_then(|x| x.parse().ok())
         .unwrap_or(512);
-
-
 
     let data = draw_image(daily, width, height);
 
@@ -62,25 +62,33 @@ fn draw_image(daily_index: u32, width: u32, height: u32) -> Vec<u8> {
     let daily_index = daily_index.saturating_sub(1);
 
     let level = include_str!("../../../../ws_game/daily.tsv")
-                .lines()
-                .nth(daily_index as usize)
-                .map(|line| DesignedLevel::from_tsv_line(line).expect("Could not parse level"))
-                .expect("Could not get level");
-
+        .lines()
+        .nth(daily_index as usize)
+        .map(|line| DesignedLevel::from_tsv_line(line).expect("Could not parse level"))
+        .expect("Could not get level");
 
     for (index, character) in level.grid.into_iter().enumerate() {
+        let text_id = format!("text{index}",);
+        let text_node = tree
+            .node_by_id(text_id.as_str())
+            .expect("Could not find text node by id");
 
-        //todo blank characters
+        if character.is_blank() {
+            text_node.detach();
+            let square_id = format!("square{index}");
+            let square_node = tree
+                .node_by_id(&square_id.as_str())
+                .expect("Could not find square node by id");
 
-        let id = format!("text{}", index);
-        let node = tree
-            .node_by_id(id.as_str())
-            .expect("Could not find node by id");
-        if let NodeKind::Text(ref mut text) = *node.borrow_mut() {
-            text.chunks[0].text = character.to_string();
+            square_node.detach();
         } else {
-            panic!("Node was not a text node")
-        };
+            if let NodeKind::Text(ref mut text) = *text_node.borrow_mut() {
+                text.chunks[0].text = character.to_string();
+            } else {
+                panic!("Node was not a text node")
+            };
+        }
+        //todo blank characters
     }
 
     let font_data: Vec<u8> = include_bytes!("../../../../assets/fonts/Cairo-Regular.ttf").to_vec();
@@ -90,7 +98,6 @@ fn draw_image(daily_index: u32, width: u32, height: u32) -> Vec<u8> {
 
     tree.convert_text(&font_database);
 
-
     let x_scale = width as f32 / tree.size.width();
     let y_scale = height as f32 / tree.size.height();
     let scale = x_scale.min(y_scale);
@@ -98,7 +105,6 @@ fn draw_image(daily_index: u32, width: u32, height: u32) -> Vec<u8> {
     let ty = (y_scale - scale) * 0.5 * tree.size.height();
 
     let transform = resvg::tiny_skia::Transform::from_scale(scale, scale).post_translate(tx, ty);
-
 
     let mut pixmap = resvg::tiny_skia::Pixmap::new(width, height).expect("Could not create Pixmap");
     resvg::Tree::render(
@@ -120,7 +126,6 @@ mod tests {
     #[test_case(2, 512, 512)]
     #[test_case(3, 512, 512)]
     fn test_image(daily: u32, width: u32, height: u32) {
-
         let data = draw_image(daily, width, height);
         let len = data.len();
         let path = format!("image_{daily}_{width}x{height}.png");
@@ -129,7 +134,7 @@ mod tests {
         let hash = calculate_hash(&data);
         insta::assert_debug_snapshot!(hash);
 
-        assert!(len < 300000,"Image is too big - {len} bytes");
+        assert!(len < 300000, "Image is too big - {len} bytes");
     }
 
     fn calculate_hash<T: Hash>(t: &T) -> u64 {

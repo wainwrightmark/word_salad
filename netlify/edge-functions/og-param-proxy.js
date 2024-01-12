@@ -15,7 +15,7 @@ export default async (request, context) => {
 
     page = page.replace(
       `<meta content=https://wordsalad.online/ property=og:url>`,
-      `meta content=https://wordsalad.online/daily/${daily} property=og:url`
+      `<meta content=https://wordsalad.online/daily/${daily} property=og:url>`
     );
 
     return new Response(page, response);
