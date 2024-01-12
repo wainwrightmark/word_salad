@@ -3,6 +3,10 @@ from = "/*"
 to = "/index.html"
 status = 200
 
+[[edge_functions]]
+function = "og-param-proxy"
+path = "/daily/*"
+
 [build]
 publish = "ws_game/dist"
 command = "rustup default stable; rustup target add wasm32-unknown-unknown; rustup update stable; cargo install trunk --locked; trunk build ws_game/index.html --release"

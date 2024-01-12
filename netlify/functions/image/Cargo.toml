@@ -1,0 +1,18 @@
+[package]
+edition = "2021"
+name = "image"
+version = "0.1.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+aws_lambda_events = {version= "0.11", default-features=false, features=["apigw"]}
+lambda_runtime = {version= "*", default-features=false}
+tokio = {version= "*", default-features=false}
+resvg = { version = "0.35", default-features = false, features=["text"] }
+ws_core = { path = "../../../ws_core" }
+
+[dev-dependencies]
+insta = "1.29.0"
+ntest = "0.9.0"
+

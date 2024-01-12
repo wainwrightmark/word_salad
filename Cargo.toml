@@ -4,7 +4,7 @@ members = [
 "ws_game",
 "ws_levels",
 "grid_finder",
-"sheet_reader"
+"sheet_reader", "netlify/functions/image"
 ]
 default-members = ["ws_game"]
 resolver = "2" # Important! wgpu/Bevy needs this!

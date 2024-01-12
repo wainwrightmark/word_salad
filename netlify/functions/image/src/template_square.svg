@@ -1,0 +1,127 @@
+<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg" font-size="80"
+   font-family="Inconsolata" stroke="#1f1b20" stroke-width=".3"
+   style="line-height:1;-inkscape-font-specification:'Cairo, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center">
+   <path d="M0 0h512v512H0z" fill="#f7f5f0" stroke="#a1a9b0" stroke-width="8" />
+
+   <g transform="translate(41 41)">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square0" />
+      <text x="50" y="77" font-weight="400"  font-family="Cairo" text-anchor="middle" id="text0">
+         A
+      </text>
+   </g>
+
+   <g transform="translate(151 41)">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square1" />
+      <text x="50" y="77" font-weight="400"  font-family="Cairo" text-anchor="middle" id="text1">
+         B
+      </text>
+   </g>
+
+   <g transform="translate(262 41)">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square2" />
+      <text x="50" y="77" font-weight="400"  font-family="Cairo" text-anchor="middle" id="text2">
+         C
+      </text>
+   </g>
+
+   <g transform="translate(373 41)">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square3" />
+      <text x="50" y="77" font-weight="400"  font-family="Cairo" text-anchor="middle" id="text3">
+         D
+      </text>
+   </g>
+
+
+
+   <g transform="translate(41 151)">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square4" />
+      <text x="50" y="77" font-weight="400"  font-family="Cairo" text-anchor="middle" id="text4">
+         E
+      </text>
+   </g>
+
+   <g transform="translate(151 151)">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square5" />
+      <text x="50" y="77" font-weight="400"  font-family="Cairo" text-anchor="middle" id="text5">
+         F
+      </text>
+   </g>
+
+   <g transform="translate(262 151)">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square6" />
+      <text x="50" y="77" font-weight="400"  font-family="Cairo" text-anchor="middle" id="text6">
+         G
+      </text>
+   </g>
+
+   <g transform="translate(373 151)">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square7" />
+      <text x="50" y="77" font-weight="400"  font-family="Cairo" text-anchor="middle" id="text7">
+         H
+      </text>
+   </g>
+
+
+
+   <g transform="translate(41 262)">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square8" />
+      <text x="50" y="77" font-weight="400"  font-family="Cairo" text-anchor="middle" id="text8">
+         I
+      </text>
+   </g>
+
+   <g transform="translate(151 262)">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square9" />
+      <text x="50" y="77" font-weight="400"  font-family="Cairo" text-anchor="middle" id="text9">
+         J
+      </text>
+   </g>
+
+   <g transform="translate(262 262)">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square10" />
+      <text x="50" y="77" font-weight="400"  font-family="Cairo" text-anchor="middle" id="text10">
+         K
+      </text>
+   </g>
+
+   <g transform="translate(373 262)">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square11" />
+      <text x="50" y="77" font-weight="400"  font-family="Cairo" text-anchor="middle" id="text11">
+         L
+      </text>
+   </g>
+
+
+   <g transform="translate(41 373)">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square12" />
+      <text x="50" y="77" font-weight="400"  font-family="Cairo" text-anchor="middle" id="text12">
+         M
+      </text>
+   </g>
+
+   <g transform="translate(151 373)">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square13" />
+      <text x="50" y="77" font-weight="400"  font-family="Cairo" text-anchor="middle" id="text13">
+         N
+      </text>
+   </g>
+
+   <g transform="translate(262 373)">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square14" />
+      <text x="50" y="77" font-weight="400"  font-family="Cairo" text-anchor="middle" id="text14">
+         O
+      </text>
+   </g>
+
+   <g transform="translate(373 373)">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square15" />
+      <text x="50" y="77" font-weight="400"  font-family="Cairo" text-anchor="middle" id="text15">
+         P
+      </text>
+   </g>
+
+
+
+
+
+</svg>
