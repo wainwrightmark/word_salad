@@ -12,9 +12,9 @@ use log::{info, warn};
 use rayon::prelude::*;
 use std::{
     collections::HashSet,
-    fs::File,
+    fs::{File, DirEntry},
     io::{self, BufWriter, Write},
-    path::Path,
+    path::{Path, PathBuf},
     str::FromStr,
 };
 use ws_core::{
@@ -153,12 +153,38 @@ fn do_cluster(options: Options) {
     pb.finish();
 }
 
+
+struct FinderCase{
+    word_map: Vec<FinderWord>,
+    data_path: PathBuf,
+    data_file_text: String,
+    file_name: String,
+    write_path: String
+}
+
+impl  FinderCase {
+
+    fn new_from_path(dir_entry: DirEntry )-> Self{
+        let data_path = dir_entry.path();
+        let file_name = data_path.file_name().unwrap().to_string_lossy().to_string();
+        let write_path = format!("grids/{file_name}",);
+        info!("{}", write_path);
+        let data_file_text = std::fs::read_to_string(data_path.clone()).unwrap();
+
+        let word_map = make_words_vec_from_file(data_file_text.as_str());
+
+        Self { word_map, data_path, file_name, data_file_text, write_path }
+    }
+}
+
+
+
 fn do_finder(options: Options) {
     info!("Starting up");
 
     let folder = std::fs::read_dir(options.folder).unwrap();
 
-    let paths: Vec<_> = folder.collect();
+    let paths: Vec<_> = folder.into_iter().map(|path| FinderCase::new_from_path(path.unwrap())).sorted_by_key(|x|x.word_map.len()) .collect();
 
     let pb: ProgressBar = ProgressBar::new(paths.len() as u64)
         .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:2}/{len:2}").unwrap())
@@ -168,14 +194,10 @@ fn do_finder(options: Options) {
     let _ = std::fs::create_dir("clusters");
     let _ = std::fs::create_dir("done");
 
-    for path in paths.iter() {
-        let data_path = path.as_ref().unwrap().path();
-        let file_name = data_path.file_name().unwrap().to_string_lossy();
-        let write_path = format!("grids/{file_name}",);
-        info!("{}", write_path);
-        let data_file_text = std::fs::read_to_string(data_path.clone()).unwrap();
+    for finder_case in paths.iter() {
 
-        let word_map = make_words_vec_from_file(data_file_text.as_str());
+        let FinderCase { word_map, data_path, file_name, write_path, data_file_text } = finder_case;
+
 
         info!("Found {} Words", word_map.len());
         for word in word_map.iter().map(|x| x.text.clone()).sorted() {
