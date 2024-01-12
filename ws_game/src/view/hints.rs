@@ -68,8 +68,8 @@ impl MavericNode for HintsViewNode {
         };
 
         let transition = TransitionBuilder::<TransformTranslationLens>::default()
-        .then_ease(final_translation, speed, Ease::CubicInOut)
-        .build();
+            .then_ease(final_translation, speed, Ease::CubicInOut)
+            .build();
 
         let circle_bundle = (
             circle_bundle,

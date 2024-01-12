@@ -141,11 +141,10 @@ impl MavericNode for Menu {
     }
 }
 
-
-fn get_variable_fill(is_complete: bool)-> Color{
-    if is_complete{
+fn get_variable_fill(is_complete: bool) -> Color {
+    if is_complete {
         palette::FULL_GREEN.convert_color()
-    }else{
+    } else {
         palette::MENU_BUTTON_FILL.convert_color()
     }
 }

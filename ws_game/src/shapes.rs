@@ -8,7 +8,6 @@ use maveric::prelude::*;
 use std::fmt::Debug;
 
 use crate::prelude::ButtonInteraction;
-use crate::prelude::FireworksShader;
 use crate::prelude::PressedButton;
 use crate::startup::ADDITIONAL_TRACKING;
 
@@ -25,7 +24,9 @@ impl Plugin for ShapesPlugin {
         app.add_plugins(ExtractToShaderPlugin::<BoxWithBorderShader>::default());
         app.add_plugins(ExtractToShaderPlugin::<CircleShader>::default());
         app.add_plugins(ExtractToShaderPlugin::<SparkleShader>::default());
-        app.add_plugins(ExtractToShaderPlugin::<FireworksShader>::default());
+        app.add_plugins(ExtractToShaderPlugin::<
+            crate::prelude::fireworks::FireworksShader,
+        >::default());
 
         app.register_transition::<ProgressLens>();
         app.register_transition::<RoundingLens>();

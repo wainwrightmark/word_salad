@@ -417,17 +417,14 @@ impl LayoutStructure for SelfiePopupLayoutEntity {
 
     fn location(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
         match self {
-            Self::Text =>{
-                Vec2 {
-                    x: (IDEAL_WIDTH - SELFIE_POPUP_BOX_TITLE_WIDTH) / 2.,
-                    y: SELFIE_POPUP_BOX_TOP + (SELFIE_POPUP_BOX_TITLE_HEIGHT * 0.2),
-                }
-            }
-            Self::MoreInformationButton
-            | Self::OkButton
-            | Self::DontShowAgainButton => Vec2 {
+            Self::Text => Vec2 {
                 x: (IDEAL_WIDTH - SELFIE_POPUP_BOX_TITLE_WIDTH) / 2.,
-                y: SELFIE_POPUP_BOX_TOP + (SELFIE_POPUP_BOX_TITLE_HEIGHT * 1.4)
+                y: SELFIE_POPUP_BOX_TOP + (SELFIE_POPUP_BOX_TITLE_HEIGHT * 0.2),
+            },
+            Self::MoreInformationButton | Self::OkButton | Self::DontShowAgainButton => Vec2 {
+                x: (IDEAL_WIDTH - SELFIE_POPUP_BOX_TITLE_WIDTH) / 2.,
+                y: SELFIE_POPUP_BOX_TOP
+                    + (SELFIE_POPUP_BOX_TITLE_HEIGHT * 1.4)
                     + Spacing::Centre.apply(
                         SELFIE_POPUP_BOX_HEIGHT - (SELFIE_POPUP_BOX_TITLE_HEIGHT * 1.4),
                         SELFIE_POPUP_BOX_BUTTON_HEIGHT * 1.2,

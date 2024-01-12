@@ -33,14 +33,13 @@ impl LevelGroup {
     pub fn get_sequences(&self) -> &'static [LevelSequence] {
         use LevelSequence::*;
         match self {
-            LevelGroup::GlobalLocation => &[ EUCapitals, EUCountries, USStates,],
+            LevelGroup::GlobalLocation => &[EUCapitals, EUCountries, USStates],
             LevelGroup::HistoryMythology => &[
                 GreekGods,
                 USPresidents,
                 FamousQueens,
                 RomanGods,
                 EgyptianGods,
-
             ],
             LevelGroup::Science => &[Scientists, Insects, Fruit, Gemstones, Vegetables, Elements],
         }

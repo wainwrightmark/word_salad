@@ -1,7 +1,7 @@
 use indicatif::{ProgressBar, ProgressStyle};
 use itertools::Itertools;
 use log::info;
-use ws_core::{DesignedLevel, LayoutStructure, LayoutSizing, layout::entities::SelfieMode};
+use ws_core::{layout::entities::SelfieMode, DesignedLevel, LayoutSizing, LayoutStructure};
 
 pub fn do_word_layout() {
     let folder = std::fs::read_dir("grids").unwrap();
@@ -18,7 +18,9 @@ pub fn do_word_layout() {
     let mut max_diff: (isize, Option<DesignedLevel>) = Default::default();
 
     let sizing = LayoutSizing::default();
-    let selfie_mode = SelfieMode{is_selfie_mode: false};
+    let selfie_mode = SelfieMode {
+        is_selfie_mode: false,
+    };
 
     for path in paths.iter() {
         let grids_path = path.as_ref().unwrap().path();
@@ -43,8 +45,6 @@ pub fn do_word_layout() {
                             .unwrap_or_default(),
                     })
                     .collect();
-
-
 
             if data.len() > most_lines.0 {
                 most_lines.0 = data.len();

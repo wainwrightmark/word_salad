@@ -155,8 +155,8 @@ impl FoundWordsState {
         self.word_completions.iter().all(|x| x.is_complete())
     }
 
-    pub fn is_level_started(&self)-> bool{
-        self.word_completions.iter().all(|x|x.is_unstarted())
+    pub fn is_level_started(&self) -> bool {
+        self.word_completions.iter().all(|x| x.is_unstarted())
     }
 
     pub fn get_completion(&self, word_index: usize) -> Completion {
@@ -487,8 +487,6 @@ impl FoundWordsState {
             return 0;
         };
 
-
-
         chosen
             .solution
             .iter()
@@ -742,8 +740,13 @@ pub mod tests {
 
         let mut event_writer = TestEventWriter::default();
 
-
-        let hinted = found_words.try_hint_word(&mut hint_state, &level, 4, &mut chosen_state, &mut event_writer);
+        let hinted = found_words.try_hint_word(
+            &mut hint_state,
+            &level,
+            4,
+            &mut chosen_state,
+            &mut event_writer,
+        );
 
         assert!(hinted);
         assert_eq!(hint_state.hints_remaining, 9);

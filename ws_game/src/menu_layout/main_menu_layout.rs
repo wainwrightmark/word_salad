@@ -2,7 +2,7 @@ use bevy::math::Vec2;
 use strum::{Display, EnumCount, EnumIter, IntoEnumIterator};
 use ws_core::{
     layout::entities::{IDEAL_HEIGHT, IDEAL_WIDTH, TOP_BAR_HEIGHT},
-    LayoutStructure, LayoutStructureWithFont, LayoutStructureWithStaticText, Spacing, LayoutSizing,
+    LayoutSizing, LayoutStructure, LayoutStructureWithFont, LayoutStructureWithStaticText, Spacing,
 };
 
 use super::{MENU_BUTTON_FONT_SIZE, MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};

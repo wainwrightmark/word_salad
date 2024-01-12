@@ -140,7 +140,11 @@ impl MavericNode for GridTiles {
         });
     }
 
-    fn should_recreate(&self, _previous: &Self, context: &<Self::Context as NodeContext>::Wrapper<'_>,)-> bool {
+    fn should_recreate(
+        &self,
+        _previous: &Self,
+        context: &<Self::Context as NodeContext>::Wrapper<'_>,
+    ) -> bool {
         context.1.is_changed()
     }
 }
@@ -257,12 +261,10 @@ impl MavericNode for GridTile {
 
         let letter_color = Self::letter_color(self.is_selfie_mode, false);
 
-        if letter_color != Self::letter_color(self.is_selfie_mode, true){
+        if letter_color != Self::letter_color(self.is_selfie_mode, true) {
             commands.modify_children(|child, mut ec| {
-
                 //ec.insert(Transition::<TextColorLens>::SetValue { value: letter_color, next: None });
                 if let Some(text) = child.get::<Text>() {
-
                     let mut text = text.clone();
                     for section in text.sections.iter_mut() {
                         section.style.color = letter_color;
@@ -273,7 +275,6 @@ impl MavericNode for GridTile {
                 }
             });
         }
-
 
         //info!("Grid Tile on deleted {found_children:?} children found");
 

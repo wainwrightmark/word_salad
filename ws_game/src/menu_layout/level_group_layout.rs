@@ -4,7 +4,7 @@ use super::{MENU_BUTTON_FONT_SIZE, MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU
 use bevy::math::Vec2;
 use ws_core::{
     layout::entities::{IDEAL_HEIGHT, IDEAL_WIDTH, TOP_BAR_HEIGHT},
-    LayoutStructure, LayoutStructureWithFont, Spacing, LayoutSizing,
+    LayoutSizing, LayoutStructure, LayoutStructureWithFont, Spacing,
 };
 use ws_levels::level_group::LevelGroup;
 
@@ -28,7 +28,7 @@ impl LevelGroupLayoutEntity {
         (name.to_string(), fraction)
     }
 
-    pub fn is_complete(&self, completion: &TotalCompletion, group: &LevelGroup)-> bool{
+    pub fn is_complete(&self, completion: &TotalCompletion, group: &LevelGroup) -> bool {
         let sequence = group.get_level_sequence(self.index);
 
         let num_complete = completion.get_number_complete(&sequence);
@@ -55,7 +55,11 @@ impl LayoutStructure for LevelGroupLayoutEntity {
         }
     }
 
-    fn location(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> bevy::prelude::Vec2 {
+    fn location(
+        &self,
+        _context: &Self::Context<'_>,
+        _sizing: &LayoutSizing,
+    ) -> bevy::prelude::Vec2 {
         Vec2 {
             x: (IDEAL_WIDTH - MENU_BUTTON_WIDTH) / 2.,
             y: TOP_BAR_HEIGHT

@@ -45,8 +45,7 @@ pub enum LevelSequence {
 }
 
 impl LevelSequence {
-
-    pub fn index(&self)-> usize{
+    pub fn index(&self) -> usize {
         *self as usize
     }
     pub fn get_next(self) -> Option<Self> {

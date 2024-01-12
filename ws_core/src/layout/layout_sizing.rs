@@ -5,12 +5,16 @@ use glam::Vec2;
 pub struct LayoutSizing {
     pub size_ratio: f32,
     pub left_pad: f32,
-    pub bottom_pad: f32
+    pub bottom_pad: f32,
 }
 
-impl Default for LayoutSizing{
+impl Default for LayoutSizing {
     fn default() -> Self {
-        Self { size_ratio: 1.0, left_pad: 0.0, bottom_pad: 0.0 }
+        Self {
+            size_ratio: 1.0,
+            left_pad: 0.0,
+            bottom_pad: 0.0,
+        }
     }
 }
 
@@ -35,10 +39,10 @@ impl LayoutSizing {
         let bottom_pad = page_size.y - used_y;
         let size_ratio = used_x / ideal_width;
 
-        let r =  Self {
+        let r = Self {
             size_ratio,
             left_pad,
-            bottom_pad
+            bottom_pad,
         };
 
         r
@@ -80,7 +84,11 @@ impl LayoutSizing {
         v2 * self.size_ratio
     }
 
-    pub fn get_location<T: LayoutStructure>(&self, entity: &T, context: &T::Context<'_>) -> glam::Vec2 {
+    pub fn get_location<T: LayoutStructure>(
+        &self,
+        entity: &T,
+        context: &T::Context<'_>,
+    ) -> glam::Vec2 {
         let Vec2 { x, y } = entity.location(context, &self);
 
         Vec2 {

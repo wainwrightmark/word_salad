@@ -200,32 +200,26 @@ fn do_finder(options: Options) {
 
             info!("Found {total_master_count} words on the master list. {new_master_count} will be treated as exclusions");
 
-            
-            if !master_words.is_empty(){
-                let mut bad_master_words :HashSet<FinderWord> = Default::default();
-                for word in word_map.iter(){
-                    for master_word in master_words.iter(){
-
-                        if master_word.is_strict_substring(word){
-                            warn!("{} is a superstring of {} so will be impossible", word.text, master_word.text);
+            if !master_words.is_empty() {
+                let mut bad_master_words: HashSet<FinderWord> = Default::default();
+                for word in word_map.iter() {
+                    for master_word in master_words.iter() {
+                        if master_word.is_strict_substring(word) {
+                            warn!(
+                                "{} is a superstring of {} so will be impossible",
+                                word.text, master_word.text
+                            );
                             bad_master_words.insert(master_word.clone());
                         }
-                        
-                        
                     }
                 }
-                for bad in bad_master_words.drain(){
-                    if let Some((index, word)) = master_words.iter().find_position(|x| **x == bad){
-                        
-                        
+                for bad in bad_master_words.drain() {
+                    if let Some((index, word)) = master_words.iter().find_position(|x| **x == bad) {
                         info!("Removed '{}' from master words", word.text);
                         master_words.remove(index);
                     }
                 }
-
-
             }
-
         }
 
         let grids_write_path = Path::new(write_path.as_str());
@@ -287,18 +281,15 @@ fn create_grids(
     info!("Combinations Sorted");
 
     let mut ordered_combinations: Vec<(u32, HashSet<WordSet>)> = possible_combinations
-    .into_iter()
-        .map(|x| x.word_indexes)        
+        .into_iter()
+        .map(|x| x.word_indexes)
         .group_by(|x| x.count())
         .into_iter()
         .sorted_unstable_by_key(|(k, _v)| *k)
         .map(|(word_count, v)| (word_count, HashSet::from_iter(v)))
         .collect_vec();
 
-        info!(
-            "{c} group sizes found",
-            c = ordered_combinations.len()
-        );
+    info!("{c} group sizes found", c = ordered_combinations.len());
 
     let mut all_solutions: Vec<GridResult> = vec![];
     let mut solved_sets: Vec<WordSet> = vec![];

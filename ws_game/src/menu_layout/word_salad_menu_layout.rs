@@ -2,7 +2,7 @@ use bevy::math::Vec2;
 use strum::{Display, EnumCount, EnumIs, EnumIter, IntoEnumIterator};
 use ws_core::{
     layout::entities::{IDEAL_HEIGHT, IDEAL_WIDTH, TOP_BAR_HEIGHT},
-    LayoutStructure, LayoutStructureWithFont, Spacing, LayoutSizing,
+    LayoutSizing, LayoutStructure, LayoutStructureWithFont, Spacing,
 };
 use ws_levels::level_group::LevelGroup;
 
@@ -44,27 +44,28 @@ impl WordSaladMenuLayoutEntity {
             WordSaladMenuLayoutEntity::YesterdayPuzzle => "Yesterday's Puzzle",
             WordSaladMenuLayoutEntity::EreYesterdayPuzzle => "Ere-yesterday's Puzzle",
             WordSaladMenuLayoutEntity::NextPuzzle => "Next Incomplete",
-
         };
 
         (s1.to_string(), "\u{f096}".to_string())
     }
 
-    pub fn is_complete(&self, completion: &TotalCompletion,)-> bool{
-        let Some(today_index) = DailyChallenges::get_today_index() else {return  false;};
+    pub fn is_complete(&self, completion: &TotalCompletion) -> bool {
+        let Some(today_index) = DailyChallenges::get_today_index() else {
+            return false;
+        };
 
         let index = match self {
             WordSaladMenuLayoutEntity::TodayPuzzle => Some(today_index),
             WordSaladMenuLayoutEntity::YesterdayPuzzle => today_index.checked_sub(1),
             WordSaladMenuLayoutEntity::EreYesterdayPuzzle => today_index.checked_sub(2),
-            WordSaladMenuLayoutEntity::NextPuzzle => {
-                today_index.checked_sub(3).and_then (|x|completion.get_next_incomplete_daily_challenge(x))
-
-            }
-
+            WordSaladMenuLayoutEntity::NextPuzzle => today_index
+                .checked_sub(3)
+                .and_then(|x| completion.get_next_incomplete_daily_challenge(x)),
         };
 
-        let Some(index) = index else{return false;};
+        let Some(index) = index else {
+            return false;
+        };
 
         let complete = completion.is_daily_challenge_complete(index);
         complete
@@ -75,7 +76,6 @@ impl WordSaladMenuLayoutEntity {
         completion: &TotalCompletion,
         daily_challenges: &DailyChallenges,
     ) -> Option<(String, String)> {
-
         let today_index = DailyChallenges::get_today_index()?;
 
         let index = match self {

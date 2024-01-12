@@ -25,10 +25,18 @@ impl MavericNode for NonLevelView {
                     "Welcome to Word Salad\nLet's find some Chess Pieces".to_string()
                 }
                 NonLevel::AfterCustomLevel => "Custom Level Complete".to_string(),
-                NonLevel::DailyChallengeFinished => "You have completed\nAll daily challenges".to_string(),
-                NonLevel::DailyChallengeReset => "You have completed\nAll daily challenges".to_string(),
-                NonLevel::LevelSequenceFinished(ls) => format!("You have completed\nAll {}", ls.name()),
-                NonLevel::LevelSequenceReset(ls) => format!("You have completed\nAll {}", ls.name()),
+                NonLevel::DailyChallengeFinished => {
+                    "You have completed\nAll daily challenges".to_string()
+                }
+                NonLevel::DailyChallengeReset => {
+                    "You have completed\nAll daily challenges".to_string()
+                }
+                NonLevel::LevelSequenceFinished(ls) => {
+                    format!("You have completed\nAll {}", ls.name())
+                }
+                NonLevel::LevelSequenceReset(ls) => {
+                    format!("You have completed\nAll {}", ls.name())
+                }
                 // NonLevel::NoMoreDailyChallenge => {
                 //     "You have completed\nAll daily challenges".to_string()
                 // }

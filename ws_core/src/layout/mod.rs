@@ -28,7 +28,9 @@ mod tests {
     #[test]
     fn test_picking_all() {
         let sizing = LayoutSizing::default();
-        let selfie_mode = SelfieMode{is_selfie_mode: false};
+        let selfie_mode = SelfieMode {
+            is_selfie_mode: false,
+        };
 
         test_picking::<GameLayoutEntity>(&selfie_mode, &sizing);
         test_picking::<LayoutTopBar>(&(), &sizing);
@@ -55,7 +57,9 @@ mod tests {
         };
 
         let layout = LayoutSizing::from_page_size(size, IDEAL_RATIO, IDEAL_WIDTH);
-        let selfie_mode = SelfieMode{is_selfie_mode: false};
+        let selfie_mode = SelfieMode {
+            is_selfie_mode: false,
+        };
 
         let mut svg = format!(
             r#"

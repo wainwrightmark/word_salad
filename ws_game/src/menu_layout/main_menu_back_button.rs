@@ -1,7 +1,7 @@
 use bevy::math::Vec2;
 use ws_core::{
     layout::entities::{IDEAL_HEIGHT, IDEAL_WIDTH},
-    LayoutStructure, LayoutStructureWithFont, LayoutStructureWithStaticText, LayoutSizing,
+    LayoutSizing, LayoutStructure, LayoutStructureWithFont, LayoutStructureWithStaticText,
 };
 
 use super::{MENU_BUTTON_FONT_SIZE, MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};

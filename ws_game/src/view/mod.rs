@@ -1,4 +1,5 @@
 pub mod congrats;
+pub mod fireworks;
 pub mod game_grid;
 pub mod hints;
 pub mod level_extra_info;
@@ -72,7 +73,7 @@ impl MavericRootChildren for ViewRoot {
                                 solution: context.0.solution.clone(),
                                 should_hide: context.0.is_just_finished,
                                 close_to_solution,
-                                selfie_mode
+                                selfie_mode,
                             },
                             &context.3,
                         );
@@ -88,10 +89,7 @@ impl MavericRootChildren for ViewRoot {
                         let theme = level.full_name();
                         commands.add_child(
                             "ui_theme",
-                            LevelName {
-                                theme,
-                                selfie_mode,
-                            },
+                            LevelName { theme, selfie_mode },
                             &context.3,
                         );
 

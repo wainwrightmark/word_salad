@@ -1,9 +1,9 @@
 use crate::{prelude::*, z_indices};
-use bevy::{reflect::TypeUuid, sprite::Anchor, text::Text2dBounds};
-use bevy_param_shaders::prelude::*;
+use bevy::{sprite::Anchor, text::Text2dBounds};
+
 use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
-use num_traits::Zero;
-use rand::{rngs::ThreadRng, Rng};
+
+use rand::rngs::ThreadRng;
 use std::time::Duration;
 use strum::IntoEnumIterator;
 use ws_core::{layout::entities::*, palette::BUTTON_CLICK_FILL};
@@ -39,7 +39,14 @@ impl MavericNode for CongratsView {
         entity_commands.with_children(|cb| {
             let mut rng = ThreadRng::default();
             for i in 0..NUM_FIREWORKS {
-                create_firework(cb, &mut rng, SECONDS, size.as_ref(), i <= 1, context.8.selfie_mode());
+                fireworks::create_firework(
+                    cb,
+                    &mut rng,
+                    SECONDS,
+                    size.as_ref(),
+                    i <= 1,
+                    context.8.selfie_mode(),
+                );
             }
         });
     }
@@ -96,7 +103,11 @@ impl MavericNode for CongratsView {
                     CurrentLevel::NonLevel(_) => Data::None,
                 };
 
-                let initial_scale = if context.2.is_changed() {Vec3::ZERO} else{Vec3::ONE};
+                let initial_scale = if context.2.is_changed() {
+                    Vec3::ZERO
+                } else {
+                    Vec3::ONE
+                };
                 let transition = TransitionBuilder::default()
                     .then_wait(Duration::from_secs_f32(TRANSITION_WAIT_SECS))
                     .then_ease(Vec3::ONE, (1.0 / TRANSITION_SECS).into(), Ease::CubicOut)
@@ -339,107 +350,3 @@ impl MavericNode for StatisticNode {
         });
     }
 }
-
-fn create_firework(
-    cb: &mut ChildBuilder,
-    rng: &mut impl Rng,
-    total_seconds: f32,
-    size: &Size,
-    no_delay: bool,
-    selfie_mode: SelfieMode
-) {
-    let rect = size.get_rect(&ws_core::layout::entities::GameLayoutEntity::Grid, &selfie_mode);
-
-    let delay = if no_delay {
-        0.0
-    } else {
-        rng.gen_range(0.0..(total_seconds - 1.0))
-    };
-    let color = Color::hsl(rng.gen_range(0.0..=360.0), 1.0, 0.75);
-
-    let position = rect.top_left
-        + Vec2 {
-            x: rng.gen_range(0.0..=(rect.extents.x.abs())),
-            y: rng.gen_range(rect.extents.y..=0.0),
-        };
-
-    let bundle = (
-        ShaderBundle::<FireworksShader> {
-            parameters: (color.into(), 0.0.into()),
-            transform: Transform {
-                translation: position.extend(z_indices::FIREWORKS),
-
-                scale: Vec3::ONE * rect.extents.x.max(rect.extents.y),
-                ..default()
-            },
-            ..default()
-        },
-        ScheduledForDeletion {
-            remaining: Duration::from_secs_f32(1.0),
-        },
-        TransitionBuilder::<ProgressLens>::default()
-            .then_tween(1.0, 1.0.into())
-            .build(),
-    );
-
-    if delay.is_zero() {
-        cb.spawn(bundle);
-    } else {
-        cb.spawn(ScheduledChange {
-            remaining: Duration::from_secs_f32(delay),
-            boxed_change: Box::new(move |ec| {
-                ec.insert(bundle);
-            }),
-        });
-    }
-}
-
-#[repr(C)]
-#[derive(Debug, Reflect, Clone, Copy, TypeUuid, Default, PartialEq)]
-#[uuid = "3b76cd37-5f82-4fcc-9d26-ea6f60d616e3"]
-pub struct FireworksShader;
-
-impl ExtractToShader for FireworksShader {
-    type Shader = Self;
-    type ParamsQuery<'a> = (&'a ShaderColor, &'a ShaderProgress);
-    type ParamsBundle = (ShaderColor, ShaderProgress);
-    type ResourceParams<'w> = ();
-
-    fn get_params<'w, 'w1, 'w2, 's2, 'a, 'r>(
-        query_item: <Self::ParamsQuery<'a> as bevy::ecs::query::WorldQuery>::Item<'w1>,
-        _resource: &'r <Self::ResourceParams<'w> as bevy::ecs::system::SystemParam>::Item<'w2, 's2>,
-    ) -> <Self::Shader as ParameterizedShader>::Params {
-        FireworksParams {
-            color: query_item.0.color.into(),
-            progress: query_item.1.progress,
-        }
-    }
-}
-
-impl ParameterizedShader for FireworksShader {
-    type Params = FireworksParams;
-
-    fn fragment_body() -> impl Into<String> {
-        "return fill::fireworks::fill(in.color, in.pos, in.progress);"
-    }
-
-    fn imports() -> impl Iterator<Item = bevy_param_shaders::prelude::FragmentImport> {
-        [FIREWORKS_IMPORT].into_iter()
-    }
-
-    const FRAME: Frame = Frame::square(0.25);
-}
-
-#[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Default, Reflect, bytemuck::Pod, bytemuck::Zeroable)]
-pub struct FireworksParams {
-    pub color: LinearRGB,
-    pub progress: f32,
-}
-
-impl ShaderParams for FireworksParams {}
-
-const FIREWORKS_IMPORT: FragmentImport = FragmentImport {
-    path: "shaders/fill/fireworks.wgsl",
-    import_path: "fill::fireworks",
-};

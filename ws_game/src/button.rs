@@ -91,7 +91,6 @@ fn handle_button_activations(
     mut level_time: ResMut<LevelTime>,
     mut selfie_mode_history: ResMut<SelfieModeHistory>,
     mut ew: EventWriter<AnimateSolutionsEvent>,
-
 ) {
     for ev in events.read() {
         ev.0.on_activated(
@@ -108,7 +107,6 @@ fn handle_button_activations(
             &mut level_time,
             &mut selfie_mode_history,
             &mut ew,
-
         )
     }
 }
@@ -136,15 +134,13 @@ pub enum ButtonPressType {
     OnEnd,
 }
 
-
 #[derive(Debug, Clone, Copy, PartialEq, Component, EnumIs)]
-pub enum PopupInteraction{
+pub enum PopupInteraction {
     ClickGreyedOut,
     ClickClose,
     HintsBuyMore,
     SelfieInformation,
-    SelfieDontShowAgain
-
+    SelfieDontShowAgain,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Component, EnumIs, Default)]
@@ -229,7 +225,6 @@ impl From<MainMenuBackButton> for ButtonInteraction {
 }
 
 impl ButtonInteraction {
-
     /// Called when the button action is activated
     fn on_activated(
         &self,
@@ -247,7 +242,7 @@ impl ButtonInteraction {
         level_time: &mut ResMut<LevelTime>,
         selfie_mode_history: &mut ResMut<SelfieModeHistory>,
 
-        ew: &mut EventWriter<AnimateSolutionsEvent>
+        ew: &mut EventWriter<AnimateSolutionsEvent>,
     ) {
         match self {
             ButtonInteraction::None => {}
@@ -311,8 +306,7 @@ impl ButtonInteraction {
                     .and_then(|x| total_completion.get_next_incomplete_daily_challenge(x))
                 {
                     current_level.set_if_neq(CurrentLevel::DailyChallenge { index });
-                }
-                else{
+                } else {
                     current_level.set_if_neq(CurrentLevel::NonLevel(NonLevel::DailyChallengeReset));
                 }
                 menu_state.close();
@@ -389,21 +383,30 @@ impl ButtonInteraction {
                             };
                         }
                         NonLevel::DailyChallengeFinished => {
-                            let new_current_level = match total_completion.get_next_level_sequence(None){
-                                Some((sequence, level_index)) => CurrentLevel::Fixed { level_index, sequence },
-                                None => CurrentLevel::NonLevel(NonLevel::DailyChallengeReset),
-                            };
+                            let new_current_level =
+                                match total_completion.get_next_level_sequence(None) {
+                                    Some((sequence, level_index)) => CurrentLevel::Fixed {
+                                        level_index,
+                                        sequence,
+                                    },
+                                    None => CurrentLevel::NonLevel(NonLevel::DailyChallengeReset),
+                                };
 
                             *current_level.as_mut() = new_current_level;
-                        },
+                        }
                         NonLevel::LevelSequenceFinished(seq) => {
-                            let new_current_level = match total_completion.get_next_level_sequence(Some(seq)){
-                                Some((sequence, level_index)) => CurrentLevel::Fixed { level_index, sequence },
+                            let new_current_level = match total_completion
+                                .get_next_level_sequence(Some(seq))
+                            {
+                                Some((sequence, level_index)) => CurrentLevel::Fixed {
+                                    level_index,
+                                    sequence,
+                                },
                                 None => CurrentLevel::NonLevel(NonLevel::LevelSequenceReset(seq)),
                             };
 
                             *current_level.as_mut() = new_current_level;
-                        },
+                        }
                     }
                 }
             }
@@ -430,7 +433,9 @@ impl ButtonInteraction {
                     crate::wasm::share(share_text);
                 }
             }
-            ButtonInteraction::Popup(PopupInteraction::ClickClose | PopupInteraction::ClickGreyedOut) =>{
+            ButtonInteraction::Popup(
+                PopupInteraction::ClickClose | PopupInteraction::ClickGreyedOut,
+            ) => {
                 popup_state.0 = None;
             }
 
@@ -441,8 +446,8 @@ impl ButtonInteraction {
             }
 
             ButtonInteraction::Popup(PopupInteraction::SelfieInformation) => {
-
-                #[cfg(target_arch="wasm32")]{
+                #[cfg(target_arch = "wasm32")]
+                {
                     let url = match Platform::CURRENT{
                         Platform::IOs => "https://support.apple.com/en-gb/HT207935#:~:text=Go%20to%20Settings%20%3E%20Control%20Centre,iPhone%2C%20or%20on%20your%20iPad.&text=%2C%20then%20wait%20for%20the%203%2Dsecond%20countdown",
                         Platform::Android => "https://support.google.com/android/answer/9075928?hl=en-GB",
@@ -452,7 +457,6 @@ impl ButtonInteraction {
 
                     crate::wasm::open_link(url);
                 }
-
             }
 
             ButtonInteraction::Popup(PopupInteraction::SelfieDontShowAgain) => {

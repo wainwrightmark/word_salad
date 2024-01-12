@@ -2,7 +2,7 @@ use bevy::math::Vec2;
 use strum::{Display, EnumCount};
 use ws_core::{
     layout::entities::{IDEAL_HEIGHT, IDEAL_WIDTH, TOP_BAR_HEIGHT},
-    LayoutStructure, LayoutStructureWithFont, Spacing, LayoutSizing,
+    LayoutSizing, LayoutStructure, LayoutStructureWithFont, Spacing,
 };
 use ws_levels::level_group::LevelGroup;
 
@@ -26,7 +26,11 @@ impl LevelsMenuLayoutEntity {
 
     pub const COUNT: usize = 1 + LevelGroup::COUNT;
 
-    pub fn is_complete(&self, completion: &TotalCompletion,daily_challenges: &DailyChallenges,)-> bool{
+    pub fn is_complete(
+        &self,
+        completion: &TotalCompletion,
+        daily_challenges: &DailyChallenges,
+    ) -> bool {
         let num_complete = match self {
             LevelsMenuLayoutEntity::WordSalad => completion.get_daily_challenges_complete(),
             LevelsMenuLayoutEntity::AdditionalLevel(group) => {

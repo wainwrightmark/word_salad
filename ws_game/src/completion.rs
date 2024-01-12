@@ -38,13 +38,14 @@ impl TrackableResource for TotalCompletion {
 }
 
 impl TotalCompletion {
+    pub fn get_next_level_sequence(
+        &self,
+        current: Option<LevelSequence>,
+    ) -> Option<(LevelSequence, usize)> {
+        let first_index = current.map(|x| x.index() + 1).unwrap_or_default();
 
-    pub fn get_next_level_sequence(&self, current: Option<LevelSequence>)-> Option<(LevelSequence, usize)>
-    {
-        let first_index = current.map(|x|x.index() + 1).unwrap_or_default();
-
-        for sequence in LevelSequence::iter().filter(|x|x.index() >= first_index) {
-            if let Some(index) = self.get_next_level_index(sequence){
+        for sequence in LevelSequence::iter().filter(|x| x.index() >= first_index) {
+            if let Some(index) = self.get_next_level_index(sequence) {
                 return Some((sequence, index));
             }
         }

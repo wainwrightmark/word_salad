@@ -1,4 +1,4 @@
-use crate::{prelude::*, z_indices, startup};
+use crate::{prelude::*, startup, z_indices};
 use bevy::reflect::TypeUuid;
 use bevy_param_shaders::prelude::*;
 use itertools::Itertools;
@@ -22,7 +22,7 @@ pub struct WordLine {
     pub solution: Solution,
     pub should_hide: bool,
     pub close_to_solution: bool,
-    pub selfie_mode: SelfieMode
+    pub selfie_mode: SelfieMode,
 }
 
 impl MavericNode for WordLine {
@@ -44,7 +44,8 @@ impl MavericNode for WordLine {
                                 && !previous.should_hide
                                 && previous.solution.starts_with(&args.node.solution)
                             {
-                                solution = &previous.solution.as_slice()[0..(args.node.solution.len() + 1)];
+                                solution = &previous.solution.as_slice()
+                                    [0..(args.node.solution.len() + 1)];
                             } else {
                                 solution = args.node.solution.as_slice();
                             }
@@ -73,7 +74,9 @@ impl MavericNode for WordLine {
             const SCALE_FACTOR: f32 = ((GRID_GAP / 3.0) + GRID_TILE_SIZE) / GRID_TILE_SIZE;
 
             if let Ok(tile) = solution.iter().exactly_one() {
-                let rect = args.context.get_rect(&LayoutGridTile(*tile), &args.node.selfie_mode);
+                let rect = args
+                    .context
+                    .get_rect(&LayoutGridTile(*tile), &args.node.selfie_mode);
                 let color = index_to_color(0);
 
                 commands.add_child(
@@ -98,8 +101,12 @@ impl MavericNode for WordLine {
                 );
             } else {
                 for (index, (from, to)) in solution.iter().tuple_windows().enumerate() {
-                    let rect_f = args.context.get_rect(&LayoutGridTile(*from), &args.node.selfie_mode);
-                    let rect_t = args.context.get_rect(&LayoutGridTile(*to), &args.node.selfie_mode);
+                    let rect_f = args
+                        .context
+                        .get_rect(&LayoutGridTile(*from), &args.node.selfie_mode);
+                    let rect_t = args
+                        .context
+                        .get_rect(&LayoutGridTile(*to), &args.node.selfie_mode);
 
                     let translation =
                         ((rect_f.centre() + rect_t.centre()) * 0.5).extend(z_indices::WORD_LINE);
@@ -373,7 +380,7 @@ fn transition_word_line(
         ProgressTarget::DecreaseToZero => (values.progress - progress_change).max(0.0),
         ProgressTarget::ResetThenIncreaseToOne => {
             targets.target_progress = ProgressTarget::IncreaseToOne;
-            RESET_PROGRESS// + progress_change.min(1.0)
+            RESET_PROGRESS // + progress_change.min(1.0)
         }
         ProgressTarget::OneThenDecreaseToZero => {
             targets.target_progress = ProgressTarget::DecreaseToZero;
@@ -390,7 +397,7 @@ fn transition_word_line(
         progress,
     };
 
-    if values.set_if_neq(new_values){
+    if values.set_if_neq(new_values) {
         startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     }
 }

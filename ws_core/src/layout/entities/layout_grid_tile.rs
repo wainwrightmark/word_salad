@@ -33,13 +33,15 @@ impl LayoutStructure for LayoutGridTile {
     }
 
     fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
-        GameLayoutEntity::Grid.location(context, sizing).add(tile_offset(
-            self.0,
-            Spacing::SpaceBetween,
-            Spacing::SpaceBetween,
-            GameLayoutEntity::Grid.size(context),
-            self.size(context),
-        ))
+        GameLayoutEntity::Grid
+            .location(context, sizing)
+            .add(tile_offset(
+                self.0,
+                Spacing::SpaceBetween,
+                Spacing::SpaceBetween,
+                GameLayoutEntity::Grid.size(context),
+                self.size(context),
+            ))
     }
 
     fn iter_all(_context: &Self::Context<'_>) -> impl Iterator<Item = Self> {

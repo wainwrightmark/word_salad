@@ -31,7 +31,8 @@ pub trait SaladWindowSize {
     fn font_size<T: LayoutStructureWithFont>(&self, entity: &T, context: &T::FontContext) -> f32;
     fn tile_size(&self, selfie_mode: &SelfieMode) -> f32;
 
-    fn get_rect<T: LayoutStructure>(&self, entity: &T, context: &T::Context<'_>) -> LayoutRectangle;
+    fn get_rect<T: LayoutStructure>(&self, entity: &T, context: &T::Context<'_>)
+        -> LayoutRectangle;
     fn try_pick_with_tolerance<T: LayoutStructure>(
         &self,
         p: Vec2,
@@ -54,7 +55,11 @@ fn layout(size: &Size) -> LayoutSizing {
 }
 
 impl SaladWindowSize for Size {
-    fn get_rect<T: LayoutStructure>(&self, entity: &T, context: &T::Context<'_>) -> LayoutRectangle {
+    fn get_rect<T: LayoutStructure>(
+        &self,
+        entity: &T,
+        context: &T::Context<'_>,
+    ) -> LayoutRectangle {
         let mut rect = layout(self).get_rect(entity, context);
 
         rect.top_left = Vec2 {
@@ -89,7 +94,9 @@ impl SaladWindowSize for Size {
     }
 
     fn tile_size(&self, selfie_mode: &SelfieMode) -> f32 {
-        layout(self).get_size(&LayoutGridTile::default(), &selfie_mode).x
+        layout(self)
+            .get_size(&LayoutGridTile::default(), &selfie_mode)
+            .x
     }
 }
 

@@ -42,7 +42,7 @@ impl VideoResource {
 
 #[derive(Default, Resource, Clone, PartialEq, Serialize, Deserialize, MavericContext)]
 pub struct SelfieModeHistory {
-    pub do_not_show_selfie_mode_tutorial : bool
+    pub do_not_show_selfie_mode_tutorial: bool,
 }
 
 impl TrackableResource for SelfieModeHistory {
@@ -55,14 +55,14 @@ fn handle_video_event(
     mut res: ResMut<VideoResource>,
     history: Res<SelfieModeHistory>,
     mut events: EventReader<VideoEvent>,
-    mut popup_state: ResMut<PopupState>
+    mut popup_state: ResMut<PopupState>,
 ) {
     for ev in events.read() {
         match ev {
             VideoEvent::VideoStarted => {
                 res.is_selfie_mode = true;
 
-                if !history.do_not_show_selfie_mode_tutorial{
+                if !history.do_not_show_selfie_mode_tutorial {
                     popup_state.0 = Some(crate::prelude::PopupType::SelfieModeHelp);
                 }
             }

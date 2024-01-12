@@ -60,8 +60,9 @@ impl MavericNode for TutorialNode {
             }
             if let Some(text) = node.text.middle {
                 let transition = TransitionBuilder::default()
-                .then_wait(Duration::from_secs_f32(TRANSITION_WAIT_SECS))
-                .then_ease(Vec3::ONE, (1.0 / TRANSITION_SECS).into(), Ease::CubicOut).build();
+                    .then_wait(Duration::from_secs_f32(TRANSITION_WAIT_SECS))
+                    .then_ease(Vec3::ONE, (1.0 / TRANSITION_SECS).into(), Ease::CubicOut)
+                    .build();
 
                 commands.add_child(
                     "big top",
@@ -112,13 +113,13 @@ impl MavericNode for TutorialPopupNode {
     fn set_components(mut commands: maveric::prelude::SetComponentCommands<Self, Self::Context>) {
         commands.insert_static_bundle((VisibilityBundle::default(), GlobalTransform::default()));
 
-        commands.map_node(|x|&x.entity)
+        commands
+            .map_node(|x| &x.entity)
+            .insert_with_node_and_context(|entity, context| {
+                let rect = context.get_rect(entity, &());
 
-        .insert_with_node_and_context(|entity,context|{
-            let rect = context.get_rect(entity, &());
-
-            Transform::from_translation(rect.centre().extend(0.0))
-        });
+                Transform::from_translation(rect.centre().extend(0.0))
+            });
     }
 
     fn set_children<R: maveric::prelude::MavericRoot>(
@@ -134,8 +135,7 @@ impl MavericNode for TutorialPopupNode {
             let background = crate::shapes::box_with_border_node(
                 rect.width(),
                 rect.height(),
-                Vec2::ZERO
-                    .extend(crate::z_indices::TUTORIAL_POPUP_BOX_BACKGROUND),
+                Vec2::ZERO.extend(crate::z_indices::TUTORIAL_POPUP_BOX_BACKGROUND),
                 ws_core::palette::POPUP_BOX_BACKGROUND
                     .convert_color()
                     .with_a(0.8),
@@ -159,8 +159,7 @@ impl MavericNode for TutorialPopupNode {
                 text_anchor: bevy::sprite::Anchor::CenterLeft,
             }
             .with_bundle(Transform::from_translation(
-                (text_rect
-                    .centre_left() - rect.centre())
+                (text_rect.centre_left() - rect.centre())
                     .extend(crate::z_indices::TUTORIAL_POPUP_BOX_TEXT),
             ));
 
@@ -435,7 +434,11 @@ impl LayoutStructure for TutorialLayoutEntity {
         }
     }
 
-    fn location(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> bevy::prelude::Vec2 {
+    fn location(
+        &self,
+        _context: &Self::Context<'_>,
+        _sizing: &LayoutSizing,
+    ) -> bevy::prelude::Vec2 {
         match self {
             TutorialLayoutEntity::Top => Vec2 {
                 x: (IDEAL_WIDTH - BOX_WIDTH) * 0.5,

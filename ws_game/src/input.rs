@@ -60,48 +60,55 @@ impl InteractionEntity {
         grid_tolerance: Option<f32>,
     ) -> Option<Self> {
         //info!("Try find input");
-        if let Some(popup_type) = popup_state.0{
-
-            match popup_type{
+        if let Some(popup_type) = popup_state.0 {
+            match popup_type {
                 PopupType::BuyMoreHints => {
                     return match size.try_pick::<HintsPopupLayoutEntity>(*position, &()) {
                         Some(entity) => match entity {
                             HintsPopupLayoutEntity::Text => None,
                             HintsPopupLayoutEntity::BuyMoreButton => {
-                                Some(InteractionEntity::Button(ButtonInteraction::Popup(PopupInteraction::HintsBuyMore)))
+                                Some(InteractionEntity::Button(ButtonInteraction::Popup(
+                                    PopupInteraction::HintsBuyMore,
+                                )))
                             }
                             HintsPopupLayoutEntity::SufferAloneButton => {
-                                Some(InteractionEntity::Button(ButtonInteraction::Popup(PopupInteraction::ClickClose)))
+                                Some(InteractionEntity::Button(ButtonInteraction::Popup(
+                                    PopupInteraction::ClickClose,
+                                )))
                             }
                             HintsPopupLayoutEntity::PopupBox => None,
                         },
-                        None => Some(InteractionEntity::Button(ButtonInteraction::Popup(PopupInteraction::ClickGreyedOut))),
+                        None => Some(InteractionEntity::Button(ButtonInteraction::Popup(
+                            PopupInteraction::ClickGreyedOut,
+                        ))),
                     }
-                },
+                }
                 PopupType::SelfieModeHelp => {
                     return match size.try_pick::<SelfiePopupLayoutEntity>(*position, &()) {
                         Some(entity) => match entity {
                             SelfiePopupLayoutEntity::Text => None,
                             SelfiePopupLayoutEntity::MoreInformationButton => {
-                                Some(InteractionEntity::Button(ButtonInteraction::Popup(PopupInteraction::SelfieInformation)))
+                                Some(InteractionEntity::Button(ButtonInteraction::Popup(
+                                    PopupInteraction::SelfieInformation,
+                                )))
                             }
                             SelfiePopupLayoutEntity::DontShowAgainButton => {
-                                Some(InteractionEntity::Button(ButtonInteraction::Popup(PopupInteraction::SelfieDontShowAgain)))
+                                Some(InteractionEntity::Button(ButtonInteraction::Popup(
+                                    PopupInteraction::SelfieDontShowAgain,
+                                )))
                             }
-                            SelfiePopupLayoutEntity::OkButton => {
-                                Some(InteractionEntity::Button(ButtonInteraction::Popup(PopupInteraction::ClickClose)))
-                            }
+                            SelfiePopupLayoutEntity::OkButton => Some(InteractionEntity::Button(
+                                ButtonInteraction::Popup(PopupInteraction::ClickClose),
+                            )),
                             SelfiePopupLayoutEntity::PopupBox => None,
                         },
-                        None => Some(InteractionEntity::Button(ButtonInteraction::Popup(PopupInteraction::ClickGreyedOut))),
+                        None => Some(InteractionEntity::Button(ButtonInteraction::Popup(
+                            PopupInteraction::ClickGreyedOut,
+                        ))),
                     }
-                },
+                }
             }
-
-
-
         }
-
 
         let tbi = Self::try_get_button::<LayoutTopBar>(position, size, &());
         if tbi.is_some() {
@@ -119,14 +126,12 @@ impl InteractionEntity {
                         return Self::try_get_button::<CongratsLayoutEntity>(
                             position,
                             size,
-                            &(
-                                selfie_mode,
-                                current_level.level_type(),
-                            ),
+                            &(selfie_mode, current_level.level_type()),
                         );
                     }
 
-                    let Some(layout_entity) = size.try_pick::<GameLayoutEntity>(*position, &selfie_mode)
+                    let Some(layout_entity) =
+                        size.try_pick::<GameLayoutEntity>(*position, &selfie_mode)
                     else {
                         return None;
                     };
@@ -148,9 +153,11 @@ impl InteractionEntity {
                                 .try_pick::<LayoutGridTile>(*position, &selfie_mode)
                                 .map(|t| Self::Tile(t.0)),
                         },
-                        GameLayoutEntity::WordList => {
-                            Self::try_get_button::<LayoutWordTile>(position, size, &(level.words.as_slice(), selfie_mode))
-                        }
+                        GameLayoutEntity::WordList => Self::try_get_button::<LayoutWordTile>(
+                            position,
+                            size,
+                            &(level.words.as_slice(), selfie_mode),
+                        ),
                         GameLayoutEntity::Timer => {
                             if current_level.is_tutorial() {
                                 None

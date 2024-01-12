@@ -1,7 +1,7 @@
 use glam::Vec2;
 use strum::{Display, EnumCount, EnumIter, IntoEnumIterator};
 
-use crate::{level_type::LevelType, prelude::*, layout::entities::GameLayoutEntity};
+use crate::{layout::entities::GameLayoutEntity, level_type::LevelType, prelude::*};
 
 use super::consts::*;
 
@@ -76,16 +76,15 @@ impl LayoutStructure for CongratsLayoutEntity {
     }
 
     fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
-
         let stat_size = if context.0.is_selfie_mode {
             CONGRATS_ENTITY_STATISTIC_SIZE_SELFIE
         } else {
             CONGRATS_ENTITY_STATISTIC_SIZE_NORMAL
         };
 
-        let button_height = if context.0.is_selfie_mode{
-             CONGRATS_ENTITY_BUTTON_HEIGHT + MENU_BUTTON_SPACING
-        } else{
+        let button_height = if context.0.is_selfie_mode {
+            CONGRATS_ENTITY_BUTTON_HEIGHT + MENU_BUTTON_SPACING
+        } else {
             GRID_SIZE - stat_size - CONGRATS_ENTITY_VERTICAL_GAP
         };
 
@@ -104,8 +103,6 @@ impl LayoutStructure for CongratsLayoutEntity {
         } else {
             CONGRATS_ENTITY_BUTTON_WIDTH_NORMAL
         };
-
-
 
         match self {
             CongratsLayoutEntity::Statistic(statistic) => Vec2 {

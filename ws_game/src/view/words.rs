@@ -57,7 +57,6 @@ impl MavericNode for WordsNode {
                         CurrentLevel::NonLevel(..) => (4, 0),
                     };
 
-
                     commands.add_child(
                         (index as u16, level_indices.0, level_indices.1),
                         WordNode {
@@ -169,7 +168,7 @@ impl MavericNode for WordNode {
                     .with_transition_to::<ProgressLens>(
                         progress,
                         (1.0 / animated_solutions::TOTAL_SECONDS).into(),
-                        None
+                        None,
                     ),
                 &(),
             );

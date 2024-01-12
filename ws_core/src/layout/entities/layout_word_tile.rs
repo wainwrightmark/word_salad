@@ -12,7 +12,6 @@ impl From<usize> for LayoutWordTile {
     }
 }
 
-
 impl LayoutStructure for LayoutWordTile {
     type Context<'a> = (&'a [DisplayWord], SelfieMode);
 
@@ -36,7 +35,8 @@ impl LayoutStructure for LayoutWordTile {
     }
 
     fn size(&self, context: &Self::Context<'_>) -> Vec2 {
-        let num_letters = context.0
+        let num_letters = context
+            .0
             .get(self.0)
             .map(|x| x.graphemes.len())
             .unwrap_or_default();
