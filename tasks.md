@@ -6,7 +6,7 @@
 - Change hint tracking
 
 
-- social images etc
+
 - Save incomplete levels
 
 - reorder level sequence

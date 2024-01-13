@@ -379,14 +379,17 @@ fn transition_word_line(
         ProgressTarget::IncreaseToOne => (values.progress + progress_change).min(1.0),
         ProgressTarget::DecreaseToZero => (values.progress - progress_change).max(0.0),
         ProgressTarget::ResetThenIncreaseToOne => {
+            startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
             targets.target_progress = ProgressTarget::IncreaseToOne;
             RESET_PROGRESS // + progress_change.min(1.0)
         }
         ProgressTarget::OneThenDecreaseToZero => {
+            startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
             targets.target_progress = ProgressTarget::DecreaseToZero;
             1.0
         }
         ProgressTarget::One => {
+            startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
             targets.target_progress = ProgressTarget::IncreaseToOne;
             1.0
         }
