@@ -325,16 +325,6 @@ fn track_found_words(
         level: level.clone(),
     });
 
-    // crate::animated_solutions::animate_solution(
-    //     &mut commands,
-    //     &chosen.solution,
-    //     word,
-    //     is_first_time,
-    //     &asset_server,
-    //     &size,
-    //     level,
-    // );
-
     if is_first_time {
         chosen.is_just_finished = true;
     }
