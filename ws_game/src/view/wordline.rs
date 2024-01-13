@@ -9,9 +9,8 @@ pub struct WordlinePlugin;
 
 impl Plugin for WordlinePlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<WordLineGlobalTargets>();
         app.add_plugins(ExtractToShaderPlugin::<WordLineSegmentShader>::default());
-
+        app.init_resource::<WordLineGlobalTargets>();
         app.insert_resource(WordLineGlobalValues::default());
         app.add_systems(Update, transition_word_line);
     }
@@ -261,7 +260,7 @@ impl ParameterizedShader for WordLineSegmentShader {
         [WORDLINE_IMPORT, SIMPLE_FILL_IMPORT].into_iter()
     }
 
-    const FRAME: Frame = Frame::square(2.0);
+    const FRAME: Frame = Frame::square(1.0); // this seems the lowest we can make it (keep in mind the pulsing)
 }
 
 #[derive(Debug, Clone, Component, PartialEq, Default)]

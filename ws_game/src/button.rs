@@ -295,7 +295,7 @@ impl ButtonInteraction {
             ButtonInteraction::WordSaladMenu(WordSaladMenuLayoutEntity::EreYesterdayPuzzle) => {
                 if let Some(index) = DailyChallenges::get_today_index() {
                     current_level.set_if_neq(CurrentLevel::DailyChallenge {
-                        index: index.saturating_sub(1),
+                        index: index.saturating_sub(2),
                     });
                 }
                 menu_state.close();

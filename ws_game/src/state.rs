@@ -8,6 +8,7 @@ use itertools::{Either, Itertools};
 use nice_bevy_utils::{CanInitTrackedResource, TrackableResource};
 use serde::{Deserialize, Serialize};
 use strum::EnumIs;
+use ws_levels::level_sequence::LevelSequence;
 
 pub struct StatePlugin;
 
@@ -19,6 +20,7 @@ impl Plugin for StatePlugin {
         app.init_tracked_resource::<FoundWordsState>();
         app.init_tracked_resource::<TotalCompletion>();
         app.init_tracked_resource::<HintState>();
+        app.init_tracked_resource::<SavedLevelsState>();
 
         app.add_event::<AnimateSolutionsEvent>();
 
@@ -34,19 +36,102 @@ fn update_state_on_level_change(
     daily_challenges: Res<DailyChallenges>,
     mut found_words: ResMut<FoundWordsState>,
     mut chosen: ResMut<ChosenState>,
+
+    mut saved_levels: ResMut<SavedLevelsState>,
+
+    mut current_level_key: Local<Option<SavedLevelKey>>,
 ) {
-    if current_level.is_changed() && !current_level.is_added() {
-        match current_level.level(daily_challenges.as_ref()) {
-            Either::Left(level) => {
-                *found_words = FoundWordsState::new_from_level(level);
-            }
-            Either::Right(..) => {
-                *found_words = FoundWordsState::default();
+    if !current_level.is_changed() {
+        return;
+    }
+
+    let previous_key = *current_level_key;
+    let new_key = SavedLevelKey::try_from_current(&current_level);
+    *current_level_key = new_key;
+
+    if current_level.is_added() {
+        return;
+    }
+
+    if let Some(previous_key) = previous_key {
+        if found_words.is_level_started() {
+            if !found_words.is_level_complete() {
+                saved_levels.insert(previous_key, found_words.clone());
             }
         }
-
-        *chosen = ChosenState::default();
     }
+
+    let loaded_level = new_key.and_then(|k| saved_levels.remove(k));
+
+    match current_level.level(daily_challenges.as_ref()) {
+        Either::Left(level) => {
+            *found_words = loaded_level.unwrap_or_else(|| FoundWordsState::new_from_level(level));
+        }
+        Either::Right(..) => {
+            *found_words = FoundWordsState::default();
+        }
+    }
+
+    *chosen = ChosenState::default();
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SavedLevelKey {
+    DailyChallenge {
+        index: usize,
+    },
+    Sequence {
+        level_index: usize,
+        sequence: LevelSequence,
+    },
+}
+
+impl SavedLevelKey {
+    pub fn try_from_current(current_level: &CurrentLevel) -> Option<Self> {
+        match current_level {
+            CurrentLevel::Tutorial { .. } => None,
+            CurrentLevel::Fixed {
+                level_index,
+                sequence,
+            } => Some(SavedLevelKey::Sequence {
+                level_index: *level_index,
+                sequence: *sequence,
+            }),
+            CurrentLevel::DailyChallenge { index } => {
+                Some(SavedLevelKey::DailyChallenge { index: *index })
+            }
+            CurrentLevel::Custom { .. } => None,
+            CurrentLevel::NonLevel(_) => None,
+        }
+    }
+}
+
+#[derive(Debug, Resource, PartialEq, Serialize, Deserialize, Clone, Default)]
+pub struct SavedLevelsState {
+
+    saved_sequences: std::collections::BTreeMap<u64, FoundWordsState>, //keyed by (sequence * u32::max, index, )
+    saved_daily: std::collections::BTreeMap<u32, FoundWordsState>,
+    //pub saved: std::collections::BTreeMap<SavedLevelKey, FoundWordsState>,
+}
+
+impl SavedLevelsState {
+    pub fn insert(&mut self, key: SavedLevelKey, value:FoundWordsState) -> Option<FoundWordsState>{
+        match key{
+            SavedLevelKey::DailyChallenge { index } => self.saved_daily.insert(index as u32, value),
+            SavedLevelKey::Sequence { level_index, sequence } => self.saved_sequences.insert(((sequence as u64) * (u32::MAX as u64)) + level_index as u64, value),
+        }
+    }
+
+    pub fn remove(&mut self,key: SavedLevelKey) -> Option<FoundWordsState>{
+        match key{
+            SavedLevelKey::DailyChallenge { index } => self.saved_daily.remove(&(index as u32)),
+            SavedLevelKey::Sequence { level_index, sequence } => self.saved_sequences.remove(&(((sequence as u64) * (u32::MAX as u64)) + level_index as u64)),
+        }
+    }
+}
+
+impl TrackableResource for SavedLevelsState {
+    const KEY: &'static str = "SavedLevelsState";
 }
 
 const INITIAL_HINTS: usize = 3;
@@ -72,7 +157,9 @@ impl TrackableResource for HintState {
     const KEY: &'static str = "HintState";
 }
 
-#[derive(Debug, Clone, Resource, Serialize, Deserialize, MavericContext, Default)]
+#[derive(
+    Debug, Clone, Resource, Serialize, Deserialize, MavericContext, Default, PartialEq, Eq,
+)]
 pub struct FoundWordsState {
     pub unneeded_tiles: GridSet,
     pub word_completions: Vec<Completion>,
@@ -156,7 +243,7 @@ impl FoundWordsState {
     }
 
     pub fn is_level_started(&self) -> bool {
-        self.word_completions.iter().all(|x| x.is_unstarted())
+        self.word_completions.iter().any(|x| !x.is_unstarted())
     }
 
     pub fn get_completion(&self, word_index: usize) -> Completion {
