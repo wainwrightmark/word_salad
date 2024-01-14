@@ -87,7 +87,7 @@ impl TotalCompletion {
                 }
 
                 let completion = &mut total_completion.completions[sequence_index];
-                completion.current_index = (completion.current_index + 1) % sequence.level_count();
+                completion.current_index = completion.current_index + 1;
                 if completion.total_complete < number_complete {
                     completion.total_complete = number_complete;
 
