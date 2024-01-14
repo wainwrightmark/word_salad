@@ -5,7 +5,7 @@ use std::{
 
 use itertools::Itertools;
 use ws_core::{
-    finder::{helpers::FinderWord, node::GridResult},
+    finder::{helpers::FinderSingleWord, node::GridResult},
     CharsArray,
 };
 
@@ -157,7 +157,7 @@ impl std::fmt::Display for Cluster {
 
 pub fn cluster_words(
     groups: Vec<GridResult>,
-    all_words: &Vec<FinderWord>,
+    all_words: &Vec<FinderSingleWord>,
     max_clusters: usize,
 ) -> Vec<Cluster> {
     let mut results: Vec<Cluster> = Default::default();
@@ -256,7 +256,7 @@ pub mod test {
 
     use itertools::Itertools;
     use ws_core::{
-        finder::{helpers::FinderWord, node::GridResult},
+        finder::{helpers::FinderSingleWord, node::GridResult},
         TileMap,
     };
 
@@ -290,13 +290,13 @@ pub mod test {
         insta::assert_snapshot!(text);
     }
 
-    fn get_words_vectors(file: &str, min_words: usize) -> Vec<Vec<FinderWord>> {
+    fn get_words_vectors(file: &str, min_words: usize) -> Vec<Vec<FinderSingleWord>> {
         file.lines()
             .map(|line| {
                 let words = line
                     .split('\t')
                     .skip(2)
-                    .map(|x| FinderWord::from_str(x).unwrap())
+                    .map(|x| FinderSingleWord::from_str(x).unwrap())
                     .collect_vec();
                 words
             })

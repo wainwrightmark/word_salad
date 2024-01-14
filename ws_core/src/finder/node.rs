@@ -8,7 +8,7 @@ use std::{
 
 use super::{
     counter::{Counter, SolutionCollector},
-    helpers::{FinderWord, LetterCounts},
+    helpers::{FinderSingleWord, LetterCounts},
     partial_grid::{NodeMap, PartialGrid},
 };
 use crate::finder::*;
@@ -19,7 +19,7 @@ use crate::finder::*;
 pub struct GridResult {
     pub grid: Grid,
     pub letters: LetterCounts,
-    pub words: Vec<FinderWord>,
+    pub words: Vec<FinderSingleWord>,
 }
 
 impl FromStr for GridResult {
@@ -33,8 +33,8 @@ impl FromStr for GridResult {
 
         let grid = prelude::try_make_grid(chars).ok_or("Should be able to make grid")?;
 
-        let mut words: Vec<FinderWord> =
-            iter.map(|x| FinderWord::from_str(x.trim())).try_collect()?;
+        let mut words: Vec<FinderSingleWord> =
+            iter.map(|x| FinderSingleWord::from_str(x.trim())).try_collect()?;
 
         words.sort_by_cached_key(|x| x.text.to_ascii_lowercase());
 
@@ -71,8 +71,8 @@ impl std::fmt::Display for GridResult {
 
 pub fn try_make_grid_with_blank_filling<Collector: SolutionCollector<GridResult>>(
     letters: LetterCounts,
-    words: &Vec<FinderWord>,
-    exclude_words: &Vec<FinderWord>,
+    words: &Vec<FinderSingleWord>,
+    exclude_words: &Vec<FinderSingleWord>,
     first_blank_replacement: Character,
     counter: &mut impl Counter,
     collector: &mut Collector,
@@ -121,12 +121,12 @@ pub fn try_make_grid_with_blank_filling<Collector: SolutionCollector<GridResult>
 }
 
 struct WordUniquenessHelper {
-    constraining_words: BTreeMap<Character, FinderWord>,
+    constraining_words: BTreeMap<Character, FinderSingleWord>,
 }
 
 impl WordUniquenessHelper {
-    pub fn new(words: &[FinderWord], nodes_map: &BTreeMap<Character, Vec<NodeBuilder>>) -> Self {
-        let constraining_words: BTreeMap<Character, FinderWord> = nodes_map
+    pub fn new(words: &[FinderSingleWord], nodes_map: &BTreeMap<Character, Vec<NodeBuilder>>) -> Self {
+        let constraining_words: BTreeMap<Character, FinderSingleWord> = nodes_map
             .iter()
             .filter(|(_, nodes)| nodes.len() > 1)
             .map(|x| x.0)
@@ -148,7 +148,7 @@ impl WordUniquenessHelper {
     pub fn check_letter<'a>(
         &self,
         buffered_index: usize,
-        word: &FinderWord,
+        word: &FinderSingleWord,
         nodes_map: &'a BTreeMap<Character, Vec<NodeBuilder>>,
     ) -> WordLetterResult<'a> {
         let Some(true_index) = buffered_index.checked_sub(1) else {
@@ -189,8 +189,8 @@ enum WordLetterResult<'a> {
 
 pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
     letters: LetterCounts,
-    words: &Vec<FinderWord>,
-    exclude_words: &Vec<FinderWord>,
+    words: &Vec<FinderSingleWord>,
+    exclude_words: &Vec<FinderSingleWord>,
     counter: &mut impl Counter,
     collector: &mut Collector,
 ) {
@@ -471,7 +471,8 @@ mod tests {
     #[test_case("Teal\nWheat\nWhite\nGreen\nCyan\nGray\nCoral\nOrange\nMagenta")]
     pub fn test_try_make_grid(input: &'static str) {
         let now = Instant::now();
-        let words = crate::finder::helpers::make_words_vec_from_file(input);
+        let words = crate::finder::helpers::make_finder_group_vec_from_file(input);
+        let words: Vec<FinderSingleWord> = words.into_iter().flat_map(|x|x.words).collect();
 
         let mut letters = LetterCounts::default();
         for word in words.iter() {
@@ -523,7 +524,9 @@ mod tests {
 
     #[test_case("Bishop\npawn\nKing\nKnight\nQueen")]
     pub fn test_try_make_many_grids(input: &'static str) {
-        let words = crate::finder::helpers::make_words_vec_from_file(input);
+        let words = crate::finder::helpers::make_finder_group_vec_from_file(input);
+
+        let words: Vec<FinderSingleWord> = words.into_iter().flat_map(|x|x.words).collect();
 
         let mut letters = LetterCounts::default();
         for word in words.iter() {

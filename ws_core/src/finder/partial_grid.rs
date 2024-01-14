@@ -3,7 +3,7 @@ use crate::finder::*;
 use crate::{find_solution, Character, Grid, GridSet};
 
 use super::counter::{Counter, SolutionCollector};
-use super::helpers::FinderWord;
+use super::helpers::FinderSingleWord;
 
 pub type NodeMap = geometrid::tile_map::TileMap<Node, 16, 1, 16>;
 
@@ -38,8 +38,8 @@ impl PartialGrid {
     pub fn check_matches(
         &self,
         nodes: &NodeMap,
-        words: &Vec<FinderWord>,
-        exclude_words: &Vec<FinderWord>,
+        words: &Vec<FinderSingleWord>,
+        exclude_words: &Vec<FinderSingleWord>,
     ) -> bool {
         let solution_grid = self.to_grid(nodes);
 
@@ -65,8 +65,8 @@ impl PartialGrid {
         collector: &mut impl SolutionCollector<Self>,
         all_nodes: &NodeMap,
         level: usize,
-        words: &Vec<FinderWord>,
-        exclude_words: &Vec<FinderWord>,
+        words: &Vec<FinderSingleWord>,
+        exclude_words: &Vec<FinderSingleWord>,
     ) {
         if !counter.try_increment() {
             return;

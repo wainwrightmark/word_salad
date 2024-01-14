@@ -14,3 +14,6 @@
 - Build a tool to reorder grids based on distance from a given list of grids
 
 - Prevent grid tile animation when loading a level
+- Credits
+- Achievements
+- Fun Facts

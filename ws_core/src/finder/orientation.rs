@@ -1,5 +1,5 @@
 use crate::{
-    finder::{helpers::FinderWord, node::GridResult},
+    finder::{helpers::FinderSingleWord, node::GridResult},
     prelude::*,
 };
 use itertools::Itertools;
@@ -29,7 +29,7 @@ pub fn optimize_orientation(grid_result: &mut GridResult) {
     grid_result.grid.flip(axes);
 }
 
-pub fn calculate_best_word(grid_result: &GridResult) -> (FinderWord, i32) {
+pub fn calculate_best_word(grid_result: &GridResult) -> (FinderSingleWord, i32) {
     grid_result
         .words
         .iter()
@@ -39,7 +39,7 @@ pub fn calculate_best_word(grid_result: &GridResult) -> (FinderWord, i32) {
         .unwrap()
 }
 
-pub fn find_single_row_word(grid_result: &GridResult) -> Option<FinderWord> {
+pub fn find_single_row_word(grid_result: &GridResult) -> Option<FinderSingleWord> {
     for word in grid_result.words.iter() {
         if word.array.len() == 4 {
             for s in find_solutions(&word.array, &grid_result.grid) {
@@ -52,7 +52,7 @@ pub fn find_single_row_word(grid_result: &GridResult) -> Option<FinderWord> {
     return None;
 }
 
-fn calculate_max_score(grid: &Grid, words: &[FinderWord]) -> i32 {
+fn calculate_max_score(grid: &Grid, words: &[FinderSingleWord]) -> i32 {
     //println!("{}", grid);
     //println!();
     words
@@ -62,7 +62,7 @@ fn calculate_max_score(grid: &Grid, words: &[FinderWord]) -> i32 {
         .unwrap_or_default()
 }
 
-fn calculate_score(word: &FinderWord, grid: &Grid) -> i32 {
+fn calculate_score(word: &FinderSingleWord, grid: &Grid) -> i32 {
     find_solutions(&word.array, grid)
         .into_iter()
         .map(|x| {

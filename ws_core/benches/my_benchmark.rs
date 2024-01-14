@@ -1,13 +1,14 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 use ws_core::{
-    finder::{counter::FakeCounter, helpers::LetterCounts, node::try_make_grid_with_blank_filling},
+    finder::{counter::FakeCounter, helpers::{LetterCounts, FinderSingleWord}, node::try_make_grid_with_blank_filling},
     Character,
 };
 
 pub fn criterion_benchmark(c: &mut Criterion) {
-    let words = ws_core::finder::helpers::make_words_vec_from_file(
+    let words = ws_core::finder::helpers::make_finder_group_vec_from_file(
         "Croatia\nRomania\nIreland\nLatvia\nPoland\nFrance\nMalta",
     );
+    let words: Vec<FinderSingleWord> = words.into_iter().flat_map(|x|x.words).collect();
 
     let mut letters = LetterCounts::default();
     for word in words.iter() {

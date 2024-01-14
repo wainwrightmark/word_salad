@@ -12,7 +12,7 @@ use log::{info, warn};
 use rayon::prelude::*;
 use std::{
     collections::HashSet,
-    fs::{File, DirEntry},
+    fs::{DirEntry, File},
     io::{self, BufWriter, Write},
     path::{Path, PathBuf},
     str::FromStr,
@@ -153,38 +153,44 @@ fn do_cluster(options: Options) {
     pb.finish();
 }
 
-
-struct FinderCase{
-    word_map: Vec<FinderWord>,
+struct FinderCase {
+    word_map: Vec<FinderGroup>,
     data_path: PathBuf,
     data_file_text: String,
     file_name: String,
-    write_path: String
+    write_path: String,
 }
 
-impl  FinderCase {
-
-    fn new_from_path(dir_entry: DirEntry )-> Self{
+impl FinderCase {
+    fn new_from_path(dir_entry: DirEntry) -> Self {
         let data_path = dir_entry.path();
         let file_name = data_path.file_name().unwrap().to_string_lossy().to_string();
         let write_path = format!("grids/{file_name}",);
         info!("{}", write_path);
         let data_file_text = std::fs::read_to_string(data_path.clone()).unwrap();
 
-        let word_map = make_words_vec_from_file(data_file_text.as_str());
+        let word_map = make_finder_group_vec_from_file(data_file_text.as_str());
 
-        Self { word_map, data_path, file_name, data_file_text, write_path }
+        Self {
+            word_map,
+            data_path,
+            file_name,
+            data_file_text,
+            write_path,
+        }
     }
 }
-
-
 
 fn do_finder(options: Options) {
     info!("Starting up");
 
     let folder = std::fs::read_dir(options.folder).unwrap();
 
-    let paths: Vec<_> = folder.into_iter().map(|path| FinderCase::new_from_path(path.unwrap())).sorted_by_key(|x|x.word_map.len()) .collect();
+    let paths: Vec<_> = folder
+        .into_iter()
+        .map(|path| FinderCase::new_from_path(path.unwrap()))
+        .sorted_by_key(|x| x.word_map.len())
+        .collect();
 
     let pb: ProgressBar = ProgressBar::new(paths.len() as u64)
         .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:2}/{len:2}").unwrap())
@@ -195,16 +201,20 @@ fn do_finder(options: Options) {
     let _ = std::fs::create_dir("done");
 
     for finder_case in paths.iter() {
-
-        let FinderCase { word_map, data_path, file_name, write_path, data_file_text } = finder_case;
-
+        let FinderCase {
+            word_map,
+            data_path,
+            file_name,
+            write_path,
+            data_file_text,
+        } = finder_case;
 
         info!("Found {} Words", word_map.len());
         for word in word_map.iter().map(|x| x.text.clone()).sorted() {
             info!("{word}",)
         }
 
-        for (a, b) in word_map.iter().sorted_by_key(|x| &x.array).tuple_windows() {
+        for (a, b) in word_map.iter().flat_map(|x|x.words.iter()).cloned().sorted_by_cached_key(|x| x.array.clone()).tuple_windows() {
             if b.array.starts_with(&a.array) {
                 warn!("'{}' is a prefix of '{}'", a.text, b.text)
             }
@@ -213,9 +223,9 @@ fn do_finder(options: Options) {
         let master_path = format!("master/{file_name}");
         let master_file_text = std::fs::read_to_string(master_path).unwrap_or_default();
 
-        let mut master_words = make_words_vec_from_file(&master_file_text);
+        let mut master_words:Vec<FinderSingleWord> = make_finder_group_vec_from_file(&master_file_text).into_iter().flat_map(|x|x.words).collect_vec();
         if master_words.len() > 0 {
-            let word_set: HashSet<_> = word_map.iter().map(|x| x.array.as_slice()).collect();
+            let word_set: HashSet<_> = word_map.iter().flat_map(|x|x.words.iter()).cloned().map(|x| x.array.clone()).collect();
             let total_master_count = master_words.len();
             master_words.retain(|x| !word_set.contains(x.array.as_slice()));
             let new_master_count = master_words.len();
@@ -223,10 +233,10 @@ fn do_finder(options: Options) {
             info!("Found {total_master_count} words on the master list. {new_master_count} will be treated as exclusions");
 
             if !master_words.is_empty() {
-                let mut bad_master_words: HashSet<FinderWord> = Default::default();
-                for word in word_map.iter() {
+                let mut bad_master_words: HashSet<FinderSingleWord> = Default::default();
+                for word in word_map.iter().flat_map(|x|x.words.iter()) {
                     for master_word in master_words.iter() {
-                        if master_word.is_strict_substring(word) {
+                        if master_word.is_strict_substring(&word) {
                             warn!(
                                 "{} is a superstring of {} so will be impossible",
                                 word.text, master_word.text
@@ -283,8 +293,8 @@ fn do_finder(options: Options) {
 }
 
 fn create_grids(
-    all_words: &Vec<FinderWord>,
-    exclude_words: &Vec<FinderWord>,
+    all_words: &Vec<FinderGroup>,
+    exclude_words: &Vec<FinderSingleWord>,
     mut file: BufWriter<File>,
     min_size: u32,
     max_grids: u32,
@@ -334,7 +344,7 @@ fn create_grids(
             })
             .map(|set| {
                 let mut counter = FakeCounter;
-                let finder_words = set.get_words(all_words);
+                let finder_words = set.get_single_words(all_words);
 
                 let exclude_words = exclude_words
                     .iter()

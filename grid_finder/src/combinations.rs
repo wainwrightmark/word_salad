@@ -158,15 +158,16 @@ impl WordCombination {
             total_letters: letter_counts.into_iter().count() as u8,
         })
     }
-    pub fn get_words(&self, words: &[FinderWord]) -> Vec<FinderWord> {
+    pub fn get_single_words(&self, words: &[FinderGroup]) -> Vec<FinderSingleWord> {
         self.word_indexes
             .iter_true_tiles()
-            .map(|index| words[index.inner() as usize].clone())
+            .flat_map(|index| words[index.inner() as usize].words.iter())
+            .cloned()
             .collect_vec()
     }
 
-    pub fn display_string(&self, words: &[FinderWord]) -> String {
-        self.get_words(words)
+    pub fn display_string(&self, words: &[FinderGroup]) -> String {
+        self.get_single_words(words)
             .iter()
             .map(|x| x.text.as_str())
             .sorted()
@@ -235,7 +236,7 @@ pub mod tests {
 
         let _now = Instant::now();
 
-        let words = make_words_vec_from_file(input);
+        let words = make_finder_group_vec_from_file(input);
         let word_letters: Vec<LetterCounts> = words.iter().map(|x| x.counts).collect_vec();
 
         let possible_combinations: Vec<WordCombination> =
@@ -280,7 +281,7 @@ pub mod tests {
     pub fn test_membership(input: &'static str, expected_member: &'static str) {
         let now = Instant::now();
 
-        let expected_words = make_words_vec_from_file(expected_member);
+        let expected_words = make_finder_group_vec_from_file(expected_member);
         let mut expected = LetterCounts::default();
         for fw in expected_words {
             expected = expected
@@ -288,7 +289,7 @@ pub mod tests {
                 .expect("Should be able to union expected");
         }
 
-        let words = make_words_vec_from_file(input);
+        let words = make_finder_group_vec_from_file(input);
 
         let word_letters: Vec<LetterCounts> = words.iter().map(|x| x.counts).collect_vec();
 
