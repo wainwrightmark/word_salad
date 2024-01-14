@@ -146,6 +146,7 @@ impl MavericNode for WordLine {
         _world: &World,
         entity_commands: &mut bevy::ecs::system::EntityCommands,
     ) {
+
         let should_hide: bool;
         let target_progress: ProgressTarget;
 
@@ -172,13 +173,16 @@ impl MavericNode for WordLine {
         } else {
             LineWidthTarget::Full
         };
+        let targets = WordLineGlobalTargets {
+            target_progress,
+            target_line_width,
+        };
+
+        //info!("Wordline changed {targets:?}");
 
         entity_commands
             .commands()
-            .insert_resource(WordLineGlobalTargets {
-                target_progress,
-                target_line_width,
-            });
+            .insert_resource(targets);
     }
 }
 
@@ -341,7 +345,10 @@ fn transition_word_line(
     mut targets: ResMut<WordLineGlobalTargets>,
     time: Res<Time>,
 ) {
+
+
     let progress_change = time.delta_seconds() * PROGRESS_SPEED;
+    let mut changed: bool = false;
 
     let line_width = match targets.target_line_width {
         LineWidthTarget::PulseUp => {
@@ -350,6 +357,7 @@ fn transition_word_line(
 
             if new_width >= PULSED_LINE_WIDTH {
                 targets.target_line_width = LineWidthTarget::PulseDown;
+                changed = true;
             }
 
             new_width
@@ -360,6 +368,7 @@ fn transition_word_line(
 
             if new_width <= FULL_LINE_WIDTH {
                 targets.target_line_width = LineWidthTarget::PulseUp;
+                changed = true;
             }
 
             new_width
@@ -378,17 +387,17 @@ fn transition_word_line(
         ProgressTarget::IncreaseToOne => (values.progress + progress_change).min(1.0),
         ProgressTarget::DecreaseToZero => (values.progress - progress_change).max(0.0),
         ProgressTarget::ResetThenIncreaseToOne => {
-            startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            changed = true;
             targets.target_progress = ProgressTarget::IncreaseToOne;
             RESET_PROGRESS // + progress_change.min(1.0)
         }
         ProgressTarget::OneThenDecreaseToZero => {
-            startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            changed = true;
             targets.target_progress = ProgressTarget::DecreaseToZero;
             1.0
         }
         ProgressTarget::One => {
-            startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            changed = true;
             targets.target_progress = ProgressTarget::IncreaseToOne;
             1.0
         }
@@ -400,6 +409,11 @@ fn transition_word_line(
     };
 
     if values.set_if_neq(new_values) {
+        //info!("Transition Word line values {values:?} targets {targets:?}");
+        changed = true;
+    }
+
+    if changed{
         startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     }
 }

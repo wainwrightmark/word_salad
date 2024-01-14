@@ -8,7 +8,7 @@ use crate::{
     prelude::{
         level_group_layout::LevelGroupLayoutEntity, levels_menu_layout::LevelsMenuLayoutEntity,
         main_menu_layout::MainMenuLayoutEntity, *,
-    },
+    }, startup,
 };
 use bevy::{prelude::*, window::PrimaryWindow};
 use strum::EnumIs;
@@ -231,6 +231,9 @@ impl InputType {
         daily_challenges: &DailyChallenges,
         event_writer: &mut EventWriter<ButtonActivated>,
     ) {
+        startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+
+
         let is_level_complete = found_words.is_level_complete();
 
         let button_interaction: Option<ButtonInteraction> = match self {

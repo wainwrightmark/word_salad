@@ -205,7 +205,7 @@ impl MavericNode for CongratsView {
                                             index: current_index,
                                         } = context.1.as_ref()
                                         {
-                                            if next_index > *current_index {
+                                            if next_index > *current_index && Some(next_index) == DailyChallenges::get_today_index() {
                                                 "Today's Puzzle".to_string()
                                             } else {
                                                 format!("Play #{}", next_index + 1)

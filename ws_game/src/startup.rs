@@ -146,7 +146,7 @@ fn maybe_request_redraw(mut writer: EventWriter<RequestRedraw>, mut buffer: Loca
         || maveric::tracing::count_scheduled_changes() > 0
         || ADDITIONAL_TRACKING.load(std::sync::atomic::Ordering::SeqCst) > 0;
 
-    if should_redraw || *buffer {
+    if should_redraw  {
         writer.send(RequestRedraw);
     }
 
