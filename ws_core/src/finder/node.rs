@@ -194,6 +194,7 @@ pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
     counter: &mut impl Counter,
     collector: &mut Collector,
 ) {
+    //todo use a bump allocator
     //println!("Try to make grid: {l:?} : {w:?}", l= crate::get_raw_text(&letters), w= crate::write_words(words) );
     let mut nodes_map: BTreeMap<Character, Vec<NodeBuilder>> = Default::default();
 
@@ -211,7 +212,7 @@ pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
     }
 
     let helper: WordUniquenessHelper = WordUniquenessHelper::new(words, &nodes_map);
-
+    //let now = std::time::Instant::now();
     for word in words {
         let range = 0..(word.array.len() + 2);
         for (a_index, b_index, c_index) in range.tuple_windows() {
@@ -275,7 +276,7 @@ pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
         }
     }
 
-    //todo check that a grid is actually possible with the given constraint multiplicities
+
 
     let mut grid: PartialGrid = Default::default();
 
@@ -291,6 +292,12 @@ pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
             .unwrap_or_else(|| NodeBuilder::new(tile, Character::Blank).into())
     });
 
+    // for node in nodes.iter(){
+    //     println!("Constraint '{}', count {}", node.character,node.constraint_count )
+    // }
+
+    // println!("Made nodes in {}micros", now.elapsed().as_micros());
+
     let mut mapped_collector = Collector::Mapped::default();
     grid.solve_recursive(
         counter,
@@ -301,6 +308,8 @@ pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
         exclude_words,
     );
 
+    //println!("Grid solved in {}micros", now.elapsed().as_micros());
+
     collector.collect_mapped(mapped_collector, |solution| {
         let solution_grid = solution.to_grid(&nodes);
         GridResult {
@@ -309,6 +318,7 @@ pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
             words: words.clone(),
         }
     })
+
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -461,7 +471,7 @@ mod tests {
     #[test_case("ALDGATE\nANGEL\nALDGATEEAST\nBANK\nLANCASTERGATE")]
     #[test_case("WELLS\nLEEDS\nELY\nLISBURN\nDERBY\nNEWRY\nSALISBURY")]
     #[test_case("Sporty\nScary")]
-//    #[test_case("Utah\nOhio\nMaine\nIdaho\nIndiana\nMontana\nArizona")] //TODO make this case fast
+    //#[test_case("Utah\nOhio\nMaine\nIdaho\nIndiana\nMontana\nArizona")] //TODO make this case fast - takes 24s, 186906295 tries on release mode
     #[test_case("Teal\nWheat\nWhite\nGreen\nCyan\nGray\nCoral\nOrange\nMagenta")]
     pub fn test_try_make_grid(input: &'static str) {
         let now = Instant::now();

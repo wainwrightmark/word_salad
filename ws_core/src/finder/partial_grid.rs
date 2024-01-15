@@ -93,10 +93,16 @@ impl PartialGrid {
             return;
         };
 
-        let potential_locations = if level == 0 {
+        const DIAGONAL_GRID: GridSet = GridSet::EMPTY
+            .with_bit_set(&Tile::new_const::<0, 0>(), true)
+            .with_bit_set(&Tile::new_const::<1, 1>(), true)
+            .with_bit_set(&Tile::new_const::<2, 2>(), true)
+            .with_bit_set(&Tile::new_const::<3, 3>(), true);
+
+        let potential_locations = if self.used_grid == GridSet::EMPTY {
             potential_locations.intersect(&TOP_LOCATIONS)
-        } else if level == 1 && self.used_grid.get_bit(&Tile::new_const::<1, 1>()) {
-            potential_locations.intersect(&TOP_RIGHT_LOCATIONS) //todo additional symmetry preventions
+        } else if self.used_grid.is_subset(&DIAGONAL_GRID) {
+            potential_locations.intersect(&TOP_RIGHT_LOCATIONS)
         } else {
             potential_locations
         };
@@ -212,7 +218,7 @@ lazy_static::lazy_static! {
     static ref NOT_CORNERS: GridSet = GridSet::from_fn(|t|!t.is_corner());
     static ref INNER_TILES: GridSet = GridSet::from_fn(|t|!t.is_edge());
 
-     static ref TOP_RIGHT_LOCATIONS: GridSet = GridSet::from_fn(|t| t.x() >= t.y());
+    static ref TOP_RIGHT_LOCATIONS: GridSet = GridSet::from_fn(|t| t.x() >= t.y());
 }
 
 #[cfg(test)]
