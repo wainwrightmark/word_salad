@@ -5475,6 +5475,7 @@ dependencies = [
  "arrayvec",
  "base64",
  "chrono",
+ "const_sized_bit_set",
  "criterion",
  "enumset",
  "geometrid",

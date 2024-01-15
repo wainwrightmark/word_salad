@@ -33,8 +33,9 @@ impl FromStr for GridResult {
 
         let grid = prelude::try_make_grid(chars).ok_or("Should be able to make grid")?;
 
-        let mut words: Vec<FinderSingleWord> =
-            iter.map(|x| FinderSingleWord::from_str(x.trim())).try_collect()?;
+        let mut words: Vec<FinderSingleWord> = iter
+            .map(|x| FinderSingleWord::from_str(x.trim()))
+            .try_collect()?;
 
         words.sort_by_cached_key(|x| x.text.to_ascii_lowercase());
 
@@ -125,7 +126,10 @@ struct WordUniquenessHelper {
 }
 
 impl WordUniquenessHelper {
-    pub fn new(words: &[FinderSingleWord], nodes_map: &BTreeMap<Character, Vec<NodeBuilder>>) -> Self {
+    pub fn new(
+        words: &[FinderSingleWord],
+        nodes_map: &BTreeMap<Character, Vec<NodeBuilder>>,
+    ) -> Self {
         let constraining_words: BTreeMap<Character, FinderSingleWord> = nodes_map
             .iter()
             .filter(|(_, nodes)| nodes.len() > 1)
@@ -135,12 +139,17 @@ impl WordUniquenessHelper {
                     *char,
                     words
                         .iter()
-                        .max_by_key(|w| helpers::count_adjacent_indexes(w, *char))
+                        .max_by_key(|w| helpers::AdjacencyStrength::calculate(w, *char))
                         .unwrap()
                         .clone(),
                 )
             })
             .collect();
+
+        // for (char, word) in constraining_words.iter(){
+        //     println!("{char}: constrained by {word}")
+
+        // }
 
         Self { constraining_words }
     }
@@ -276,8 +285,6 @@ pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
         }
     }
 
-
-
     let mut grid: PartialGrid = Default::default();
 
     let mut nodes_by_id: BTreeMap<NodeId, Node> = nodes_map
@@ -293,7 +300,15 @@ pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
     });
 
     // for node in nodes.iter(){
-    //     println!("Constraint '{}', count {}", node.character,node.constraint_count )
+    //     println!("Node '{}', single constraints {} multiple constraints {}", node.character,node.single_constraints.count(), node.multiple_constraints.len() );
+
+    //     for tile in node.single_constraints.iter_true_tiles(){
+    //         let char = nodes.iter().find(|x|x.id == tile).unwrap().character;
+    //         println!("Single to {char}");
+    //     }
+
+    //     println!()
+
     // }
 
     // println!("Made nodes in {}micros", now.elapsed().as_micros());
@@ -318,7 +333,6 @@ pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
             words: words.clone(),
         }
     })
-
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -471,12 +485,12 @@ mod tests {
     #[test_case("ALDGATE\nANGEL\nALDGATEEAST\nBANK\nLANCASTERGATE")]
     #[test_case("WELLS\nLEEDS\nELY\nLISBURN\nDERBY\nNEWRY\nSALISBURY")]
     #[test_case("Sporty\nScary")]
-    //#[test_case("Utah\nOhio\nMaine\nIdaho\nIndiana\nMontana\nArizona")] //TODO make this case fast - takes 21s, 165837149 tries on release mode
+    #[test_case("Utah\nOhio\nMaine\nIdaho\nIndiana\nMontana\nArizona")] //TODO make this case fast - takes 21s, 165837149 tries on release mode
     #[test_case("Teal\nWheat\nWhite\nGreen\nCyan\nGray\nCoral\nOrange\nMagenta")]
     pub fn test_try_make_grid(input: &'static str) {
         let now = Instant::now();
         let words = crate::finder::helpers::make_finder_group_vec_from_file(input);
-        let words: Vec<FinderSingleWord> = words.into_iter().flat_map(|x|x.words).collect();
+        let words: Vec<FinderSingleWord> = words.into_iter().flat_map(|x| x.words).collect();
 
         let mut letters = LetterCounts::default();
         for word in words.iter() {
@@ -520,6 +534,12 @@ mod tests {
         match solution {
             Some(GridResult { grid, .. }) => {
                 println!("Found after {} tries", counter.current);
+
+                for word in words.into_iter() {
+                    if crate::word::find_solution(&word.array, &grid).is_none() {
+                        panic!("No solution for word '{}'", word.text)
+                    }
+                }
                 println!("{grid}");
             }
             None => panic!("No Solution found after {} tries", counter.current),
@@ -530,7 +550,7 @@ mod tests {
     pub fn test_try_make_many_grids(input: &'static str) {
         let words = crate::finder::helpers::make_finder_group_vec_from_file(input);
 
-        let words: Vec<FinderSingleWord> = words.into_iter().flat_map(|x|x.words).collect();
+        let words: Vec<FinderSingleWord> = words.into_iter().flat_map(|x| x.words).collect();
 
         let mut letters = LetterCounts::default();
         for word in words.iter() {

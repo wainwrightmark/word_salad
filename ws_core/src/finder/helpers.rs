@@ -1,6 +1,7 @@
-use std::{collections::BTreeSet, str::FromStr};
+use std::{str::FromStr, cmp::Reverse};
 
 use crate::prelude::*;
+use const_sized_bit_set::BitSet;
 use itertools::Itertools;
 use prime_bag::PrimeBag128;
 use ustr::ustr;
@@ -96,23 +97,41 @@ impl FromStr for FinderSingleWord {
     }
 }
 
-/// Counts the number of distinct index of of letters adjacent to a letter which is this character
-pub fn count_adjacent_indexes(word: &FinderSingleWord, char: Character) -> usize {
-    let mut indexes: BTreeSet<usize> = Default::default();
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub (crate) struct AdjacencyStrength{
+    appearances: u8,
+    adjacencies: u8,
+    distinct_adjacent_indices:  Reverse<u8>,
+
+}
+
+impl AdjacencyStrength {
+    /// Counts the number of distinct index of letters adjacent to a letter which is this character
+pub fn calculate(word: &FinderSingleWord, char: Character) -> Self {
+
+    let mut appearances: u8 = 0;
+    let mut adjacencies: u8 = 0;
+    let mut adjacent_indices = BitSet::<1>::default();
 
     for (index, word_char) in word.array.iter().enumerate() {
         if *word_char == char {
+            appearances += 1;
             if let Some(checked_index) = index.checked_sub(1) {
-                indexes.insert(checked_index);
+                adjacencies += 1;
+                adjacent_indices.set_bit(checked_index, true);
             }
             if word.array.get(index + 1).is_some() {
-                indexes.insert(index + 1);
+                adjacencies += 1;
+                adjacent_indices.set_bit(index + 1, true);
             }
         }
     }
 
-    indexes.len()
+    Self { appearances, adjacencies, distinct_adjacent_indices: Reverse(adjacent_indices.count() as u8) }
 }
+}
+
+
 
 #[cfg(test)]
 mod tests {
