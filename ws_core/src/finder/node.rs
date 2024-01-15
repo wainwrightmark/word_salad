@@ -471,7 +471,7 @@ mod tests {
     #[test_case("ALDGATE\nANGEL\nALDGATEEAST\nBANK\nLANCASTERGATE")]
     #[test_case("WELLS\nLEEDS\nELY\nLISBURN\nDERBY\nNEWRY\nSALISBURY")]
     #[test_case("Sporty\nScary")]
-    //#[test_case("Utah\nOhio\nMaine\nIdaho\nIndiana\nMontana\nArizona")] //TODO make this case fast - takes 24s, 186906295 tries on release mode
+    //#[test_case("Utah\nOhio\nMaine\nIdaho\nIndiana\nMontana\nArizona")] //TODO make this case fast - takes 21s, 165837149 tries on release mode
     #[test_case("Teal\nWheat\nWhite\nGreen\nCyan\nGray\nCoral\nOrange\nMagenta")]
     pub fn test_try_make_grid(input: &'static str) {
         let now = Instant::now();

@@ -213,13 +213,25 @@ const TOP_LOCATIONS: GridSet = {
     set
 };
 
-lazy_static::lazy_static! {
+const NOT_CORNERS: GridSet = GridSet::ALL
+    .with_bit_set(&Tile::NORTH_EAST, false)
+    .with_bit_set(&Tile::NORTH_WEST, false)
+    .with_bit_set(&Tile::SOUTH_EAST, false)
+    .with_bit_set(&Tile::SOUTH_WEST, false);
 
-    static ref NOT_CORNERS: GridSet = GridSet::from_fn(|t|!t.is_corner());
-    static ref INNER_TILES: GridSet = GridSet::from_fn(|t|!t.is_edge());
+const INNER_TILES: GridSet = GridSet::EMPTY
+    .with_bit_set(&Tile::new_const::<1, 1>(), true)
+    .with_bit_set(&Tile::new_const::<1, 2>(), true)
+    .with_bit_set(&Tile::new_const::<2, 1>(), true)
+    .with_bit_set(&Tile::new_const::<2, 2>(), true);
 
-    static ref TOP_RIGHT_LOCATIONS: GridSet = GridSet::from_fn(|t| t.x() >= t.y());
-}
+const TOP_RIGHT_LOCATIONS: GridSet = GridSet::ALL
+    .with_bit_set(&Tile::new_const::<0, 1>(), false)
+    .with_bit_set(&Tile::new_const::<0, 2>(), false)
+    .with_bit_set(&Tile::new_const::<0, 3>(), false)
+    .with_bit_set(&Tile::new_const::<1, 2>(), false)
+    .with_bit_set(&Tile::new_const::<1, 3>(), false)
+    .with_bit_set(&Tile::new_const::<2, 3>(), false);
 
 #[cfg(test)]
 mod tests {
