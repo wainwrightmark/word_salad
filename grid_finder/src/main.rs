@@ -5,11 +5,12 @@ pub mod search;
 pub mod word_layout;
 
 use clap::Parser;
+use const_sized_bit_set::BitSet;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use indicatif_log_bridge::LogWrapper;
 use itertools::Itertools;
 use log::{info, warn};
-use rayon::prelude::*;
+use rayon::iter::{ParallelDrainFull, ParallelIterator};
 use std::{
     collections::HashSet,
     fs::{DirEntry, File},
@@ -24,8 +25,10 @@ use ws_core::{
 
 use crate::{
     clustering::cluster_words,
-    combinations::{get_combinations, WordCombination, WordSet},
+    combinations::{get_combinations, WordCombination},
 };
+
+const BIT_SET_WORDS: usize = 2;
 
 #[derive(Parser, Debug)]
 #[command()]
@@ -140,7 +143,7 @@ fn do_cluster(options: Options) {
             all_words.len()
         );
 
-        let clusters = cluster_words(grids, &all_words, options.max_clusters as usize);
+        let clusters = cluster_words::<BIT_SET_WORDS>(grids, &all_words, options.max_clusters as usize);
 
         let clusters_write_path = format!("clusters/{file_name}",);
         let clusters_write_path = Path::new(clusters_write_path.as_str());
@@ -214,7 +217,13 @@ fn do_finder(options: Options) {
             info!("{word}",)
         }
 
-        for (a, b) in word_map.iter().flat_map(|x|x.words.iter()).cloned().sorted_by_cached_key(|x| x.array.clone()).tuple_windows() {
+        for (a, b) in word_map
+            .iter()
+            .flat_map(|x| x.words.iter())
+            .cloned()
+            .sorted_by_cached_key(|x| x.array.clone())
+            .tuple_windows()
+        {
             if b.array.starts_with(&a.array) {
                 warn!("'{}' is a prefix of '{}'", a.text, b.text)
             }
@@ -223,9 +232,18 @@ fn do_finder(options: Options) {
         let master_path = format!("master/{file_name}");
         let master_file_text = std::fs::read_to_string(master_path).unwrap_or_default();
 
-        let mut master_words:Vec<FinderSingleWord> = make_finder_group_vec_from_file(&master_file_text).into_iter().flat_map(|x|x.words).collect_vec();
+        let mut master_words: Vec<FinderSingleWord> =
+            make_finder_group_vec_from_file(&master_file_text)
+                .into_iter()
+                .flat_map(|x| x.words)
+                .collect_vec();
         if master_words.len() > 0 {
-            let word_set: HashSet<_> = word_map.iter().flat_map(|x|x.words.iter()).cloned().map(|x| x.array.clone()).collect();
+            let word_set: HashSet<_> = word_map
+                .iter()
+                .flat_map(|x| x.words.iter())
+                .cloned()
+                .map(|x| x.array.clone())
+                .collect();
             let total_master_count = master_words.len();
             master_words.retain(|x| !word_set.contains(x.array.as_slice()));
             let new_master_count = master_words.len();
@@ -234,7 +252,7 @@ fn do_finder(options: Options) {
 
             if !master_words.is_empty() {
                 let mut bad_master_words: HashSet<FinderSingleWord> = Default::default();
-                for word in word_map.iter().flat_map(|x|x.words.iter()) {
+                for word in word_map.iter().flat_map(|x| x.words.iter()) {
                     for master_word in master_words.iter() {
                         if master_word.is_strict_substring(&word) {
                             warn!(
@@ -275,7 +293,7 @@ fn do_finder(options: Options) {
             .collect_vec();
 
         let clusters: Vec<clustering::Cluster> =
-            cluster_words(grids, &all_words, options.max_clusters as usize);
+            cluster_words::<BIT_SET_WORDS>(grids, &all_words, options.max_clusters as usize);
 
         let clusters_write_path = format!("clusters/{file_name}",);
         let clusters_write_path = Path::new(clusters_write_path.as_str());
@@ -300,7 +318,7 @@ fn create_grids(
     max_grids: u32,
 ) -> Vec<GridResult> {
     let word_letters: Vec<LetterCounts> = all_words.iter().map(|x| x.counts).collect();
-    let mut possible_combinations: Vec<combinations::WordCombination> =
+    let mut possible_combinations: Vec<combinations::WordCombination<BIT_SET_WORDS>> =
         get_combinations(word_letters.as_slice(), 16);
 
     info!(
@@ -312,7 +330,7 @@ fn create_grids(
 
     info!("Combinations Sorted");
 
-    let mut ordered_combinations: Vec<(u32, HashSet<WordSet>)> = possible_combinations
+    let mut ordered_combinations: Vec<(u32, HashSet<BitSet<BIT_SET_WORDS>>)> = possible_combinations
         .into_iter()
         .map(|x| x.word_indexes)
         .group_by(|x| x.count())
@@ -324,7 +342,7 @@ fn create_grids(
     info!("{c} group sizes found", c = ordered_combinations.len());
 
     let mut all_solutions: Vec<GridResult> = vec![];
-    let mut solved_sets: Vec<WordSet> = vec![];
+    let mut solved_sets: Vec<BitSet<BIT_SET_WORDS>> = vec![];
 
     while let Some((size, mut sets)) = ordered_combinations.pop() {
         if size < min_size {
@@ -337,7 +355,7 @@ fn create_grids(
 
         sets.retain(|x| !solved_sets.iter().any(|sol| x == &sol.intersect(x)));
 
-        let results: Vec<(WordCombination, Option<GridResult>)> = sets
+        let results: Vec<(WordCombination<BIT_SET_WORDS>, Option<GridResult>)> = sets
             .par_drain()
             .flat_map(|set| {
                 combinations::WordCombination::from_bit_set(set, word_letters.as_slice())

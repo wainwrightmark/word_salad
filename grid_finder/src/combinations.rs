@@ -1,12 +1,11 @@
+use const_sized_bit_set::BitSet;
 use indicatif::{ProgressBar, ProgressStyle};
 use itertools::Itertools;
 use rayon::prelude::*;
 use ws_core::finder::helpers::*;
 
-pub type WordSet = geometrid::tile_set::TileSet128<128, 1, 128>;
-pub type WordId = geometrid::tile::Tile<128, 1>;
 
-pub fn get_combinations(possible_words: &[LetterCounts], max_size: u8) -> Vec<WordCombination> {
+pub fn get_combinations<const W: usize>(possible_words: &[LetterCounts], max_size: u8) -> Vec<WordCombination<W>> {
     if possible_words.len() > 128 {
         panic!("Maximum of 128 words")
     }
@@ -15,13 +14,13 @@ pub fn get_combinations(possible_words: &[LetterCounts], max_size: u8) -> Vec<Wo
         .with_message("Getting word combinations");
 
     let upper_bounds = 1..(possible_words.len());
-    let result: Vec<WordCombination> = upper_bounds
+    let result: Vec<WordCombination<W>> = upper_bounds
         .into_iter()
         //.map(|upper| &possible_words[0..=upper])
         .par_bridge()
         .map(|upper| {
             let words = &possible_words[0..=upper];
-            let mut found_combinations: Vec<WordCombination> = vec![];
+            let mut found_combinations: Vec<WordCombination<W>> = vec![];
             get_combinations_inner(
                 &mut found_combinations,
                 WordCombination::default(),
@@ -46,9 +45,9 @@ pub fn get_combinations(possible_words: &[LetterCounts], max_size: u8) -> Vec<Wo
     result
 }
 
-fn get_combinations_inner(
-    found_combinations: &mut Vec<WordCombination>,
-    current_combination: WordCombination,
+fn get_combinations_inner<const W: usize>(
+    found_combinations: &mut Vec<WordCombination<W>>,
+    current_combination: WordCombination<W>,
     mut possible_words: &[LetterCounts],
     all_possible_words: &[LetterCounts],
     max_size: u8,
@@ -60,7 +59,7 @@ fn get_combinations_inner(
         possible_words = npw;
 
         let Some(new_combination) = current_combination
-            .try_add_word(&word, WordId::try_from_usize(possible_words.len()).unwrap())
+            .try_add_word(&word, possible_words.len())
         else {
             panic!("Could not add word to multiplicities");
         };
@@ -128,26 +127,27 @@ fn get_combinations_inner(
 }
 
 #[derive(Debug, Clone, PartialEq, Default, Ord, PartialOrd, Eq)]
-pub struct WordCombination {
-    pub word_indexes: WordSet,
+pub struct WordCombination<const W: usize> {
+    pub word_indexes: BitSet<W>,
     pub letter_counts: LetterCounts,
     pub total_letters: u8,
 }
 
-pub fn shrink_bit_sets<'a>(set: &'a WordSet) -> impl Iterator<Item = WordSet> + 'a {
-    set.iter_true_tiles().map(|tile| {
+/// Iterate all subsets of this set whose element count is exactly one less
+pub fn shrink_bit_sets<'a, const W: usize>(set: &'a BitSet<W>) -> impl Iterator<Item = BitSet<W>> + 'a {
+    set.into_iter().map(|index| {
         let mut s = set.clone();
-        s.set_bit(&tile, false);
+        s.set_bit(index, false);
         s
     })
 }
 
-impl WordCombination {
-    pub fn from_bit_set(word_indexes: WordSet, words: &[LetterCounts]) -> Option<Self> {
+impl<const W: usize> WordCombination<W> {
+    pub fn from_bit_set(word_indexes: BitSet<W>, words: &[LetterCounts]) -> Option<Self> {
         let mut letter_counts = LetterCounts::default();
         for word in word_indexes
-            .iter_true_tiles()
-            .map(|i| words[i.inner() as usize])
+            .into_iter()
+            .map(|i| words[i])
         {
             letter_counts = letter_counts.try_union(&word)?
         }
@@ -160,8 +160,8 @@ impl WordCombination {
     }
     pub fn get_single_words(&self, words: &[FinderGroup]) -> Vec<FinderSingleWord> {
         self.word_indexes
-            .iter_true_tiles()
-            .flat_map(|index| words[index.inner() as usize].words.iter())
+            .into_iter()
+            .flat_map(|i| words[i].words.iter())
             .cloned()
             .collect_vec()
     }
@@ -175,10 +175,10 @@ impl WordCombination {
     }
 
     #[must_use]
-    fn try_add_word(&self, word: &LetterCounts, word_index: WordId) -> Option<Self> {
+    fn try_add_word(&self, word: &LetterCounts, word_index: usize) -> Option<Self> {
         let letter_counts = self.letter_counts.try_union(&word)?;
         let mut word_indexes = self.word_indexes.clone();
-        word_indexes.set_bit(&word_index, true);
+        word_indexes.set_bit(word_index, true);
 
         if letter_counts == self.letter_counts {
             Some(Self {
@@ -239,7 +239,7 @@ pub mod tests {
         let words = make_finder_group_vec_from_file(input);
         let word_letters: Vec<LetterCounts> = words.iter().map(|x| x.counts).collect_vec();
 
-        let possible_combinations: Vec<WordCombination> =
+        let possible_combinations: Vec<WordCombination<1>> =
             get_combinations(word_letters.as_slice(), 16);
 
         //println!("{:?}", _now.elapsed());
@@ -293,7 +293,7 @@ pub mod tests {
 
         let word_letters: Vec<LetterCounts> = words.iter().map(|x| x.counts).collect_vec();
 
-        let possible_combinations: Vec<WordCombination> =
+        let possible_combinations: Vec<WordCombination<1>> =
             get_combinations(word_letters.as_slice(), 16);
 
         println!("{:?}", now.elapsed());

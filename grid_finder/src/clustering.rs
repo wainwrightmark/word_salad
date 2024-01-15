@@ -10,7 +10,7 @@ use ws_core::{
 };
 
 use crate::cluster_ordering;
-type WordsSet = geometrid::tile_set::TileSet128<128, 1, 128>;
+use const_sized_bit_set::BitSet;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, PartialOrd, Ord)]
 pub struct ClusterScore {
@@ -26,7 +26,11 @@ pub struct ClusterScore {
 }
 
 impl ClusterScore {
-    pub fn increment(&self, original_cluster: &[WordsSet], new_item: &WordsSet) -> Self {
+    pub fn increment<const W: usize>(
+        &self,
+        original_cluster: &[BitSet<W>],
+        new_item: &BitSet<W>,
+    ) -> Self {
         let mut result = self.clone();
         result.total_element_items += new_item.count();
 
@@ -39,7 +43,7 @@ impl ClusterScore {
         result
     }
 
-    pub fn calculate<'a>(cluster: &'a [WordsSet]) -> Self {
+    pub fn calculate<'a, const W: usize>(cluster: &'a [BitSet<W>]) -> Self {
         let total_element_items = cluster.iter().map(|x| x.count()).sum();
         let mut max_overlap = 0;
         let mut total_overlap = 0;
@@ -58,8 +62,8 @@ impl ClusterScore {
     }
 }
 
-impl<'a> From<&'a [WordsSet]> for ClusterScore {
-    fn from(cluster: &'a [WordsSet]) -> Self {
+impl<'a, const W: usize> From<&'a [BitSet<W>]> for ClusterScore {
+    fn from(cluster: &'a [BitSet<W>]) -> Self {
         let total_element_items = cluster.iter().map(|x| x.count()).sum();
         let mut max_overlap = 0;
         let mut total_overlap = 0;
@@ -84,7 +88,7 @@ pub struct AdjacencyScore {
 }
 
 impl AdjacencyScore {
-    pub fn calculate(slice: &[WordsSet]) -> Self {
+    pub fn calculate<const W: usize>(slice: &[BitSet<W>]) -> Self {
         let mut max = 0u32;
         let mut total = 0f32;
         let mut count = 0f32;
@@ -110,7 +114,10 @@ pub struct Cluster {
 }
 
 impl Cluster {
-    pub fn new(mut points: Vec<WordsSet>, map: &BTreeMap<WordsSet, GridResult>) -> Self {
+    pub fn new<const W: usize>(
+        mut points: Vec<BitSet<W>>,
+        map: &BTreeMap<BitSet<W>, GridResult>,
+    ) -> Self {
         cluster_ordering::order_cluster(&mut points);
         let score: ClusterScore = ClusterScore::calculate(points.as_slice());
         let adjacency_score = AdjacencyScore::calculate(&points.as_slice());
@@ -155,7 +162,7 @@ impl std::fmt::Display for Cluster {
     }
 }
 
-pub fn cluster_words(
+pub fn cluster_words<const W: usize>(
     groups: Vec<GridResult>,
     all_words: &Vec<FinderSingleWord>,
     max_clusters: usize,
@@ -166,14 +173,14 @@ pub fn cluster_words(
         return results;
     }
     let clusters = max_clusters.min(groups.len());
-    let map: BTreeMap<WordsSet, GridResult> = groups
+    let map: BTreeMap<BitSet<W>, GridResult> = groups
         .into_iter()
         .map(|grid_result| {
             let set: HashSet<CharsArray> =
                 HashSet::from_iter(grid_result.words.iter().map(|x| x.array.clone()));
 
-            let set: WordsSet = WordsSet::from_fn(|word_id| {
-                let Some(word) = all_words.get(word_id.inner() as usize) else {
+            let set: BitSet<W> = BitSet::<W>::from_fn(|word_id| {
+                let Some(word) = all_words.get(word_id) else {
                     return false;
                 };
                 set.contains(&word.array)
@@ -194,7 +201,7 @@ pub fn cluster_words(
         return results;
     };
 
-    let mut chosen_points: Vec<WordsSet> = vec![point1, point2];
+    let mut chosen_points: Vec<BitSet<W>> = vec![point1, point2];
     results.push(Cluster::new(chosen_points.clone(), &map));
 
     while chosen_points.len() < clusters {
@@ -240,7 +247,10 @@ fn binomial_coefficient(n: usize, k: usize) -> usize {
     res
 }
 
-fn find_best_point_to_add(chosen_points: &[WordsSet], all_points: &[WordsSet]) -> WordsSet {
+fn find_best_point_to_add<const W: usize>(
+    chosen_points: &[BitSet<W>],
+    all_points: &[BitSet<W>],
+) -> BitSet<W> {
     let original_score = ClusterScore::calculate(chosen_points);
 
     *all_points
@@ -283,7 +293,7 @@ pub mod test {
             })
             .collect_vec();
 
-        let clusters = cluster_words(grs, &all_words, 10);
+        let clusters = cluster_words::<1>(grs, &all_words, 10);
 
         assert_eq!(clusters.len(), 9);
         let text = clusters.into_iter().join("\n");

@@ -1,8 +1,8 @@
 use std::cmp::Reverse;
 
-use crate::combinations::WordSet;
+use const_sized_bit_set::BitSet;
 
-pub fn order_cluster(cluster: &mut Vec<WordSet>) {
+pub fn order_cluster<const W: usize>(cluster: &mut Vec<BitSet<W>>) {
     let Some((first_index, _)) = cluster
         .iter()
         .enumerate()
@@ -45,7 +45,7 @@ const KEY_SIZE: usize = 16;
 struct OrderingScore([Reverse<u8>; KEY_SIZE]);
 
 impl OrderingScore {
-    pub fn calculate(point: &WordSet, all: &[WordSet]) -> Self {
+    pub fn calculate<const W: usize>(point: &BitSet<W>, all: &[BitSet<W>]) -> Self {
         let mut numbers = [Reverse::<u8>(0); KEY_SIZE];
 
         for x in all {
