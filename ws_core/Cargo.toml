@@ -27,7 +27,8 @@ num-derive = "0.4"
 unicode-normalization = "0.1"
 unicode-segmentation = "1.10"
 log = "0.4.20"
-ustr = "0.10.0"
+ustr = {git = "https://github.com/anderslanglands/ustr", features = ["serde"]}
+const_sized_bit_set ={git="https://github.com/wainwrightmark/const_sized_bit_set"}
 
 [dev-dependencies]
 insta = "1"

@@ -3,6 +3,7 @@ use std::{collections::BTreeSet, str::FromStr};
 use crate::prelude::*;
 use itertools::Itertools;
 use prime_bag::PrimeBag128;
+use ustr::ustr;
 
 pub type LetterCounts = PrimeBag128<Character>;
 
@@ -23,7 +24,7 @@ pub fn make_finder_group_vec_from_file(text: &str) -> Vec<FinderGroup> {
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct FinderGroup {
-    pub text: String,
+    pub text: Ustr,
     pub words: Vec<FinderSingleWord>,
     pub counts: PrimeBag128<Character>,
 }
@@ -43,13 +44,13 @@ impl FromStr for FinderGroup {
             .fold(PrimeBag128::default(), |a, b| {
                 a.try_union(&b).expect("Could not combine")
             });
-        Ok(FinderGroup { text:s.to_string(), words, counts })
+        Ok(FinderGroup { text: ustr(s), words, counts })
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct FinderSingleWord {
-    pub text: String,
+    pub text: Ustr,
     pub array: CharsArray,
     pub counts: PrimeBag128<Character>,
 }

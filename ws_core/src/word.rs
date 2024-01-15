@@ -2,13 +2,14 @@ use std::str::FromStr;
 
 use arrayvec::ArrayVec;
 use serde::{Deserialize, Serialize};
+use ustr::ustr;
 
 use crate::{finder::helpers::LetterCounts, prelude::*};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Word {
     pub characters: CharsArray,
-    pub text: String,
+    pub text: Ustr,
 }
 
 pub fn find_solutions(characters: &CharsArray, grid: &Grid) -> Vec<Solution> {
@@ -169,7 +170,7 @@ impl FromStr for Word {
 
         Ok(Self {
             characters,
-            text: s.to_string(),
+            text: ustr(s),
         })
     }
 }
