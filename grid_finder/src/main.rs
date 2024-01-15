@@ -30,7 +30,7 @@ use crate::{
     combinations::{get_combinations, WordCombination},
 };
 
-const BIT_SET_WORDS: usize = 2;
+//const BIT_SET_WORDS: usize = 2;
 
 #[derive(Parser, Debug)]
 #[command()]
@@ -76,7 +76,7 @@ fn main() {
     } else if options.check_layout {
         word_layout::do_word_layout();
     } else if options.cluster {
-        do_cluster(options);
+        cluster_files(options);
     } else {
         do_finder(options);
     }
@@ -85,7 +85,7 @@ fn main() {
     io::stdin().read_line(&mut String::new()).unwrap();
 }
 
-fn do_cluster(options: Options) {
+fn cluster_files(options: Options) {
     let folder = std::fs::read_dir("grids").unwrap();
 
     let paths: Vec<_> = folder.collect();
@@ -145,8 +145,13 @@ fn do_cluster(options: Options) {
             all_words.len()
         );
 
-        let clusters =
-            cluster_words::<BIT_SET_WORDS>(grids, &all_words, options.max_clusters as usize);
+        let clusters = match all_words.len() {
+            0..=64 => cluster_words::<1>(grids, &all_words, options.max_clusters as usize),
+            65..=128 => cluster_words::<2>(grids, &all_words, options.max_clusters as usize),
+            129..=192 => cluster_words::<3>(grids, &all_words, options.max_clusters as usize),
+            193..=256 => cluster_words::<4>(grids, &all_words, options.max_clusters as usize),
+            _ => panic!("Too many words to do clustering"),
+        };
 
         let clusters_write_path = format!("clusters/{file_name}",);
         let clusters_write_path = Path::new(clusters_write_path.as_str());
@@ -279,13 +284,38 @@ fn do_finder(options: Options) {
         let grids_file =
             std::fs::File::create(grids_write_path).expect("Could not find output folder");
         let grids_writer = BufWriter::new(grids_file);
-        let grids = create_grids(
-            &word_map,
-            &master_words,
-            grids_writer,
-            options.minimum,
-            options.grids,
-        );
+
+        let grids: Vec<GridResult> = match word_map.len() {
+            0..=64 => create_grids::<1>(
+                &word_map,
+                &master_words,
+                grids_writer,
+                options.minimum,
+                options.grids,
+            ),
+            65..=128 => create_grids::<2>(
+                &word_map,
+                &master_words,
+                grids_writer,
+                options.minimum,
+                options.grids,
+            ),
+            129..=192 => create_grids::<3>(
+                &word_map,
+                &master_words,
+                grids_writer,
+                options.minimum,
+                options.grids,
+            ),
+            193..=256 => create_grids::<4>(
+                &word_map,
+                &master_words,
+                grids_writer,
+                options.minimum,
+                options.grids,
+            ),
+            _ => panic!("Too many words to do grid creation"),
+        };
 
         let all_words = grids
             .iter()
@@ -295,8 +325,13 @@ fn do_finder(options: Options) {
             .dedup()
             .collect_vec();
 
-        let clusters: Vec<clustering::Cluster> =
-            cluster_words::<BIT_SET_WORDS>(grids, &all_words, options.max_clusters as usize);
+        let clusters: Vec<clustering::Cluster> = match all_words.len() {
+            0..=64 => cluster_words::<1>(grids, &all_words, options.max_clusters as usize),
+            65..=128 => cluster_words::<2>(grids, &all_words, options.max_clusters as usize),
+            129..=192 => cluster_words::<3>(grids, &all_words, options.max_clusters as usize),
+            193..=256 => cluster_words::<4>(grids, &all_words, options.max_clusters as usize),
+            _ => panic!("Too many words to do clustering"),
+        };
 
         let clusters_write_path = format!("clusters/{file_name}",);
         let clusters_write_path = Path::new(clusters_write_path.as_str());
@@ -313,7 +348,13 @@ fn do_finder(options: Options) {
     }
 }
 
-fn create_grids(
+#[derive(Debug, Default)]
+struct SolutionGroup<const W: usize> {
+    sets: Vec<BitSet<W>>,
+    extras: MySet<BitSet<W>>,
+}
+
+fn create_grids<const W: usize>(
     all_words: &Vec<FinderGroup>,
     exclude_words: &Vec<FinderSingleWord>,
     mut file: BufWriter<File>,
@@ -321,8 +362,7 @@ fn create_grids(
     max_grids: u32,
 ) -> Vec<GridResult> {
     let word_letters: Vec<LetterCounts> = all_words.iter().map(|x| x.counts).collect();
-    let mut possible_combinations: Vec<BitSet<BIT_SET_WORDS>> =
-        get_combinations(word_letters.as_slice(), 16);
+    let mut possible_combinations: Vec<BitSet<W>> = get_combinations(word_letters.as_slice(), 16);
 
     info!(
         "{c} possible combinations founds",
@@ -333,13 +373,7 @@ fn create_grids(
 
     let mut all_solutions: Vec<GridResult> = vec![];
 
-    #[derive(Debug, Default)]
-    struct SolutionGroup {
-        sets: Vec<BitSet<BIT_SET_WORDS>>,
-        extras: MySet<BitSet<BIT_SET_WORDS>>,
-    }
-
-    let mut grouped_combinations: BTreeMap<u32, SolutionGroup> = Default::default();
+    let mut grouped_combinations: BTreeMap<u32, SolutionGroup<W>> = Default::default();
 
     possible_combinations
         .into_iter()
@@ -365,7 +399,7 @@ fn create_grids(
             .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:7}/{len:7}").unwrap())
             .with_message(format!("Groups of size {size}"));
 
-        let results: Vec<(WordCombination<BIT_SET_WORDS>, Option<GridResult>)> = group
+        let results: Vec<(WordCombination<W>, Option<GridResult>)> = group
             .sets
             .into_par_iter()
             .chain(group.extras.into_par_iter())
