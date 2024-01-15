@@ -2243,13 +2243,13 @@ dependencies = [
  "const_sized_bit_set",
  "env_logger",
  "geometrid",
+ "hashbrown 0.14.3",
  "indicatif",
  "indicatif-log-bridge",
  "insta",
  "itertools 0.12.0",
  "lazy_static",
  "log",
- "radsort",
  "rand",
  "rayon",
  "serde",
@@ -2307,6 +2307,7 @@ checksum = "290f1a1d9242c78d09ce40a5e87e7554ee637af1351968159f4952f028f75604"
 dependencies = [
  "ahash",
  "allocator-api2",
+ "rayon",
  "serde",
 ]
 

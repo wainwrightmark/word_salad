@@ -23,8 +23,9 @@ rayon = "1.8.0"
 # sled = "0.34.7"
 indicatif = "0.17.7"
 indicatif-log-bridge = "0.2.2"
-radsort = "0.1.0"
 const_sized_bit_set ={git="https://github.com/wainwrightmark/const_sized_bit_set"}
+hashbrown = { version = "0.14", features = ["rayon"] }
+
 
 
 [dev-dependencies]

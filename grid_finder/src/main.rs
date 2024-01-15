@@ -10,18 +10,20 @@ use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use indicatif_log_bridge::LogWrapper;
 use itertools::Itertools;
 use log::{info, warn};
-use rayon::iter::{ParallelDrainFull, ParallelIterator};
+use rayon::iter::{ParallelDrainFull, ParallelIterator, IntoParallelRefIterator, IntoParallelIterator};
 use std::{
-    collections::HashSet,
+    collections::{HashSet, BTreeSet},
     fs::{DirEntry, File},
     io::{self, BufWriter, Write},
     path::{Path, PathBuf},
-    str::FromStr,
+    str::FromStr, borrow::BorrowMut,
 };
 use ws_core::{
     finder::{counter::FakeCounter, helpers::*, node::GridResult},
     prelude::*,
 };
+
+use hashbrown::hash_set::HashSet as MySet;
 
 use crate::{
     clustering::cluster_words,
@@ -318,7 +320,7 @@ fn create_grids(
     max_grids: u32,
 ) -> Vec<GridResult> {
     let word_letters: Vec<LetterCounts> = all_words.iter().map(|x| x.counts).collect();
-    let mut possible_combinations: Vec<combinations::WordCombination<BIT_SET_WORDS>> =
+    let possible_combinations: Vec<combinations::WordCombination<BIT_SET_WORDS>> =
         get_combinations(word_letters.as_slice(), 16);
 
     info!(
@@ -326,37 +328,43 @@ fn create_grids(
         c = possible_combinations.len()
     );
 
-    radsort::sort_by_key(&mut possible_combinations, |x| x.word_indexes.count());
+    let mut ordered_combinations: [MySet<BitSet<2>>; 32] = std::array::from_fn(|_|MySet::<BitSet<BIT_SET_WORDS>>::default());
 
-    info!("Combinations Sorted");
+    for x in possible_combinations.into_iter(){
+        let words = x.word_indexes.count();
 
-    let mut ordered_combinations: Vec<(u32, HashSet<BitSet<BIT_SET_WORDS>>)> = possible_combinations
-        .into_iter()
-        .map(|x| x.word_indexes)
-        .group_by(|x| x.count())
-        .into_iter()
-        .sorted_unstable_by_key(|(k, _v)| *k)
-        .map(|(word_count, v)| (word_count, HashSet::from_iter(v)))
-        .collect_vec();
+        ordered_combinations[words as usize].insert(x.word_indexes);
+    }
+
+    let mut ordered_combinations: Vec<(usize, MySet<BitSet<2>>)> = ordered_combinations.into_iter().enumerate().filter(|x|!x.1.is_empty()) .collect();
 
     info!("{c} group sizes found", c = ordered_combinations.len());
+    // for (s, set) in ordered_combinations.iter(){
+    //     info!("{} of size {s}", set.len());
+    // }
 
     let mut all_solutions: Vec<GridResult> = vec![];
     let mut solved_sets: Vec<BitSet<BIT_SET_WORDS>> = vec![];
 
     while let Some((size, mut sets)) = ordered_combinations.pop() {
-        if size < min_size {
+        if (size as u32) < min_size {
             info!("Skipping {} of size {size}", sets.len());
             break;
         }
+        let now = std::time::Instant::now();
         let pb = ProgressBar::new(sets.len() as u64)
             .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:7}/{len:7}").unwrap())
             .with_message(format!("Groups of size {size}"));
 
-        sets.retain(|x| !solved_sets.iter().any(|sol| x == &sol.intersect(x)));
+        if !solved_sets.is_empty()
+        {
+            sets.retain(|x| !solved_sets.iter().any(|sol| x == &sol.intersect(x)));
+            //NOTE this does actually do something
+        }
 
         let results: Vec<(WordCombination<BIT_SET_WORDS>, Option<GridResult>)> = sets
-            .par_drain()
+        .into_par_iter()
+
             .flat_map(|set| {
                 combinations::WordCombination::from_bit_set(set, word_letters.as_slice())
             })
@@ -414,9 +422,9 @@ fn create_grids(
 
         let solution_count = solutions.len();
         let impossible_count = results_count - solution_count;
-
+        let elapsed = now.elapsed().as_secs_f32();
         pb.finish_with_message(format!(
-            "{size:2} words: {solution_count:4} Solutions {impossible_count:5} Impossible"
+            "{size:2} words: {solution_count:4} Solutions {impossible_count:5} Impossible {elapsed:.3}s"
         ));
 
         all_solutions.extend(solutions);
