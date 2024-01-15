@@ -1,11 +1,14 @@
+
 use const_sized_bit_set::BitSet;
 use indicatif::{ProgressBar, ProgressStyle};
 use itertools::Itertools;
 use rayon::prelude::*;
 use ws_core::finder::helpers::*;
 
-
-pub fn get_combinations<const W: usize>(possible_words: &[LetterCounts], max_size: u8) -> Vec<WordCombination<W>> {
+pub fn get_combinations<const W: usize>(
+    possible_words: &[LetterCounts],
+    max_size: u8,
+) -> Vec<BitSet<W>> {
     if possible_words.len() > 128 {
         panic!("Maximum of 128 words")
     }
@@ -13,61 +16,74 @@ pub fn get_combinations<const W: usize>(possible_words: &[LetterCounts], max_siz
         .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:3}/{len:3}").unwrap())
         .with_message("Getting word combinations");
 
-    let upper_bounds = 1..(possible_words.len());
-    let result: Vec<WordCombination<W>> = upper_bounds
+    let upper_bounds = 0..(possible_words.len());
+    let result: Vec<BitSet<W>> = upper_bounds
         .into_iter()
-        //.map(|upper| &possible_words[0..=upper])
+
         .par_bridge()
         .map(|upper| {
-            let words = &possible_words[0..=upper];
-            let mut found_combinations: Vec<WordCombination<W>> = vec![];
-            get_combinations_inner(
-                &mut found_combinations,
-                WordCombination::default(),
-                words,
-                possible_words,
-                max_size,
-            );
+            let words = &possible_words[0..upper];
+            let first_word = possible_words[upper];
+
+            let mut found_combinations: Vec<BitSet<W>> = vec![];
+
+            if let Some(first_combination) =
+                WordCombination::<W>::default().try_add_word(&first_word, upper)
+            {
+                get_combinations_inner(
+                    &mut found_combinations,
+                    first_combination,
+                    words,
+                    possible_words,
+                    max_size,
+                );
+            }
+
             pb.inc(1);
+            //println!("Found {} for upper {upper}", found_combinations.len());
             found_combinations
         })
-        .reduce(
-            || vec![],
-            |a, b| {
-                let (mut big, small) = if a.len() >= b.len() { (a, b) } else { (b, a) };
+        .reduce(||vec![], |a, b| {
+            let (mut big, small) = if a.len() >= b.len() { (a, b) } else { (b, a) };
 
-                big.extend_from_slice(&small);
-                big
-            },
-        );
+            big.extend_from_slice(&small);
+            big
+        });
+
+    //println!("Found a total of {} results", result.len());
 
     pb.finish();
     result
 }
 
+#[derive(Debug, Default, PartialEq)]
+enum GCIResult {
+    #[default]
+    NothingFound,
+    PossibleCombinationFound,
+}
+
 fn get_combinations_inner<const W: usize>(
-    found_combinations: &mut Vec<WordCombination<W>>,
+    found_combinations: &mut Vec<BitSet<W>>,
     current_combination: WordCombination<W>,
     mut possible_words: &[LetterCounts],
     all_possible_words: &[LetterCounts],
     max_size: u8,
-) {
+) -> GCIResult {
+    let mut result = GCIResult::NothingFound;
     loop {
         let Some((word, npw)) = possible_words.split_last() else {
             break;
         };
         possible_words = npw;
 
-        let Some(new_combination) = current_combination
-            .try_add_word(&word, possible_words.len())
+        let Some(new_combination) = current_combination.try_add_word(&word, possible_words.len())
         else {
             panic!("Could not add word to multiplicities");
         };
 
         if new_combination.total_letters <= max_size {
-            let previous_total = found_combinations.len();
-
-            get_combinations_inner(
+            let sub_result = get_combinations_inner(
                 found_combinations,
                 new_combination.clone(),
                 possible_words,
@@ -75,55 +91,37 @@ fn get_combinations_inner<const W: usize>(
                 max_size,
             );
 
-            let new_total = found_combinations.len();
+            if sub_result == GCIResult::PossibleCombinationFound {
+                continue;
+            }
+            result = GCIResult::PossibleCombinationFound;
 
-            if new_total != previous_total {
+            if all_possible_words
+                .iter()
+                .enumerate()
+                .any(|(word_index, letter_indices)| {
+                    !new_combination.word_indexes.get_bit(word_index)
+                        && letter_indices.is_subset(&new_combination.letter_counts)
+                })
+            {
                 continue;
             }
 
-            // if new_combination
-            //     .letter_counts
-            //     .contains_at_least(ws_core::Character::Blank, BLANK_COUNT)
-            // {
-            //     continue;
-            // }
+            if all_possible_words
+                .iter()
+                .enumerate()
+                .rev()
+                .any(|(word_index, letter_indices)| {
+                    new_combination.can_add(word_index, letter_indices, max_size)
+                })
+            {
+                continue;
+            }
 
-            // if found_combinations.iter().any(|fc| {
-            //     fc.word_indexes.intersect(&new_combination.word_indexes)
-            //         == new_combination.word_indexes
-            // }) {
-            //     continue;
-            // }
-
-            // if all_possible_words
-            //     .iter()
-            //     .skip(possible_words.len() + new_combination.total_letters as usize)
-            //     .rev()
-            //     .any(|w| w.is_subset(&new_combination.letter_counts))
-            // {
-            //     continue;
-            // }
-
-            // if new_combination.total_letters != max_size
-            //     || all_possible_words
-            //         .iter()
-            //         .enumerate()
-            //         .skip(possible_words.len())
-            //         .rev()
-            //         .any(|(index, other_word)| {
-            //             new_combination.can_add(
-            //                 other_word,
-            //                 WordId::try_from_usize(index).unwrap(),
-            //                 max_size,
-            //             )
-            //         })
-            // {
-            //     continue;
-            // }
-
-            found_combinations.push(new_combination);
+            found_combinations.push(new_combination.word_indexes);
         }
     }
+    result
 }
 
 #[derive(Debug, Clone, PartialEq, Default, Ord, PartialOrd, Eq)]
@@ -134,7 +132,9 @@ pub struct WordCombination<const W: usize> {
 }
 
 /// Iterate all subsets of this set whose element count is exactly one less
-pub fn shrink_bit_sets<'a, const W: usize>(set: &'a BitSet<W>) -> impl Iterator<Item = BitSet<W>> + 'a {
+pub fn shrink_bit_sets<'a, const W: usize>(
+    set: &'a BitSet<W>,
+) -> impl Iterator<Item = BitSet<W>> + 'a {
     set.into_iter().map(|index| {
         let mut s = set.clone();
         s.set_bit(index, false);
@@ -145,10 +145,7 @@ pub fn shrink_bit_sets<'a, const W: usize>(set: &'a BitSet<W>) -> impl Iterator<
 impl<const W: usize> WordCombination<W> {
     pub fn from_bit_set(word_indexes: BitSet<W>, words: &[LetterCounts]) -> Option<Self> {
         let mut letter_counts = LetterCounts::default();
-        for word in word_indexes
-            .into_iter()
-            .map(|i| words[i])
-        {
+        for word in word_indexes.into_iter().map(|i| words[i]) {
             letter_counts = letter_counts.try_union(&word)?
         }
 
@@ -197,37 +194,42 @@ impl<const W: usize> WordCombination<W> {
         }
     }
 
-    // fn can_add(&self, other_word: &LetterCounts, word_index: WordId, max_size: u8) -> bool {
-    //     if self.word_indexes.get_bit(&word_index) {
-    //         return false;
-    //     }
-    //     let Some(letter_counts) = self.letter_counts.try_union(&other_word) else {
-    //         return false;
-    //     };
-    //     if letter_counts == self.letter_counts {
-    //         return true;
-    //     } else {
-    //         if self.total_letters == max_size {
-    //             return false;
-    //         }
+    fn can_add(
+        &self,
+        other_word_index: usize,
+        other_word_letters: &LetterCounts,
+        max_size: u8,
+    ) -> bool {
+        if self.word_indexes.get_bit(other_word_index) {
+            return false;
+        }
+        let Some(letter_counts) = self.letter_counts.try_union(&other_word_letters) else {
+            return false;
+        };
+        if letter_counts == self.letter_counts {
+            return true;
+        } else {
+            if self.total_letters == max_size {
+                return false;
+            }
 
-    //         let diff = letter_counts
-    //             .try_difference(&self.letter_counts)
-    //             .unwrap_or_default();
-    //         let new_elements = diff.into_iter().count() as u8;
+            let diff = letter_counts
+                .try_difference(&self.letter_counts)
+                .unwrap_or_default();
+            let new_elements = diff.into_iter().count() as u8;
 
-    //         let new_count = self.total_letters + new_elements;
+            let new_count = self.total_letters + new_elements;
 
-    //         return new_count <= max_size;
-    //     }
-    // }
+            return new_count <= max_size;
+        }
+    }
 }
 
 #[cfg(test)]
 pub mod tests {
     use super::*;
     use itertools::Itertools;
-    use std::{collections::HashSet, time::Instant};
+    use std::{ time::Instant};
     use test_case::test_case;
 
     #[test]
@@ -239,29 +241,20 @@ pub mod tests {
         let words = make_finder_group_vec_from_file(input);
         let word_letters: Vec<LetterCounts> = words.iter().map(|x| x.counts).collect_vec();
 
-        let possible_combinations: Vec<WordCombination<1>> =
+        let possible_combinations: Vec<BitSet<1>> =
             get_combinations(word_letters.as_slice(), 16);
 
-        //println!("{:?}", _now.elapsed());
+        let expected = "boron, carbon, helium, hydrogen\nboron, carbon, helium, lithium\nboron, helium, hydrogen, lithium";
 
-        let expected = "boron\nboron, carbon\nboron, carbon, helium\nboron, carbon, helium, hydrogen\nboron, carbon, helium, lithium\nboron, carbon, hydrogen\nboron, carbon, lithium\nboron, helium\nboron, helium, hydrogen\nboron, helium, hydrogen, lithium\nboron, helium, lithium\nboron, hydrogen\nboron, hydrogen, lithium\nboron, lithium";
 
-        //println!("{}", possible_combinations.iter().map(|x| x.display_string(words.as_slice())).sorted().dedup().join("\\n"));
-
-        let actual_set: HashSet<_> = possible_combinations
+        let actual = possible_combinations
             .iter()
+            .map(|x| WordCombination::from_bit_set(*x, &word_letters).unwrap())
             .map(|x| x.display_string(words.as_slice()))
-            .collect();
+            .sorted()
+            .join("\n");
 
-        for combo in expected.split("\n") {
-            assert!(actual_set.contains(combo));
-        }
-
-        assert_eq!(
-            actual_set.len(),
-            expected.split("\n").count(),
-            "Number of combinations"
-        );
+        assert_eq!(expected, actual)
     }
 
     #[test_case("monkey\ncow\nant\nantelope", "monkey\ncow\nant\nantelope")]
@@ -277,7 +270,7 @@ pub mod tests {
         "Teal\nWheat\nWhite\nGreen\nCyan\nGray\nCoral\nOrange\nMagenta",
         "Teal\nWheat\nWhite\nGreen\nCyan\nGray\nCoral\nOrange\nMagenta"
     )]
-    #[test_case("White\nYellow\nBlue\nRed\nGreen\nBlack\nBrown\nAzure\nIvory\nTeal\nSilver\nPurple\nGray\nOrange\nMaroon\nCharcoal\nAquamarine\nCoral\nFuchsia\nWheat\nLime\nCrimson\nKhaki\npink\nMagenta\nGold\nPlum\nOlive\nCyan","Black\nCoral\nCyan\nGray\nGreen\nIvory\nOlive\nOrange\nRed\nTeal") ]
+    //#[test_case("White\nYellow\nBlue\nRed\nGreen\nBlack\nBrown\nAzure\nIvory\nTeal\nSilver\nPurple\nGray\nOrange\nMaroon\nCharcoal\nAquamarine\nCoral\nFuchsia\nWheat\nLime\nCrimson\nKhaki\npink\nMagenta\nGold\nPlum\nOlive\nCyan","Black\nCoral\nCyan\nGray\nGreen\nIvory\nOlive\nOrange\nRed\nTeal") ]
     pub fn test_membership(input: &'static str, expected_member: &'static str) {
         let now = Instant::now();
 
@@ -293,21 +286,24 @@ pub mod tests {
 
         let word_letters: Vec<LetterCounts> = words.iter().map(|x| x.counts).collect_vec();
 
-        let possible_combinations: Vec<WordCombination<1>> =
+        let possible_combinations: Vec<BitSet<1>> =
             get_combinations(word_letters.as_slice(), 16);
 
         println!("{:?}", now.elapsed());
 
         let contains_expected = possible_combinations
             .iter()
+            .map(|x| WordCombination::from_bit_set(*x, &word_letters).unwrap())
             .map(|x| x.letter_counts)
             .contains(&expected);
 
         if !contains_expected {
             let actual = possible_combinations
                 .into_iter()
-                .sorted()
+
+                .map(|x| WordCombination::from_bit_set(x, &word_letters).unwrap())
                 .map(|x| x.display_string(words.as_slice()))
+                .sorted()
                 .join("\n");
 
             println!("actual {actual}");

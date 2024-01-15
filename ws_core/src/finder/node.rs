@@ -309,12 +309,6 @@ pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
             words: words.clone(),
         }
     })
-
-    // let Some(solution) =  solution else {
-    //     return None;
-    // };
-
-    //
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -467,7 +461,7 @@ mod tests {
     #[test_case("ALDGATE\nANGEL\nALDGATEEAST\nBANK\nLANCASTERGATE")]
     #[test_case("WELLS\nLEEDS\nELY\nLISBURN\nDERBY\nNEWRY\nSALISBURY")]
     #[test_case("Sporty\nScary")]
-    //#[test_case("Utah\nOhio\nMaine\nIdaho\nIndiana\nMontana\nArizona")] //TODO make this case fast
+//    #[test_case("Utah\nOhio\nMaine\nIdaho\nIndiana\nMontana\nArizona")] //TODO make this case fast
     #[test_case("Teal\nWheat\nWhite\nGreen\nCyan\nGray\nCoral\nOrange\nMagenta")]
     pub fn test_try_make_grid(input: &'static str) {
         let now = Instant::now();

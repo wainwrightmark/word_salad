@@ -95,9 +95,7 @@ pub fn find_solution(characters: &CharsArray, grid: &Grid) -> Option<Solution> {
 
     //TODO more efficient path if word has no duplicate letters
 
-    let Some(first_char) = characters.get(0) else {
-        return Default::default();
-    };
+    let first_char = characters.get(0)?;
 
     for first_tile in Tile::iter_by_row().filter(|tile| grid[*tile] == *first_char) {
         let mut path: ArrayVec<Tile, 16> = Default::default();

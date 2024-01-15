@@ -10,13 +10,13 @@ use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use indicatif_log_bridge::LogWrapper;
 use itertools::Itertools;
 use log::{info, warn};
-use rayon::iter::{ParallelDrainFull, ParallelIterator, IntoParallelRefIterator, IntoParallelIterator};
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use std::{
-    collections::{HashSet, BTreeSet},
+    collections::{BTreeMap, HashSet},
     fs::{DirEntry, File},
     io::{self, BufWriter, Write},
     path::{Path, PathBuf},
-    str::FromStr, borrow::BorrowMut,
+    str::FromStr,
 };
 use ws_core::{
     finder::{counter::FakeCounter, helpers::*, node::GridResult},
@@ -145,7 +145,8 @@ fn do_cluster(options: Options) {
             all_words.len()
         );
 
-        let clusters = cluster_words::<BIT_SET_WORDS>(grids, &all_words, options.max_clusters as usize);
+        let clusters =
+            cluster_words::<BIT_SET_WORDS>(grids, &all_words, options.max_clusters as usize);
 
         let clusters_write_path = format!("clusters/{file_name}",);
         let clusters_write_path = Path::new(clusters_write_path.as_str());
@@ -320,51 +321,54 @@ fn create_grids(
     max_grids: u32,
 ) -> Vec<GridResult> {
     let word_letters: Vec<LetterCounts> = all_words.iter().map(|x| x.counts).collect();
-    let possible_combinations: Vec<combinations::WordCombination<BIT_SET_WORDS>> =
+    let mut possible_combinations: Vec<BitSet<BIT_SET_WORDS>> =
         get_combinations(word_letters.as_slice(), 16);
 
     info!(
-        "{c} possible combinations found. They may take a while to sort",
+        "{c} possible combinations founds",
         c = possible_combinations.len()
     );
 
-    let mut ordered_combinations: [MySet<BitSet<2>>; 32] = std::array::from_fn(|_|MySet::<BitSet<BIT_SET_WORDS>>::default());
-
-    for x in possible_combinations.into_iter(){
-        let words = x.word_indexes.count();
-
-        ordered_combinations[words as usize].insert(x.word_indexes);
-    }
-
-    let mut ordered_combinations: Vec<(usize, MySet<BitSet<2>>)> = ordered_combinations.into_iter().enumerate().filter(|x|!x.1.is_empty()) .collect();
-
-    info!("{c} group sizes found", c = ordered_combinations.len());
-    // for (s, set) in ordered_combinations.iter(){
-    //     info!("{} of size {s}", set.len());
-    // }
+    possible_combinations.sort_unstable_by_key(|x| std::cmp::Reverse(x.count()));
 
     let mut all_solutions: Vec<GridResult> = vec![];
-    let mut solved_sets: Vec<BitSet<BIT_SET_WORDS>> = vec![];
 
-    while let Some((size, mut sets)) = ordered_combinations.pop() {
+    #[derive(Debug, Default)]
+    struct SolutionGroup {
+        sets: Vec<BitSet<BIT_SET_WORDS>>,
+        extras: MySet<BitSet<BIT_SET_WORDS>>,
+    }
+
+    let mut grouped_combinations: BTreeMap<u32, SolutionGroup> = Default::default();
+
+    possible_combinations
+        .into_iter()
+        .group_by(|x| x.count())
+        .into_iter()
+        .for_each(|(count, group)| {
+            let sg = grouped_combinations.entry(count).or_default();
+            sg.sets.extend(group);
+        });
+
+    while let Some((size, group)) = grouped_combinations.pop_last() {
         if (size as u32) < min_size {
-            info!("Skipping {} of size {size}", sets.len());
+            info!(
+                "Skipping {} of size {size}",
+                group.sets.len() + group.extras.len()
+            );
             break;
         }
+
         let now = std::time::Instant::now();
-        let pb = ProgressBar::new(sets.len() as u64)
+
+        let pb = ProgressBar::new((group.sets.len() + group.extras.len()) as u64)
             .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:7}/{len:7}").unwrap())
             .with_message(format!("Groups of size {size}"));
 
-        if !solved_sets.is_empty()
-        {
-            sets.retain(|x| !solved_sets.iter().any(|sol| x == &sol.intersect(x)));
-            //NOTE this does actually do something
-        }
-
-        let results: Vec<(WordCombination<BIT_SET_WORDS>, Option<GridResult>)> = sets
-        .into_par_iter()
-
+        let results: Vec<(WordCombination<BIT_SET_WORDS>, Option<GridResult>)> = group
+            .sets
+            .into_par_iter()
+            .chain(group.extras.into_par_iter())
             .flat_map(|set| {
                 combinations::WordCombination::from_bit_set(set, word_letters.as_slice())
             })
@@ -397,44 +401,42 @@ fn create_grids(
 
         let results_count = results.len();
 
-        let (_, mut next_set) = ordered_combinations.pop().unwrap_or_default();
         let mut solutions: Vec<GridResult> = vec![];
+        let next_group = grouped_combinations
+            .entry(size.saturating_sub(1))
+            .or_default();
 
         for (combination, result) in results.into_iter() {
             if let Some(mut solution) = result {
-                solved_sets.push(combination.word_indexes);
                 ws_core::finder::orientation::optimize_orientation(&mut solution);
                 solutions.push(solution);
             } else {
-                for new_set in combinations::shrink_bit_sets(&combination.word_indexes) {
-                    next_set.insert(new_set);
-                }
+                next_group
+                    .extras
+                    .extend(combinations::shrink_bit_sets(&combination.word_indexes));
             }
         }
 
-        let lines = solutions
-            .iter()
-            .sorted_by_cached_key(|x| x.words.iter().sorted().join(""))
-            .join("\n");
-        if !lines.trim().is_empty() {
+        if solutions.len() > 0 {
+            let lines = solutions
+                .iter()
+                .sorted_by_cached_key(|x| x.words.iter().sorted().join(""))
+                .join("\n");
             file.write_all((lines + "\n").as_bytes()).unwrap();
+            file.flush().expect("Could not flush to file");
         }
 
         let solution_count = solutions.len();
         let impossible_count = results_count - solution_count;
         let elapsed = now.elapsed().as_secs_f32();
         pb.finish_with_message(format!(
-            "{size:2} words: {solution_count:4} Solutions {impossible_count:5} Impossible {elapsed:.3}s"
+            "{size:2} words: {solution_count:6} Solutions {impossible_count:9} Impossible {elapsed:4.3}s"
         ));
 
         all_solutions.extend(solutions);
 
         if all_solutions.len() > max_grids as usize {
             return all_solutions;
-        }
-
-        if next_set.len() > 0 {
-            ordered_combinations.push((size.saturating_sub(1), next_set));
         }
     }
 
