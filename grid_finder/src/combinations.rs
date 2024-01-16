@@ -9,9 +9,6 @@ pub fn get_combinations<const W: usize>(
     possible_words: &[LetterCounts],
     max_size: u8,
 ) -> Vec<BitSet<W>> {
-    if possible_words.len() > 128 {
-        panic!("Maximum of 128 words")
-    }
     let pb = ProgressBar::new(possible_words.len() as u64)
         .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:3}/{len:3}").unwrap())
         .with_message("Getting word combinations");

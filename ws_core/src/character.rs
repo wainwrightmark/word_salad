@@ -199,6 +199,28 @@ impl TryFrom<char> for Character {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub struct CharacterSet<T>([T; 27]);
+
+impl<T> CharacterSet<T> {
+    pub fn get(&self, c: Character)-> &T{
+        &self.0[c.into_prime_index()]
+    }
+
+    pub fn get_mut(&mut self, c: Character)-> &mut T{
+        &mut self.0[c.into_prime_index()]
+    }
+
+    pub fn set(&mut self, c: Character, value: T){
+        self.0[c.into_prime_index()] = value;
+    }
+
+    pub fn enumerate(&self)-> impl Iterator<Item = (Character, &T)>{
+        self.0.iter().enumerate().map(|(i,t)| (Character::from_prime_index(i), t))
+    }
+}
+
+
 #[cfg(test)]
 mod tests {
     use crate::normalize_characters_array;

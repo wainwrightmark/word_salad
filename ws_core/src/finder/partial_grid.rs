@@ -67,6 +67,7 @@ impl PartialGrid {
         level: usize,
         words: &Vec<FinderSingleWord>,
         exclude_words: &Vec<FinderSingleWord>,
+        multi_constraint_map: &MultiConstraintMap,
     ) {
         if !counter.try_increment() {
             return;
@@ -85,7 +86,7 @@ impl PartialGrid {
             .iter_true_tiles()
             .map(|tile| {
                 let node = &all_nodes[tile];
-                let set = self.potential_locations(node, allowed_by_symmetry);
+                let set = self.potential_locations(node, allowed_by_symmetry, multi_constraint_map);
 
                 (node, set)
             })
@@ -119,6 +120,7 @@ impl PartialGrid {
                 level + 1,
                 words,
                 exclude_words,
+                multi_constraint_map,
             );
             if collector.is_full() {
                 return;
@@ -128,7 +130,12 @@ impl PartialGrid {
         }
     }
 
-    pub fn potential_locations(&self, node: &Node, allowed_by_symmetry: GridSet) -> GridSet {
+    pub fn potential_locations(
+        &self,
+        node: &Node,
+        allowed_by_symmetry: GridSet,
+        multi_constraint_map: &MultiConstraintMap,
+    ) -> GridSet {
         let mut allowed = self.used_grid.negate().intersect(&allowed_by_symmetry);
 
         match node.constraint_count {
@@ -154,7 +161,7 @@ impl PartialGrid {
         //println!("{new_allowed}");
 
         for tile in allowed.iter_true_tiles() {
-            if !node.are_constraints_met(&tile, self) {
+            if !node.are_constraints_met(&tile, self, multi_constraint_map) {
                 new_allowed.set_bit(&tile, false);
                 // println!("{tile}");
                 // println!("{new_allowed}");
@@ -240,12 +247,13 @@ mod tests {
 
     #[test]
     pub fn test_potential_locations() {
+        let multi_constraint_map: MultiConstraintMap = MultiConstraintMap::default();
         let mut grid = PartialGrid::default();
 
         let a_id = NodeId::try_from_inner(0).unwrap();
         let a_node = NodeBuilder::new(a_id, Character::A).into();
 
-        let a_locations = grid.potential_locations(&a_node, GridSet::ALL);
+        let a_locations = grid.potential_locations(&a_node, GridSet::ALL, &multi_constraint_map);
 
         let mut expected = GridSet::EMPTY.negate();
 
@@ -258,7 +266,7 @@ mod tests {
 
         let b_node = NodeBuilder::new(b_id, Character::B).into();
 
-        let b_location_1 = grid.potential_locations(&b_node, GridSet::ALL);
+        let b_location_1 = grid.potential_locations(&b_node, GridSet::ALL, &multi_constraint_map);
 
         expected.set_bit(&a_tile, false);
 
@@ -268,10 +276,10 @@ mod tests {
 
         let c_node = NodeBuilder::new(c_id, Character::C);
 
-        c_node.add_single_constraint(a_id);
+        c_node.add_single_constraint(a_id, &multi_constraint_map);
         let c_node: Node = c_node.into();
 
-        let c_location = grid.potential_locations(&c_node, GridSet::ALL);
+        let c_location = grid.potential_locations(&c_node, GridSet::ALL, &multi_constraint_map);
 
         expected = GridSet::from_fn(|t| a_tile.is_adjacent_to(&t));
         assert_sets_eq(c_location, expected);

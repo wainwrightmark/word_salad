@@ -285,34 +285,36 @@ fn do_finder(options: Options) {
             std::fs::File::create(grids_write_path).expect("Could not find output folder");
         let grids_writer = BufWriter::new(grids_file);
 
+        let max_grids = (options.grids > 0).then_some(options.grids as usize);
+
         let grids: Vec<GridResult> = match word_map.len() {
             0..=64 => create_grids::<1>(
                 &word_map,
                 &master_words,
                 grids_writer,
                 options.minimum,
-                options.grids,
+                max_grids,
             ),
             65..=128 => create_grids::<2>(
                 &word_map,
                 &master_words,
                 grids_writer,
                 options.minimum,
-                options.grids,
+                max_grids,
             ),
             129..=192 => create_grids::<3>(
                 &word_map,
                 &master_words,
                 grids_writer,
                 options.minimum,
-                options.grids,
+                max_grids,
             ),
             193..=256 => create_grids::<4>(
                 &word_map,
                 &master_words,
                 grids_writer,
                 options.minimum,
-                options.grids,
+                max_grids,
             ),
             _ => panic!("Too many words to do grid creation"),
         };
@@ -359,7 +361,7 @@ fn create_grids<const W: usize>(
     exclude_words: &Vec<FinderSingleWord>,
     mut file: BufWriter<File>,
     min_size: u32,
-    max_grids: u32,
+    max_grids: Option<usize>,
 ) -> Vec<GridResult> {
     let word_letters: Vec<LetterCounts> = all_words.iter().map(|x| x.counts).collect();
     let mut possible_combinations: Vec<BitSet<W>> = get_combinations(word_letters.as_slice(), 16);
@@ -417,6 +419,7 @@ fn create_grids<const W: usize>(
                     .collect_vec();
 
                 let mut result = None;
+                //let now = std::time::Instant::now();
 
                 ws_core::finder::node::try_make_grid_with_blank_filling(
                     set.letter_counts,
@@ -428,6 +431,13 @@ fn create_grids<const W: usize>(
                 );
 
                 pb.inc(1);
+                // let elapsed = now.elapsed();
+                // if elapsed.as_secs_f32() > 1.0{
+                //     let found = result.is_some().then(||"found").unwrap_or_else(||"not found");
+                //     let fws = finder_words.iter().map(|x|x.text) .join(", ");
+                //     let excludes = exclude_words.iter().map(|x|x.text) .join(", ");
+                //     info!("Grid {found} in {:2.3} - {fws} --- EXCLUDE: {excludes} ", elapsed.as_secs_f32())
+                // }
 
                 (set, result)
             })
@@ -469,7 +479,7 @@ fn create_grids<const W: usize>(
 
         all_solutions.extend(solutions);
 
-        if all_solutions.len() > max_grids as usize {
+        if max_grids.is_some_and(|mg| mg < all_solutions.len()) {
             return all_solutions;
         }
     }

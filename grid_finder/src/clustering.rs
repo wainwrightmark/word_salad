@@ -168,10 +168,7 @@ pub fn cluster_words<const W: usize>(
     max_clusters: usize,
 ) -> Vec<Cluster> {
     let mut results: Vec<Cluster> = Default::default();
-    if all_words.len() > 128 {
-        println!("Clustering does not work with more than 128 words");
-        return results;
-    }
+
     let clusters = max_clusters.min(groups.len());
     let map: BTreeMap<BitSet<W>, GridResult> = groups
         .into_iter()
