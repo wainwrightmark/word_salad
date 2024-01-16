@@ -1,6 +1,7 @@
 use crate::{prelude, Character, Grid};
 use itertools::Itertools;
-use std::{cell::Cell, str::FromStr, num::NonZeroU8};
+use log::warn;
+use std::{cell::Cell, num::NonZeroU8, str::FromStr};
 
 use super::{
     counter::{Counter, SolutionCollector},
@@ -345,6 +346,35 @@ pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
 
     // println!("Made nodes in {}micros", now.elapsed().as_micros());
 
+    let mut nodes_with_4_or_more = 0usize;
+    let mut nodes_with_6_or_more = 0usize;
+
+    for node in nodes.iter() {
+        match node.constraint_count {
+            0..=3 => {}
+            4..=5 => {
+                nodes_with_4_or_more += 1;
+            }
+            6..=8 => {
+                nodes_with_4_or_more += 1;
+                nodes_with_6_or_more += 1;
+            }
+            _ => {
+                //warn!("Grid has a node with more than 8 constraints");
+                return;
+            }
+        }
+    }
+
+    if nodes_with_4_or_more > 12 {
+        //warn!("Grid has more than 12 nodes with more than 3 constraints");
+        return;
+    }
+    if nodes_with_6_or_more > 4 {
+        //warn!("Grid has more than 4 nodes with more than 5 constraints");
+        return;
+    }
+
     let mut mapped_collector = Collector::Mapped::default();
     grid.solve_recursive(
         counter,
@@ -443,7 +473,8 @@ impl From<NodeBuilder> for Node {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Node { //todo try removing id and constraint count ro reduce size
+pub struct Node {
+    //todo try removing id and constraint count ro reduce size
     pub id: NodeId,
     pub character: Character,
     single_constraints: NodeIdSet,
