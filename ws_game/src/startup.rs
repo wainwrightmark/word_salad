@@ -118,25 +118,6 @@ fn setup_system(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
 
-// fn print_maveric_tracking() {
-//     let graph_updates = maveric::tracing::count_graph_updates();
-//     let scheduled_changes = maveric::tracing::count_scheduled_changes();
-//     let scheduled_deletions = maveric::tracing::count_scheduled_deletions();
-//     let transitions = maveric::tracing::count_transitions();
-//     let additional = ADDITIONAL_TRACKING.load(std::sync::atomic::Ordering::SeqCst);
-
-//     if graph_updates > 0
-//         || scheduled_changes > 0
-//         || scheduled_deletions > 0
-//         || transitions > 0
-//         || additional > 0
-//     {
-//         info!("Graph Updates: {graph_updates:3} Scheduled Changes: {scheduled_changes:3} Scheduled Deletions: {scheduled_deletions:3} Transitions: {transitions:3} Additional: {additional:3}");
-//     } else {
-//         info!("No updates");
-//     }
-// }
-
 pub(crate) static ADDITIONAL_TRACKING: AtomicUsize = AtomicUsize::new(0);
 
 fn maybe_request_redraw(mut writer: EventWriter<RequestRedraw>, mut buffer: Local<bool>) {
@@ -146,7 +127,7 @@ fn maybe_request_redraw(mut writer: EventWriter<RequestRedraw>, mut buffer: Loca
         || maveric::tracing::count_scheduled_changes() > 0
         || ADDITIONAL_TRACKING.load(std::sync::atomic::Ordering::SeqCst) > 0;
 
-    if should_redraw  {
+    if should_redraw {
         writer.send(RequestRedraw);
     }
 
@@ -165,11 +146,11 @@ fn choose_level_on_game_load(
 ) {
     #[cfg(target_arch = "wasm32")]
     {
-        if let Some(daily_index) = crate::wasm::get_daily_from_location(){
+        if let Some(daily_index) = crate::wasm::get_daily_from_location() {
             info!("Loaded daily challenge {daily_index} from path");
 
-            if current_level.set_if_neq(CurrentLevel::DailyChallenge { index: daily_index }){
-                if let Some(level) = current_level.level(&daily_challenges).left(){
+            if current_level.set_if_neq(CurrentLevel::DailyChallenge { index: daily_index }) {
+                if let Some(level) = current_level.level(&daily_challenges).left() {
                     *found_words = FoundWordsState::new_from_level(level);
                     *timer = LevelTime::default();
                 }
@@ -199,37 +180,25 @@ fn choose_level_on_game_load(
     }
 
     if !found_words.is_level_complete() && found_words.is_level_started() {
+        info!("Level incomplete and started");
         return;
     }
 
     match current_level.as_ref() {
-        CurrentLevel::NonLevel(_) => {
+        CurrentLevel::Tutorial { .. } | CurrentLevel::NonLevel(NonLevel::BeforeTutorial) => {
             return;
         }
+        _ => {}
+    }
 
-        CurrentLevel::Tutorial { .. }
-        | CurrentLevel::DailyChallenge { .. }
-        | CurrentLevel::Custom { .. } => {
-            if let Some(index) = completion.get_next_incomplete_daily_challenge_from_today() {
-                let today_level = CurrentLevel::DailyChallenge { index };
-                if today_level.level(&daily_challenges).is_left() {
-                    //Only change to this level if we have loaded it already
-                    *current_level = today_level;
-                }
-            } else {
-                *current_level = CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished);
-            }
+    if let Some(index) = completion.get_next_incomplete_daily_challenge_from_today() {
+        let today_level = CurrentLevel::DailyChallenge { index };
+        if today_level.level(&daily_challenges).is_left() {
+            //Only change to this level if we have loaded it already
+            *current_level = today_level;
         }
-        CurrentLevel::Fixed { sequence, .. } => {
-            if let Some(level_index) = completion.get_next_level_index(*sequence) {
-                *current_level = CurrentLevel::Fixed {
-                    level_index,
-                    sequence: *sequence,
-                };
-            } else {
-                *current_level = CurrentLevel::NonLevel(NonLevel::LevelSequenceFinished(*sequence));
-            }
-        }
+    } else {
+        *current_level = CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished);
     }
 
     if let Either::Left(dl) = current_level.level(daily_challenges.as_ref()) {

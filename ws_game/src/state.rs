@@ -110,8 +110,7 @@ impl SavedLevelKey {
 pub struct SavedLevelsState {
 
     saved_sequences: std::collections::BTreeMap<u64, FoundWordsState>, //keyed by (sequence * u32::max, index, )
-    saved_daily: std::collections::BTreeMap<u32, FoundWordsState>,
-    //pub saved: std::collections::BTreeMap<SavedLevelKey, FoundWordsState>,
+    saved_daily: std::collections::BTreeMap<u32, FoundWordsState>, //TODO track time
 }
 
 impl SavedLevelsState {
