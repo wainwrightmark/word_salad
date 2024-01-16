@@ -35,8 +35,8 @@ pub fn do_word_layout() {
 
             let context = &(level.words.as_slice(), selfie_mode);
             let data: Vec<GroupData> =
-                ws_core::layout::entities::layout_word_tile::LayoutWordTile::iter_all(&context)
-                    .group_by(|tile| tile.location(&context, &sizing).y)
+                ws_core::layout::entities::layout_word_tile::LayoutWordTile::iter_all(context)
+                    .group_by(|tile| tile.location(context, &sizing).y)
                     .into_iter()
                     .map(|(_, group)| GroupData {
                         rightmost: group

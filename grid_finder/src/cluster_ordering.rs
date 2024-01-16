@@ -6,7 +6,7 @@ pub fn order_cluster<const W: usize>(cluster: &mut Vec<BitSet<W>>) {
     let Some((first_index, _)) = cluster
         .iter()
         .enumerate()
-        .max_by_key(|x| OrderingScore::calculate(x.1, &cluster))
+        .max_by_key(|x| OrderingScore::calculate(x.1, cluster))
     else {
         return;
     };
@@ -27,7 +27,7 @@ pub fn order_cluster<const W: usize>(cluster: &mut Vec<BitSet<W>>) {
                 .min_by_key(|(_, x)| {
                     (
                         x.intersect(prev).count(),
-                        Reverse(OrderingScore::calculate(x, &cluster)),
+                        Reverse(OrderingScore::calculate(x, cluster)),
                     )
                 })
         else {
@@ -57,6 +57,6 @@ impl OrderingScore {
             numbers[c] = Reverse(numbers[c].0 + 1);
         }
 
-        return Self(numbers);
+        Self(numbers)
     }
 }

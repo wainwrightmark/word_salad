@@ -31,7 +31,7 @@ impl ClusterScore {
         original_cluster: &[BitSet<W>],
         new_item: &BitSet<W>,
     ) -> Self {
-        let mut result = self.clone();
+        let mut result = *self;
         result.total_element_items += new_item.count();
 
         for item in original_cluster {
@@ -43,13 +43,13 @@ impl ClusterScore {
         result
     }
 
-    pub fn calculate<'a, const W: usize>(cluster: &'a [BitSet<W>]) -> Self {
+    pub fn calculate<const W: usize>(cluster: &[BitSet<W>]) -> Self {
         let total_element_items = cluster.iter().map(|x| x.count()).sum();
         let mut max_overlap = 0;
         let mut total_overlap = 0;
 
         for (a, b) in cluster.iter().tuple_combinations() {
-            let overlap = a.intersect(&b).count();
+            let overlap = a.intersect(b).count();
             total_overlap += overlap;
             max_overlap = max_overlap.max(overlap);
         }
@@ -120,7 +120,7 @@ impl Cluster {
     ) -> Self {
         cluster_ordering::order_cluster(&mut points);
         let score: ClusterScore = ClusterScore::calculate(points.as_slice());
-        let adjacency_score = AdjacencyScore::calculate(&points.as_slice());
+        let adjacency_score = AdjacencyScore::calculate(points.as_slice());
 
         let grids = points
             .iter()
@@ -253,7 +253,7 @@ fn find_best_point_to_add<const W: usize>(
     *all_points
         .iter()
         .filter(|p| !chosen_points.contains(p))
-        .max_by_key(|point| original_score.increment(chosen_points, &point))
+        .max_by_key(|point| original_score.increment(chosen_points, point))
         .unwrap()
 }
 

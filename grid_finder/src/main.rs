@@ -221,7 +221,7 @@ fn do_finder(options: Options) {
         } = finder_case;
 
         info!("Found {} Words", word_map.len());
-        for word in word_map.iter().map(|x| x.text.clone()).sorted() {
+        for word in word_map.iter().map(|x| x.text).sorted() {
             info!("{word}",)
         }
 
@@ -245,7 +245,7 @@ fn do_finder(options: Options) {
                 .into_iter()
                 .flat_map(|x| x.words)
                 .collect_vec();
-        if master_words.len() > 0 {
+        if !master_words.is_empty() {
             let word_set: HashSet<_> = word_map
                 .iter()
                 .flat_map(|x| x.words.iter())
@@ -262,7 +262,7 @@ fn do_finder(options: Options) {
                 let mut bad_master_words: HashSet<FinderSingleWord> = Default::default();
                 for word in word_map.iter().flat_map(|x| x.words.iter()) {
                     for master_word in master_words.iter() {
-                        if master_word.is_strict_substring(&word) {
+                        if master_word.is_strict_substring(word) {
                             warn!(
                                 "{} is a superstring of {} so will be impossible",
                                 word.text, master_word.text
@@ -289,28 +289,28 @@ fn do_finder(options: Options) {
 
         let grids: Vec<GridResult> = match word_map.len() {
             0..=64 => create_grids::<1>(
-                &word_map,
+                word_map,
                 &master_words,
                 grids_writer,
                 options.minimum,
                 max_grids,
             ),
             65..=128 => create_grids::<2>(
-                &word_map,
+                word_map,
                 &master_words,
                 grids_writer,
                 options.minimum,
                 max_grids,
             ),
             129..=192 => create_grids::<3>(
-                &word_map,
+                word_map,
                 &master_words,
                 grids_writer,
                 options.minimum,
                 max_grids,
             ),
             193..=256 => create_grids::<4>(
-                &word_map,
+                word_map,
                 &master_words,
                 grids_writer,
                 options.minimum,
@@ -387,7 +387,7 @@ fn create_grids<const W: usize>(
         });
 
     while let Some((size, group)) = grouped_combinations.pop_last() {
-        if (size as u32) < min_size {
+        if size < min_size {
             info!(
                 "Skipping {} of size {size}",
                 group.sets.len() + group.extras.len()
@@ -461,7 +461,7 @@ fn create_grids<const W: usize>(
             }
         }
 
-        if solutions.len() > 0 {
+        if !solutions.is_empty() {
             let lines = solutions
                 .iter()
                 .sorted_by_cached_key(|x| x.words.iter().sorted().join(""))

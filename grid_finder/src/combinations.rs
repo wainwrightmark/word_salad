@@ -40,7 +40,7 @@ pub fn get_combinations<const W: usize>(
             //println!("Found {} for upper {upper}", found_combinations.len());
             found_combinations
         })
-        .reduce(||vec![], |a, b| {
+        .reduce(std::vec::Vec::new, |a, b| {
             let (mut big, small) = if a.len() >= b.len() { (a, b) } else { (b, a) };
 
             big.extend_from_slice(&small);
@@ -74,7 +74,7 @@ fn get_combinations_inner<const W: usize>(
         };
         possible_words = npw;
 
-        let Some(new_combination) = current_combination.try_add_word(&word, possible_words.len())
+        let Some(new_combination) = current_combination.try_add_word(word, possible_words.len())
         else {
             panic!("Could not add word to multiplicities");
         };
@@ -129,11 +129,11 @@ pub struct WordCombination<const W: usize> {
 }
 
 /// Iterate all subsets of this set whose element count is exactly one less
-pub fn shrink_bit_sets<'a, const W: usize>(
-    set: &'a BitSet<W>,
-) -> impl Iterator<Item = BitSet<W>> + 'a {
+pub fn shrink_bit_sets<const W: usize>(
+    set: &BitSet<W>,
+) -> impl Iterator<Item = BitSet<W>> + '_ {
     set.into_iter().map(|index| {
-        let mut s = set.clone();
+        let mut s = *set;
         s.set_bit(index, false);
         s
     })
@@ -170,8 +170,8 @@ impl<const W: usize> WordCombination<W> {
 
     #[must_use]
     fn try_add_word(&self, word: &LetterCounts, word_index: usize) -> Option<Self> {
-        let letter_counts = self.letter_counts.try_union(&word)?;
-        let mut word_indexes = self.word_indexes.clone();
+        let letter_counts = self.letter_counts.try_union(word)?;
+        let mut word_indexes = self.word_indexes;
         word_indexes.set_bit(word_index, true);
 
         if letter_counts == self.letter_counts {
@@ -200,11 +200,11 @@ impl<const W: usize> WordCombination<W> {
         if self.word_indexes.get_bit(other_word_index) {
             return false;
         }
-        let Some(letter_counts) = self.letter_counts.try_union(&other_word_letters) else {
+        let Some(letter_counts) = self.letter_counts.try_union(other_word_letters) else {
             return false;
         };
         if letter_counts == self.letter_counts {
-            return true;
+            true
         } else {
             if self.total_letters == max_size {
                 return false;
@@ -217,7 +217,7 @@ impl<const W: usize> WordCombination<W> {
 
             let new_count = self.total_letters + new_elements;
 
-            return new_count <= max_size;
+            new_count <= max_size
         }
     }
 }
