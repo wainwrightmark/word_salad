@@ -1,6 +1,5 @@
 use crate::{prelude, Character, Grid};
 use itertools::Itertools;
-use log::warn;
 use std::{cell::Cell, num::NonZeroU8, str::FromStr};
 
 use super::{
@@ -375,6 +374,14 @@ pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
         return;
     }
 
+    for word in exclude_words.iter() {
+        if is_word_inevitable(&word.array, &nodes, &character_nodes, &multi_constraint_map) {
+            // let words = words.iter().map(|x|x.text).join(", ");
+            // warn!("Excluded word '{}' is inevitable when finding {words}", word.text);
+            return;
+        }
+    }
+
     let mut mapped_collector = Collector::Mapped::default();
     grid.solve_recursive(
         counter,
@@ -396,6 +403,73 @@ pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
             words: words.clone(),
         }
     })
+}
+
+/// will it always be possible to find this word is all node restrictions are met
+fn is_word_inevitable(
+    characters: &[Character],
+    nodes: &NodeMap,
+    character_nodes: &CharacterNodes,
+    multiple_constraints: &MultiConstraintMap,
+) -> bool {
+    /// will it always be possible to find this word is all node restrictions are met
+    fn is_word_inevitable_inner(
+        previous: NodeId,
+        used: NodeIdSet,
+        characters: &[Character],
+        nodes: &NodeMap,
+        character_nodes: &CharacterNodes,
+        multiple_constraints: &MultiConstraintMap,
+    ) -> bool {
+        let Some((first, rem)) = characters.split_first() else {
+            return true;
+        };
+        let previous = &nodes[previous];
+        let first_node_ids = character_nodes.get(*first).intersect(&used.negate());
+
+        if !first_node_ids
+            .intersect(&previous.single_constraints.negate())
+            .is_empty()
+        {
+            return false;
+        }
+
+        for first_id in first_node_ids.iter_true_tiles() {
+            if !is_word_inevitable_inner(
+                first_id,
+                used.with_bit_set(&first_id, true),
+                rem,
+                nodes,
+                character_nodes,
+                multiple_constraints,
+            ) {
+                return false;
+            }
+        }
+
+        true
+    }
+
+    let Some((first, rem)) = characters.split_first() else {
+        return true;
+    };
+
+    let first_node_ids = character_nodes.get(*first);
+
+    for id in first_node_ids.iter_true_tiles() {
+        if !is_word_inevitable_inner(
+            id,
+            NodeIdSet::default().with_bit_set(&id, true),
+            rem,
+            nodes,
+            character_nodes,
+            multiple_constraints,
+        ) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
