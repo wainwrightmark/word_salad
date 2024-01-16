@@ -1,6 +1,6 @@
 use crate::{prelude, Character, Grid};
 use itertools::Itertools;
-use std::{cell::Cell, str::FromStr};
+use std::{cell::Cell, str::FromStr, num::NonZeroU8};
 
 use super::{
     counter::{Counter, SolutionCollector},
@@ -118,7 +118,7 @@ pub fn try_make_grid_with_blank_filling<Collector: SolutionCollector<GridResult>
 }
 
 struct WordUniquenessHelper {
-    constraining_words: CharacterSet<Option<u8>>,
+    constraining_words: CharacterSet<Option<NonZeroU8>>,
     pub character_multi_constraints: CharacterMultiConstraints,
     pub character_nodes: CharacterNodes,
 }
@@ -129,17 +129,17 @@ impl WordUniquenessHelper {
         character_nodes: CharacterNodes,
         character_multi_constraints: CharacterMultiConstraints,
     ) -> Self {
-        let mut constraining_words: CharacterSet<Option<u8>> = Default::default();
+        let mut constraining_words: CharacterSet<Option<NonZeroU8>> = Default::default();
 
         for (character, set) in character_nodes.enumerate() {
             if set.count() > 1 {
-                let word = words
+                let word_index = words
                     .iter()
                     .enumerate()
                     .max_by_key(|w| helpers::AdjacencyStrength::calculate(w.1, character))
                     .unwrap()
                     .0 as u8;
-                constraining_words.set(character, Some(word));
+                constraining_words.set(character, NonZeroU8::MIN.checked_add(word_index));
             }
         }
 
@@ -154,7 +154,7 @@ impl WordUniquenessHelper {
         &self,
         buffered_index: usize,
         word: &FinderSingleWord,
-        word_index: u8,
+        word_index: NonZeroU8,
     ) -> WordLetterResult {
         let Some(true_index) = buffered_index.checked_sub(1) else {
             return WordLetterResult::Buffer;
@@ -235,7 +235,7 @@ pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
     let mut next_constraint_id: MultiConstraintId = Default::default();
     for (character, tile_set) in character_nodes.enumerate() {
         if tile_set.count() > 1 {
-            multi_constraint_map[next_constraint_id] = Some(*tile_set);
+            multi_constraint_map[next_constraint_id] = *tile_set;
             character_multi_constraints.set(character, Some(next_constraint_id));
             next_constraint_id = next_constraint_id
                 .try_next()
@@ -248,7 +248,7 @@ pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
 
     //let now = std::time::Instant::now();
     for (word_index, word) in words.iter().enumerate() {
-        let word_index = word_index as u8;
+        let word_index = NonZeroU8::MIN.saturating_add(word_index as u8);
         let range = 0..(word.array.len() + 2);
         for (a_index, b_index, c_index) in range.tuple_windows() {
             //we are only adding constraints to b here
@@ -269,8 +269,7 @@ pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
                         WordLetterResult::DuplicateLetter(a_char, constraint_id) => {
                             if let WordLetterResult::DuplicateLetter(c_char, ..) = c {
                                 if a_char == c_char {
-                                    let a_nodes = multi_constraint_map[constraint_id]
-                                        .expect("Constraint should map to tiles");
+                                    let a_nodes = multi_constraint_map[constraint_id];
                                     if a_nodes.count() == 2 {
                                         //there are two copies of this character and both must be connected to b
                                         for a_node in a_nodes.iter_true_tiles() {
@@ -306,8 +305,7 @@ pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
                     }
                 }
                 WordLetterResult::DuplicateLetter(b_char, b_nodes) => {
-                    let b_nodes =
-                        multi_constraint_map[b_nodes].expect("Constraint should map to tiles");
+                    let b_nodes = multi_constraint_map[b_nodes];
                     if b_nodes.count() == 2 {
                         if let WordLetterResult::DuplicateLetter(c_char, ..) = c {
                             if c_char == b_char {
@@ -404,11 +402,10 @@ impl NodeBuilder {
 
         //remove all multiple constraints which reference this node
         for mc in nc.iter_true_tiles() {
-            if let Some(constraint_node_ids) = multi_constraint_map[mc] {
-                if constraint_node_ids.get_bit(&other_node_id) {
-                    nc.set_bit(&mc, false);
-                    self.multiple_constraints.set(nc);
-                }
+            let constraint_node_ids = multi_constraint_map[mc];
+            if constraint_node_ids.get_bit(&other_node_id) {
+                nc.set_bit(&mc, false);
+                self.multiple_constraints.set(nc);
             }
         }
     }
@@ -419,8 +416,7 @@ impl NodeBuilder {
         multi_constraint_map: &MultiConstraintMap,
     ) {
         //add this constraint unless there is a single constraint to one of the nodes
-        let id_set = multi_constraint_map[constraint_id]
-            .expect("Multi constraint map should contain constraint");
+        let id_set = multi_constraint_map[constraint_id];
         if self.single_constraints.get().intersect(&id_set).is_empty() {
             let new_set = self
                 .multiple_constraints
@@ -447,7 +443,7 @@ impl From<NodeBuilder> for Node {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Node {
+pub struct Node { //todo try removing id and constraint count ro reduce size
     pub id: NodeId,
     pub character: Character,
     single_constraints: NodeIdSet,
@@ -471,7 +467,7 @@ impl Node {
         for multi_constraint in self
             .multiple_constraints
             .iter_true_tiles()
-            .flat_map(|x| multi_constraint_map[x])
+            .map(|x| multi_constraint_map[x])
         {
             if !multi_constraint.intersect(&other_nodes).is_empty() {
                 return false;
@@ -501,7 +497,7 @@ impl Node {
         'constraints: for constraint in self
             .multiple_constraints
             .iter_true_tiles()
-            .flat_map(|x| multi_constraint_map[x])
+            .map(|x| multi_constraint_map[x])
         {
             if constraint.intersect(&grid.nodes_to_add.negate()) == constraint {
                 //are all possible nodes of this constraint placed
