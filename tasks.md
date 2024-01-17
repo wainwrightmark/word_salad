@@ -17,3 +17,5 @@
 - Credits
 - Achievements
 - Fun Facts
+
+- Change reset time to midnight eastern
