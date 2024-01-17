@@ -211,7 +211,7 @@ fn hide_splash() {
     #[cfg(any(feature = "android", feature = "ios"))]
     {
         do_or_report_error(capacitor_bindings::splash_screen::SplashScreen::hide(
-            1000.0,
+            0000.0,
         ));
     }
 }
