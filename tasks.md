@@ -14,3 +14,5 @@
 - Credits
 - Achievements
 - Fun Facts
+
+- Taboo words

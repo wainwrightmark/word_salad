@@ -1,8 +1,41 @@
+use std::collections::HashSet;
+
 use crate::{
     finder::{helpers::FinderSingleWord, node::GridResult},
-    prelude::*,
+    prelude::*, character,
 };
 use itertools::Itertools;
+use lazy_static::lazy_static;
+
+lazy_static!(
+    // static ref TABOO_WORDS : HashSet<Character> = {
+    //     let text = include_str!("taboo.txt");
+
+    //     let words: HashSet<[Character; 8]> = text.lines().map(|l| character::normalize_characters_array(l).ok() ).flatten()
+    //     .map(|chars| std::array::from_fn(|i| chars.get(i).cloned().unwrap_or(Character::E)))
+    //     .collect();
+    //     words
+    // };
+
+
+    /*
+    //strategy
+    //Keep separate lists of taboo words and prefixes
+    For each tile, check if it is in the prefixes, if so check that tile + the one on the right and that tile + the one below
+     */
+
+    // static ref TABOO_LINES: Vec<ArrayVec<Tile, 8>> = {
+    //     let mut results: Vec<ArrayVec<Tile, 8>> = Default::default();
+
+    //     for tile in Tile::iter_by_row(){
+
+    //     }
+
+    //     results
+    // }
+
+)
+;
 
 pub fn optimize_orientation(grid_result: &mut GridResult) {
     let flips = [FlipAxes::None, FlipAxes::Horizontal];

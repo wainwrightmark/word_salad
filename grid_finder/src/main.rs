@@ -44,7 +44,7 @@ struct Options {
     pub minimum: u32,
 
     /// Maximum number of grids to return
-    #[arg(short, long, default_value = "10000")]
+    #[arg(short, long, default_value = "100000")]
     pub grids: u32,
     /// search all found grids for a particular word or list of words
     #[arg(long)]
@@ -58,7 +58,7 @@ struct Options {
     #[arg(short, long, default_value = "false")]
     pub cluster: bool,
 
-    #[arg(long, default_value = "10")]
+    #[arg(long, default_value = "50")]
     pub max_clusters: u32,
 }
 
