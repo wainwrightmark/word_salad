@@ -1,4 +1,4 @@
-use std::num::NonZeroUsize;
+use std::{num::NonZeroUsize, time::Duration};
 
 use crate::{
     completion::{track_level_completion, TotalCompletion},
@@ -40,6 +40,7 @@ fn update_state_on_level_change(
     mut saved_levels: ResMut<SavedLevelsState>,
 
     mut current_level_key: Local<Option<SavedLevelKey>>,
+    mut time: ResMut<LevelTime>,
 ) {
     if !current_level.is_changed() {
         return;
@@ -56,21 +57,39 @@ fn update_state_on_level_change(
     if let Some(previous_key) = previous_key {
         if found_words.is_level_started() {
             if !found_words.is_level_complete() {
-                saved_levels.insert(previous_key, found_words.clone());
+                let state = found_words.clone();
+                let elapsed = time.total_elapsed();
+                let saved_state = SavedState {
+                    found_words_state: state,
+                    elapsed,
+                };
+                saved_levels.insert(previous_key, saved_state);
             }
         }
     }
 
     let loaded_level = new_key.and_then(|k| saved_levels.remove(k));
 
-    match current_level.level(daily_challenges.as_ref()) {
+    let saved_state = match current_level.level(daily_challenges.as_ref()) {
         Either::Left(level) => {
-            *found_words = loaded_level.unwrap_or_else(|| FoundWordsState::new_from_level(level));
+            loaded_level.unwrap_or_else(|| SavedState {
+                elapsed: Duration::ZERO,
+                found_words_state: FoundWordsState::new_from_level(level),
+            })
         }
         Either::Right(..) => {
-            *found_words = FoundWordsState::default();
+             SavedState{
+                elapsed: Duration::ZERO,
+                found_words_state: FoundWordsState::default(),
+             }
         }
-    }
+    };
+
+    *found_words = saved_state.found_words_state;
+    *time = LevelTime::Paused {
+        elapsed: saved_state.elapsed,
+    };
+    time.resume_timer();
 
     *chosen = ChosenState::default();
 }
@@ -108,23 +127,39 @@ impl SavedLevelKey {
 
 #[derive(Debug, Resource, PartialEq, Serialize, Deserialize, Clone, Default)]
 pub struct SavedLevelsState {
+    saved_sequences: std::collections::BTreeMap<u64, SavedState>, //keyed by (sequence * u32::max, index, )
+    saved_daily: std::collections::BTreeMap<u32, SavedState>,
+}
 
-    saved_sequences: std::collections::BTreeMap<u64, FoundWordsState>, //keyed by (sequence * u32::max, index, )
-    saved_daily: std::collections::BTreeMap<u32, FoundWordsState>, //TODO track time
+#[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
+struct SavedState {
+    elapsed: Duration,
+    found_words_state: FoundWordsState,
 }
 
 impl SavedLevelsState {
-    pub fn insert(&mut self, key: SavedLevelKey, value:FoundWordsState) -> Option<FoundWordsState>{
-        match key{
+    fn insert(&mut self, key: SavedLevelKey, value: SavedState) -> Option<SavedState> {
+        match key {
             SavedLevelKey::DailyChallenge { index } => self.saved_daily.insert(index as u32, value),
-            SavedLevelKey::Sequence { level_index, sequence } => self.saved_sequences.insert(((sequence as u64) * (u32::MAX as u64)) + level_index as u64, value),
+            SavedLevelKey::Sequence {
+                level_index,
+                sequence,
+            } => self.saved_sequences.insert(
+                ((sequence as u64) * (u32::MAX as u64)) + level_index as u64,
+                value,
+            ),
         }
     }
 
-    pub fn remove(&mut self,key: SavedLevelKey) -> Option<FoundWordsState>{
-        match key{
+    fn remove(&mut self, key: SavedLevelKey) -> Option<SavedState> {
+        match key {
             SavedLevelKey::DailyChallenge { index } => self.saved_daily.remove(&(index as u32)),
-            SavedLevelKey::Sequence { level_index, sequence } => self.saved_sequences.remove(&(((sequence as u64) * (u32::MAX as u64)) + level_index as u64)),
+            SavedLevelKey::Sequence {
+                level_index,
+                sequence,
+            } => self
+                .saved_sequences
+                .remove(&(((sequence as u64) * (u32::MAX as u64)) + level_index as u64)),
         }
     }
 }

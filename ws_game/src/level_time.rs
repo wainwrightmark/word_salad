@@ -95,16 +95,11 @@ impl Default for LevelTime {
 
 fn manage_timer(
     mut timer: ResMut<LevelTime>,
-    current_level: Res<CurrentLevel>,
     found_words: Res<FoundWordsState>,
     menu_state: Res<MenuState>,
     chosen_state: Res<ChosenState>,
 ) {
-    if !current_level.is_added() && current_level.is_changed() {
-        *timer.as_mut() = LevelTime::default();
-
-        //debug!("{timer:?}");
-    }
+    //a different system sets the time on level changed
 
     if found_words.is_changed() {
         if found_words.is_level_complete() {
