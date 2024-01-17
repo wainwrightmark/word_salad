@@ -1,6 +1,8 @@
+use std::ops::Sub;
+
 use crate::{asynchronous, prelude::*};
 use bevy::prelude::*;
-use chrono::Datelike;
+use chrono::{Datelike,  Duration};
 use itertools::Itertools;
 use nice_bevy_utils::{
     async_event_writer::AsyncEventWriter, CanInitTrackedResource, CanRegisterAsyncEvent,
@@ -76,7 +78,8 @@ impl DailyChallenges {
 
 fn get_today_date() -> chrono::NaiveDate {
     let today = chrono::offset::Utc::now();
-    today.date_naive()
+    let today_eastern = today.sub(Duration::hours(5)); //utc minus 5
+    today_eastern.date_naive()
 }
 
 fn load_levels(writer: AsyncEventWriter<DailyChallengeDataLoadedEvent>, dc: Res<DailyChallenges>) {
