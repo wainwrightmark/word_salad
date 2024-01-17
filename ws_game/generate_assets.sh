@@ -1,0 +1,1 @@
+npx @capacitor/assets generate --pwaManifestPath .\manifest.json --ios --android --assetPath icon
