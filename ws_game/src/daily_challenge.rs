@@ -63,7 +63,7 @@ pub struct DailyChallengeDataLoadedEvent {
 }
 
 impl DailyChallenges {
-    const OFFSET_HOURS: i64 = 8;
+    const OFFSET_HOURS: i64 = -5;
 
     pub fn get_today_index() -> usize {
         //todo make u16

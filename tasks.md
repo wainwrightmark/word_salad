@@ -1,11 +1,8 @@
-
 - Make Logo
 
 - use ustr in a bunch more places
 - split total completion into multiple resources
 - Change hint tracking
-
-
 
 - Save incomplete levels
 
@@ -17,5 +14,3 @@
 - Credits
 - Achievements
 - Fun Facts
-
-- rollover time correctly

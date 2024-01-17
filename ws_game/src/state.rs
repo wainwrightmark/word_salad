@@ -68,21 +68,19 @@ fn update_state_on_level_change(
         }
     }
 
-    let loaded_level = new_key.and_then(|k| saved_levels.remove(k));
+    let loaded_level = new_key
+        .and_then(|k| saved_levels.remove(k))
+        .filter(|_| previous_key != new_key);
 
     let saved_state = match current_level.level(daily_challenges.as_ref()) {
-        Either::Left(level) => {
-            loaded_level.unwrap_or_else(|| SavedState {
-                elapsed: Duration::ZERO,
-                found_words_state: FoundWordsState::new_from_level(level),
-            })
-        }
-        Either::Right(..) => {
-             SavedState{
-                elapsed: Duration::ZERO,
-                found_words_state: FoundWordsState::default(),
-             }
-        }
+        Either::Left(level) => loaded_level.unwrap_or_else(|| SavedState {
+            elapsed: Duration::ZERO,
+            found_words_state: FoundWordsState::new_from_level(level),
+        }),
+        Either::Right(..) => SavedState {
+            elapsed: Duration::ZERO,
+            found_words_state: FoundWordsState::default(),
+        },
     };
 
     *found_words = saved_state.found_words_state;
