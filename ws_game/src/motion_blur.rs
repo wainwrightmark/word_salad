@@ -2,6 +2,8 @@ use std::collections::VecDeque;
 
 pub use bevy::prelude::*;
 
+use crate::startup;
+
 pub struct MotionBlurPlugin;
 
 impl Plugin for MotionBlurPlugin {
@@ -33,8 +35,9 @@ fn track_motion_blur(
     parents: Query<&GlobalTransform, Without<MotionBlur>>,
 ) {
     //info!("Blurring");
-
+    let mut count =0usize;
     for (mut blur, mut transform, mut visibility, entity) in query.iter_mut() {
+        count += 1;
         if blur.wait == 0 {
             visibility.set_if_neq(Visibility::Visible);
             if let Some(old_parent_translation) = blur.translation_queue.pop_front() {
@@ -53,5 +56,8 @@ fn track_motion_blur(
         if let Ok(parent_translation) = parents.get(blur.parent_entity).map(|x| x.translation()) {
             blur.translation_queue.push_back(parent_translation);
         }
+    }
+    if count > 1{
+        startup::ADDITIONAL_TRACKING.fetch_add(count, std::sync::atomic::Ordering::Relaxed);
     }
 }
