@@ -55,9 +55,22 @@ impl LayoutStructure for NonLevelLayoutEntity {
     }
 }
 
+pub enum NonLevelType {
+    Normal,
+    Countdown,
+}
+pub const NON_LEVEL_TEXT_FONT_SIZE: f32 = 32.0;
+pub const NON_LEVEL_COUNTDOWN_FONT_SIZE: f32 = 60.0;
+
 impl LayoutStructureWithFont for NonLevelLayoutEntity {
-    type FontContext = ();
-    fn font_size(&self, _: &()) -> f32 {
-        30.0
+    type FontContext = NonLevelType;
+    fn font_size(&self, context: &Self::FontContext) -> f32 {
+        match self {
+            NonLevelLayoutEntity::Text => match context {
+                NonLevelType::Normal => NON_LEVEL_TEXT_FONT_SIZE,
+                NonLevelType::Countdown => NON_LEVEL_COUNTDOWN_FONT_SIZE,
+            },
+            NonLevelLayoutEntity::InteractButton => NON_LEVEL_TEXT_FONT_SIZE,
+        }
     }
 }

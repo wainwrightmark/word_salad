@@ -1,6 +1,5 @@
 use std::time::Duration;
-
-use crate::prelude::*;
+use crate::{prelude::*, startup};
 use bevy::prelude::*;
 use chrono::{DateTime, Utc};
 use nice_bevy_utils::{CanInitTrackedResource, TrackableResource};
@@ -13,7 +12,8 @@ impl Plugin for LevelTimePlugin {
     fn build(&self, app: &mut App) {
         app.init_tracked_resource::<LevelTime>();
         app.add_systems(Update, manage_timer);
-        app.add_systems(Update, count_up);
+        app.add_systems(Update, count_up.run_if(|timer: Res<LevelTime>| timer.is_running()));
+        app.add_systems(Update, count_down.run_if(|level: Res<CurrentLevel>| level.as_ref().eq(&CurrentLevel::NonLevel(NonLevel::DailyChallengeCountdown))));
     }
 }
 
@@ -133,10 +133,6 @@ fn manage_timer(
 }
 
 fn count_up(mut query: Query<&mut Text, With<TimeCounterMarker>>, timer: Res<LevelTime>) {
-    if !timer.is_running() {
-        return;
-    }
-
     let elapsed = timer.total_elapsed();
 
     for mut t in query.iter_mut() {
@@ -144,6 +140,25 @@ fn count_up(mut query: Query<&mut Text, With<TimeCounterMarker>>, timer: Res<Lev
             let total_seconds = elapsed.as_secs();
             section.value = format_seconds(total_seconds);
         }
+    }
+}
+
+fn count_down(mut query: Query<&mut Text, With<NonLevelText>>, time: Res<Time>, mut elapsed: Local<Duration>, mut current_level: ResMut<CurrentLevel>){
+    *elapsed += time.elapsed();
+
+    if elapsed.as_secs() >= 1{
+        *elapsed = Duration::ZERO;
+
+        if let Some(new_text) =   DailyChallenges::time_until_next_challenge_string(){
+            for mut text in query.iter_mut(){
+                text.sections[0].value = new_text.clone();
+            }
+        }else{
+            let index = DailyChallenges::get_today_index();
+            current_level.set_if_neq(CurrentLevel::DailyChallenge { index });
+        }
+        startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+
     }
 }
 

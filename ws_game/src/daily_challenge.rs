@@ -2,7 +2,7 @@ use std::ops::Sub;
 
 use crate::{asynchronous, prelude::*};
 use bevy::prelude::*;
-use chrono::{Datelike,  Duration};
+use chrono::{Datelike, Duration, Timelike};
 use itertools::Itertools;
 use nice_bevy_utils::{
     async_event_writer::AsyncEventWriter, CanInitTrackedResource, CanRegisterAsyncEvent,
@@ -63,16 +63,37 @@ pub struct DailyChallengeDataLoadedEvent {
 }
 
 impl DailyChallenges {
-    pub fn get_today_index() -> Option<usize> {
+    pub fn get_today_index() -> usize {
         let today = get_today_date();
-        usize::try_from(today.num_days_from_ce() - DAYS_OFFSET).ok()
+        usize::try_from(today.num_days_from_ce() - DAYS_OFFSET)
+            .ok()
+            .unwrap_or_default()
+    }
+
+    fn time_until_next_challenge() -> Option<std::time::Duration> {
+        let today = chrono::offset::Utc::now();
+        let today_eastern = today.sub(Duration::hours(5));
+
+        let secs_today: u32 =
+            (today_eastern.hour() * 3600) + (today_eastern.minute() * 60) + today_eastern.second();
+
+        let remaining: u32 = 86400u32.checked_sub(secs_today)?;
+
+        Some(std::time::Duration::new(remaining as u64, 0))
+    }
+
+    pub fn time_until_next_challenge_string() -> Option<String> {
+        let remaining = DailyChallenges::time_until_next_challenge()?.as_secs();
+
+        let secs = remaining % 60;
+        let minutes = (remaining / 60) % 60;
+        let hours = remaining / 3600;
+
+        Some(format!("{hours:02}:{minutes:02}:{secs:02}"))
     }
 
     pub fn total_levels(&self) -> usize {
-        (Self::get_today_index()
-            .unwrap_or_default()
-            .saturating_add(1))
-        .min(self.levels.len())
+        (Self::get_today_index().saturating_add(1)).min(self.levels.len())
     }
 }
 
@@ -83,7 +104,7 @@ fn get_today_date() -> chrono::NaiveDate {
 }
 
 fn load_levels(writer: AsyncEventWriter<DailyChallengeDataLoadedEvent>, dc: Res<DailyChallenges>) {
-    if DailyChallenges::get_today_index().is_some_and(|x| x < dc.total_levels()) {
+    if DailyChallenges::get_today_index() < dc.total_levels() {
         return;
     }
 

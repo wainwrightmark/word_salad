@@ -18,4 +18,4 @@
 - Achievements
 - Fun Facts
 
-- Change reset time to midnight eastern
+- rollover time correctly

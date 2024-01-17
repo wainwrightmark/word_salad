@@ -50,9 +50,7 @@ impl WordSaladMenuLayoutEntity {
     }
 
     pub fn is_complete(&self, completion: &TotalCompletion) -> bool {
-        let Some(today_index) = DailyChallenges::get_today_index() else {
-            return false;
-        };
+        let today_index = DailyChallenges::get_today_index();
 
         let index = match self {
             WordSaladMenuLayoutEntity::TodayPuzzle => Some(today_index),
@@ -76,7 +74,7 @@ impl WordSaladMenuLayoutEntity {
         completion: &TotalCompletion,
         daily_challenges: &DailyChallenges,
     ) -> Option<(String, String)> {
-        let today_index = DailyChallenges::get_today_index()?;
+        let today_index = DailyChallenges::get_today_index();
 
         let index = match self {
             WordSaladMenuLayoutEntity::TodayPuzzle => today_index,

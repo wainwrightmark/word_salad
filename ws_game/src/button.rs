@@ -279,13 +279,15 @@ impl ButtonInteraction {
             }
 
             ButtonInteraction::WordSaladMenu(WordSaladMenuLayoutEntity::TodayPuzzle) => {
-                if let Some(index) = DailyChallenges::get_today_index() {
+                let index = DailyChallenges::get_today_index();
+                {
                     current_level.set_if_neq(CurrentLevel::DailyChallenge { index });
                 }
                 menu_state.close();
             }
             ButtonInteraction::WordSaladMenu(WordSaladMenuLayoutEntity::YesterdayPuzzle) => {
-                if let Some(index) = DailyChallenges::get_today_index() {
+                let index = DailyChallenges::get_today_index();
+                {
                     current_level.set_if_neq(CurrentLevel::DailyChallenge {
                         index: index.saturating_sub(1),
                     });
@@ -293,7 +295,8 @@ impl ButtonInteraction {
                 menu_state.close();
             }
             ButtonInteraction::WordSaladMenu(WordSaladMenuLayoutEntity::EreYesterdayPuzzle) => {
-                if let Some(index) = DailyChallenges::get_today_index() {
+                let index = DailyChallenges::get_today_index();
+                {
                     current_level.set_if_neq(CurrentLevel::DailyChallenge {
                         index: index.saturating_sub(2),
                     });
@@ -302,7 +305,7 @@ impl ButtonInteraction {
             }
             ButtonInteraction::WordSaladMenu(WordSaladMenuLayoutEntity::NextPuzzle) => {
                 if let Some(index) = DailyChallenges::get_today_index()
-                    .and_then(|x| x.checked_sub(3))
+                    .checked_sub(3)
                     .and_then(|x| total_completion.get_next_incomplete_daily_challenge(x))
                 {
                     current_level.set_if_neq(CurrentLevel::DailyChallenge { index });
@@ -382,6 +385,10 @@ impl ButtonInteraction {
                                 sequence: ls,
                             };
                         }
+                        NonLevel::DailyChallengeCountdown => {
+                            let index = DailyChallenges::get_today_index();
+                            *current_level.as_mut() = CurrentLevel::DailyChallenge { index };
+                        }
                         NonLevel::DailyChallengeFinished => {
                             let new_current_level =
                                 match total_completion.get_next_level_sequence(None) {
@@ -411,9 +418,14 @@ impl ButtonInteraction {
                 }
             }
             ButtonInteraction::TopMenuItem(LayoutTopBar::WordSaladLogo) => {
-                if let Some(index) = DailyChallenges::get_today_index() {
+                let index = DailyChallenges::get_today_index();
+                if total_completion.is_daily_challenge_complete(index) {
+                    current_level
+                        .set_if_neq(CurrentLevel::NonLevel(NonLevel::DailyChallengeCountdown));
+                } else {
                     current_level.set_if_neq(CurrentLevel::DailyChallenge { index });
                 }
+
                 menu_state.close();
             }
             ButtonInteraction::Congrats(CongratsButton::Next) => {

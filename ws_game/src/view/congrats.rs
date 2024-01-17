@@ -73,7 +73,7 @@ impl MavericNode for CongratsView {
                 let data = match context.1.as_ref() {
                     CurrentLevel::DailyChallenge { index } => {
                         let today_index = DailyChallenges::get_today_index();
-                        if today_index == Some(*index) {
+                        if today_index == *index {
                             let streak = context.10.as_ref();
                             Data::TodaysChallenge {
                                 streak: streak.current,
@@ -81,7 +81,7 @@ impl MavericNode for CongratsView {
                             }
                         } else {
                             let complete = context.7.get_daily_challenges_complete();
-                            let total = today_index.unwrap_or_default() + 1;
+                            let total = today_index + 1;
                             let remaining = total.saturating_sub(complete);
                             Data::Sequence {
                                 complete,
@@ -205,7 +205,7 @@ impl MavericNode for CongratsView {
                                             index: current_index,
                                         } = context.1.as_ref()
                                         {
-                                            if next_index > *current_index && Some(next_index) == DailyChallenges::get_today_index() {
+                                            if next_index > *current_index && next_index == DailyChallenges::get_today_index() {
                                                 "Today's Puzzle".to_string()
                                             } else {
                                                 format!("Play #{}", next_index + 1)

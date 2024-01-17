@@ -121,7 +121,7 @@ fn try_daily_index_from_path(path: String)-> Option<usize>{
 
         let index = usize::from_str_radix(data.trim(), 10).ok()?.checked_sub(1)?;
 
-        let today_index = DailyChallenges::get_today_index()?;
+        let today_index = DailyChallenges::get_today_index();
 
         if index <= today_index{
             //info!("{path} index is legit");

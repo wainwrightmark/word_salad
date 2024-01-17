@@ -7,6 +7,9 @@ pub struct NonLevelView {
     pub selfie_mode: SelfieMode,
 }
 
+#[derive(Debug, Component, PartialEq, Clone, Copy)]
+pub struct NonLevelText;
+
 impl MavericNode for NonLevelView {
     type Context = MyWindowSize;
 
@@ -37,12 +40,9 @@ impl MavericNode for NonLevelView {
                 NonLevel::LevelSequenceReset(ls) => {
                     format!("You have completed\nAll {}", ls.name())
                 }
-                // NonLevel::NoMoreDailyChallenge => {
-                //     "You have completed\nAll daily challenges".to_string()
-                // }
-                // NonLevel::NoMoreLevelSequence(ls) => {
-                //
-                // }
+                NonLevel::DailyChallengeCountdown => {
+                    DailyChallenges::time_until_next_challenge_string().unwrap_or_else(||"00:00:00".to_string())
+                }
             };
 
             let text_color = if selfie_mode.is_selfie_mode {
@@ -52,11 +52,16 @@ impl MavericNode for NonLevelView {
             }
             .convert_color();
 
+            let non_level_type = match node.non_level {
+                NonLevel::DailyChallengeCountdown => NonLevelType::Countdown,
+                _ => NonLevelType::Normal,
+            };
+
             commands.add_child(
                 "text",
                 Text2DNode {
                     text,
-                    font_size: size.font_size(&NonLevelLayoutEntity::Text, &()),
+                    font_size: size.font_size(&NonLevelLayoutEntity::Text, &non_level_type),
                     color: text_color,
                     font: BUTTONS_FONT_PATH,
                     alignment: TextAlignment::Center,
@@ -64,20 +69,26 @@ impl MavericNode for NonLevelView {
                     text_2d_bounds: Default::default(),
                     text_anchor: Default::default(),
                 }
-                .with_bundle(Transform::from_translation(
+                .with_bundle((Transform::from_translation(
                     size.get_rect(&NonLevelLayoutEntity::Text, &())
                         .centre()
                         .extend(crate::z_indices::CONGRATS_BUTTON),
-                )),
+                ), NonLevelText)),
                 &(),
             );
 
             let interaction_text = match node.non_level {
-                NonLevel::BeforeTutorial => "Ok",
-                NonLevel::AfterCustomLevel => "Restart",
-                NonLevel::DailyChallengeFinished => "Next",
-                NonLevel::DailyChallengeReset | NonLevel::LevelSequenceReset(_) => "Reset",
-                NonLevel::LevelSequenceFinished(_) => "Next",
+                NonLevel::BeforeTutorial => "Ok".to_string(),
+                NonLevel::AfterCustomLevel => "Restart".to_string(),
+                NonLevel::DailyChallengeFinished => "Next".to_string(),
+                NonLevel::DailyChallengeReset | NonLevel::LevelSequenceReset(_) => {
+                    "Reset".to_string()
+                }
+                NonLevel::LevelSequenceFinished(_) => "Next".to_string(),
+                NonLevel::DailyChallengeCountdown => {
+                    let index = DailyChallenges::get_today_index() + 1;
+                    format!("Replay #{index}")
+                }
             };
 
             let fill_color = if selfie_mode.is_selfie_mode {
@@ -91,7 +102,8 @@ impl MavericNode for NonLevelView {
                 "interaction",
                 WSButtonNode {
                     text: interaction_text,
-                    font_size: size.font_size(&NonLevelLayoutEntity::InteractButton, &()),
+                    font_size: size
+                        .font_size(&NonLevelLayoutEntity::InteractButton, &non_level_type),
                     rect: size.get_rect(&NonLevelLayoutEntity::InteractButton, &()),
                     interaction: ButtonInteraction::NonLevelInteractionButton,
                     text_color,
