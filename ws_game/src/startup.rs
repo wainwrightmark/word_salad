@@ -211,7 +211,7 @@ fn hide_splash() {
     #[cfg(any(feature = "android", feature = "ios"))]
     {
         do_or_report_error(capacitor_bindings::splash_screen::SplashScreen::hide(
-            2000.0,
+            1000.0,
         ));
     }
 }
@@ -223,7 +223,7 @@ fn set_status_bar() {
 
         do_or_report_error(StatusBar::set_style(Style::Dark));
         #[cfg(feature = "android")]
-        do_or_report_error(StatusBar::set_background_color("#5B8BE2"));
+        do_or_report_error(StatusBar::set_background_color("#76d998"));
     }
 }
 
@@ -234,7 +234,9 @@ fn watch_lifecycle(
 ) {
     for event in events.read() {
         match event {
-            AppLifeCycleEvent::StateChange { .. } => {}
+            AppLifeCycleEvent::StateChange { .. } => {
+                info!("State changed")
+            }
             AppLifeCycleEvent::BackPressed => {
                 if popup.0.is_some() {
                     popup.0 = None;

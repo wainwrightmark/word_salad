@@ -21,10 +21,10 @@
     ],
     "id": "word_salad",
     "start_url": "/",
-    "background_color": "#86adea",
+    "background_color": "#76d998",
     "display": "standalone",
     "scope": "/",
-    "theme_color": "#86adea",
+    "theme_color": "#76d998",
     "shortcuts": [
     ],
     "description": "A new classic word puzzle",
