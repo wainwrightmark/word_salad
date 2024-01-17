@@ -40,8 +40,8 @@ impl MavericNode for NonLevelView {
                 NonLevel::LevelSequenceReset(ls) => {
                     format!("You have completed\nAll {}", ls.name())
                 }
-                NonLevel::DailyChallengeCountdown => {
-                    DailyChallenges::time_until_next_challenge_string().unwrap_or_else(||"00:00:00".to_string())
+                NonLevel::DailyChallengeCountdown{todays_index} => {
+                    DailyChallenges::time_until_challenge_string(todays_index).unwrap_or_else(||"00:00:00".to_string())
                 }
             };
 
@@ -53,7 +53,7 @@ impl MavericNode for NonLevelView {
             .convert_color();
 
             let non_level_type = match node.non_level {
-                NonLevel::DailyChallengeCountdown => NonLevelType::Countdown,
+                NonLevel::DailyChallengeCountdown{..} => NonLevelType::Countdown,
                 _ => NonLevelType::Normal,
             };
 
@@ -85,9 +85,9 @@ impl MavericNode for NonLevelView {
                     "Reset".to_string()
                 }
                 NonLevel::LevelSequenceFinished(_) => "Next".to_string(),
-                NonLevel::DailyChallengeCountdown => {
-                    let index = DailyChallenges::get_today_index() + 1;
-                    format!("Replay #{index}")
+                NonLevel::DailyChallengeCountdown{todays_index} => {
+
+                    format!("Replay #{}", todays_index + 1)
                 }
             };
 

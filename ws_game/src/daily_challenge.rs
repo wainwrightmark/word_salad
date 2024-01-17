@@ -1,4 +1,4 @@
-use std::ops::Sub;
+use std::ops::Add;
 
 use crate::{asynchronous, prelude::*};
 use bevy::prelude::*;
@@ -63,16 +63,23 @@ pub struct DailyChallengeDataLoadedEvent {
 }
 
 impl DailyChallenges {
+    const OFFSET_HOURS: i64 = 8;
+
     pub fn get_today_index() -> usize {
+        //todo make u16
         let today = get_today_date();
         usize::try_from(today.num_days_from_ce() - DAYS_OFFSET)
             .ok()
             .unwrap_or_default()
     }
 
-    fn time_until_next_challenge() -> Option<std::time::Duration> {
+    fn time_until_next_challenge(today_index: usize) -> Option<std::time::Duration> {
+        if Self::get_today_index() > today_index {
+            return None;
+        }
+
         let today = chrono::offset::Utc::now();
-        let today_eastern = today.sub(Duration::hours(5));
+        let today_eastern = today.add(Duration::hours(Self::OFFSET_HOURS));
 
         let secs_today: u32 =
             (today_eastern.hour() * 3600) + (today_eastern.minute() * 60) + today_eastern.second();
@@ -82,8 +89,8 @@ impl DailyChallenges {
         Some(std::time::Duration::new(remaining as u64, 0))
     }
 
-    pub fn time_until_next_challenge_string() -> Option<String> {
-        let remaining = DailyChallenges::time_until_next_challenge()?.as_secs();
+    pub fn time_until_challenge_string(today_index: usize) -> Option<String> {
+        let remaining = DailyChallenges::time_until_next_challenge(today_index)?.as_secs();
 
         let secs = remaining % 60;
         let minutes = (remaining / 60) % 60;
@@ -99,7 +106,7 @@ impl DailyChallenges {
 
 fn get_today_date() -> chrono::NaiveDate {
     let today = chrono::offset::Utc::now();
-    let today_eastern = today.sub(Duration::hours(5)); //utc minus 5
+    let today_eastern = today.add(Duration::hours(DailyChallenges::OFFSET_HOURS));
     today_eastern.date_naive()
 }
 

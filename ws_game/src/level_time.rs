@@ -1,9 +1,9 @@
-use std::time::Duration;
 use crate::{prelude::*, startup};
 use bevy::prelude::*;
 use chrono::{DateTime, Utc};
 use nice_bevy_utils::{CanInitTrackedResource, TrackableResource};
 use serde::{Deserialize, Serialize};
+use std::time::Duration;
 use strum::EnumIs;
 
 pub struct LevelTimePlugin;
@@ -12,8 +12,19 @@ impl Plugin for LevelTimePlugin {
     fn build(&self, app: &mut App) {
         app.init_tracked_resource::<LevelTime>();
         app.add_systems(Update, manage_timer);
-        app.add_systems(Update, count_up.run_if(|timer: Res<LevelTime>| timer.is_running()));
-        app.add_systems(Update, count_down.run_if(|level: Res<CurrentLevel>| level.as_ref().eq(&CurrentLevel::NonLevel(NonLevel::DailyChallengeCountdown))));
+        app.add_systems(
+            Update,
+            count_up.run_if(|timer: Res<LevelTime>| timer.is_running()),
+        );
+        app.add_systems(
+            Update,
+            count_down.run_if(|level: Res<CurrentLevel>| {
+                matches!(
+                    level.as_ref(),
+                    CurrentLevel::NonLevel(NonLevel::DailyChallengeCountdown { .. },)
+                )
+            }),
+        );
     }
 }
 
@@ -143,22 +154,32 @@ fn count_up(mut query: Query<&mut Text, With<TimeCounterMarker>>, timer: Res<Lev
     }
 }
 
-fn count_down(mut query: Query<&mut Text, With<NonLevelText>>, time: Res<Time>, mut elapsed: Local<Duration>, mut current_level: ResMut<CurrentLevel>){
+fn count_down(
+    mut query: Query<&mut Text, With<NonLevelText>>,
+    time: Res<Time>,
+    mut elapsed: Local<Duration>,
+    mut current_level: ResMut<CurrentLevel>,
+) {
+    let todays_index = match current_level.as_ref() {
+        CurrentLevel::NonLevel(NonLevel::DailyChallengeCountdown { todays_index }) => todays_index,
+        _ => {
+            return;
+        }
+    };
     *elapsed += time.elapsed();
 
-    if elapsed.as_secs() >= 1{
+    if elapsed.as_secs() >= 1 {
         *elapsed = Duration::ZERO;
 
-        if let Some(new_text) =   DailyChallenges::time_until_next_challenge_string(){
-            for mut text in query.iter_mut(){
+        if let Some(new_text) = DailyChallenges::time_until_challenge_string(*todays_index) {
+            for mut text in query.iter_mut() {
                 text.sections[0].value = new_text.clone();
             }
-        }else{
+        } else {
             let index = DailyChallenges::get_today_index();
             current_level.set_if_neq(CurrentLevel::DailyChallenge { index });
         }
         startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-
     }
 }
 

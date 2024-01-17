@@ -385,9 +385,9 @@ impl ButtonInteraction {
                                 sequence: ls,
                             };
                         }
-                        NonLevel::DailyChallengeCountdown => {
-                            let index = DailyChallenges::get_today_index();
-                            *current_level.as_mut() = CurrentLevel::DailyChallenge { index };
+                        NonLevel::DailyChallengeCountdown{todays_index} => {
+
+                            *current_level.as_mut() = CurrentLevel::DailyChallenge { index: todays_index };
                         }
                         NonLevel::DailyChallengeFinished => {
                             let new_current_level =
@@ -421,7 +421,7 @@ impl ButtonInteraction {
                 let index = DailyChallenges::get_today_index();
                 if total_completion.is_daily_challenge_complete(index) {
                     current_level
-                        .set_if_neq(CurrentLevel::NonLevel(NonLevel::DailyChallengeCountdown));
+                        .set_if_neq(CurrentLevel::NonLevel(NonLevel::DailyChallengeCountdown{todays_index: index}));
                 } else {
                     current_level.set_if_neq(CurrentLevel::DailyChallenge { index });
                 }
