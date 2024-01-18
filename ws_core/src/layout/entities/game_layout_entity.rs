@@ -74,13 +74,13 @@ impl LayoutStructure for GameLayoutEntity {
 
             GameLayoutEntity::Grid => Vec2 {
                 x: (IDEAL_WIDTH - GRID_SIZE) * 0.5,
-                y: TOP_BAR_HEIGHT + THEME_HEIGHT + TIMER_HEIGHT + (GRID_TILE_SIZE * 0.5),
+                y: TOP_BAR_HEIGHT + THEME_HEIGHT + TIMER_HEIGHT + GRID_TILE_SIZE + WORD_LIST_HEIGHT,
             },
             GameLayoutEntity::WordList => {
                 let y = if context.is_selfie_mode {
-                    IDEAL_HEIGHT + (sizing.bottom_pad / sizing.size_ratio) - WORD_LIST_HEIGHT
+                    TOP_BAR_HEIGHT + THEME_HEIGHT + TIMER_HEIGHT + (GRID_TILE_SIZE * 0.5)
                 } else {
-                    TOP_BAR_HEIGHT + THEME_HEIGHT + TIMER_HEIGHT + GRID_SIZE + GRID_TILE_SIZE
+                    TOP_BAR_HEIGHT + THEME_HEIGHT + TIMER_HEIGHT + (GRID_TILE_SIZE * 0.5)
                 };
 
                 Vec2 {
