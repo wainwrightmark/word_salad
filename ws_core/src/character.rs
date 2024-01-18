@@ -225,7 +225,7 @@ impl<T> CharacterSet<T> {
 mod tests {
     use crate::normalize_characters_array;
     use test_case::test_case;
-
+    /* spellchecker:disable */
     #[test_case("abcd", "ab cd")]
     #[test_case("dali", "Dalí")]
     #[test_case("walle", "Wall-E")]

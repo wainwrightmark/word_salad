@@ -131,6 +131,10 @@ pub fn get_tutorial_level(index: usize) -> Option<&'static DesignedLevel> {
 #[cfg(test)]
 pub mod tests {
 
+    use std::str::FromStr;
+
+    use ws_core::finder::{helpers::FinderSingleWord, node::GridResult, orientation};
+
     use super::*;
     pub fn get_all_levels() -> Vec<DesignedLevel> {
         [
@@ -164,10 +168,12 @@ pub mod tests {
 
         assert!(levels.len() > 5);
 
+        let mut taboo_errors: Vec<String> = Default::default();
+
         for level in levels {
             let name = &level.name;
             assert!(level.words.len() > 0, "Level {name} should have words");
-            for word in level.words.into_iter() {
+            for word in level.words.iter() {
                 let solution = word.find_solution(&level.grid);
                 if solution.is_none() {
                     panic!(
@@ -176,17 +182,29 @@ pub mod tests {
                     )
                 }
             }
+
+            if let Err(err) = test_grid_not_taboo(&level) {
+                taboo_errors.push(err);
+            }
         }
+
+        for error in taboo_errors.iter(){
+            println!("{error}")
+        }
+
+        assert!(taboo_errors.is_empty())
     }
 
     #[test]
     pub fn test_daily_challenge_levels_valid() {
         assert!(DAILY_CHALLENGE.len() > 10);
 
+        let mut taboo_errors: Vec<String> = Default::default();
+
         for level in DAILY_CHALLENGE.clone().into_iter() {
             let name = &level.name;
             assert!(level.words.len() > 0, "Level {name} should have words");
-            for word in level.words.into_iter() {
+            for word in level.words.iter() {
                 let solution = word.find_solution(&level.grid);
                 if solution.is_none() {
                     panic!(
@@ -195,7 +213,49 @@ pub mod tests {
                     )
                 }
             }
+
+            if let Err(err) = test_grid_not_taboo(&level) {
+                taboo_errors.push(err);
+            }
         }
+
+        for error in taboo_errors.iter(){
+            println!("{error}")
+        }
+
+        assert!(taboo_errors.is_empty())
+    }
+
+    fn test_grid_not_taboo(level: &DesignedLevel) -> Result<(), String> {
+        if let Some(taboo_word) = orientation::find_taboo_word(&level.grid) {
+            let mut gr = GridResult {
+                grid: level.grid,
+                words: level
+                    .words
+                    .iter()
+                    .map(|x| FinderSingleWord::from_str(&x.text).unwrap())
+                    .collect_vec(),
+                letters: Default::default(), //doesn't matter
+            };
+
+            orientation::optimize_orientation(&mut gr);
+
+            if orientation::find_taboo_word(&gr.grid).is_none() {
+                return Err(format!(
+                    "Level '{:<26}' Grid '{:?}' contains taboo word '{taboo_word:?}'. Try {}",
+                    level.name.to_string(),
+                    level.grid.iter().join(""),
+                    gr.grid.iter().join("")
+                ));
+            } else {
+                return Err(format!(
+                    "Level '{:<26}' Grid '{:?}' contains taboo word '{taboo_word:?}'. No orientation is good",
+                    level.name.to_string(),
+                    level.grid.iter().join(""),
+                ));
+            }
+        }
+        Ok(())
     }
 
     lazy_static! {

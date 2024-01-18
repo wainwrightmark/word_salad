@@ -1,41 +1,83 @@
 use std::collections::HashSet;
 
 use crate::{
+    character,
     finder::{helpers::FinderSingleWord, node::GridResult},
-    prelude::*, character,
+    prelude::*,
 };
 use itertools::Itertools;
 use lazy_static::lazy_static;
+use log::warn;
 
-lazy_static!(
-    // static ref TABOO_WORDS : HashSet<Character> = {
-    //     let text = include_str!("taboo.txt");
+lazy_static! {
+    static ref TABOO_WORDS: HashSet<CharsArray> = {
+        let text = include_str!("taboo.txt");
 
-    //     let words: HashSet<[Character; 8]> = text.lines().map(|l| character::normalize_characters_array(l).ok() ).flatten()
-    //     .map(|chars| std::array::from_fn(|i| chars.get(i).cloned().unwrap_or(Character::E)))
-    //     .collect();
-    //     words
-    // };
+        let words: HashSet<CharsArray> = text
+            .lines()
+            .map(|l| character::normalize_characters_array(l).ok())
+            .flatten()
+            .collect();
+        words
+    };
+    static ref TABOO_PREFIXES: HashSet<CharsArray> = {
+        let mut set: HashSet<CharsArray> = Default::default();
+
+        for word in TABOO_WORDS.iter() {
+            for len in 1..=word.len() {
+                let mut clone = word.clone();
+                clone.truncate(len);
+                set.insert(clone);
+            }
+        }
+        set
+    };
+}
+
+pub fn find_taboo_word(grid: &Grid) -> Option<CharsArray> {
+    fn find_taboo_inner(
+        grid: &Grid,
+        prefix: &mut CharsArray,
+        last_tile: Tile,
+        mut allow_wrap: bool
+    ) -> Option<CharsArray> {
+        if TABOO_WORDS.contains(prefix) {
+            return Some(prefix.clone());
+        }
+
+        let next_tiles = [
+            if allow_wrap {last_tile.try_next()} else {last_tile.const_add(&Vector::EAST)},
+            last_tile.const_add(&Vector::SOUTH),
+            last_tile.const_add(&Vector::SOUTH_EAST),
+        ];
 
 
-    /*
-    //strategy
-    //Keep separate lists of taboo words and prefixes
-    For each tile, check if it is in the prefixes, if so check that tile + the one on the right and that tile + the one below
-     */
 
-    // static ref TABOO_LINES: Vec<ArrayVec<Tile, 8>> = {
-    //     let mut results: Vec<ArrayVec<Tile, 8>> = Default::default();
+        for next_tile in next_tiles.into_iter().flatten() {
+            let c = grid[next_tile];
+            prefix.push(c);
+            if let Some(answer) = find_taboo_inner(grid, prefix, next_tile, allow_wrap) {
+                return Some(answer);
+            }
+            prefix.pop();
+            allow_wrap = false; //basically only allow wrap
+        }
 
-    //     for tile in Tile::iter_by_row(){
+        None
+    }
 
-    //     }
+    for tile in Tile::iter_by_row() {
+        let mut prefix = CharsArray::new();
+        prefix.push(grid[tile]);
+        if TABOO_PREFIXES.contains(&prefix) {
+            if let Some(answer) = find_taboo_inner(grid, &mut prefix, tile, tile.x() <= 1) {
+                return Some(answer);
+            }
+        }
+    }
 
-    //     results
-    // }
-
-)
-;
+    None
+}
 
 pub fn optimize_orientation(grid_result: &mut GridResult) {
     let flips = [FlipAxes::None, FlipAxes::Horizontal];
@@ -48,18 +90,20 @@ pub fn optimize_orientation(grid_result: &mut GridResult) {
 
     let transforms = flips.into_iter().cartesian_product(rotations);
 
-    let (axes, quarter_turns) = transforms
-        .max_by_key(|(axes, quarter_turns)| {
+    if let Some(new_grid) = transforms
+        .map(|(axes, quarter_turns)| {
             let mut new_grid = grid_result.grid.clone();
-            new_grid.rotate(*quarter_turns);
-            new_grid.flip(*axes);
-
-            calculate_max_score(&new_grid, &grid_result.words)
+            new_grid.rotate(quarter_turns);
+            new_grid.flip(axes);
+            new_grid
         })
-        .unwrap();
-
-    grid_result.grid.rotate(quarter_turns);
-    grid_result.grid.flip(axes);
+        .filter(|grid| find_taboo_word(grid).is_none())
+        .max_by_key(|new_grid| calculate_max_score(&new_grid, &grid_result.words))
+    {
+        grid_result.grid = new_grid;
+    } else {
+        warn!("Could not find a good orientation for {}", grid_result.grid)
+    }
 }
 
 pub fn calculate_best_word(grid_result: &GridResult) -> (FinderSingleWord, i32) {
@@ -144,19 +188,21 @@ fn score_solution(solution: &ArrayVec<Tile, 16>) -> i32 {
 pub mod tests {
     use std::str::FromStr;
 
-    use crate::finder::node::GridResult;
+    use crate::{finder::node::GridResult, prelude};
     use itertools::Itertools;
     use test_case::test_case;
 
-    use super::optimize_orientation;
+    use super::{find_taboo_word, optimize_orientation};
 
+    /* spellchecker:disable */
+
+    #[test_case("VENMOUAULTRSHPEN	7	Earth	Mars	Neptune	Pluto	Saturn	Uranus	Venus")]
     #[test_case(
-        // spellchecker:disable-next-line
-        "VENMOUAULTRSHPEN	7	Earth	Mars	Neptune	Pluto	Saturn	Uranus	Venus"
-    )]
-    #[test_case(
-        // spellchecker:disable-next-line
-        "ZEUAMSTIEREH_DAN	8	Ares    	Athena  	Demeter 	Hades   	Hera    	Hermes  	Hestia  	Zeus    "
+        "\
+    ZEUA\
+    MSTI\
+    EREH\
+    _DAN	8	Ares	Athena	Demeter	Hades	Hera	Hermes	Hestia	Zeus"
     )]
 
     pub fn test_optimize(input: &str) {
@@ -166,5 +212,54 @@ pub mod tests {
         let after = grid_result.grid.iter().join("");
 
         assert_eq!(before, after)
+    }
+
+    #[test_case("ABCDEFGHIJKLMNOP", "")]
+    #[test_case("WANKZZZZZZZZZZZZ", "WANK")]
+    #[test_case("ZZZZWANKZZZZZZZZ", "WANK")]
+    #[test_case(
+        "\
+    ZZZW\
+    ZZZA\
+    ZZZN\
+    ZZZK",
+        "WANK"
+    )]
+    #[test_case(
+        "\
+    ZWAN\
+    KZZZ\
+    ZZZZ\
+    ZZZZ",
+        "WANK"
+    )]
+    #[test_case(
+        "\
+    WZZZ\
+    ZAZZ\
+    ZZNZ\
+    ZZZK",
+        "WANK"
+    )]
+    #[test_case(
+        "\
+    ZEUA\
+    MSTI\
+    EREH\
+    _DAN",
+        ""
+    )]
+    pub fn test_taboo(input: &str, expected: &str) {
+        let grid = prelude::try_make_grid(input).unwrap();
+
+        let expected = if expected == "" {
+            None
+        } else {
+            Some(crate::character::normalize_characters_array(expected).unwrap())
+        };
+
+        let actual = find_taboo_word(&grid);
+
+        assert_eq!(actual, expected);
     }
 }
