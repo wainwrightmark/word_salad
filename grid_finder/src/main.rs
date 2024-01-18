@@ -221,7 +221,7 @@ fn cluster_files(options: &Options) {
             .filter(|grid| {
                 if let Some(taboo) = orientation::find_taboo_word(&grid.grid) {
                     warn!(
-                        "Grid {} contains taboo word {} and will not be clustered",
+                        "Grid \n{} contains taboo word {} and will not be clustered",
                         grid.grid,
                         taboo.iter().join("")
                     );
@@ -426,7 +426,7 @@ fn do_finder(options: Options) {
         grids.retain(|grid| {
             if let Some(taboo) = orientation::find_taboo_word(&grid.grid) {
                 warn!(
-                    "Grid {} contains taboo word {} and will not be clustered",
+                    "Grid \n{} contains taboo word {} and will not be clustered",
                     grid.grid,
                     taboo.iter().join("")
                 );
