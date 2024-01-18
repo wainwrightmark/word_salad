@@ -4,7 +4,7 @@ use indicatif::{ProgressBar, ProgressStyle};
 use log::info;
 use ws_core::{DesignedLevel, Word};
 
-pub fn do_search(search: String) {
+pub fn do_search(search: &str) {
     let folder = std::fs::read_dir("grids").unwrap();
 
     let words: Vec<_> = search

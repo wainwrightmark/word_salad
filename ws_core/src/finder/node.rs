@@ -212,7 +212,6 @@ pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
     collector: &mut Collector,
 ) {
     //todo use a bump allocator
-    //println!("Try to make grid: {l:?} : {w:?}", l= crate::get_raw_text(&letters), w= crate::write_words(words) );
     let mut node_builders: NodeBuilders = NodeBuilders::from_fn(|id| NodeBuilder {
         id,
         character: Character::Blank,
@@ -630,20 +629,17 @@ mod tests {
 
     use super::*;
     use test_case::test_case;
-
+    // spellchecker:disable
     #[test_case("SILVER\nORANGE\nGREEN\nIVORY\nCORAL\nOLIVE\nTEAL\nGRAY\nCYAN\nRED")]
     #[test_case("CROATIA\nROMANIA\nIRELAND\nLATVIA\nPOLAND\nFRANCE\nMALTA\nLIL")]
     #[test_case("CROATIA\nROMANIA\nIRELAND\nLATVIA\nPOLAND\nFRANCE\nMALTA")]
-    // spellchecker:disable-next-line
     #[test_case("PIEPLATE\nSTRAINER\nTEAPOT\nGRATER\nAPRON\nSPOON\nPOT")]
     #[test_case("THIRTEEN\nFOURTEEN\nFIFTEEN\nSEVENTY\nTHIRTY\nNINETY\nTHREE\nSEVEN\nFORTY\nFIFTY\nFIFTH\nFOUR\nNINE\nONE\nTEN")]
     #[test_case("POLO\nSHOOTING\nKENDO\nSAILING\nLUGE\nSKIING")]
     #[test_case("IOWA\nOHIO\nIDAHO\nUTAH\nHAWAII\nINDIANA\nMONTANA")]
     #[test_case("ROSEMARY\nCARROT\nPARSLEY\nSOY\nPEANUT\nYAM\nPEA\nBEAN")]
-    // spellchecker:disable-next-line
     #[test_case("WEEDLE\nMUK\nSLOWPOKE\nGOLEM\nSEEL\nMEW\nEEVEE\nGLOOM")]
     #[test_case("POLITICIAN\nOPTICIAN\nCASHIER\nFLORIST\nARTIST\nTAILOR\nACTOR")]
-    // spellchecker:disable-next-line
     #[test_case("ALDGATE\nANGEL\nALDGATEEAST\nBANK\nLANCASTERGATE")]
     #[test_case("WELLS\nLEEDS\nELY\nLISBURN\nDERBY\nNEWRY\nSALISBURY")]
     #[test_case("Sporty\nScary")]
@@ -760,7 +756,7 @@ mod tests {
         assert!(!solutions.is_empty());
 
         for mut s in solutions.iter_mut() {
-            crate::finder::orientation::optimize_orientation(&mut s);
+            let _ = crate::finder::orientation::try_optimize_orientation(&mut s);
         }
 
         // for grid in solutions{

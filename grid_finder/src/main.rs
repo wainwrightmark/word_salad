@@ -19,7 +19,12 @@ use std::{
     str::FromStr,
 };
 use ws_core::{
-    finder::{counter::FakeCounter, helpers::*, node::GridResult},
+    finder::{
+        counter::FakeCounter,
+        helpers::*,
+        node::GridResult,
+        orientation::{self, *},
+    },
     prelude::*,
 };
 
@@ -44,7 +49,7 @@ struct Options {
     pub minimum: u32,
 
     /// Maximum number of grids to return
-    #[arg(short, long, default_value = "100000")]
+    #[arg(short, long, default_value = "10000")]
     pub grids: u32,
     /// search all found grids for a particular word or list of words
     #[arg(long)]
@@ -57,6 +62,10 @@ struct Options {
     /// If set, will find clusters for all existing grids rather than finding new grids
     #[arg(short, long, default_value = "false")]
     pub cluster: bool,
+
+    /// If set, will reorient existing grids rather than finding new grids
+    #[arg(short, long, default_value = "false")]
+    pub reorient: bool,
 
     #[arg(long, default_value = "50")]
     pub max_clusters: u32,
@@ -71,13 +80,28 @@ fn main() {
 
     let options = Options::parse();
 
-    if let Some(search) = options.search {
+    let mut did_something = false;
+
+    if let Some(search) = &options.search {
+        did_something = true;
         search::do_search(search);
-    } else if options.check_layout {
+    }
+
+    if options.reorient {
+        did_something = true;
+        reorient_grids(&options);
+    }
+
+    if options.check_layout {
+        did_something = true;
         word_layout::do_word_layout();
-    } else if options.cluster {
-        cluster_files(options);
-    } else {
+    }
+    if options.cluster {
+        did_something = true;
+        cluster_files(&options);
+    }
+
+    if !did_something {
         do_finder(options);
     }
 
@@ -85,7 +109,75 @@ fn main() {
     io::stdin().read_line(&mut String::new()).unwrap();
 }
 
-fn cluster_files(options: Options) {
+fn reorient_grids(_options: &Options) {
+    let folder = std::fs::read_dir("grids").unwrap();
+
+    let paths: Vec<_> = folder.collect();
+
+    let pb: ProgressBar = ProgressBar::new(paths.len() as u64)
+        .with_style(ProgressStyle::with_template("{msg:50} {wide_bar} {pos:2}/{len:2}").unwrap())
+        .with_message("Data files");
+
+    for path in paths.iter() {
+        let path = path.as_ref().unwrap().path();
+        let file_name = path.file_name().unwrap().to_string_lossy();
+
+        pb.set_message(file_name.to_string());
+
+        let grid_file_text = std::fs::read_to_string(path.clone()).unwrap();
+
+        let mut changed = 0;
+        let mut errors: Vec<String> = Default::default();
+
+        let grids = grid_file_text
+            .lines()
+            .map(|l| GridResult::from_str(l).unwrap())
+            .map(|mut x| {
+                let r = try_optimize_orientation(&mut x);
+
+                match r {
+                    Ok(true) => {
+                        changed += 1;
+                    }
+                    Ok(false) => {}
+                    Err(message) => errors.push(message),
+                }
+                x
+            })
+            .collect_vec();
+
+        if errors.len() > 0 {
+            warn!(
+                "{:5} of {:6} Grids are impossible to orient safely",
+                errors.len(),
+                grids.len()
+            );
+
+            for line in errors {
+                warn!("{line}")
+            }
+        }
+
+        if changed > 0 {
+            info!(
+                "{changed:5} of {:6} Grids have suboptimal orientation",
+                grids.len()
+            );
+            let new_contents = grids.into_iter().join("\n");
+
+            match std::fs::write(path, new_contents) {
+                Ok(_) => {}
+                Err(e) => log::error!("{e}"),
+            }
+        }
+
+        pb.inc(1);
+    }
+
+    pb.finish();
+}
+
+fn cluster_files(options: &Options) {
     let folder = std::fs::read_dir("grids").unwrap();
 
     let paths: Vec<_> = folder.collect();
@@ -126,6 +218,18 @@ fn cluster_files(options: Options) {
             .lines()
             .map(|l| GridResult::from_str(l).unwrap())
             .filter(|x| x.words.len() >= options.minimum as usize)
+            .filter(|grid| {
+                if let Some(taboo) = orientation::find_taboo_word(&grid.grid) {
+                    warn!(
+                        "Grid {} contains taboo word {} and will not be clustered",
+                        grid.grid,
+                        taboo.iter().join("")
+                    );
+                    false
+                } else {
+                    true
+                }
+            })
             .filter(|x| {
                 filter_enough_grids(x, &mut count, options.grids as usize, &mut filter_below)
             })
@@ -287,7 +391,7 @@ fn do_finder(options: Options) {
 
         let max_grids = (options.grids > 0).then_some(options.grids as usize);
 
-        let grids: Vec<GridResult> = match word_map.len() {
+        let mut grids: Vec<GridResult> = match word_map.len() {
             0..=64 => create_grids::<1>(
                 word_map,
                 &master_words,
@@ -318,6 +422,19 @@ fn do_finder(options: Options) {
             ),
             _ => panic!("Too many words to do grid creation"),
         };
+
+        grids.retain(|grid| {
+            if let Some(taboo) = orientation::find_taboo_word(&grid.grid) {
+                warn!(
+                    "Grid {} contains taboo word {} and will not be clustered",
+                    grid.grid,
+                    taboo.iter().join("")
+                );
+                false
+            } else {
+                true
+            }
+        });
 
         let all_words = grids
             .iter()
@@ -452,7 +569,7 @@ fn create_grids<const W: usize>(
 
         for (combination, result) in results.into_iter() {
             if let Some(mut solution) = result {
-                ws_core::finder::orientation::optimize_orientation(&mut solution);
+                let _ = ws_core::finder::orientation::try_optimize_orientation(&mut solution);
                 solutions.push(solution);
             } else {
                 next_group
@@ -486,17 +603,3 @@ fn create_grids<const W: usize>(
 
     all_solutions
 }
-
-pub fn get_raw_text(counts: &LetterCounts) -> String {
-    counts.into_iter().join("")
-}
-
-pub fn write_words(word: &Vec<CharsArray>) -> String {
-    word.iter().map(|c| c.iter().join("")).join(", ")
-}
-
-#[derive(Debug, Clone, PartialEq, Default)]
-struct CharacterCounter([u8; 26]);
-
-#[cfg(test)]
-pub mod tests {}

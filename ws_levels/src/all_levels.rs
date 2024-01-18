@@ -238,21 +238,25 @@ pub mod tests {
                 letters: Default::default(), //doesn't matter
             };
 
-            orientation::optimize_orientation(&mut gr);
+            let optimize_result = orientation::try_optimize_orientation(&mut gr);
 
-            if orientation::find_taboo_word(&gr.grid).is_none() {
-                return Err(format!(
-                    "Level '{:<26}' Grid '{:?}' contains taboo word '{taboo_word:?}'. Try {}",
-                    level.name.to_string(),
-                    level.grid.iter().join(""),
-                    gr.grid.iter().join("")
-                ));
-            } else {
-                return Err(format!(
-                    "Level '{:<26}' Grid '{:?}' contains taboo word '{taboo_word:?}'. No orientation is good",
-                    level.name.to_string(),
-                    level.grid.iter().join(""),
-                ));
+            match optimize_result{
+                Ok(_) => {
+                    return Err(format!(
+                        "Level '{:<26}' Grid '{:?}' contains taboo word '{taboo_word:?}'. Try {}",
+                        level.name.to_string(),
+                        level.grid.iter().join(""),
+                        gr.grid.iter().join("")
+                    ));
+                },
+                Err(message) => {
+                    return Err(format!(
+                        "Level '{:<26}' Grid '{:?}' contains taboo word '{taboo_word:?}'. {}",
+                        level.name.to_string(),
+                        level.grid.iter().join(""),
+                        message
+                    ));
+                },
             }
         }
         Ok(())

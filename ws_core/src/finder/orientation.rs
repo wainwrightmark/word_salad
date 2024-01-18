@@ -7,7 +7,6 @@ use crate::{
 };
 use itertools::Itertools;
 use lazy_static::lazy_static;
-use log::warn;
 
 lazy_static! {
     static ref TABOO_WORDS: HashSet<CharsArray> = {
@@ -39,19 +38,21 @@ pub fn find_taboo_word(grid: &Grid) -> Option<CharsArray> {
         grid: &Grid,
         prefix: &mut CharsArray,
         last_tile: Tile,
-        mut allow_wrap: bool
+        mut allow_wrap: bool,
     ) -> Option<CharsArray> {
         if TABOO_WORDS.contains(prefix) {
             return Some(prefix.clone());
         }
 
         let next_tiles = [
-            if allow_wrap {last_tile.try_next()} else {last_tile.const_add(&Vector::EAST)},
+            if allow_wrap {
+                last_tile.try_next()
+            } else {
+                last_tile.const_add(&Vector::EAST)
+            },
             last_tile.const_add(&Vector::SOUTH),
             last_tile.const_add(&Vector::SOUTH_EAST),
         ];
-
-
 
         for next_tile in next_tiles.into_iter().flatten() {
             let c = grid[next_tile];
@@ -79,13 +80,15 @@ pub fn find_taboo_word(grid: &Grid) -> Option<CharsArray> {
     None
 }
 
-pub fn optimize_orientation(grid_result: &mut GridResult) {
-    let flips = [FlipAxes::None, FlipAxes::Horizontal];
+/// Returns Ok(true) if the orientation was changed
+pub fn try_optimize_orientation(grid_result: &mut GridResult) -> Result<bool, String> {
+    let flips = [ FlipAxes::Horizontal, FlipAxes::None,];
     let rotations = [
-        QuarterTurns::Zero,
+
         QuarterTurns::One,
         QuarterTurns::Two,
         QuarterTurns::Three,
+        QuarterTurns::Zero, //do zero and one last because max returns the last maximal element
     ];
 
     let transforms = flips.into_iter().cartesian_product(rotations);
@@ -98,11 +101,33 @@ pub fn optimize_orientation(grid_result: &mut GridResult) {
             new_grid
         })
         .filter(|grid| find_taboo_word(grid).is_none())
+
         .max_by_key(|new_grid| calculate_max_score(&new_grid, &grid_result.words))
     {
-        grid_result.grid = new_grid;
+        if grid_result.grid != new_grid {
+            //log::info!("Changed \n{}\n to \n{new_grid}", grid_result.grid);
+            grid_result.grid = new_grid;
+            Ok(true)
+        } else {
+            Ok(false)
+        }
     } else {
-        warn!("Could not find a good orientation for {}", grid_result.grid)
+        let mut taboo_words: HashSet<String> = Default::default();
+
+        for (axes, quarter_turns) in flips.into_iter().cartesian_product(rotations) {
+            let mut new_grid = grid_result.grid.clone();
+            new_grid.rotate(quarter_turns);
+            new_grid.flip(axes);
+            if let Some(word) = find_taboo_word(&new_grid) {
+                taboo_words.insert(word.iter().join(""));
+            }
+        }
+
+        Err(format!(
+            "Could not find a good orientation for \n{} (taboo words: {})",
+            grid_result.grid,
+            taboo_words.into_iter().join(", ")
+        ))
     }
 }
 
@@ -188,11 +213,11 @@ fn score_solution(solution: &ArrayVec<Tile, 16>) -> i32 {
 pub mod tests {
     use std::str::FromStr;
 
-    use crate::{finder::node::GridResult, prelude};
+    use crate::prelude;
     use itertools::Itertools;
     use test_case::test_case;
 
-    use super::{find_taboo_word, optimize_orientation};
+    use super::*;
 
     /* spellchecker:disable */
 
@@ -208,10 +233,11 @@ pub mod tests {
     pub fn test_optimize(input: &str) {
         let mut grid_result = GridResult::from_str(input).unwrap();
         let before = grid_result.grid.iter().join("");
-        optimize_orientation(&mut grid_result);
+        let result = try_optimize_orientation(&mut grid_result);
         let after = grid_result.grid.iter().join("");
 
-        assert_eq!(before, after)
+        assert_eq!(before, after);
+        assert_eq!(Ok(false), result);
     }
 
     #[test_case("ABCDEFGHIJKLMNOP", "")]
