@@ -84,12 +84,12 @@ impl PartialGrid {
             .min_by(|a, b| {
                 a.1.count()
                     .cmp(&b.1.count())
-                    .then(b.0.constraint_count.cmp(&a.0.constraint_count))
+                    .then(b.0.constraint_count().cmp(&a.0.constraint_count() )) //todo reverse this???
             })
     }
 
     pub fn solve(
-        &self,
+        &mut self,
         counter: &mut impl Counter,
         collector: &mut impl SolutionCollector<Self>,
         all_nodes: &NodeMap,
@@ -97,44 +97,47 @@ impl PartialGrid {
         exclude_words: &Vec<FinderSingleWord>,
         multi_constraint_map: &MultiConstraintMap,
     ) {
-        let mut stack: ArrayVec<(PartialGrid, Node, RemainingLocations), 16> = Default::default();
+        let mut stack: ArrayVec<(Node, NodeId, RemainingLocations), 16> = Default::default();
 
         let Some((n, pl)) = self.get_most_constrained_node(all_nodes, multi_constraint_map) else {
             return;
         };
 
-        stack.push((self.clone(), n, RemainingLocations::new(pl)));
+        stack.push((n, NodeId::default(), RemainingLocations::new(pl)));
 
-        while let Some((partial_grid, node, remaining_locations)) = stack.last_mut() {
+        while let Some((node, prev_node, remaining_locations)) = stack.last_mut() {
             if let Some(tile) = remaining_locations.next() {
                 if !counter.try_increment() {
                     return; //Give up
                 }
-                let mut pg = partial_grid.clone();
-                pg.place_node(&node, tile);
+
+                self.place_node(&node, tile);
 
                 if let Some((next_node, potential_locations)) =
-                    pg.get_most_constrained_node(all_nodes, multi_constraint_map)
+                    self.get_most_constrained_node(all_nodes, multi_constraint_map)
                 {
-                    if !potential_locations.is_empty() {
-                        //println!("{}\n", pg.to_grid(all_nodes)) ;
+                    let prev_node_id = node.id;
 
-                        stack.push((pg, next_node, RemainingLocations::new(potential_locations)))
-                    }
+                    stack.push((
+                        next_node,
+                        prev_node_id,
+                        RemainingLocations::new(potential_locations),
+                    ))
                 } else {
-                    if pg.check_matches(all_nodes, words, exclude_words) {
-                        collector.collect_solution(pg);
+                    if self.check_matches(all_nodes, words, exclude_words) {
+                        collector.collect_solution(self.clone());
                         if collector.is_full() {
                             return;
                         }
                     }
+                    self.remove_node(node.id)
                 }
             } else {
+                self.remove_node(*prev_node);
                 stack.pop();
             }
         }
     }
-
 
     pub fn potential_locations(
         &self,
@@ -144,7 +147,7 @@ impl PartialGrid {
     ) -> GridSet {
         let mut allowed = self.used_grid.negate().intersect(&allowed_by_symmetry);
 
-        match node.constraint_count {
+        match node.constraint_count() {
             ..=3 => {}
             4..=5 => {
                 allowed = allowed.intersect(&NOT_CORNERS);
@@ -177,10 +180,13 @@ impl PartialGrid {
         new_allowed
     }
 
-    pub fn remove_node(&mut self, node_id: NodeId, tile: Tile) {
-        self.map[node_id] = None;
-        self.used_grid.set_bit(&tile, false);
+    pub fn remove_node(&mut self, node_id: NodeId) {
         self.nodes_to_add.set_bit(&node_id, true);
+
+        if let Some(tile) = self.map[node_id] {
+            self.used_grid.set_bit(&tile, false);
+        }
+        self.map[node_id] = None;
     }
 
     fn place_node(&mut self, node: &Node, tile: Tile) {
@@ -191,37 +197,19 @@ impl PartialGrid {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-enum RemainingLocations {
-    Centre {
-        remaining_centres: GridSet,
-        potential_locations: GridSet,
-    },
-    Edge {
-        remaining_edges: GridSet,
-        potential_locations: GridSet,
-    },
-    Corner {
-        remaining_corners: GridSet,
-    },
+struct RemainingLocations {
+    potential_locations: GridSet,
 }
 
 impl RemainingLocations {
     pub const fn new(potential_locations: GridSet) -> Self {
-        Self::Centre {
-            remaining_centres: potential_locations.intersect(&CENTRE_TILES),
+        Self {
             potential_locations,
         }
     }
-    #[must_use]
-    fn grid_set_pop(set: &mut GridSet) -> Option<Tile> {
-        // if set.into_inner() == 0{
-        //     return None;
-        // }
-        let Some(next) = Tile::try_from_inner(set.into_inner().trailing_zeros() as u8) else {
-            return None;
-        };
-        set.set_bit(&next, false);
-        Some(next)
+
+    fn grid_set_first(set: GridSet) -> Option<Tile> {
+        Tile::try_from_inner(set.into_inner().trailing_zeros() as u8)
     }
 }
 
@@ -229,40 +217,22 @@ impl Iterator for RemainingLocations {
     type Item = Tile;
 
     fn next(&mut self) -> Option<Self::Item> {
-        loop {
-            match self {
-                RemainingLocations::Centre {
-                    ref mut remaining_centres,
-                    potential_locations,
-                } => {
-                    if let Some(next) = Self::grid_set_pop(remaining_centres) {
-                        return Some(next);
-                    } else {
-                        *self = RemainingLocations::Edge {
-                            remaining_edges: EDGE_TILES.intersect(&potential_locations),
-                            potential_locations: *potential_locations,
-                        };
-                    }
-                }
-                RemainingLocations::Edge {
-                    ref mut remaining_edges,
-                    potential_locations,
-                } => {
-                    if let Some(next) = Self::grid_set_pop(remaining_edges) {
-                        return Some(next);
-                    } else {
-                        *self = RemainingLocations::Corner {
-                            remaining_corners: CORNER_TILES.intersect(&potential_locations),
-                        };
-                    }
-                }
-                RemainingLocations::Corner {
-                    ref mut remaining_corners,
-                } => {
-                    return Self::grid_set_pop(remaining_corners);
-                }
-            }
+        if let Some(next) = Self::grid_set_first(self.potential_locations.intersect(&CENTRE_TILES))
+        {
+            self.potential_locations.set_bit(&next, false);
+            return Some(next);
         }
+        if let Some(next) = Self::grid_set_first(self.potential_locations.intersect(&EDGE_TILES)) {
+            self.potential_locations.set_bit(&next, false);
+            return Some(next);
+        }
+        if let Some(next) = Self::grid_set_first(self.potential_locations.intersect(&CORNER_TILES))
+        {
+            self.potential_locations.set_bit(&next, false);
+            return Some(next);
+        }
+
+        None
     }
 }
 

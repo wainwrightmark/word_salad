@@ -322,7 +322,7 @@ pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
         }
     }
 
-    let grid: PartialGrid = Default::default();
+    let mut grid: PartialGrid = Default::default();
 
     let nodes: NodeMap = NodeMap::from_fn(|tile| node_builders[tile].clone().into());
 
@@ -348,7 +348,7 @@ pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
     let mut nodes_with_6_or_more = 0usize;
 
     for node in nodes.iter() {
-        match node.constraint_count {
+        match node.constraint_count() {
             0..=3 => {}
             4..=5 => {
                 nodes_with_4_or_more += 1;
@@ -531,30 +531,29 @@ impl NodeBuilder {
 
 impl From<NodeBuilder> for Node {
     fn from(val: NodeBuilder) -> Self {
-        let constraint_count = val.single_constraints.get().count() as u8
-            + val.multiple_constraints.get().count() as u8;
-
         Node {
             id: val.id,
             character: val.character,
             single_constraints: val.single_constraints.into_inner(),
             multiple_constraints: val.multiple_constraints.into_inner(),
-            constraint_count,
         }
     }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Node {
-    //todo try removing id and constraint count ro reduce size
-    pub id: NodeId,
-    pub character: Character,
     single_constraints: NodeIdSet,
     multiple_constraints: MultiConstraintIdSet,
-    pub constraint_count: u8,
+    pub id: NodeId,
+    pub character: Character,
+
 }
 
 impl Node {
+    pub fn constraint_count(&self) -> u32 {
+        self.single_constraints.count() + self.multiple_constraints.count()
+    }
+
     pub fn are_all_constraints_to_character(
         &self,
         character: &Character,
