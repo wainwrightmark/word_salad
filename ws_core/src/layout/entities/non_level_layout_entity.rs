@@ -22,7 +22,7 @@ impl NonLevelLayoutEntity {
 impl LayoutStructure for NonLevelLayoutEntity {
     type Context<'a> = ();
 
-    fn size(&self, _context: &Self::Context<'_>) -> Vec2 {
+    fn size(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
         match self {
             NonLevelLayoutEntity::Text => Vec2 {
                 x: NON_LEVEL_TEXT_WIDTH,
@@ -35,8 +35,8 @@ impl LayoutStructure for NonLevelLayoutEntity {
         }
     }
 
-    fn location(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
-        let top_offset = GRID_TILE_SIZE + TOP_BAR_HEIGHT;
+    fn location(&self, _context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
+        let top_offset = GRID_TILE_SIZE + (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing));
 
         match self {
             NonLevelLayoutEntity::Text => Vec2 {

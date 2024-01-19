@@ -51,7 +51,7 @@ impl CongratsLayoutEntity {
 impl LayoutStructure for CongratsLayoutEntity {
     type Context<'a> = (SelfieMode, LevelType);
 
-    fn size(&self, context: &Self::Context<'_>) -> Vec2 {
+    fn size(&self, context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
         match self {
             CongratsLayoutEntity::Statistic(_) => {
                 let stat_size = if context.0.is_selfie_mode {
@@ -92,7 +92,10 @@ impl LayoutStructure for CongratsLayoutEntity {
             let word_list_top = GameLayoutEntity::WordList.location(&context.0, sizing).y;
             word_list_top - (button_height + stat_size + CONGRATS_ENTITY_VERTICAL_GAP)
         } else {
-            TOP_BAR_HEIGHT + THEME_HEIGHT + GRID_TILE_SIZE
+            TOP_BAR_HEIGHT_BASE
+                + extra_top_bar_height(sizing)
+                + THEME_HEIGHT
+                + GRID_WORD_LIST_SPACER + GRID_THEME_SPACER
         };
         pub const MENU_BUTTON_SPACING: f32 = 40.0 * 0.1;
 

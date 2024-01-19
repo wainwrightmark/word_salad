@@ -1,6 +1,6 @@
 use glam::Vec2;
 
-use crate::{LayoutRectangle, LayoutStructure};
+use crate::{LayoutRectangle, LayoutStructure, LayoutSizing};
 
 pub enum FlexLayout {
     Row, //todo column, row reverse etc
@@ -14,13 +14,14 @@ impl FlexLayout {
         context: &T::Context<'_>,
         main_axis_padding: f32,
         cross_axis_padding: f32,
+        sizing: &LayoutSizing
     ) -> Option<T> {
         let mut prev_rows_total_height: f32 = 0.0;
         let mut current_row_total_width: f32 = 0.0;
         let mut current_row_max_height: f32 = 0.0;
 
         for entity in T::iter_all(context) {
-            let size = entity.size(context);
+            let size = entity.size(context, sizing);
 
             if current_row_total_width + size.x > full_size.x {
                 //new row
@@ -55,13 +56,14 @@ impl FlexLayout {
         context: &T::Context<'_>,
         main_axis_padding: f32,
         cross_axis_padding: f32,
+        sizing: &LayoutSizing
     ) -> Vec2 {
         let mut prev_rows_total_height: f32 = 0.0;
         let mut current_row_total_width: f32 = 0.0;
         let mut current_row_max_height: f32 = 0.0;
 
         for entity in T::iter_all(context) {
-            let size = entity.size(context);
+            let size = entity.size(context, sizing);
 
             if current_row_total_width + size.x > full_size.x {
                 //new row

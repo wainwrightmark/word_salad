@@ -26,15 +26,16 @@ impl LayoutStructure for LayoutWordTile {
         let parent_loc = super::GameLayoutEntity::WordList.location(&context.1, sizing);
         let point = point - parent_loc;
         FlexLayout::Row.try_pick(
-            super::GameLayoutEntity::WordList.size(&context.1),
+            super::GameLayoutEntity::WordList.size(&context.1, sizing),
             point,
             context,
             WORD_MAIN_PAD,
             WORD_CROSS_PAD,
+            sizing
         )
     }
 
-    fn size(&self, context: &Self::Context<'_>) -> Vec2 {
+    fn size(&self, context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
         let num_letters = context
             .0
             .get(self.0)
@@ -53,11 +54,12 @@ impl LayoutStructure for LayoutWordTile {
         let parent_loc = super::GameLayoutEntity::WordList.location(&context.1, sizing);
 
         let offset = FlexLayout::Row.get_location(
-            super::GameLayoutEntity::WordList.size(&context.1),
+            super::GameLayoutEntity::WordList.size(&context.1, sizing),
             self,
             context,
             WORD_MAIN_PAD,
             WORD_CROSS_PAD,
+            sizing
         );
 
         parent_loc + offset

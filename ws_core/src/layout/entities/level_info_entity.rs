@@ -25,7 +25,7 @@ impl LayoutStructure for LevelInfoLayoutEntity {
         Self::iter()
     }
     ///The size on a 320x568 canvas
-    fn size(&self, _context: &Self::Context<'_>) -> Vec2 {
+    fn size(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
         match self {
             LevelInfoLayoutEntity::Theme => Vec2 {
                 x: THEME_WIDTH,

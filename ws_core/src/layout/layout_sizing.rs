@@ -80,7 +80,7 @@ impl LayoutSizing {
     }
 
     pub fn get_size<T: LayoutStructure>(&self, entity: &T, context: &T::Context<'_>) -> Vec2 {
-        let v2: Vec2 = entity.size(context);
+        let v2: Vec2 = entity.size(context, self);
         v2 * self.size_ratio
     }
 

@@ -14,5 +14,4 @@
 - Credits
 - Achievements
 - Fun Facts
-
-- Taboo words
+- better unpausing

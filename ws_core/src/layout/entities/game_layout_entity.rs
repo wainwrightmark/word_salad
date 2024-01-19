@@ -23,11 +23,11 @@ impl LayoutStructure for GameLayoutEntity {
 
     //const ROOT: Self = GameLayoutEntity::Root;
     ///The size on a 320x568 canvas
-    fn size(&self, _context: &Self::Context<'_>) -> Vec2 {
+    fn size(&self, _context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
         match self {
             GameLayoutEntity::TopBar => Vec2 {
                 x: IDEAL_WIDTH,
-                y: TOP_BAR_HEIGHT,
+                y: (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing)),
             },
             GameLayoutEntity::LevelInfo => Vec2 {
                 x: GRID_SIZE,
@@ -50,18 +50,18 @@ impl LayoutStructure for GameLayoutEntity {
 
             GameLayoutEntity::LevelInfo => Vec2 {
                 x: (IDEAL_WIDTH - GRID_SIZE) * 0.5,
-                y: THEME_HEIGHT + TIMER_HEIGHT,
+                y: (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing)),
             },
 
             GameLayoutEntity::Grid => Vec2 {
                 x: (IDEAL_WIDTH - GRID_SIZE) * 0.5,
-                y: TOP_BAR_HEIGHT + THEME_HEIGHT + TIMER_HEIGHT + (GRID_TILE_SIZE * 0.5),
+                y: (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing)) + THEME_HEIGHT + TIMER_HEIGHT + GRID_THEME_SPACER,
             },
             GameLayoutEntity::WordList => {
                 let y = if context.is_selfie_mode {
                     IDEAL_HEIGHT + (sizing.bottom_pad / sizing.size_ratio) - WORD_LIST_HEIGHT
                 } else {
-                    TOP_BAR_HEIGHT + THEME_HEIGHT + TIMER_HEIGHT + GRID_SIZE + GRID_TILE_SIZE
+                    (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing)) + THEME_HEIGHT + TIMER_HEIGHT + GRID_SIZE + GRID_THEME_SPACER + GRID_WORD_LIST_SPACER
                 };
 
                 Vec2 {

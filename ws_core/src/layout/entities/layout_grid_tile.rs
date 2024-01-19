@@ -25,7 +25,7 @@ impl LayoutStructure for LayoutGridTile {
         return None;
     }
 
-    fn size(&self, _context: &Self::Context<'_>) -> Vec2 {
+    fn size(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
         Vec2 {
             x: GRID_TILE_SIZE,
             y: GRID_TILE_SIZE,
@@ -39,8 +39,8 @@ impl LayoutStructure for LayoutGridTile {
                 self.0,
                 Spacing::SpaceBetween,
                 Spacing::SpaceBetween,
-                GameLayoutEntity::Grid.size(context),
-                self.size(context),
+                GameLayoutEntity::Grid.size(context, sizing),
+                self.size(context, sizing),
             ))
     }
 

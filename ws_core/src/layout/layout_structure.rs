@@ -4,7 +4,7 @@ use glam::Vec2;
 
 use crate::{LayoutRectangle, LayoutSizing};
 
-pub trait LayoutStructure: Sized + PartialEq + Debug {
+pub trait LayoutStructure: Sized + PartialEq + Debug {//TODO rename to positioning
     type Context<'a>;
 
     fn pick(point: Vec2, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Option<Self> {
@@ -14,12 +14,12 @@ pub trait LayoutStructure: Sized + PartialEq + Debug {
     fn rect(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> LayoutRectangle {
         LayoutRectangle {
             top_left: self.location(context, sizing),
-            extents: self.size(context),
+            extents: self.size(context, sizing),
         }
     }
 
     ///The size on a 320x568 canvas
-    fn size(&self, context: &Self::Context<'_>) -> Vec2;
+    fn size(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2;
 
     fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2;
 

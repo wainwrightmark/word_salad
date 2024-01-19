@@ -330,7 +330,7 @@ impl HintsPopupLayoutEntity {
 impl LayoutStructure for HintsPopupLayoutEntity {
     type Context<'a> = ();
 
-    fn size(&self, _context: &Self::Context<'_>) -> Vec2 {
+    fn size(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
         match self {
             Self::Text => Vec2 {
                 x: HINTS_POPUP_BOX_TITLE_WIDTH,
@@ -398,7 +398,7 @@ impl SelfiePopupLayoutEntity {
 impl LayoutStructure for SelfiePopupLayoutEntity {
     type Context<'a> = ();
 
-    fn size(&self, _context: &Self::Context<'_>) -> Vec2 {
+    fn size(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
         match self {
             Self::Text => Vec2 {
                 x: SELFIE_POPUP_BOX_TITLE_WIDTH,

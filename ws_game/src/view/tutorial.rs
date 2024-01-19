@@ -413,7 +413,7 @@ const BOX_WIDTH: f32 = GRID_SIZE + 20.0;
 impl LayoutStructure for TutorialLayoutEntity {
     type Context<'a> = ();
 
-    fn size(&self, _context: &Self::Context<'_>) -> bevy::prelude::Vec2 {
+    fn size(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> bevy::prelude::Vec2 {
         match self {
             TutorialLayoutEntity::Top => Vec2 {
                 x: BOX_WIDTH,
@@ -475,14 +475,14 @@ const BOTTOM_TEXT_TOP_OFFSET: f32 = 40.0;
 impl LayoutStructure for TutorialTextLayoutEntity {
     type Context<'a> = ();
 
-    fn size(&self, context: &Self::Context<'_>) -> Vec2 {
+    fn size(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
         let x = TEXT_LEFT_MARGIN + TEXT_RIGHT_MARGIN;
         let y = if self.0.is_bottom() {
             BOTTOM_TEXT_TOP_OFFSET
         } else {
             0.0
         };
-        self.0.size(context) - Vec2 { x, y }
+        self.0.size(context, sizing) - Vec2 { x, y }
     }
 
     fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {

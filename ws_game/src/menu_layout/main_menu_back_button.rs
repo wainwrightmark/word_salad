@@ -12,7 +12,7 @@ pub struct MainMenuBackButton;
 impl LayoutStructure for MainMenuBackButton {
     type Context<'a> = ();
 
-    fn size(&self, _context: &Self::Context<'_>) -> Vec2 {
+    fn size(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
         Vec2 {
             x: MENU_BUTTON_WIDTH,
             y: MENU_BUTTON_HEIGHT,

@@ -1,8 +1,10 @@
+use crate::LayoutSizing;
+
 pub const IDEAL_WIDTH: f32 = 320.;
 pub const IDEAL_HEIGHT: f32 = 568.;
 pub const IDEAL_RATIO: f32 = IDEAL_WIDTH as f32 / IDEAL_HEIGHT as f32;
 
-pub const TOP_BAR_HEIGHT: f32 = 50.;
+pub const TOP_BAR_HEIGHT_BASE: f32 = 60.;
 pub const TOP_BAR_ICON_WIDTH: f32 = 25.;
 pub const WORD_SALAD_LOGO_WIDTH: f32 = 160.;
 
@@ -19,9 +21,12 @@ pub const TIMER_WIDTH: f32 = 40.;
 pub const GRID_TILE_SIZE: f32 = 62.;
 pub const GRID_GAP: f32 = 12.;
 pub const GRID_SIZE: f32 = (GRID_TILE_SIZE * 4.0) + GRID_GAP;
+
+pub const GRID_WORD_LIST_SPACER: f32 = GRID_TILE_SIZE * 0.5;
+pub const GRID_THEME_SPACER: f32 = GRID_TILE_SIZE * 0.5;
 pub const WORD_LIST_EXTRA_WIDTH: f32 = 20.0;
 
-pub const WORD_LIST_HEIGHT: f32 = 108.;
+pub const WORD_LIST_HEIGHT: f32 = 144.;
 pub const WORD_HEIGHT: f32 = 22.;
 pub const WORD_WIDTH_PER_CHARACTER: f32 = 11.;
 pub const WORD_WIDTH_FIXED: f32 = 20.;
@@ -29,6 +34,25 @@ pub const WORD_WIDTH_FIXED: f32 = 20.;
 pub const WORD_LIST_WIDTH: f32 = GRID_SIZE + WORD_LIST_EXTRA_WIDTH;
 pub const WORD_MAIN_PAD: f32 = 10.;
 pub const WORD_CROSS_PAD: f32 = 5.;
+
+pub const USED_HEIGHT_BASE: f32 = TOP_BAR_HEIGHT_BASE
+    + THEME_HEIGHT
+    + TIMER_HEIGHT
+    + GRID_SIZE
+    + GRID_THEME_SPACER
+    + GRID_WORD_LIST_SPACER
+    + WORD_LIST_HEIGHT;
+pub const GRID_MID_BASE: f32 =
+    TOP_BAR_HEIGHT_BASE + THEME_HEIGHT + TIMER_HEIGHT + GRID_THEME_SPACER + (GRID_SIZE * 0.5);
+
+pub fn extra_top_bar_height(sizing: &LayoutSizing) -> f32 {
+    let bottom_padding = sizing.bottom_pad / sizing.size_ratio;
+    let total_height = IDEAL_HEIGHT + bottom_padding;
+    let mid = total_height * 0.5;
+    let result = bottom_padding.min(mid - (GRID_MID_BASE));
+    log::info!("bottom padding: {bottom_padding} total height: {total_height} mid: {mid} result: {result} ");
+    result
+}
 
 /// Extra top offset while streaming
 
@@ -68,11 +92,11 @@ pub const SELFIE_POPUP_BOX_TITLE_HEIGHT: f32 = 60.;
 pub const SELFIE_POPUP_BOX_BUTTON_HEIGHT: f32 = 43.;
 pub const SELFIE_POPUP_BOX_BUTTON_WIDTH: f32 = 280.;
 
-pub const GRID_TILE_FONT_SIZE: f32 = 36f32;
+pub const GRID_TILE_FONT_SIZE: f32 = 34f32;
 
 pub const CONGRATS_BUTTON_FONT_SIZE: f32 = 18f32;
 pub const STATISTIC_NUMBER_FONT_SIZE_SELFIE: f32 = 24f32;
-pub const STATISTIC_NUMBER_FONT_SIZE_NORMAL: f32 = 36f32;
+pub const STATISTIC_NUMBER_FONT_SIZE_NORMAL: f32 = 34f32;
 pub const STATISTIC_LABEL_FONT_SIZE_SELFIE: f32 = 11f32;
 pub const STATISTIC_LABEL_FONT_SIZE_NORMAL: f32 = 14f32;
 
@@ -87,7 +111,7 @@ pub const HINT_COUNTER_FONT_SIZE: f32 = 22f32;
 pub const WORD_TILE_FONT_SIZE: f32 = 18f32;
 
 pub const NON_LEVEL_TEXT_FONT_SIZE: f32 = 22f32;
-pub const NON_LEVEL_COUNTDOWN_FONT_SIZE: f32 = 36f32;
+pub const NON_LEVEL_COUNTDOWN_FONT_SIZE: f32 = 34f32;
 
 pub const MENU_BUTTON_FONT_SIZE: f32 = 22f32;
 pub const MENU_BUTTON_FONT_SIZE_SMALL: f32 = 18f32;
