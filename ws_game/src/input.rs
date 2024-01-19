@@ -158,7 +158,7 @@ impl InteractionEntity {
                             size,
                             &(level.words.as_slice(), selfie_mode),
                         ),
-                        GameLayoutEntity::Theme | GameLayoutEntity::ThemeInfo | GameLayoutEntity::Timer | GameLayoutEntity::DailyChallengeNumber => {
+                        GameLayoutEntity::LevelInfo => {
                             if current_level.is_tutorial() {
                                 None
                             } else {

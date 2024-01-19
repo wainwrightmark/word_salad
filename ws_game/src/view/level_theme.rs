@@ -1,6 +1,7 @@
 use crate::prelude::*;
 use maveric::widgets::text2d_node::Text2DNode;
 use maveric::with_bundle::CanWithBundle;
+use ws_core::layout::entities::level_info_entity::LevelInfoLayoutEntity;
 use ws_core::layout::entities::*;
 use ws_core::prelude::*;
 
@@ -24,7 +25,7 @@ impl MavericNode for LevelName {
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
-            let theme_font_size = context.font_size(&GameLayoutEntity::Theme, &());
+            let theme_font_size = context.font_size(&LevelInfoLayoutEntity::Theme, &());
 
             let color = if node.selfie_mode.is_selfie_mode {
                 palette::THEME_TEXT_COLOR_SELFIE
@@ -47,14 +48,14 @@ impl MavericNode for LevelName {
                 }
                 .with_bundle(Transform::from_translation(
                     context
-                        .get_rect(&GameLayoutEntity::Theme, &node.selfie_mode)
+                        .get_rect(&LevelInfoLayoutEntity::Theme, &node.selfie_mode)
                         .centre_left()
                         .extend(crate::z_indices::THEME),
                 )),
                 &(),
             );
 
-            if let Some(dcn)= node.daily_challenge_number{
+            if let Some(dcn) = node.daily_challenge_number {
                 commands.add_child(
                     "daily_challenge_number",
                     Text2DNode {
@@ -69,7 +70,7 @@ impl MavericNode for LevelName {
                     }
                     .with_bundle(Transform::from_translation(
                         context
-                            .get_rect(&GameLayoutEntity::DailyChallengeNumber, &node.selfie_mode)
+                            .get_rect(&LevelInfoLayoutEntity::DailyChallengeNumber, &node.selfie_mode)
                             .centre_right()
                             .extend(crate::z_indices::THEME),
                     )),

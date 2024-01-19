@@ -111,6 +111,7 @@ impl MavericRootChildren for ViewRoot {
                             UITimer {
                                 time_text,
                                 selfie_mode,
+                                is_daily_challenge: context.1.is_daily_challenge()
                             },
                             &context.3,
                         );

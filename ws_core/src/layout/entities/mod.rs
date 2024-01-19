@@ -5,6 +5,7 @@ pub mod layout_grid_tile;
 pub mod layout_top_bar;
 pub mod layout_word_tile;
 pub mod non_level_layout_entity;
+pub mod level_info_entity;
 
 pub use congrats_layout_entity::*;
 pub use consts::*;

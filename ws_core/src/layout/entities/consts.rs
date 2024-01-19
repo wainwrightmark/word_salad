@@ -7,7 +7,8 @@ pub const TOP_BAR_ICON_WIDTH: f32 = 25.;
 pub const WORD_SALAD_LOGO_WIDTH: f32 = 160.;
 
 pub const THEME_HEIGHT: f32 = 32.;
-pub const THEME_WIDTH: f32 = GRID_SIZE;
+pub const THEME_WIDTH: f32 = GRID_SIZE - DAILY_CHALLENGE_NUMBER_WIDTH;
+pub const DAILY_CHALLENGE_NUMBER_WIDTH: f32 = 40.0;
 
 pub const THEME_INFO_HEIGHT: f32 = 10.;
 pub const THEME_INFO_WIDTH: f32 = 100.;

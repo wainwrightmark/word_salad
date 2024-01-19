@@ -77,14 +77,14 @@ mod tests {
             let color = match layout_entity {
                 GameLayoutEntity::TopBar => "blue",
 
-                GameLayoutEntity::Theme => "coral",
-                GameLayoutEntity::DailyChallengeNumber => "purple",
-                GameLayoutEntity::ThemeInfo => "gold",
+                GameLayoutEntity::LevelInfo => "gold",
+                // GameLayoutEntity::DailyChallengeNumber => "purple",
+                // GameLayoutEntity::ThemeInfo => "gold",
 
                 GameLayoutEntity::Grid => "indigo",
 
                 GameLayoutEntity::WordList => "mediumblue",
-                GameLayoutEntity::Timer => "pink",
+                // GameLayoutEntity::Timer => "pink",
             };
 
             let id = layout_entity.to_string();
