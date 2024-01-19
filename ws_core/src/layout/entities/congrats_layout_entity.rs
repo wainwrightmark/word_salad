@@ -83,7 +83,7 @@ impl LayoutStructure for CongratsLayoutEntity {
         };
 
         let button_height = if context.0.is_selfie_mode {
-            CONGRATS_ENTITY_BUTTON_HEIGHT + MENU_BUTTON_SPACING
+            CONGRATS_ENTITY_BUTTON_HEIGHT + (MENU_BUTTON_SPACING * 2.0)
         } else {
             GRID_SIZE - stat_size - CONGRATS_ENTITY_VERTICAL_GAP
         };

@@ -24,21 +24,7 @@ impl MavericNode for TopBar {
             .unordered_children_with_context(|context, commands| {
                 let size = &context.3;
 
-                // let top_bar_rect = size.get_rect(&GameLayoutEntity::TopBar, &());
-
-                // commands.add_child(
-                //     "TopBar",
-                //     box_node(
-                //         size.scaled_width,
-                //         top_bar_rect.height(),
-                //         top_bar_rect
-                //             .centre()
-                //             .extend(crate::z_indices::TOP_BAR_BACKGROUND),
-                //         palette::TOP_BAR_COLOR.convert_color(),
-                //         0.0,
-                //     ),
-                //     &(),
-                // );
+                let selfie = context.8.selfie_mode().is_selfie_mode;
 
                 commands.add_child(
                     "Burger",
@@ -46,7 +32,7 @@ impl MavericNode for TopBar {
                         text: "\u{e800}",
                         font_size: size
                             .font_size::<LayoutTopBar>(&LayoutTopBar::MenuBurgerButton, &()),
-                        color: palette::TOP_BAR_BURGER.convert_color(),
+                        color: (if selfie {palette::TOP_BAR_BURGER_SELFIE} else {palette::TOP_BAR_BURGER_NORMAL}) .convert_color(),
                         font: ICON_FONT_PATH,
                         alignment: TextAlignment::Left,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -75,7 +61,7 @@ impl MavericNode for TopBar {
                         text: "Word Salad",
                         font_size: size
                             .font_size::<LayoutTopBar>(&LayoutTopBar::WordSaladLogo, &()),
-                        color: palette::TOP_BAR_LOGO.convert_color(),
+                            color: (if selfie {palette::TOP_BAR_LOGO_SELFIE} else {palette::TOP_BAR_LOGO_NORMAL}) .convert_color(),
                         font: WORD_SALAD_LOGO_FONT_PATH,
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,

@@ -424,7 +424,7 @@ impl LayoutStructure for TutorialLayoutEntity {
             },
             TutorialLayoutEntity::Bottom => Vec2 {
                 x: BOX_WIDTH,
-                y: 140.0,
+                y: 120.0,
             },
         }
     }

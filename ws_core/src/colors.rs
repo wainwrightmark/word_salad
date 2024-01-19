@@ -41,8 +41,11 @@ pub mod palette {
     pub const ANIMATED_SOLUTION_NEW: Color = GREEN_LIGHT;
     pub const ANIMATED_SOLUTION_OLD: Color = GOLD;
 
-    pub const TOP_BAR_BURGER: Color = MY_BLACK;
-    pub const TOP_BAR_LOGO: Color = MY_BLACK;
+    pub const TOP_BAR_BURGER_NORMAL: Color = MY_BLACK;
+    pub const TOP_BAR_LOGO_NORMAL: Color = MY_BLACK;
+
+    pub const TOP_BAR_BURGER_SELFIE: Color = MY_WHITE;
+    pub const TOP_BAR_LOGO_SELFIE: Color = MY_WHITE;
 
     pub const THEME_TEXT_COLOR_NORMAL: Color = MY_BLACK;
     pub const THEME_TEXT_COLOR_SELFIE: Color = LIGHT_GRAY;
@@ -58,8 +61,6 @@ pub mod palette {
 
     pub const CONGRATS_STATISTIC_TEXT_NORMAL: Color = MY_BLACK;
     pub const CONGRATS_STATISTIC_FILL_NORMAL: Color = LIGHT_GRAY;
-
-    pub const BUTTON_CLICK_FILL: Color = GREEN_OTHER;
 
     pub const ICON_BUTTON_BACKGROUND: Color = Color::NONE;
     pub const TEXT_BUTTON_BACKGROUND: Color = Color::WHITE;
@@ -80,8 +81,9 @@ pub mod palette {
 
     pub const MENU_BUTTON_TEXT: Color = MY_BLACK;
     pub const MENU_BUTTON_FILL: Color = GREEN_LIGHT;
+    pub const BUTTON_CLICK_FILL: Color = GREEN_DARK;
     pub const MENU_BUTTON_DISCOURAGED_FILL: Color = LIGHT_GRAY;
-    pub const MENU_BUTTON_COMPLETE_FILL: Color = GREEN_DARK;
+    pub const MENU_BUTTON_COMPLETE_FILL: Color = GREEN_OTHER;
     pub const MENU_BUTTON_STROKE: Color = MY_BLACK;
 
     pub const POPUP_BOX_BACKGROUND: Color = Color::WHITE;
@@ -89,7 +91,6 @@ pub mod palette {
 
     pub const HINT_COUNTER_COLOR: Color = GREEN_LIGHT;
     pub const HINT_TEXT_COLOR: Color = MY_WHITE;
-
 
     pub const WORD_TEXT_LETTERS: Color = MY_WHITE;
     pub const WORD_TEXT_NUMBER: Color = MY_BLACK;
