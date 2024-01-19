@@ -97,8 +97,10 @@ impl PartialGrid {
         exclude_words: &Vec<FinderSingleWord>,
         multi_constraint_map: &MultiConstraintMap,
     ) {
+        // let mut stack: ArrayVec<(Node, GridSet)> = Default::default();
+
         if !counter.try_increment() {
-            return;
+            return; //Give up
         }
 
         let Some((node, potential_locations)) =
@@ -111,15 +113,10 @@ impl PartialGrid {
             return;
         };
 
-        if potential_locations == GridSet::EMPTY {
-            return;
-        }
+        let mut remaining_locations = RemainingLocations::new(potential_locations);
 
-        for tile in ORDERED_GOOD_LOCATIONS
-            .iter()
-            .filter(|t| potential_locations.get_bit(t))
-        {
-            self.place_node(&node, *tile);
+        while let Some(tile) = remaining_locations.next() {
+            self.place_node(&node, tile);
 
             self.solve_recursive(
                 counter,
@@ -134,7 +131,7 @@ impl PartialGrid {
                 return;
             }
 
-            self.remove_node(node.id, *tile);
+            self.remove_node(node.id, tile);
         }
     }
 
@@ -192,27 +189,103 @@ impl PartialGrid {
     }
 }
 
-const ORDERED_GOOD_LOCATIONS: [Tile; 16] = [
-    //centre
-    Tile::new_const::<1, 1>(),
-    Tile::new_const::<1, 2>(),
-    Tile::new_const::<2, 1>(),
-    Tile::new_const::<2, 2>(),
-    //edges
-    Tile::new_const::<0, 1>(),
-    Tile::new_const::<0, 2>(),
-    Tile::new_const::<1, 3>(),
-    Tile::new_const::<2, 3>(),
-    Tile::new_const::<1, 0>(),
-    Tile::new_const::<2, 0>(),
-    Tile::new_const::<3, 1>(),
-    Tile::new_const::<3, 2>(),
-    //corners
-    Tile::new_const::<0, 0>(),
-    Tile::new_const::<0, 3>(),
-    Tile::new_const::<3, 0>(),
-    Tile::new_const::<3, 3>(),
-];
+#[derive(Debug, Clone, PartialEq)]
+enum RemainingLocations {
+    Centre {
+        remaining_centres: GridSet,
+        potential_locations: GridSet,
+    },
+    Edge {
+        remaining_edges: GridSet,
+        potential_locations: GridSet,
+    },
+    Corner {
+        remaining_corners: GridSet,
+    },
+}
+
+impl RemainingLocations {
+    pub const fn new(potential_locations: GridSet) -> Self {
+        Self::Centre {
+            remaining_centres: potential_locations.intersect(&CENTRE_TILES),
+            potential_locations,
+        }
+    }
+    #[must_use]
+    fn grid_set_pop(set: &mut GridSet) -> Option<Tile> {
+        // if set.into_inner() == 0{
+        //     return None;
+        // }
+        let Some(next) = Tile::try_from_inner(set.into_inner().trailing_zeros() as u8) else {
+            return None;
+        };
+        set.set_bit(&next, false);
+        Some(next)
+    }
+}
+
+impl Iterator for RemainingLocations {
+    type Item = Tile;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            match self {
+                RemainingLocations::Centre {
+                    ref mut remaining_centres,
+                    potential_locations,
+                } => {
+                    if let Some(next) = Self::grid_set_pop(remaining_centres) {
+                        return Some(next);
+                    } else {
+                        *self = RemainingLocations::Edge {
+                            remaining_edges: EDGE_TILES.intersect(&potential_locations),
+                            potential_locations: *potential_locations,
+                        };
+                    }
+                }
+                RemainingLocations::Edge {
+                    ref mut remaining_edges,
+                    potential_locations,
+                } => {
+                    if let Some(next) = Self::grid_set_pop(remaining_edges) {
+                        return Some(next);
+                    } else {
+                        *self = RemainingLocations::Corner {
+                            remaining_corners: CORNER_TILES.intersect(&potential_locations),
+                        };
+                    }
+                }
+                RemainingLocations::Corner {
+                    ref mut remaining_corners,
+                } => {
+                    return Self::grid_set_pop(remaining_corners);
+                }
+            }
+        }
+    }
+}
+
+const CENTRE_TILES: GridSet = GridSet::EMPTY
+    .with_bit_set(&Tile::new_const::<1, 1>(), true)
+    .with_bit_set(&Tile::new_const::<1, 2>(), true)
+    .with_bit_set(&Tile::new_const::<2, 1>(), true)
+    .with_bit_set(&Tile::new_const::<2, 2>(), true);
+
+const EDGE_TILES: GridSet = GridSet::EMPTY
+    .with_bit_set(&Tile::new_const::<0, 1>(), true)
+    .with_bit_set(&Tile::new_const::<0, 2>(), true)
+    .with_bit_set(&Tile::new_const::<1, 3>(), true)
+    .with_bit_set(&Tile::new_const::<2, 3>(), true)
+    .with_bit_set(&Tile::new_const::<1, 0>(), true)
+    .with_bit_set(&Tile::new_const::<2, 0>(), true)
+    .with_bit_set(&Tile::new_const::<3, 1>(), true)
+    .with_bit_set(&Tile::new_const::<3, 2>(), true);
+
+const CORNER_TILES: GridSet = GridSet::EMPTY
+    .with_bit_set(&Tile::new_const::<0, 0>(), true)
+    .with_bit_set(&Tile::new_const::<0, 3>(), true)
+    .with_bit_set(&Tile::new_const::<3, 0>(), true)
+    .with_bit_set(&Tile::new_const::<3, 3>(), true);
 
 const TOP_LOCATIONS: GridSet = {
     let set = GridSet::EMPTY;
@@ -251,6 +324,8 @@ const TOP_RIGHT_LOCATIONS: GridSet = GridSet::ALL
 
 #[cfg(test)]
 mod tests {
+    use itertools::Itertools;
+
     use super::*;
 
     #[test]
@@ -291,6 +366,38 @@ mod tests {
 
         expected = GridSet::from_fn(|t| a_tile.is_adjacent_to(&t));
         assert_sets_eq(c_location, expected);
+    }
+
+    #[test]
+    fn test_remaining_locations() {
+        const ORDERED_GOOD_LOCATIONS: [Tile; 16] = [
+            //centre
+            Tile::new_const::<1, 1>(),
+            Tile::new_const::<2, 1>(),
+            Tile::new_const::<1, 2>(),
+            Tile::new_const::<2, 2>(),
+            //edges
+            Tile::new_const::<1, 0>(),
+            Tile::new_const::<2, 0>(),
+            Tile::new_const::<0, 1>(),
+            Tile::new_const::<3, 1>(),
+            Tile::new_const::<0, 2>(),
+            Tile::new_const::<3, 2>(),
+            Tile::new_const::<1, 3>(),
+            Tile::new_const::<2, 3>(),
+            //corners
+            Tile::new_const::<0, 0>(),
+            Tile::new_const::<3, 0>(),
+            Tile::new_const::<0, 3>(),
+            Tile::new_const::<3, 3>(),
+        ];
+
+        let remaining_locations = RemainingLocations::new(GridSet::ALL);
+
+        let actual = remaining_locations.collect_vec();
+        let expected = ORDERED_GOOD_LOCATIONS.into_iter().collect_vec();
+
+        assert_eq!(expected, actual);
     }
 
     #[track_caller]
