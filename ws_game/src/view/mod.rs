@@ -3,7 +3,7 @@ pub mod fireworks;
 pub mod game_grid;
 pub mod hints;
 pub mod level_extra_info;
-pub mod level_name;
+pub mod level_theme;
 pub mod menu;
 pub mod non_level;
 pub mod popup;
@@ -17,7 +17,7 @@ pub use congrats::*;
 pub use game_grid::*;
 pub use hints::*;
 pub use level_extra_info::*;
-pub use level_name::*;
+pub use level_theme::*;
 pub use menu::*;
 pub use non_level::*;
 pub use popup::*;
@@ -86,10 +86,10 @@ impl MavericRootChildren for ViewRoot {
                     if let Some(text) = TutorialText::try_create(&context.1, &context.2) {
                         commands.add_child("tutorial", TutorialNode { text }, &context.3);
                     } else {
-                        let theme = level.full_name();
+                        let (theme, daily_challenge_number) = level.name_and_number();
                         commands.add_child(
                             "ui_theme",
-                            LevelName { theme, selfie_mode },
+                            LevelName { theme, selfie_mode, daily_challenge_number },
                             &context.3,
                         );
 

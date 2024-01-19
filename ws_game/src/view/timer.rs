@@ -38,16 +38,16 @@ impl MavericNode for UITimer {
                     font_size: timer_font_size,
                     color,
                     font: TIMER_FONT_PATH,
-                    alignment: TextAlignment::Left,
+                    alignment: TextAlignment::Right,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     text_2d_bounds: Default::default(),
-                    text_anchor: bevy::sprite::Anchor::CenterLeft,
+                    text_anchor: bevy::sprite::Anchor::CenterRight,
                 }
                 .with_bundle((
                     Transform::from_translation(
                         context
                             .get_rect(&GameLayoutEntity::Timer, &node.selfie_mode)
-                            .centre_left()
+                            .centre_right()
                             .extend(crate::z_indices::TIMER),
                     ),
                     TimeCounterMarker,

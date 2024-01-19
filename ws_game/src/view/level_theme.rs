@@ -7,6 +7,7 @@ use ws_core::prelude::*;
 #[derive(Debug, Clone, PartialEq)]
 pub struct LevelName {
     pub theme: Ustr,
+    pub daily_challenge_number: Option<usize>,
     pub selfie_mode: SelfieMode,
 }
 
@@ -52,6 +53,29 @@ impl MavericNode for LevelName {
                 )),
                 &(),
             );
+
+            if let Some(dcn)= node.daily_challenge_number{
+                commands.add_child(
+                    "daily_challenge_number",
+                    Text2DNode {
+                        text: format!("#{dcn}",),
+                        font_size: theme_font_size,
+                        color,
+                        font: THEME_FONT_PATH,
+                        alignment: TextAlignment::Right,
+                        linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                        text_2d_bounds: Default::default(),
+                        text_anchor: bevy::sprite::Anchor::CenterRight,
+                    }
+                    .with_bundle(Transform::from_translation(
+                        context
+                            .get_rect(&GameLayoutEntity::DailyChallengeNumber, &node.selfie_mode)
+                            .centre_right()
+                            .extend(crate::z_indices::THEME),
+                    )),
+                    &(),
+                );
+            }
         });
     }
 }

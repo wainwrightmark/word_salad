@@ -78,6 +78,7 @@ mod tests {
                 GameLayoutEntity::TopBar => "blue",
 
                 GameLayoutEntity::Theme => "coral",
+                GameLayoutEntity::DailyChallengeNumber => "purple",
                 GameLayoutEntity::ThemeInfo => "gold",
 
                 GameLayoutEntity::Grid => "indigo",

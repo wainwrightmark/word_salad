@@ -10,6 +10,7 @@ use super::{consts::*, SelfieMode};
 pub enum GameLayoutEntity {
     TopBar,
     Theme,
+    DailyChallengeNumber,
     Timer,
     ThemeInfo,
     Grid,
@@ -33,6 +34,11 @@ impl LayoutStructure for GameLayoutEntity {
             },
             GameLayoutEntity::Theme => Vec2 {
                 x: THEME_WIDTH,
+                y: THEME_HEIGHT,
+            },
+
+            GameLayoutEntity::DailyChallengeNumber => Vec2 {
+                x: GRID_SIZE - THEME_WIDTH,
                 y: THEME_HEIGHT,
             },
             GameLayoutEntity::ThemeInfo => Vec2 {
@@ -62,13 +68,18 @@ impl LayoutStructure for GameLayoutEntity {
                 x: (IDEAL_WIDTH - GRID_SIZE) * 0.5,
                 y: TOP_BAR_HEIGHT,
             },
+
+            GameLayoutEntity::DailyChallengeNumber => Vec2 {
+                x: ((IDEAL_WIDTH + GRID_SIZE) * 0.5) - (GRID_SIZE - THEME_WIDTH),
+                y: TOP_BAR_HEIGHT,
+            },
             GameLayoutEntity::ThemeInfo => Vec2 {
-                x: ((IDEAL_WIDTH - GRID_SIZE) * 0.5) + TIMER_WIDTH,
+                x: ((IDEAL_WIDTH - GRID_SIZE) * 0.5),
                 y: TOP_BAR_HEIGHT + THEME_HEIGHT,
             },
 
             GameLayoutEntity::Timer => Vec2 {
-                x: (IDEAL_WIDTH - GRID_SIZE) * 0.5,
+                x: ((IDEAL_WIDTH + GRID_SIZE) * 0.5) - TIMER_WIDTH,
                 y: TOP_BAR_HEIGHT + THEME_HEIGHT,
             },
 
@@ -99,6 +110,7 @@ impl LayoutStructureWithFont for GameLayoutEntity {
         match self {
             GameLayoutEntity::TopBar => f32::NAN,
             GameLayoutEntity::Theme => THEME_FONT_SIZE,
+            GameLayoutEntity::DailyChallengeNumber => THEME_FONT_SIZE,
             GameLayoutEntity::Grid => f32::NAN,
             GameLayoutEntity::WordList => f32::NAN,
             GameLayoutEntity::Timer => TIMER_FONT_SIZE,

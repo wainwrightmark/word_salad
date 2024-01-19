@@ -139,8 +139,8 @@ impl InteractionEntity {
                     match layout_entity {
                         GameLayoutEntity::TopBar => {
                             Self::try_get_button::<LayoutTopBar>(position, size, &())
-                        }
-                        GameLayoutEntity::Theme | GameLayoutEntity::ThemeInfo => None,
+                        },
+
                         GameLayoutEntity::Grid => match grid_tolerance {
                             Some(tolerance) => size
                                 .try_pick_with_tolerance::<LayoutGridTile>(
@@ -158,7 +158,7 @@ impl InteractionEntity {
                             size,
                             &(level.words.as_slice(), selfie_mode),
                         ),
-                        GameLayoutEntity::Timer => {
+                        GameLayoutEntity::Theme | GameLayoutEntity::ThemeInfo | GameLayoutEntity::Timer | GameLayoutEntity::DailyChallengeNumber => {
                             if current_level.is_tutorial() {
                                 None
                             } else {

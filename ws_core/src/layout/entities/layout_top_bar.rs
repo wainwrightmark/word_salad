@@ -52,7 +52,7 @@ impl LayoutStructure for LayoutTopBar {
             },
             LayoutTopBar::WordSaladLogo => Vec2 {
                 x: (IDEAL_WIDTH - WORD_SALAD_LOGO_WIDTH) / 2.,
-                y: 5.0,
+                y: 0.,
             },
         }
     }
