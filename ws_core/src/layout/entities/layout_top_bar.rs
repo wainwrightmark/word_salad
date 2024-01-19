@@ -62,13 +62,25 @@ impl LayoutStructure for LayoutTopBar {
     }
 }
 
+#[derive(Debug, Copy, Clone, PartialEq, Default)]
+pub struct HintCount{
+    pub count: usize
+}
+
 impl LayoutStructureWithFont for LayoutTopBar {
-    type FontContext = ();
-    fn font_size(&self, _: &()) -> f32 {
+    type FontContext = HintCount;
+    fn font_size(&self, hint_count: &HintCount) -> f32 {
         match self {
             LayoutTopBar::MenuBurgerButton => BURGER_FONT_SIZE,
             LayoutTopBar::WordSaladLogo => LOGO_FONT_SIZE,
-            LayoutTopBar::HintCounter => HINT_COUNTER_FONT_SIZE,
+            LayoutTopBar::HintCounter =>
+            {
+                match hint_count.count {
+                    0..=99 => HINT_COUNTER_FONT_SIZE,
+                    100..=999=>HINT_COUNTER_FONT_SIZE_SMALL,
+                    _=> HINT_COUNTER_FONT_SIZE_TINY
+                }
+            }
         }
     }
 }

@@ -2,7 +2,7 @@ use crate::prelude::*;
 use bevy::sprite::Anchor;
 use maveric::widgets::text2d_node::Text2DNode;
 use maveric::with_bundle::CanWithBundle;
-use ws_core::layout::entities::level_info_entity::LevelInfoLayoutEntity;
+use ws_core::layout::entities::level_info_entity::{LevelInfoLayoutEntity, ThemeLengths};
 use ws_core::layout::entities::*;
 use ws_core::prelude::*;
 
@@ -11,6 +11,7 @@ pub struct UITimer {
     pub time_text: String,
     pub selfie_mode: SelfieMode,
     pub is_daily_challenge: bool,
+    pub theme: Ustr
 }
 
 impl MavericNode for UITimer {
@@ -40,7 +41,7 @@ impl MavericNode for UITimer {
                 )
             };
 
-            let timer_font_size = context.font_size(&entity, &());
+            let timer_font_size = context.font_size(&entity, &ThemeLengths{theme_characters: node.theme.len()});
 
             let color = if node.selfie_mode.is_selfie_mode {
                 palette::THEME_TEXT_COLOR_SELFIE

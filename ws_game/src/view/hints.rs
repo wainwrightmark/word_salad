@@ -17,7 +17,7 @@ pub struct HintsViewNode {
     pub hint_state: HintState,
 }
 
-const CIRCLE_SCALE: f32 = 0.5;
+const CIRCLE_SCALE: f32 = 0.6;
 
 const ANIMATE_SECONDS: f32 = 2.0;
 
@@ -37,10 +37,9 @@ impl MavericNode for HintsViewNode {
 
         let size = context.as_ref();
         let hints_rect = size.get_rect(&LayoutTopBar::HintCounter, &());
-        let hint_font_size = size.font_size::<LayoutTopBar>(&LayoutTopBar::WordSaladLogo, &());
 
-        let final_translation = (hints_rect.centre() + (Vec2::X * hint_font_size * 0.03))
-            .extend(crate::z_indices::TOP_BAR_BUTTON - 1.0);
+        let final_translation =
+            (hints_rect.centre()).extend(crate::z_indices::TOP_BAR_BUTTON - 1.0);
         let initial_translation = Vec2::ZERO.extend(crate::z_indices::TOP_BAR_BUTTON - 1.0);
         let speed = calculate_speed(
             &initial_translation,
@@ -78,7 +77,6 @@ impl MavericNode for HintsViewNode {
             },
             transition.clone(),
         );
-
 
         let mut circle_entity = Entity::PLACEHOLDER;
 
@@ -149,8 +147,12 @@ impl MavericNode for HintsViewNode {
 
                 let size = context.as_ref();
                 let hints_rect = size.get_rect(&LayoutTopBar::HintCounter, &());
-                let hint_font_size =
-                    size.font_size::<LayoutTopBar>(&LayoutTopBar::HintCounter, &());
+                let hint_font_size = size.font_size::<LayoutTopBar>(
+                    &LayoutTopBar::HintCounter,
+                    &HintCount {
+                        count: node.hint_state.hints_remaining,
+                    },
+                );
 
                 let text: String = if let Some(prev) = a.previous.filter(|p| {
                     p.hint_state.total_earned_hints < node.hint_state.total_earned_hints

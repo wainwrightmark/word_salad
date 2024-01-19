@@ -81,12 +81,17 @@ impl LayoutStructure for LevelInfoLayoutEntity {
     }
 }
 
-impl LayoutStructureWithFont for LevelInfoLayoutEntity {
-    type FontContext = ();
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub struct ThemeLengths{
+    pub theme_characters: usize
+}
 
-    fn font_size(&self, _: &()) -> f32 {
+impl LayoutStructureWithFont for LevelInfoLayoutEntity {
+    type FontContext = ThemeLengths;
+
+    fn font_size(&self, theme_length: &ThemeLengths) -> f32 {
         match self {
-            LevelInfoLayoutEntity::Theme => THEME_FONT_SIZE,
+            LevelInfoLayoutEntity::Theme => if theme_length.theme_characters < 17 {THEME_FONT_SIZE} else {THEME_FONT_SIZE_SMALL},
             LevelInfoLayoutEntity::DailyChallengeNumber => THEME_FONT_SIZE,
             LevelInfoLayoutEntity::TimerLeft => TIMER_FONT_SIZE,
             LevelInfoLayoutEntity::TimerRight => TIMER_FONT_SIZE,

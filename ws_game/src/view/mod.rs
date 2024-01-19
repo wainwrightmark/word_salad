@@ -89,7 +89,11 @@ impl MavericRootChildren for ViewRoot {
                         let (theme, daily_challenge_number) = level.name_and_number();
                         commands.add_child(
                             "ui_theme",
-                            LevelName { theme, selfie_mode, daily_challenge_number },
+                            LevelName {
+                                theme,
+                                selfie_mode,
+                                daily_challenge_number,
+                            },
                             &context.3,
                         );
 
@@ -99,6 +103,7 @@ impl MavericRootChildren for ViewRoot {
                                 LevelExtraInfo {
                                     info: *info,
                                     selfie_mode,
+                                    theme,
                                 },
                                 &context.3,
                             );
@@ -111,7 +116,8 @@ impl MavericRootChildren for ViewRoot {
                             UITimer {
                                 time_text,
                                 selfie_mode,
-                                is_daily_challenge: context.1.is_daily_challenge()
+                                is_daily_challenge: context.1.is_daily_challenge(),
+                                theme,
                             },
                             &context.3,
                         );
