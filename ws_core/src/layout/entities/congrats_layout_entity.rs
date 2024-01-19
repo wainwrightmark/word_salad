@@ -143,7 +143,7 @@ impl LayoutStructure for CongratsLayoutEntity {
 impl LayoutStructureWithFont for CongratsLayoutEntity {
     type FontContext = ();
     fn font_size(&self, _context: &()) -> f32 {
-        30.0
+        CONGRATS_BUTTON_FONT_SIZE
     }
 }
 
@@ -154,9 +154,9 @@ impl LayoutStructureWithFont for StatisticNumber {
     type FontContext = SelfieMode;
     fn font_size(&self, context: &SelfieMode) -> f32 {
         if context.is_selfie_mode {
-            40.0
+            STATISTIC_NUMBER_FONT_SIZE_SELFIE
         } else {
-            60.0
+            STATISTIC_NUMBER_FONT_SIZE_NORMAL
         }
     }
 }
@@ -165,9 +165,9 @@ impl LayoutStructureWithFont for StatisticLabel {
     type FontContext = SelfieMode;
     fn font_size(&self, context: &SelfieMode) -> f32 {
         if context.is_selfie_mode {
-            18.0
+            STATISTIC_LABEL_FONT_SIZE_SELFIE
         } else {
-            24.0
+            STATISTIC_LABEL_FONT_SIZE_NORMAL
         }
     }
 }

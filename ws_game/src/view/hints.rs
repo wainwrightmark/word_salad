@@ -79,38 +79,6 @@ impl MavericNode for HintsViewNode {
             transition.clone(),
         );
 
-        // let text_transform = Transform {
-        //     translation: initial_translation + Vec3::Z,
-        //     scale: Vec3::ONE,
-        //     rotation: Default::default(),
-        // };
-
-        // let text_bundle = Text2dBundle {
-        //     text: Text::from_section(
-        //         "2",
-        //         TextStyle {
-        //             font_size: hint_font_size,
-        //             color: palette::HINT_TEXT_COLOR.convert_color(),
-        //             font,
-        //         },
-        //     )
-        //     .with_alignment(TextAlignment::Center)
-        //     .with_no_wrap(),
-
-        //     text_anchor: Anchor::default(),
-        //     text_2d_bounds: Text2dBounds::default(),
-
-        //     transform: text_transform,
-        //     ..Default::default()
-        // };
-
-        // let text_bundle = (
-        //     text_bundle,
-        //     ScheduledForDeletion {
-        //         remaining: Duration::from_secs_f32(ANIMATE_SECONDS),
-        //     },
-        //     transition,
-        // );
 
         let mut circle_entity = Entity::PLACEHOLDER;
 
@@ -201,7 +169,7 @@ impl MavericNode for HintsViewNode {
                         font: BUTTONS_FONT_PATH,
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                        text_anchor: Anchor::default(),
+                        text_anchor: Anchor::Center,
                         text_2d_bounds: Text2dBounds::default(),
                     }
                     .with_bundle((Transform::from_translation(

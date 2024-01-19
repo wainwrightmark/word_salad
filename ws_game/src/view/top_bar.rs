@@ -45,7 +45,7 @@ impl MavericNode for TopBar {
                     Text2DNode {
                         text: "\u{e800}",
                         font_size: size
-                            .font_size::<LayoutTopBar>(&LayoutTopBar::WordSaladLogo, &()),
+                            .font_size::<LayoutTopBar>(&LayoutTopBar::MenuBurgerButton, &()),
                         color: palette::TOP_BAR_BURGER.convert_color(),
                         font: ICON_FONT_PATH,
                         alignment: TextAlignment::Left,
@@ -80,7 +80,7 @@ impl MavericNode for TopBar {
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         text_2d_bounds: Default::default(),
-                        text_anchor: Default::default(),
+                        text_anchor: bevy::sprite::Anchor::Center,
                     }
                     .with_bundle((Transform::from_translation(
                         size.get_rect(&LayoutTopBar::WordSaladLogo, &())

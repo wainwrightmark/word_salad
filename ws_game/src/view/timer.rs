@@ -37,7 +37,7 @@ impl MavericNode for UITimer {
                     text: node.time_text.clone(),
                     font_size: timer_font_size,
                     color,
-                    font: TITLE_FONT_PATH,
+                    font: TIMER_FONT_PATH,
                     alignment: TextAlignment::Left,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     text_2d_bounds: Default::default(),

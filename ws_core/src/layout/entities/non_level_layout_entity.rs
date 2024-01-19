@@ -59,8 +59,7 @@ pub enum NonLevelType {
     Normal,
     Countdown,
 }
-pub const NON_LEVEL_TEXT_FONT_SIZE: f32 = 32.0;
-pub const NON_LEVEL_COUNTDOWN_FONT_SIZE: f32 = 60.0;
+
 
 impl LayoutStructureWithFont for NonLevelLayoutEntity {
     type FontContext = NonLevelType;

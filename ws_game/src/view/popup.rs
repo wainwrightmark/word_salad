@@ -79,7 +79,7 @@ impl MavericRootChildren for PopupStateRoot {
 
                             let text_node = Text2DNode {
                                 text,
-                                font: TITLE_FONT_PATH,
+                                font: POPUP_FONT_PATH,
                                 font_size,
                                 color: Color::BLACK,
                                 alignment: TextAlignment::Center,
@@ -183,7 +183,7 @@ impl MavericRootChildren for PopupStateRoot {
 
                             let text_node = Text2DNode {
                                 text,
-                                font: TITLE_FONT_PATH,
+                                font: POPUP_FONT_PATH,
                                 font_size,
                                 color: Color::BLACK,
                                 alignment: TextAlignment::Center,

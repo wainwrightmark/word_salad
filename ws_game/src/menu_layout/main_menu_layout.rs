@@ -1,11 +1,11 @@
 use bevy::math::Vec2;
 use strum::{Display, EnumCount, EnumIter, IntoEnumIterator};
 use ws_core::{
-    layout::entities::{IDEAL_HEIGHT, IDEAL_WIDTH, TOP_BAR_HEIGHT},
+    layout::entities::{IDEAL_HEIGHT, IDEAL_WIDTH, TOP_BAR_HEIGHT, MENU_BUTTON_FONT_SIZE},
     LayoutSizing, LayoutStructure, LayoutStructureWithFont, LayoutStructureWithStaticText, Spacing,
 };
 
-use super::{MENU_BUTTON_FONT_SIZE, MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
+use super::{MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
 
 #[cfg(target_arch = "wasm32")]
 #[derive(

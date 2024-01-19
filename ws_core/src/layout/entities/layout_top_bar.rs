@@ -66,9 +66,9 @@ impl LayoutStructureWithFont for LayoutTopBar {
     type FontContext = ();
     fn font_size(&self, _: &()) -> f32 {
         match self {
-            LayoutTopBar::MenuBurgerButton => 40.0,
-            LayoutTopBar::WordSaladLogo => 20.0,
-            LayoutTopBar::HintCounter => 24.0,
+            LayoutTopBar::MenuBurgerButton => BURGER_FONT_SIZE,
+            LayoutTopBar::WordSaladLogo => LOGO_FONT_SIZE,
+            LayoutTopBar::HintCounter => HINT_COUNTER_FONT_SIZE,
         }
     }
 }

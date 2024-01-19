@@ -38,7 +38,7 @@ impl MavericNode for LevelExtraInfo {
                     text: node.info.to_string(),
                     font_size: theme_font_size,
                     color,
-                    font: TITLE_FONT_PATH,
+                    font: THEME_INFO_FONT_PATH,
                     alignment: TextAlignment::Left,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     text_2d_bounds: Default::default(),

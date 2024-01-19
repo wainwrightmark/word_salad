@@ -1,16 +1,14 @@
 use bevy::math::Vec2;
 use strum::{Display, EnumCount, EnumIs, EnumIter, IntoEnumIterator};
 use ws_core::{
-    layout::entities::{IDEAL_HEIGHT, IDEAL_WIDTH, TOP_BAR_HEIGHT},
+    layout::entities::{IDEAL_HEIGHT, IDEAL_WIDTH, MENU_BUTTON_FONT_SIZE_SMALL, TOP_BAR_HEIGHT},
     LayoutSizing, LayoutStructure, LayoutStructureWithFont, Spacing,
 };
 use ws_levels::level_group::LevelGroup;
 
 use crate::{completion::TotalCompletion, prelude::DailyChallenges};
 
-use super::{
-    MENU_BUTTON_FONT_SIZE_SMALL, MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH,
-};
+use super::{MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Display, EnumIs, EnumCount, EnumIter,
@@ -65,7 +63,6 @@ impl WordSaladMenuLayoutEntity {
             return false;
         };
 
-        
         completion.is_daily_challenge_complete(index)
     }
 

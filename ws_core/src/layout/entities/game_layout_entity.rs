@@ -98,11 +98,11 @@ impl LayoutStructureWithFont for GameLayoutEntity {
     fn font_size(&self, _: &()) -> f32 {
         match self {
             GameLayoutEntity::TopBar => f32::NAN,
-            GameLayoutEntity::Theme => 36.0,
+            GameLayoutEntity::Theme => THEME_FONT_SIZE,
             GameLayoutEntity::Grid => f32::NAN,
             GameLayoutEntity::WordList => f32::NAN,
-            GameLayoutEntity::Timer => 24.0,
-            GameLayoutEntity::ThemeInfo => 24.0,
+            GameLayoutEntity::Timer => TIMER_FONT_SIZE,
+            GameLayoutEntity::ThemeInfo => THEME_INFO_FONT_SIZE,
         }
     }
 }

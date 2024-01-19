@@ -330,7 +330,7 @@ impl MavericNode for StatisticNode {
                 }
                 .with_bundle(Transform::from_translation(Vec3 {
                     x: 0.0,
-                    y: rect.extents.y * 0.5,
+                    y: rect.extents.y * 0.4,
                     z: 1.0,
                 })),
                 &(),

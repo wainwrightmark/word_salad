@@ -53,7 +53,7 @@ impl LayoutStructureWithFont for LayoutGridTile {
     type FontContext = ();
 
     fn font_size(&self, _: &()) -> f32 {
-        72.0
+        GRID_TILE_FONT_SIZE
     }
 }
 

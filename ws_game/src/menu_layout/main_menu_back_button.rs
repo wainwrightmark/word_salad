@@ -1,10 +1,10 @@
 use bevy::math::Vec2;
 use ws_core::{
-    layout::entities::{IDEAL_HEIGHT, IDEAL_WIDTH},
+    layout::entities::{IDEAL_HEIGHT, IDEAL_WIDTH, MENU_BUTTON_FONT_SIZE},
     LayoutSizing, LayoutStructure, LayoutStructureWithFont, LayoutStructureWithStaticText,
 };
 
-use super::{MENU_BUTTON_FONT_SIZE, MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
+use super::{MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Default)]
 pub struct MainMenuBackButton;

@@ -15,14 +15,14 @@ pub const THEME_INFO_WIDTH: f32 = 100.;
 pub const TIMER_HEIGHT: f32 = 10.;
 pub const TIMER_WIDTH: f32 = 40.;
 
-pub const GRID_TILE_SIZE: f32 = 60.;
-pub const GRID_GAP: f32 = 20.;
+pub const GRID_TILE_SIZE: f32 = 62.;
+pub const GRID_GAP: f32 = 12.;
 pub const GRID_SIZE: f32 = (GRID_TILE_SIZE * 4.0) + GRID_GAP;
 pub const WORD_LIST_EXTRA_WIDTH: f32 = 20.0;
 
 pub const WORD_LIST_HEIGHT: f32 = 108.;
 pub const WORD_HEIGHT: f32 = 22.;
-pub const WORD_WIDTH_PER_CHARACTER: f32 = 10.;
+pub const WORD_WIDTH_PER_CHARACTER: f32 = 11.;
 pub const WORD_WIDTH_FIXED: f32 = 20.;
 
 pub const WORD_LIST_WIDTH: f32 = GRID_SIZE + WORD_LIST_EXTRA_WIDTH;
@@ -66,3 +66,29 @@ pub const SELFIE_POPUP_BOX_TITLE_HEIGHT: f32 = 60.;
 
 pub const SELFIE_POPUP_BOX_BUTTON_HEIGHT: f32 = 43.;
 pub const SELFIE_POPUP_BOX_BUTTON_WIDTH: f32 = 280.;
+
+pub const GRID_TILE_FONT_SIZE: f32 = 36f32;
+
+pub const CONGRATS_BUTTON_FONT_SIZE: f32 = 18f32;
+pub const STATISTIC_NUMBER_FONT_SIZE_SELFIE: f32 = 24f32;
+pub const STATISTIC_NUMBER_FONT_SIZE_NORMAL: f32 = 36f32;
+pub const STATISTIC_LABEL_FONT_SIZE_SELFIE: f32 = 11f32;
+pub const STATISTIC_LABEL_FONT_SIZE_NORMAL: f32 = 14f32;
+
+pub const THEME_FONT_SIZE: f32 = 22f32;
+pub const THEME_INFO_FONT_SIZE: f32 = 14f32;
+pub const TIMER_FONT_SIZE: f32 = 14f32;
+
+pub const BURGER_FONT_SIZE: f32 = 22f32;
+pub const LOGO_FONT_SIZE: f32 = 22f32;
+pub const HINT_COUNTER_FONT_SIZE: f32 = 22f32;
+
+pub const WORD_TILE_FONT_SIZE: f32 = 18f32;
+
+pub const NON_LEVEL_TEXT_FONT_SIZE: f32 = 22f32;
+pub const NON_LEVEL_COUNTDOWN_FONT_SIZE: f32 = 36f32;
+
+pub const MENU_BUTTON_FONT_SIZE: f32 = 22f32;
+pub const MENU_BUTTON_FONT_SIZE_SMALL: f32 = 18f32;
+
+pub const TUTORIAL_TEXT_FONT_SIZE: f32 = 18f32;

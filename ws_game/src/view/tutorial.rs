@@ -10,7 +10,7 @@ use maveric::{
 };
 use strum::{EnumCount, EnumIs, EnumIter, IntoEnumIterator};
 use ws_core::{
-    layout::entities::{GRID_SIZE, IDEAL_WIDTH},
+    layout::entities::{GRID_SIZE, IDEAL_WIDTH, TUTORIAL_TEXT_FONT_SIZE},
     LayoutStructure,
 };
 
@@ -150,7 +150,7 @@ impl MavericNode for TutorialPopupNode {
 
             let text = Text2DNode {
                 text: *text,
-                font: TITLE_FONT_PATH,
+                font: TUTORIAL_FONT_PATH,
                 font_size,
                 color: Color::BLACK,
                 alignment: TextAlignment::Left,
@@ -503,6 +503,6 @@ impl LayoutStructure for TutorialTextLayoutEntity {
 impl LayoutStructureWithFont for TutorialTextLayoutEntity {
     type FontContext = ();
     fn font_size(&self, _: &()) -> f32 {
-        30.0
+        TUTORIAL_TEXT_FONT_SIZE
     }
 }

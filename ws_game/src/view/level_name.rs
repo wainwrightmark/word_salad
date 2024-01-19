@@ -38,7 +38,7 @@ impl MavericNode for LevelName {
                     text: node.theme.to_string(),
                     font_size: theme_font_size,
                     color,
-                    font: TITLE_FONT_PATH,
+                    font: THEME_FONT_PATH,
                     alignment: TextAlignment::Left,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     text_2d_bounds: Default::default(),
