@@ -211,7 +211,7 @@ fn get_direction(from: &Tile, to: &Tile) -> u32 {
 fn index_to_color(index: usize) -> Color {
     //hsl(140, 62%, 44%)
 
-    let hue = ((index as f32) * 10.0) + 140.0;
+    let hue = (((index as f32) * 20.0) + 140.0) % 360.0;
 
     Color::hsl(hue, 0.62, 0.44)
 }
