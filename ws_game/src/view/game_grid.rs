@@ -174,7 +174,7 @@ impl GridTile {
         if is_selfie_mode {
             palette::GRID_LETTER_SELFIE
         } else if is_selected {
-            palette::MY_WHITE
+            palette::GRID_LETTER_SELECTED
         } else {
             palette::GRID_LETTER_NORMAL
         }

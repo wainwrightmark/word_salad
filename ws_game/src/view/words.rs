@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::{animated_solutions, prelude::*};
 use bevy::reflect::TypeUuid;
 use bevy_param_shaders::frame::Frame;
@@ -6,10 +8,10 @@ use bevy_param_shaders::parameterized_shader::{
 };
 use bevy_param_shaders::*;
 use itertools::Either;
+use maveric::transition::speed::calculate_speed;
 use maveric::widgets::text2d_node::Text2DNode;
 use maveric::with_bundle::CanWithBundle;
 use ws_core::layout::entities::*;
-use ws_core::palette::WORD_BACKGROUND_PROGRESS;
 use ws_core::prelude::*;
 
 pub struct WordsPlugin;
@@ -25,6 +27,18 @@ pub struct WordsNode;
 
 impl MavericNode for WordsNode {
     type Context = ViewContext;
+
+    fn should_recreate(
+        &self,
+        _previous: &Self,
+        context: &<Self::Context as NodeContext>::Wrapper<'_>,
+    ) -> bool {
+        if context.1.is_changed() {
+            true
+        } else {
+            false
+        }
+    }
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands
@@ -108,9 +122,7 @@ impl MavericNode for WordNode {
 
             let progress = match completion {
                 Completion::Unstarted => 0.0,
-                Completion::ManualHinted(hints) => {
-                    (hints.get() + 1) as f32 / (node.word.graphemes.len() + 2) as f32
-                }
+                Completion::ManualHinted(_) => 0.0,
                 Completion::Complete => 1.0,
             };
 
@@ -118,10 +130,9 @@ impl MavericNode for WordNode {
 
             let text_translation = centre.extend(crate::z_indices::WORD_TEXT);
 
-            let text_color = if node.selfie_mode.is_selfie_mode {
-                palette::WORD_TEXT_SELFIE
-            } else {
-                palette::WORD_TEXT_NORMAL
+            let text_color = match completion {
+                Completion::Unstarted => palette::WORD_TEXT_NUMBER,
+                Completion::ManualHinted(_) | Completion::Complete => palette::WORD_TEXT_LETTERS,
             }
             .convert_color();
 
@@ -137,12 +148,23 @@ impl MavericNode for WordNode {
                     text_2d_bounds: Default::default(),
                     text_anchor: Default::default(),
                 }
-                .with_bundle(Transform::from_translation(text_translation)),
+                .with_bundle(Transform::from_translation(text_translation))
+                .with_transition_to::<TextColorLens<0>>(
+                    text_color,
+                    calculate_speed(&palette::WORD_TEXT_NUMBER.convert_color(), &palette::WORD_TEXT_LETTERS.convert_color(), Duration::from_secs_f32(animated_solutions::TOTAL_SECONDS)),
+                    None,
+                ),
                 &(),
             );
 
             let shape_translation = centre.extend(crate::z_indices::WORD_BACKGROUND);
             let _shape_border_translation = centre.extend(crate::z_indices::WORD_BACKGROUND + 1.0);
+
+            let transition_speed = match completion {
+                Completion::Unstarted => f32::MAX,
+                Completion::ManualHinted(_) => f32::MAX,
+                Completion::Complete => 1.0 / animated_solutions::TOTAL_SECONDS,
+            };
 
             commands.add_child(
                 "shape_fill",
@@ -167,7 +189,7 @@ impl MavericNode for WordNode {
                 )
                     .with_transition_to::<ProgressLens>(
                         progress,
-                        (1.0 / animated_solutions::TOTAL_SECONDS).into(),
+                        transition_speed.into(),
                         None,
                     ),
                 &(),
@@ -182,7 +204,7 @@ pub struct WordButtonCompletion {
     pub tile: LayoutWordTile,
 }
 
-pub const WORD_BUTTON_HOLD_SECONDS: f32 = 0.5;
+pub const WORD_BUTTON_HOLD_SECONDS: f32 = 0.4;
 
 #[repr(C)]
 #[derive(Debug, Reflect, Clone, Copy, TypeUuid, Default, PartialEq)]
@@ -223,22 +245,36 @@ impl ExtractToShader for WordButtonBoxShader {
             }
             PressedButton::PressedAfterActivated { .. } => None,
         } {
-            let color = palette::WORD_BACKGROUND_UNSTARTED.convert_color().into();
+            let color = match completion {
+                Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color().into(),
+                Completion::ManualHinted(_) => palette::WORD_BACKGROUND_MANUAL_HINT.convert_color(),
+                Completion::Complete => palette::WORD_BACKGROUND_COMPLETE.convert_color().into(),
+            };
 
-            let color2 = WORD_BACKGROUND_PROGRESS.convert_color();
+            let color2 = match completion {
+                Completion::Unstarted => palette::WORD_BACKGROUND_PROGRESS.convert_color().into(),
+                Completion::ManualHinted(_) => {
+                    palette::WORD_BACKGROUND_MANUAL_HINT2.convert_color()
+                }
+                Completion::Complete => palette::WORD_BACKGROUND_COMPLETE.convert_color().into(),
+            };
 
             let progress =
                 (pressed_duration.as_secs_f32() / WORD_BUTTON_HOLD_SECONDS).clamp(0.0, 1.0);
 
             HorizontalGradientBoxShaderParams {
-                color,
+                color: color.into(),
                 height: *height,
                 progress,
                 color2: color2.into(),
                 rounding: crate::rounding::WORD_BUTTON_NORMAL,
             }
         } else {
-            let color = palette::WORD_BACKGROUND_UNSTARTED.convert_color().into();
+            let color = match completion {
+                Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color().into(),
+                Completion::ManualHinted(_) => palette::WORD_BACKGROUND_MANUAL_HINT.convert_color(),
+                Completion::Complete => palette::WORD_BACKGROUND_UNSTARTED.convert_color().into(),
+            };
 
             let color2 = match completion {
                 Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color(),
@@ -247,7 +283,7 @@ impl ExtractToShader for WordButtonBoxShader {
             };
 
             HorizontalGradientBoxShaderParams {
-                color,
+                color: color.into(),
                 height: *height,
                 progress: *progress,
                 color2: color2.into(),

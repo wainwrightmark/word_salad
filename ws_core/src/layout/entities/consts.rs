@@ -8,14 +8,14 @@ pub const TOP_BAR_HEIGHT_BASE: f32 = 60.;
 pub const TOP_BAR_ICON_WIDTH: f32 = 25.;
 pub const WORD_SALAD_LOGO_WIDTH: f32 = 160.;
 
-pub const THEME_HEIGHT: f32 = 32.;
+pub const THEME_HEIGHT: f32 = 40.;
 pub const THEME_WIDTH: f32 = GRID_SIZE - DAILY_CHALLENGE_NUMBER_WIDTH;
 pub const DAILY_CHALLENGE_NUMBER_WIDTH: f32 = 40.0;
 
 pub const THEME_INFO_HEIGHT: f32 = 10.;
 pub const THEME_INFO_WIDTH: f32 = 100.;
 
-pub const TIMER_HEIGHT: f32 = 10.;
+pub const TIMER_HEIGHT: f32 = 20.;
 pub const TIMER_WIDTH: f32 = 40.;
 
 pub const GRID_TILE_SIZE: f32 = 62.;
@@ -26,7 +26,7 @@ pub const GRID_WORD_LIST_SPACER: f32 = GRID_TILE_SIZE * 0.5;
 pub const GRID_THEME_SPACER: f32 = GRID_TILE_SIZE * 0.5;
 pub const WORD_LIST_EXTRA_WIDTH: f32 = 20.0;
 
-pub const WORD_LIST_HEIGHT: f32 = 144.;
+pub const WORD_LIST_HEIGHT: f32 = 126.;
 pub const WORD_HEIGHT: f32 = 22.;
 pub const WORD_WIDTH_PER_CHARACTER: f32 = 11.;
 pub const WORD_WIDTH_FIXED: f32 = 20.;
@@ -50,7 +50,7 @@ pub fn extra_top_bar_height(sizing: &LayoutSizing) -> f32 {
     let total_height = IDEAL_HEIGHT + bottom_padding;
     let mid = total_height * 0.5;
     let result = bottom_padding.min(mid - (GRID_MID_BASE));
-    log::info!("bottom padding: {bottom_padding} total height: {total_height} mid: {mid} result: {result} ");
+    //log::info!("bottom padding: {bottom_padding} total height: {total_height} mid: {mid} result: {result} ");
     result
 }
 
@@ -101,8 +101,8 @@ pub const STATISTIC_LABEL_FONT_SIZE_SELFIE: f32 = 11f32;
 pub const STATISTIC_LABEL_FONT_SIZE_NORMAL: f32 = 14f32;
 
 pub const THEME_FONT_SIZE: f32 = 22f32;
-pub const THEME_INFO_FONT_SIZE: f32 = 14f32;
-pub const TIMER_FONT_SIZE: f32 = 14f32;
+pub const THEME_INFO_FONT_SIZE: f32 = 22f32;
+pub const TIMER_FONT_SIZE: f32 = 22f32;
 
 pub const BURGER_FONT_SIZE: f32 = 22f32;
 pub const LOGO_FONT_SIZE: f32 = 22f32;

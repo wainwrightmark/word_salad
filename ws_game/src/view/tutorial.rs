@@ -10,7 +10,7 @@ use maveric::{
 };
 use strum::{EnumCount, EnumIs, EnumIter, IntoEnumIterator};
 use ws_core::{
-    layout::entities::{GRID_SIZE, IDEAL_WIDTH, TUTORIAL_TEXT_FONT_SIZE},
+    layout::entities::{GRID_SIZE, IDEAL_WIDTH, TUTORIAL_TEXT_FONT_SIZE, GameLayoutEntity, SelfieMode},
     LayoutStructure,
 };
 
@@ -404,11 +404,10 @@ impl TutorialText {
 pub enum TutorialLayoutEntity {
     Top,
     BigTop,
-    Middle,
     Bottom,
 }
 
-const BOX_WIDTH: f32 = GRID_SIZE + 20.0;
+const BOX_WIDTH: f32 = GRID_SIZE + 45.0;
 
 impl LayoutStructure for TutorialLayoutEntity {
     type Context<'a> = ();
@@ -423,10 +422,6 @@ impl LayoutStructure for TutorialLayoutEntity {
                 x: BOX_WIDTH,
                 y: 105.0,
             },
-            TutorialLayoutEntity::Middle => Vec2 {
-                x: BOX_WIDTH,
-                y: 105.0,
-            },
             TutorialLayoutEntity::Bottom => Vec2 {
                 x: BOX_WIDTH,
                 y: 140.0,
@@ -437,25 +432,20 @@ impl LayoutStructure for TutorialLayoutEntity {
     fn location(
         &self,
         _context: &Self::Context<'_>,
-        _sizing: &LayoutSizing,
+        sizing: &LayoutSizing,
     ) -> bevy::prelude::Vec2 {
         match self {
             TutorialLayoutEntity::Top => Vec2 {
                 x: (IDEAL_WIDTH - BOX_WIDTH) * 0.5,
-                y: 52.0,
+                y: GameLayoutEntity::LevelInfo.location(&SelfieMode{is_selfie_mode: false}, sizing).y - 10.0,
             },
             TutorialLayoutEntity::BigTop => Vec2 {
                 x: (IDEAL_WIDTH - BOX_WIDTH) * 0.5,
-                y: 70.0,
-            },
-
-            TutorialLayoutEntity::Middle => Vec2 {
-                x: (IDEAL_WIDTH - BOX_WIDTH) * 0.5,
-                y: 180.0,
+                y: GameLayoutEntity::LevelInfo.location(&SelfieMode{is_selfie_mode: false}, sizing).y,
             },
             TutorialLayoutEntity::Bottom => Vec2 {
                 x: (IDEAL_WIDTH - BOX_WIDTH) * 0.5,
-                y: 410.0,
+                y: GameLayoutEntity::WordList.location(&SelfieMode{is_selfie_mode: false}, sizing).y - 10.0,
             },
         }
     }

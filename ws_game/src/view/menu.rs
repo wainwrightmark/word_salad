@@ -135,7 +135,7 @@ impl MavericNode for Menu {
                     commands,
                     size,
                     4,
-                    palette::LIGHT_GRAY.convert_color(),
+                    palette::MENU_BUTTON_DISCOURAGED_FILL.convert_color(),
                 );
             });
     }
@@ -143,7 +143,7 @@ impl MavericNode for Menu {
 
 fn get_variable_fill(is_complete: bool) -> Color {
     if is_complete {
-        palette::FULL_GREEN.convert_color()
+        palette::MENU_BUTTON_COMPLETE_FILL.convert_color()
     } else {
         palette::MENU_BUTTON_FILL.convert_color()
     }

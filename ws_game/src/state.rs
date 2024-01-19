@@ -26,7 +26,7 @@ impl Plugin for StatePlugin {
 
         app.add_systems(Update, track_found_words);
         app.add_systems(Update, track_level_completion);
-        app.add_systems(Update, update_state_on_level_change);
+        app.add_systems(PostUpdate, update_state_on_level_change);
         app.add_systems(Update, animate_solutions.after(track_found_words));
     }
 }
