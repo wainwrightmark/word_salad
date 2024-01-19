@@ -1,6 +1,7 @@
 use crate::finder::node::*;
 use crate::finder::*;
 use crate::{find_solution, Character, Grid, GridSet};
+use arrayvec::ArrayVec;
 
 use super::counter::{Counter, SolutionCollector};
 use super::helpers::FinderSingleWord;
@@ -87,53 +88,53 @@ impl PartialGrid {
             })
     }
 
-    pub fn solve_recursive(
-        &mut self,
+    pub fn solve(
+        &self,
         counter: &mut impl Counter,
         collector: &mut impl SolutionCollector<Self>,
         all_nodes: &NodeMap,
-        level: usize,
         words: &Vec<FinderSingleWord>,
         exclude_words: &Vec<FinderSingleWord>,
         multi_constraint_map: &MultiConstraintMap,
     ) {
-        // let mut stack: ArrayVec<(Node, GridSet)> = Default::default();
+        let mut stack: ArrayVec<(PartialGrid, Node, RemainingLocations), 16> = Default::default();
 
-        if !counter.try_increment() {
-            return; //Give up
-        }
-
-        let Some((node, potential_locations)) =
-            self.get_most_constrained_node(all_nodes, multi_constraint_map)
-        else {
-            //run out of options
-            if self.check_matches(all_nodes, words, exclude_words) {
-                collector.collect_solution(self.clone());
-            }
+        let Some((n, pl)) = self.get_most_constrained_node(all_nodes, multi_constraint_map) else {
             return;
         };
 
-        let mut remaining_locations = RemainingLocations::new(potential_locations);
+        stack.push((self.clone(), n, RemainingLocations::new(pl)));
 
-        while let Some(tile) = remaining_locations.next() {
-            self.place_node(&node, tile);
+        while let Some((partial_grid, node, remaining_locations)) = stack.last_mut() {
+            if let Some(tile) = remaining_locations.next() {
+                if !counter.try_increment() {
+                    return; //Give up
+                }
+                let mut pg = partial_grid.clone();
+                pg.place_node(&node, tile);
 
-            self.solve_recursive(
-                counter,
-                collector,
-                all_nodes,
-                level + 1,
-                words,
-                exclude_words,
-                multi_constraint_map,
-            );
-            if collector.is_full() {
-                return;
+                if let Some((next_node, potential_locations)) =
+                    pg.get_most_constrained_node(all_nodes, multi_constraint_map)
+                {
+                    if !potential_locations.is_empty() {
+                        //println!("{}\n", pg.to_grid(all_nodes)) ;
+
+                        stack.push((pg, next_node, RemainingLocations::new(potential_locations)))
+                    }
+                } else {
+                    if pg.check_matches(all_nodes, words, exclude_words) {
+                        collector.collect_solution(pg);
+                        if collector.is_full() {
+                            return;
+                        }
+                    }
+                }
+            } else {
+                stack.pop();
             }
-
-            self.remove_node(node.id, tile);
         }
     }
+
 
     pub fn potential_locations(
         &self,

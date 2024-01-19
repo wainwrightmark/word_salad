@@ -322,7 +322,7 @@ pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
         }
     }
 
-    let mut grid: PartialGrid = Default::default();
+    let grid: PartialGrid = Default::default();
 
     let nodes: NodeMap = NodeMap::from_fn(|tile| node_builders[tile].clone().into());
 
@@ -382,11 +382,10 @@ pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
     }
 
     let mut mapped_collector = Collector::Mapped::default();
-    grid.solve_recursive(
+    grid.solve(
         counter,
         &mut mapped_collector,
         &nodes,
-        0,
         words,
         exclude_words,
         &multi_constraint_map,
