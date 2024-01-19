@@ -99,7 +99,11 @@ impl MavericNode for WordLine {
                     &(),
                 );
             } else {
+                let mut line_index = usize::MAX;
+                let mut last_direction: Option<u32> = None;
                 for (index, (from, to)) in solution.iter().tuple_windows().enumerate() {
+                    let direction = get_direction(from, to);
+
                     let rect_f = args
                         .context
                         .get_rect(&LayoutGridTile(*from), &args.node.selfie_mode);
@@ -109,10 +113,14 @@ impl MavericNode for WordLine {
 
                     let translation =
                         ((rect_f.centre() + rect_t.centre()) * 0.5).extend(z_indices::WORD_LINE);
-                    let color = index_to_color(index);
-                    let color2 = index_to_color(index + 1);
+                    let color = index_to_color(line_index);
 
-                    let direction = get_direction(from, to);
+                    if Some(direction) != last_direction {
+                        last_direction = Some(direction);
+                        line_index = line_index.wrapping_add(1);
+                    }
+
+                    let color2 = index_to_color(line_index);
 
                     commands.add_child(
                         index as u32,
@@ -146,7 +154,6 @@ impl MavericNode for WordLine {
         _world: &World,
         entity_commands: &mut bevy::ecs::system::EntityCommands,
     ) {
-
         let should_hide: bool;
         let target_progress: ProgressTarget;
 
@@ -180,9 +187,7 @@ impl MavericNode for WordLine {
 
         //info!("Wordline changed {targets:?}");
 
-        entity_commands
-            .commands()
-            .insert_resource(targets);
+        entity_commands.commands().insert_resource(targets);
     }
 }
 
@@ -204,9 +209,11 @@ fn get_direction(from: &Tile, to: &Tile) -> u32 {
 }
 
 fn index_to_color(index: usize) -> Color {
-    let hue = ((index as f32) * 10.0) + 15.0;
+    //hsl(140, 62%, 44%)
 
-    Color::hsl(hue, 0.58, 0.61)
+    let hue = ((index as f32) * 10.0) + 140.0;
+
+    Color::hsl(hue, 0.62, 0.44)
 }
 
 #[repr(C)]
@@ -285,7 +292,7 @@ pub struct WordLineSegmentShaderParams {
 
 impl ShaderParams for WordLineSegmentShaderParams {}
 
-const FULL_LINE_WIDTH: f32 = 0.30;
+const FULL_LINE_WIDTH: f32 = 0.24;
 const PULSED_LINE_WIDTH: f32 = FULL_LINE_WIDTH * 1.2;
 const ZERO_LINE_WIDTH: f32 = -0.01; //slightly below zero to prevent artifacts
 const LINE_WIDTH_DECREASE_SPEED: f32 = FULL_LINE_WIDTH * 1.2;
@@ -345,8 +352,6 @@ fn transition_word_line(
     mut targets: ResMut<WordLineGlobalTargets>,
     time: Res<Time>,
 ) {
-
-
     let progress_change = time.delta_seconds() * PROGRESS_SPEED;
     let mut changed: bool = false;
 
@@ -413,7 +418,7 @@ fn transition_word_line(
         changed = true;
     }
 
-    if changed{
+    if changed {
         startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     }
 }
