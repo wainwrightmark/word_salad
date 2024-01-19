@@ -545,7 +545,7 @@ impl From<NodeBuilder> for Node {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Node {
     //todo try removing id and constraint count ro reduce size
     pub id: NodeId,

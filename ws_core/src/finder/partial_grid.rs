@@ -59,6 +59,34 @@ impl PartialGrid {
         true
     }
 
+    fn get_most_constrained_node(
+        &self,
+        all_nodes: &NodeMap,
+        multi_constraint_map: &MultiConstraintMap,
+    ) -> Option<(Node, GridSet)> {
+        let allowed_by_symmetry = if self.used_grid == GridSet::EMPTY {
+            TOP_LOCATIONS
+        } else if self.used_grid.is_subset(&DOWN_RIGHT_DIAGONAL) {
+            TOP_RIGHT_LOCATIONS
+        } else {
+            GridSet::ALL
+        };
+
+        self.nodes_to_add
+            .iter_true_tiles()
+            .map(|tile| {
+                let node = all_nodes[tile];
+                let set = self.potential_locations(node, allowed_by_symmetry, multi_constraint_map);
+
+                (node, set)
+            })
+            .min_by(|a, b| {
+                a.1.count()
+                    .cmp(&b.1.count())
+                    .then(b.0.constraint_count.cmp(&a.0.constraint_count))
+            })
+    }
+
     pub fn solve_recursive(
         &mut self,
         counter: &mut impl Counter,
@@ -73,28 +101,8 @@ impl PartialGrid {
             return;
         }
 
-        let allowed_by_symmetry = if self.used_grid == GridSet::EMPTY {
-            TOP_LOCATIONS
-        } else if self.used_grid.is_subset(&DOWN_RIGHT_DIAGONAL) {
-            TOP_RIGHT_LOCATIONS
-        } else {
-            GridSet::ALL
-        };
-
-        let Some((node, potential_locations)) = self
-            .nodes_to_add
-            .iter_true_tiles()
-            .map(|tile| {
-                let node = &all_nodes[tile];
-                let set = self.potential_locations(node, allowed_by_symmetry, multi_constraint_map);
-
-                (node, set)
-            })
-            .min_by(|a, b| {
-                a.1.count()
-                    .cmp(&b.1.count())
-                    .then(b.0.constraint_count.cmp(&a.0.constraint_count))
-            })
+        let Some((node, potential_locations)) =
+            self.get_most_constrained_node(all_nodes, multi_constraint_map)
         else {
             //run out of options
             if self.check_matches(all_nodes, words, exclude_words) {
@@ -111,7 +119,7 @@ impl PartialGrid {
             .iter()
             .filter(|t| potential_locations.get_bit(t))
         {
-            self.place_node(node, *tile);
+            self.place_node(&node, *tile);
 
             self.solve_recursive(
                 counter,
@@ -132,7 +140,7 @@ impl PartialGrid {
 
     pub fn potential_locations(
         &self,
-        node: &Node,
+        node: Node,
         allowed_by_symmetry: GridSet,
         multi_constraint_map: &MultiConstraintMap,
     ) -> GridSet {
@@ -253,7 +261,7 @@ mod tests {
         let a_id = NodeId::try_from_inner(0).unwrap();
         let a_node = NodeBuilder::new(a_id, Character::A).into();
 
-        let a_locations = grid.potential_locations(&a_node, GridSet::ALL, &multi_constraint_map);
+        let a_locations = grid.potential_locations(a_node, GridSet::ALL, &multi_constraint_map);
 
         let mut expected = GridSet::EMPTY.negate();
 
@@ -266,7 +274,7 @@ mod tests {
 
         let b_node = NodeBuilder::new(b_id, Character::B).into();
 
-        let b_location_1 = grid.potential_locations(&b_node, GridSet::ALL, &multi_constraint_map);
+        let b_location_1 = grid.potential_locations(b_node, GridSet::ALL, &multi_constraint_map);
 
         expected.set_bit(&a_tile, false);
 
@@ -279,7 +287,7 @@ mod tests {
         c_node.add_single_constraint(a_id, &multi_constraint_map);
         let c_node: Node = c_node.into();
 
-        let c_location = grid.potential_locations(&c_node, GridSet::ALL, &multi_constraint_map);
+        let c_location = grid.potential_locations(c_node, GridSet::ALL, &multi_constraint_map);
 
         expected = GridSet::from_fn(|t| a_tile.is_adjacent_to(&t));
         assert_sets_eq(c_location, expected);
