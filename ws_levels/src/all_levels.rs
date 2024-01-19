@@ -9,18 +9,18 @@ lazy_static! { //todo data_bake
         .map(|x| x.unwrap())
         .collect_vec();
     pub(crate) static ref EU_CAPITALS: Vec<DesignedLevel> = number_levels(
-        include_str!("levels/global_location/eu_capitals.tsv")
+        include_str!("levels/global_location/european_capitals.tsv")
             .lines()
             .map(DesignedLevel::from_tsv_line)
             .map(|x| x.unwrap()),
-        "EU Capitals"
+        "European Capitals"
     );
     pub(crate) static ref EU_COUNTRIES: Vec<DesignedLevel> = number_levels(
-        include_str!("levels/global_location/eu_countries.tsv")
+        include_str!("levels/global_location/european_countries.tsv")
             .lines()
             .map(DesignedLevel::from_tsv_line)
             .map(|x| x.unwrap()),
-        "EU Countries"
+        "European Countries"
     );
     pub(crate) static ref US_STATES: Vec<DesignedLevel> = number_levels(
         include_str!("levels/global_location/us_states.tsv")

@@ -26,8 +26,8 @@ use ws_core::DesignedLevel;
 
 pub enum LevelSequence {
     //DO NOT CHANGE THESE NUMBERS - THEY ARE USED FOR COMPLETION TRACKING
-    EUCapitals = 2,
-    EUCountries = 3,
+    EuropeanCapitals = 2,
+    EuropeanCountries = 3,
     USStates = 4,
     GreekGods = 5,
     USPresidents = 6,
@@ -69,8 +69,8 @@ impl LevelSequence {
 
     fn levels(self) -> &'static Vec<DesignedLevel> {
         let levels = match self {
-            LevelSequence::EUCapitals => &*EU_CAPITALS,
-            LevelSequence::EUCountries => &*EU_COUNTRIES,
+            LevelSequence::EuropeanCapitals => &*EU_CAPITALS,
+            LevelSequence::EuropeanCountries => &*EU_COUNTRIES,
             LevelSequence::USStates => &*US_STATES,
             LevelSequence::GreekGods => &*GREEK_GODS,
             LevelSequence::USPresidents => &*US_PRESIDENTS,
@@ -90,8 +90,8 @@ impl LevelSequence {
 
     pub fn name(self) -> &'static str {
         match self {
-            LevelSequence::EUCapitals => "EU Capitals",
-            LevelSequence::EUCountries => "EU Countries",
+            LevelSequence::EuropeanCapitals => "European Capitals",
+            LevelSequence::EuropeanCountries => "European Countries",
             LevelSequence::USStates => "US States",
             LevelSequence::GreekGods => "Greek Gods",
             LevelSequence::USPresidents => "US Presidents",
