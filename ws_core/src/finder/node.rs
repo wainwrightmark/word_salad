@@ -68,8 +68,8 @@ impl std::fmt::Display for GridResult {
 
 pub fn try_make_grid_with_blank_filling<Collector: SolutionCollector<GridResult>>(
     letters: LetterCounts,
-    words: &Vec<FinderSingleWord>,
-    exclude_words: &Vec<FinderSingleWord>,
+    words: &[FinderSingleWord],
+    exclude_words: &[FinderSingleWord],
     first_blank_replacement: Character,
     counter: &mut impl Counter,
     collector: &mut Collector,
@@ -206,8 +206,8 @@ pub(crate) type NodeBuilders = geometrid::tile_map::TileMap<NodeBuilder, 16, 1, 
 
 pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
     letters: LetterCounts,
-    words: &Vec<FinderSingleWord>,
-    exclude_words: &Vec<FinderSingleWord>,
+    words: &[FinderSingleWord],
+    exclude_words: &[FinderSingleWord],
     counter: &mut impl Counter,
     collector: &mut Collector,
 ) {
@@ -398,7 +398,7 @@ pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
         GridResult {
             grid: solution_grid,
             letters,
-            words: words.clone(),
+            words: Vec::from(words),
         }
     })
 }

@@ -40,12 +40,13 @@ fn set_up(input: &str) -> (LetterCounts, Vec<FinderSingleWord>) {
 // spellchecker:disable
 #[library_benchmark]
 #[bench::europe(set_up("Croatia\nRomania\nIreland\nLatvia\nPoland\nFrance\nMalta"))]
+#[bench::colors(set_up("Teal\nSage\nGreen\nCyan\nOlive\nGray\nClaret\nMagenta\nSilver"))]
 #[bench::states_1(set_up("Utah\nOhio\nMaine\nIdaho\nIndiana\nMontana\nArizona"))]
 #[bench::states_2(set_up("IOWA\nOHIO\nIDAHO\nUTAH\nHAWAII\nINDIANA\nMONTANA"))]
 #[bench::pokemon(set_up(
     "Abra\nDratini\nArbok\nNidoran\nNidorina\nNidorino\nDragonite\nNidoking\nDragonair"
 ))]
-#[bench::colors(set_up("Teal\nSage\nGreen\nCyan\nOlive\nGray\nClaret\nMagenta\nSilver"))]
+
 // spellchecker:enable
 fn solve_grid(input: (LetterCounts, Vec<FinderSingleWord>)) {
     let exclude_words = vec![];

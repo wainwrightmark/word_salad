@@ -39,8 +39,8 @@ impl PartialGrid {
     pub fn check_matches(
         &self,
         nodes: &NodeMap,
-        words: &Vec<FinderSingleWord>,
-        exclude_words: &Vec<FinderSingleWord>,
+        words: &[FinderSingleWord],
+        exclude_words: &[FinderSingleWord],
     ) -> bool {
         let solution_grid = self.to_grid(nodes);
 
@@ -104,8 +104,8 @@ impl PartialGrid {
         counter: &mut impl Counter,
         collector: &mut impl SolutionCollector<Self>,
         all_nodes: &NodeMap,
-        words: &Vec<FinderSingleWord>,
-        exclude_words: &Vec<FinderSingleWord>,
+        words: &[FinderSingleWord],
+        exclude_words: &[FinderSingleWord],
         multi_constraint_map: &MultiConstraintMap,
     ) {
         struct Frame {
