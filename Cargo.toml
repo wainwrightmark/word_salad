@@ -17,6 +17,13 @@ opt-level = 1
 debug = false
 opt-level = 'z'
 codegen-units = 1
-lto = 'thin'
+lto = 'fat'
 strip = "debuginfo"
 #panic = 'abort'
+
+
+[profile.release.package.grid_finder]
+debug = false
+opt-level = 3
+codegen-units = 1
+

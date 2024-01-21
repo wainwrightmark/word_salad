@@ -1,14 +1,16 @@
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use ws_core::{
-    finder::{counter::FakeCounter, helpers::{LetterCounts, FinderSingleWord}, node::try_make_grid_with_blank_filling},
+    finder::{
+        counter::FakeCounter,
+        helpers::{FinderSingleWord, LetterCounts},
+        node::try_make_grid_with_blank_filling,
+    },
     Character,
 };
 
-pub fn criterion_benchmark(c: &mut Criterion) {
-    let words = ws_core::finder::helpers::make_finder_group_vec_from_file(
-        "Croatia\nRomania\nIreland\nLatvia\nPoland\nFrance\nMalta",
-    );
-    let words: Vec<FinderSingleWord> = words.into_iter().flat_map(|x|x.words).collect();
+fn set_up(input: &str) -> (LetterCounts, Vec<FinderSingleWord>) {
+    let words = ws_core::finder::helpers::make_finder_group_vec_from_file(input);
+    let words: Vec<FinderSingleWord> = words.into_iter().flat_map(|x| x.words).collect();
 
     let mut letters = LetterCounts::default();
     for word in words.iter() {
@@ -33,21 +35,55 @@ pub fn criterion_benchmark(c: &mut Criterion) {
         blanks_to_add -= 1;
     }
 
-    let exclude_words = vec![];
+    (letters, words)
+}
 
-    c.bench_function("EU Countries", |b| {
-        b.iter(|| {
-            let mut solution = None;
-            try_make_grid_with_blank_filling(
-                letters,
-                &words,
-                &exclude_words,
-                Character::E,
-                &mut FakeCounter,
-                &mut solution,
-            )
-        })
-    });
+//
+
+pub fn criterion_benchmark(c: &mut Criterion) {
+
+    let mut group = c.benchmark_group("Solve Grid");
+    group.sample_size(10);
+    let exclude_words = vec![];
+    // spellchecker:disable
+    let euro_countries = (
+        "European Countries 1",
+        "Croatia\nRomania\nIreland\nLatvia\nPoland\nFrance\nMalta",
+    );
+    let states = (
+        "Us States",
+        "Utah\nOhio\nMaine\nIdaho\nIndiana\nMontana\nArizona",
+    );
+    let pokemon = (
+        "Pokemon",
+        "Abra\nDratini\nArbok\nNidoran\nNidorina\nNidorino\nDragonite\nNidoking\nDragonair",
+    );
+    let colors = (
+        "Colors",
+        "Teal\nSage\nGreen\nCyan\nOlive\nGray\nClaret\nMagenta\nSilver",
+    );
+    // spellchecker:enable
+    for (name, data) in [euro_countries, states, pokemon, colors] {
+        let input = set_up(data);
+
+        group.bench_with_input(
+            BenchmarkId::new("Solve: ", name),
+            &input,
+            |b, i| {
+                b.iter(|| {
+                    let mut solution = None;
+                    try_make_grid_with_blank_filling(
+                        i.0,
+                        &i.1,
+                        &exclude_words,
+                        Character::E,
+                        &mut FakeCounter,
+                        &mut solution,
+                    )
+                })
+            },
+        );
+    }
 }
 
 criterion_group!(benches, criterion_benchmark);
