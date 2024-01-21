@@ -10,7 +10,9 @@ use maveric::{
 };
 use strum::{EnumCount, EnumIs, EnumIter, IntoEnumIterator};
 use ws_core::{
-    layout::entities::{GRID_SIZE, IDEAL_WIDTH, TUTORIAL_TEXT_FONT_SIZE, GameLayoutEntity, SelfieMode},
+    layout::entities::{
+        GameLayoutEntity, SelfieMode, GRID_SIZE, IDEAL_WIDTH, TUTORIAL_TEXT_FONT_SIZE,
+    },
     LayoutStructure,
 };
 
@@ -429,23 +431,42 @@ impl LayoutStructure for TutorialLayoutEntity {
         }
     }
 
-    fn location(
-        &self,
-        _context: &Self::Context<'_>,
-        sizing: &LayoutSizing,
-    ) -> bevy::prelude::Vec2 {
+    fn location(&self, _context: &Self::Context<'_>, sizing: &LayoutSizing) -> bevy::prelude::Vec2 {
         match self {
             TutorialLayoutEntity::Top => Vec2 {
                 x: (IDEAL_WIDTH - BOX_WIDTH) * 0.5,
-                y: GameLayoutEntity::LevelInfo.location(&SelfieMode{is_selfie_mode: false}, sizing).y - 10.0,
+                y: GameLayoutEntity::LevelInfo
+                    .location(
+                        &SelfieMode {
+                            is_selfie_mode: false,
+                        },
+                        sizing,
+                    )
+                    .y
+                    - 10.0,
             },
             TutorialLayoutEntity::BigTop => Vec2 {
                 x: (IDEAL_WIDTH - BOX_WIDTH) * 0.5,
-                y: GameLayoutEntity::LevelInfo.location(&SelfieMode{is_selfie_mode: false}, sizing).y,
+                y: GameLayoutEntity::LevelInfo
+                    .location(
+                        &SelfieMode {
+                            is_selfie_mode: false,
+                        },
+                        sizing,
+                    )
+                    .y,
             },
             TutorialLayoutEntity::Bottom => Vec2 {
                 x: (IDEAL_WIDTH - BOX_WIDTH) * 0.5,
-                y: GameLayoutEntity::WordList.location(&SelfieMode{is_selfie_mode: false}, sizing).y - 10.0,
+                y: GameLayoutEntity::WordList
+                    .location(
+                        &SelfieMode {
+                            is_selfie_mode: false,
+                        },
+                        sizing,
+                    )
+                    .y
+                    - 10.0,
             },
         }
     }

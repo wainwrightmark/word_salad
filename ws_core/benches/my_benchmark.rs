@@ -41,7 +41,6 @@ fn set_up(input: &str) -> (LetterCounts, Vec<FinderSingleWord>) {
 //
 
 pub fn criterion_benchmark(c: &mut Criterion) {
-
     let mut group = c.benchmark_group("Solve Grid");
     group.sample_size(10);
     let exclude_words = vec![];
@@ -50,9 +49,13 @@ pub fn criterion_benchmark(c: &mut Criterion) {
         "European Countries 1",
         "Croatia\nRomania\nIreland\nLatvia\nPoland\nFrance\nMalta",
     );
-    let states = (
-        "Us States",
+    let states1 = (
+        "Us States 1",
         "Utah\nOhio\nMaine\nIdaho\nIndiana\nMontana\nArizona",
+    );
+    let states2 = (
+        "Us States 2",
+        "IOWA\nOHIO\nIDAHO\nUTAH\nHAWAII\nINDIANA\nMONTANA",
     );
     let pokemon = (
         "Pokemon",
@@ -63,26 +66,22 @@ pub fn criterion_benchmark(c: &mut Criterion) {
         "Teal\nSage\nGreen\nCyan\nOlive\nGray\nClaret\nMagenta\nSilver",
     );
     // spellchecker:enable
-    for (name, data) in [euro_countries, states, pokemon, colors] {
+    for (name, data) in [euro_countries, states1, states2, pokemon, colors] {
         let input = set_up(data);
 
-        group.bench_with_input(
-            BenchmarkId::new("Solve: ", name),
-            &input,
-            |b, i| {
-                b.iter(|| {
-                    let mut solution = None;
-                    try_make_grid_with_blank_filling(
-                        i.0,
-                        &i.1,
-                        &exclude_words,
-                        Character::E,
-                        &mut FakeCounter,
-                        &mut solution,
-                    )
-                })
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("Solve: ", name), &input, |b, i| {
+            b.iter(|| {
+                let mut solution = None;
+                try_make_grid_with_blank_filling(
+                    i.0,
+                    &i.1,
+                    &exclude_words,
+                    Character::E,
+                    &mut FakeCounter,
+                    &mut solution,
+                )
+            })
+        });
     }
 }
 

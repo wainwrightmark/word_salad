@@ -30,9 +30,16 @@ impl MavericNode for TopBar {
                     "Burger",
                     Text2DNode {
                         text: "\u{e800}",
-                        font_size: size
-                            .font_size::<LayoutTopBar>(&LayoutTopBar::MenuBurgerButton, &HintCount::default()),
-                        color: (if selfie {palette::TOP_BAR_BURGER_SELFIE} else {palette::TOP_BAR_BURGER_NORMAL}) .convert_color(),
+                        font_size: size.font_size::<LayoutTopBar>(
+                            &LayoutTopBar::MenuBurgerButton,
+                            &HintCount::default(),
+                        ),
+                        color: (if selfie {
+                            palette::TOP_BAR_BURGER_SELFIE
+                        } else {
+                            palette::TOP_BAR_BURGER_NORMAL
+                        })
+                        .convert_color(),
                         font: ICON_FONT_PATH,
                         alignment: TextAlignment::Left,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -59,9 +66,16 @@ impl MavericNode for TopBar {
                     "Word Salad Logo text",
                     Text2DNode {
                         text: "Word Salad",
-                        font_size: size
-                            .font_size::<LayoutTopBar>(&LayoutTopBar::WordSaladLogo, &HintCount::default()),
-                            color: (if selfie {palette::TOP_BAR_LOGO_SELFIE} else {palette::TOP_BAR_LOGO_NORMAL}) .convert_color(),
+                        font_size: size.font_size::<LayoutTopBar>(
+                            &LayoutTopBar::WordSaladLogo,
+                            &HintCount::default(),
+                        ),
+                        color: (if selfie {
+                            palette::TOP_BAR_LOGO_SELFIE
+                        } else {
+                            palette::TOP_BAR_LOGO_NORMAL
+                        })
+                        .convert_color(),
                         font: WORD_SALAD_LOGO_FONT_PATH,
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,

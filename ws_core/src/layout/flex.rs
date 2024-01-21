@@ -1,6 +1,6 @@
 use glam::Vec2;
 
-use crate::{LayoutRectangle, LayoutStructure, LayoutSizing};
+use crate::{LayoutRectangle, LayoutSizing, LayoutStructure};
 
 pub enum FlexLayout {
     Row, //todo column, row reverse etc
@@ -14,7 +14,7 @@ impl FlexLayout {
         context: &T::Context<'_>,
         main_axis_padding: f32,
         cross_axis_padding: f32,
-        sizing: &LayoutSizing
+        sizing: &LayoutSizing,
     ) -> Option<T> {
         let mut prev_rows_total_height: f32 = 0.0;
         let mut current_row_total_width: f32 = 0.0;
@@ -56,7 +56,7 @@ impl FlexLayout {
         context: &T::Context<'_>,
         main_axis_padding: f32,
         cross_axis_padding: f32,
-        sizing: &LayoutSizing
+        sizing: &LayoutSizing,
     ) -> Vec2 {
         let mut prev_rows_total_height: f32 = 0.0;
         let mut current_row_total_width: f32 = 0.0;

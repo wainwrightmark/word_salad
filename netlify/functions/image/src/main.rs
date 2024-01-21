@@ -91,7 +91,8 @@ fn draw_image(daily_index: u32, width: u32, height: u32) -> Vec<u8> {
         //todo blank characters
     }
 
-    let font_data: Vec<u8> = include_bytes!("../../../../assets/fonts/Montserrat-Bold.ttf").to_vec();
+    let font_data: Vec<u8> =
+        include_bytes!("../../../../assets/fonts/Montserrat-Bold.ttf").to_vec();
 
     let mut font_database: fontdb::Database = fontdb::Database::new();
     font_database.load_font_data(font_data);

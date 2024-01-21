@@ -32,7 +32,7 @@ pub enum NonLevel {
     AfterCustomLevel,
     DailyChallengeFinished,
     DailyChallengeReset,
-    DailyChallengeCountdown{todays_index: usize},
+    DailyChallengeCountdown { todays_index: usize },
     LevelSequenceFinished(LevelSequence),
     LevelSequenceReset(LevelSequence),
 }

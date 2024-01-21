@@ -107,9 +107,7 @@ pub fn get_daily_from_location() -> Option<usize> {
     try_daily_index_from_path(path)
 }
 
-
-
-fn try_daily_index_from_path(path: String)-> Option<usize>{
+fn try_daily_index_from_path(path: String) -> Option<usize> {
     //info!("{path}");
     if path.is_empty() || path.eq_ignore_ascii_case("/") {
         return None;
@@ -119,15 +117,16 @@ fn try_daily_index_from_path(path: String)-> Option<usize>{
         //info!("{path} starts with daily");
         let data = path[7..].to_string();
 
-        let index = usize::from_str_radix(data.trim(), 10).ok()?.checked_sub(1)?;
+        let index = usize::from_str_radix(data.trim(), 10)
+            .ok()?
+            .checked_sub(1)?;
 
         let today_index = DailyChallenges::get_today_index();
 
-        if index <= today_index{
+        if index <= today_index {
             //info!("{path} index is legit");
             return Some(index);
         }
-
     }
     return None;
 }

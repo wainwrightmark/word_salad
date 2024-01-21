@@ -1,8 +1,7 @@
 use bevy::math::Vec2;
 use strum::{Display, EnumCount};
 use ws_core::{
-    layout::entities::*,
-    LayoutSizing, LayoutStructure, LayoutStructureWithFont, Spacing,
+    layout::entities::*, LayoutSizing, LayoutStructure, LayoutStructureWithFont, Spacing,
 };
 use ws_levels::level_group::LevelGroup;
 
@@ -91,7 +90,7 @@ impl LayoutStructure for LevelsMenuLayoutEntity {
             x: (IDEAL_WIDTH - MENU_BUTTON_WIDTH) / 2.,
             y: (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing))
                 + Spacing::Centre.apply(
-                    IDEAL_HEIGHT - ((TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing))),
+                    IDEAL_HEIGHT - (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing)),
                     MENU_BUTTON_HEIGHT + MENU_BUTTON_SPACING,
                     super::MENU_VIRTUAL_CHILDREN,
                     self.index(),

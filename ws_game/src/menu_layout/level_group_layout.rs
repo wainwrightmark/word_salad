@@ -1,10 +1,9 @@
 use crate::completion::TotalCompletion;
 
-use super::{ MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
+use super::{MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
 use bevy::math::Vec2;
 use ws_core::{
-    layout::entities::*,
-    LayoutSizing, LayoutStructure, LayoutStructureWithFont, Spacing,
+    layout::entities::*, LayoutSizing, LayoutStructure, LayoutStructureWithFont, Spacing,
 };
 use ws_levels::level_group::LevelGroup;
 
@@ -55,11 +54,7 @@ impl LayoutStructure for LevelGroupLayoutEntity {
         }
     }
 
-    fn location(
-        &self,
-        _context: &Self::Context<'_>,
-        sizing: &LayoutSizing,
-    ) -> bevy::prelude::Vec2 {
+    fn location(&self, _context: &Self::Context<'_>, sizing: &LayoutSizing) -> bevy::prelude::Vec2 {
         Vec2 {
             x: (IDEAL_WIDTH - MENU_BUTTON_WIDTH) / 2.,
             y: (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing))

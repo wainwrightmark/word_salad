@@ -46,14 +46,12 @@ impl DesignedLevel {
         }
     }
 
-    pub fn name_and_number(&self)-> (Ustr, Option<usize>){
+    pub fn name_and_number(&self) -> (Ustr, Option<usize>) {
         match self.numbering {
             Some(Numbering::SequenceNumber(num)) => {
                 (Ustr::from(format!("{} {num}", self.name).as_str()), None)
             }
-            Some(Numbering::WordSaladNumber(num)) => {
-                (self.name, Some(num))
-            }
+            Some(Numbering::WordSaladNumber(num)) => (self.name, Some(num)),
             None => (self.name, None),
         }
     }
@@ -114,7 +112,6 @@ impl DesignedLevel {
         })
     }
 }
-
 
 impl DesignedLevel {
     pub fn calculate_unneeded_tiles<F: Fn(usize) -> bool>(

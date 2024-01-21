@@ -151,7 +151,11 @@ impl MavericNode for WordNode {
                 .with_bundle(Transform::from_translation(text_translation))
                 .with_transition_to::<TextColorLens<0>>(
                     text_color,
-                    calculate_speed(&palette::WORD_TEXT_NUMBER.convert_color(), &palette::WORD_TEXT_LETTERS.convert_color(), Duration::from_secs_f32(animated_solutions::TOTAL_SECONDS)),
+                    calculate_speed(
+                        &palette::WORD_TEXT_NUMBER.convert_color(),
+                        &palette::WORD_TEXT_LETTERS.convert_color(),
+                        Duration::from_secs_f32(animated_solutions::TOTAL_SECONDS),
+                    ),
                     None,
                 ),
                 &(),

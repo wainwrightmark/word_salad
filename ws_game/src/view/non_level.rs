@@ -40,8 +40,9 @@ impl MavericNode for NonLevelView {
                 NonLevel::LevelSequenceReset(ls) => {
                     format!("You have completed\nAll {}", ls.name())
                 }
-                NonLevel::DailyChallengeCountdown{todays_index} => {
-                    DailyChallenges::time_until_challenge_string(todays_index).unwrap_or_else(||"00:00:00".to_string())
+                NonLevel::DailyChallengeCountdown { todays_index } => {
+                    DailyChallenges::time_until_challenge_string(todays_index)
+                        .unwrap_or_else(|| "00:00:00".to_string())
                 }
             };
 
@@ -53,7 +54,7 @@ impl MavericNode for NonLevelView {
             .convert_color();
 
             let non_level_type = match node.non_level {
-                NonLevel::DailyChallengeCountdown{..} => NonLevelType::Countdown,
+                NonLevel::DailyChallengeCountdown { .. } => NonLevelType::Countdown,
                 _ => NonLevelType::Normal,
             };
 
@@ -69,11 +70,14 @@ impl MavericNode for NonLevelView {
                     text_2d_bounds: Default::default(),
                     text_anchor: Default::default(),
                 }
-                .with_bundle((Transform::from_translation(
-                    size.get_rect(&NonLevelLayoutEntity::Text, &())
-                        .centre()
-                        .extend(crate::z_indices::CONGRATS_BUTTON),
-                ), NonLevelText)),
+                .with_bundle((
+                    Transform::from_translation(
+                        size.get_rect(&NonLevelLayoutEntity::Text, &())
+                            .centre()
+                            .extend(crate::z_indices::CONGRATS_BUTTON),
+                    ),
+                    NonLevelText,
+                )),
                 &(),
             );
 
@@ -85,8 +89,7 @@ impl MavericNode for NonLevelView {
                     "Reset".to_string()
                 }
                 NonLevel::LevelSequenceFinished(_) => "Next".to_string(),
-                NonLevel::DailyChallengeCountdown{todays_index} => {
-
+                NonLevel::DailyChallengeCountdown { todays_index } => {
                     format!("Replay #{}", todays_index + 1)
                 }
             };

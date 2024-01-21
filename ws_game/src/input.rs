@@ -8,7 +8,8 @@ use crate::{
     prelude::{
         level_group_layout::LevelGroupLayoutEntity, levels_menu_layout::LevelsMenuLayoutEntity,
         main_menu_layout::MainMenuLayoutEntity, *,
-    }, startup,
+    },
+    startup,
 };
 use bevy::{prelude::*, window::PrimaryWindow};
 use strum::EnumIs;
@@ -139,7 +140,7 @@ impl InteractionEntity {
                     match layout_entity {
                         GameLayoutEntity::TopBar => {
                             Self::try_get_button::<LayoutTopBar>(position, size, &())
-                        },
+                        }
 
                         GameLayoutEntity::Grid => match grid_tolerance {
                             Some(tolerance) => size
@@ -232,7 +233,6 @@ impl InputType {
         event_writer: &mut EventWriter<ButtonActivated>,
     ) {
         startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-
 
         let is_level_complete = found_words.is_level_complete();
 

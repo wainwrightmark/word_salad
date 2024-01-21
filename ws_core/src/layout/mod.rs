@@ -80,7 +80,6 @@ mod tests {
                 GameLayoutEntity::LevelInfo => "gold",
                 // GameLayoutEntity::DailyChallengeNumber => "purple",
                 // GameLayoutEntity::ThemeInfo => "gold",
-
                 GameLayoutEntity::Grid => "indigo",
 
                 GameLayoutEntity::WordList => "mediumblue",

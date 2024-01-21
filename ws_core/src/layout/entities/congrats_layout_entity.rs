@@ -95,7 +95,8 @@ impl LayoutStructure for CongratsLayoutEntity {
             TOP_BAR_HEIGHT_BASE
                 + extra_top_bar_height(sizing)
                 + THEME_HEIGHT
-                + GRID_WORD_LIST_SPACER + GRID_THEME_SPACER
+                + GRID_WORD_LIST_SPACER
+                + GRID_THEME_SPACER
         };
         pub const MENU_BUTTON_SPACING: f32 = 40.0 * 0.1;
 

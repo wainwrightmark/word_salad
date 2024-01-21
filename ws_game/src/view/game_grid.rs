@@ -224,7 +224,6 @@ impl MavericNode for GridTile {
                 &(),
             );
 
-
             if !node.timer_paused {
                 commands.add_child("letter", node.get_letter_node(), &());
 

@@ -35,7 +35,9 @@ fn try_write_file(path: PathBuf, output_folder: &str) {
 
     let mut lines = text.lines();
 
-    let headers = lines.next().expect("Sheet reader file should have at least one line");
+    let headers = lines
+        .next()
+        .expect("Sheet reader file should have at least one line");
     let mut categories: Vec<Category> = vec![];
     for header in headers.split('\t') {
         categories.push(Category {

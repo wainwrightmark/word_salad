@@ -4,7 +4,8 @@ use glam::Vec2;
 
 use crate::{LayoutRectangle, LayoutSizing};
 
-pub trait LayoutStructure: Sized + PartialEq + Debug {//TODO rename to positioning
+pub trait LayoutStructure: Sized + PartialEq + Debug {
+    //TODO rename to positioning
     type Context<'a>;
 
     fn pick(point: Vec2, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Option<Self> {

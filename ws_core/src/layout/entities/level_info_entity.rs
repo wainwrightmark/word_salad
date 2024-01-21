@@ -61,7 +61,7 @@ impl LayoutStructure for LevelInfoLayoutEntity {
             },
 
             LevelInfoLayoutEntity::DailyChallengeNumber => Vec2 {
-                x: base_location.x + GRID_SIZE  - DAILY_CHALLENGE_NUMBER_WIDTH,
+                x: base_location.x + GRID_SIZE - DAILY_CHALLENGE_NUMBER_WIDTH,
                 y: base_location.y,
             },
             LevelInfoLayoutEntity::ThemeInfo => Vec2 {
@@ -82,8 +82,8 @@ impl LayoutStructure for LevelInfoLayoutEntity {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub struct ThemeLengths{
-    pub theme_characters: usize
+pub struct ThemeLengths {
+    pub theme_characters: usize,
 }
 
 impl LayoutStructureWithFont for LevelInfoLayoutEntity {
@@ -91,7 +91,13 @@ impl LayoutStructureWithFont for LevelInfoLayoutEntity {
 
     fn font_size(&self, theme_length: &ThemeLengths) -> f32 {
         match self {
-            LevelInfoLayoutEntity::Theme => if theme_length.theme_characters < 17 {THEME_FONT_SIZE} else {THEME_FONT_SIZE_SMALL},
+            LevelInfoLayoutEntity::Theme => {
+                if theme_length.theme_characters < 17 {
+                    THEME_FONT_SIZE
+                } else {
+                    THEME_FONT_SIZE_SMALL
+                }
+            }
             LevelInfoLayoutEntity::DailyChallengeNumber => THEME_FONT_SIZE,
             LevelInfoLayoutEntity::TimerLeft => TIMER_FONT_SIZE,
             LevelInfoLayoutEntity::TimerRight => TIMER_FONT_SIZE,

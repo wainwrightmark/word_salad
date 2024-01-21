@@ -35,7 +35,7 @@ fn track_motion_blur(
     parents: Query<&GlobalTransform, Without<MotionBlur>>,
 ) {
     //info!("Blurring");
-    let mut count =0usize;
+    let mut count = 0usize;
     for (mut blur, mut transform, mut visibility, entity) in query.iter_mut() {
         count += 1;
         if blur.wait == 0 {
@@ -57,7 +57,7 @@ fn track_motion_blur(
             blur.translation_queue.push_back(parent_translation);
         }
     }
-    if count > 1{
+    if count > 1 {
         startup::ADDITIONAL_TRACKING.fetch_add(count, std::sync::atomic::Ordering::Relaxed);
     }
 }

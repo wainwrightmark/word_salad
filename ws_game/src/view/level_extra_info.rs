@@ -1,8 +1,8 @@
 use crate::prelude::*;
 use maveric::widgets::text2d_node::Text2DNode;
 use maveric::with_bundle::CanWithBundle;
-use ws_core::layout::entities::*;
 use ws_core::layout::entities::level_info_entity::{LevelInfoLayoutEntity, ThemeLengths};
+use ws_core::layout::entities::*;
 use ws_core::prelude::*;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -25,7 +25,12 @@ impl MavericNode for LevelExtraInfo {
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
-            let theme_font_size = context.font_size(&LevelInfoLayoutEntity::ThemeInfo, &ThemeLengths{theme_characters: node.theme.len()});
+            let theme_font_size = context.font_size(
+                &LevelInfoLayoutEntity::ThemeInfo,
+                &ThemeLengths {
+                    theme_characters: node.theme.len(),
+                },
+            );
 
             let color = if node.selfie_mode.is_selfie_mode {
                 palette::THEME_TEXT_COLOR_SELFIE

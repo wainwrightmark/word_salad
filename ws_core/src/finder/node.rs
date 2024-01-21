@@ -541,11 +541,9 @@ impl From<NodeBuilder> for Node {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Node {
-    single_constraints: NodeIdSet,
-    multiple_constraints: MultiConstraintIdSet,
-    // pub id: NodeId,
     pub character: Character,
-
+    pub single_constraints: NodeIdSet,
+    pub multiple_constraints: MultiConstraintIdSet,
 }
 
 impl Node {

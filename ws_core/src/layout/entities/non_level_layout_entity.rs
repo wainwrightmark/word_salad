@@ -60,7 +60,6 @@ pub enum NonLevelType {
     Countdown,
 }
 
-
 impl LayoutStructureWithFont for NonLevelLayoutEntity {
     type FontContext = NonLevelType;
     fn font_size(&self, context: &Self::FontContext) -> f32 {

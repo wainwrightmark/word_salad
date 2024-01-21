@@ -31,7 +31,7 @@ impl LayoutStructure for LayoutWordTile {
             context,
             WORD_MAIN_PAD,
             WORD_CROSS_PAD,
-            sizing
+            sizing,
         )
     }
 
@@ -59,7 +59,7 @@ impl LayoutStructure for LayoutWordTile {
             context,
             WORD_MAIN_PAD,
             WORD_CROSS_PAD,
-            sizing
+            sizing,
         );
 
         parent_loc + offset

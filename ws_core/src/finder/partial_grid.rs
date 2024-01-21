@@ -84,7 +84,17 @@ impl PartialGrid {
             .min_by(|a, b| {
                 a.2.count()
                     .cmp(&b.2.count())
-                    .then(b.1.constraint_count().cmp(&a.1.constraint_count())) //todo reverse this???
+                    .then(
+                        b.1.multiple_constraints
+                            .count()
+                            .cmp(&a.1.multiple_constraints.count())
+                            .reverse(),
+                    ) //as many multiple constraints as possible
+                    .then(
+                        b.1.single_constraints
+                            .count()
+                            .cmp(&a.1.single_constraints.count()),
+                    ) //as few single constraints as possible
             })
             .map(|x| (x.0, x.2))
     }
@@ -169,12 +179,14 @@ impl PartialGrid {
             4..=5 => {
                 allowed = allowed.intersect(&NOT_CORNERS);
                 if allowed == GridSet::EMPTY {
+                    //todo remove
                     return allowed;
                 }
             }
             6..=8 => {
                 allowed = allowed.intersect(&INNER_TILES);
                 if allowed == GridSet::EMPTY {
+                    //todo remove
                     return allowed;
                 }
             }

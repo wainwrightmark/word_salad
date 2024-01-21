@@ -25,7 +25,12 @@ impl MavericNode for LevelName {
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
-            let theme_font_size = context.font_size(&LevelInfoLayoutEntity::Theme, &ThemeLengths{theme_characters: node.theme.len()});
+            let theme_font_size = context.font_size(
+                &LevelInfoLayoutEntity::Theme,
+                &ThemeLengths {
+                    theme_characters: node.theme.len(),
+                },
+            );
 
             let color = if node.selfie_mode.is_selfie_mode {
                 palette::THEME_TEXT_COLOR_SELFIE
@@ -70,7 +75,10 @@ impl MavericNode for LevelName {
                     }
                     .with_bundle(Transform::from_translation(
                         context
-                            .get_rect(&LevelInfoLayoutEntity::DailyChallengeNumber, &node.selfie_mode)
+                            .get_rect(
+                                &LevelInfoLayoutEntity::DailyChallengeNumber,
+                                &node.selfie_mode,
+                            )
                             .centre_right()
                             .extend(crate::z_indices::THEME),
                     )),

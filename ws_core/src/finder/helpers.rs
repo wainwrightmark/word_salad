@@ -1,4 +1,4 @@
-use std::{str::FromStr, cmp::Reverse};
+use std::{cmp::Reverse, str::FromStr};
 
 use crate::prelude::*;
 use const_sized_bit_set::BitSet;
@@ -45,7 +45,11 @@ impl FromStr for FinderGroup {
             .fold(PrimeBag128::default(), |a, b| {
                 a.try_union(&b).expect("Could not combine")
             });
-        Ok(FinderGroup { text: ustr(s), words, counts })
+        Ok(FinderGroup {
+            text: ustr(s),
+            words,
+            counts,
+        })
     }
 }
 
@@ -98,40 +102,40 @@ impl FromStr for FinderSingleWord {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub (crate) struct AdjacencyStrength{
+pub(crate) struct AdjacencyStrength {
     appearances: u8,
     adjacencies: u8,
-    distinct_adjacent_indices:  Reverse<u8>,
-
+    distinct_adjacent_indices: Reverse<u8>,
 }
 
 impl AdjacencyStrength {
     /// Counts the number of distinct index of letters adjacent to a letter which is this character
-pub fn calculate(word: &FinderSingleWord, char: Character) -> Self {
+    pub fn calculate(word: &FinderSingleWord, char: Character) -> Self {
+        let mut appearances: u8 = 0;
+        let mut adjacencies: u8 = 0;
+        let mut adjacent_indices = BitSet::<1>::default();
 
-    let mut appearances: u8 = 0;
-    let mut adjacencies: u8 = 0;
-    let mut adjacent_indices = BitSet::<1>::default();
-
-    for (index, word_char) in word.array.iter().enumerate() {
-        if *word_char == char {
-            appearances += 1;
-            if let Some(checked_index) = index.checked_sub(1) {
-                adjacencies += 1;
-                adjacent_indices.set_bit(checked_index, true);
-            }
-            if word.array.get(index + 1).is_some() {
-                adjacencies += 1;
-                adjacent_indices.set_bit(index + 1, true);
+        for (index, word_char) in word.array.iter().enumerate() {
+            if *word_char == char {
+                appearances += 1;
+                if let Some(checked_index) = index.checked_sub(1) {
+                    adjacencies += 1;
+                    adjacent_indices.set_bit(checked_index, true);
+                }
+                if word.array.get(index + 1).is_some() {
+                    adjacencies += 1;
+                    adjacent_indices.set_bit(index + 1, true);
+                }
             }
         }
+
+        Self {
+            appearances,
+            adjacencies,
+            distinct_adjacent_indices: Reverse(adjacent_indices.count() as u8),
+        }
     }
-
-    Self { appearances, adjacencies, distinct_adjacent_indices: Reverse(adjacent_indices.count() as u8) }
 }
-}
-
-
 
 #[cfg(test)]
 mod tests {

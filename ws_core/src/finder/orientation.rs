@@ -82,9 +82,8 @@ pub fn find_taboo_word(grid: &Grid) -> Option<CharsArray> {
 
 /// Returns Ok(true) if the orientation was changed
 pub fn try_optimize_orientation(grid_result: &mut GridResult) -> Result<bool, String> {
-    let flips = [ FlipAxes::Horizontal, FlipAxes::None,];
+    let flips = [FlipAxes::Horizontal, FlipAxes::None];
     let rotations = [
-
         QuarterTurns::One,
         QuarterTurns::Two,
         QuarterTurns::Three,
@@ -101,7 +100,6 @@ pub fn try_optimize_orientation(grid_result: &mut GridResult) -> Result<bool, St
             new_grid
         })
         .filter(|grid| find_taboo_word(grid).is_none())
-
         .max_by_key(|new_grid| calculate_max_score(&new_grid, &grid_result.words))
     {
         if grid_result.grid != new_grid {

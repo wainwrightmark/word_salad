@@ -188,7 +188,7 @@ pub mod tests {
             }
         }
 
-        for error in taboo_errors.iter(){
+        for error in taboo_errors.iter() {
             println!("{error}")
         }
 
@@ -219,7 +219,7 @@ pub mod tests {
             }
         }
 
-        for error in taboo_errors.iter(){
+        for error in taboo_errors.iter() {
             println!("{error}")
         }
 
@@ -240,7 +240,7 @@ pub mod tests {
 
             let optimize_result = orientation::try_optimize_orientation(&mut gr);
 
-            match optimize_result{
+            match optimize_result {
                 Ok(_) => {
                     return Err(format!(
                         "Level '{:<26}' Grid '{:?}' contains taboo word '{taboo_word:?}'. Try {}",
@@ -248,7 +248,7 @@ pub mod tests {
                         level.grid.iter().join(""),
                         gr.grid.iter().join("")
                     ));
-                },
+                }
                 Err(message) => {
                     return Err(format!(
                         "Level '{:<26}' Grid '{:?}' contains taboo word '{taboo_word:?}'. {}",
@@ -256,7 +256,7 @@ pub mod tests {
                         level.grid.iter().join(""),
                         message
                     ));
-                },
+                }
             }
         }
         Ok(())

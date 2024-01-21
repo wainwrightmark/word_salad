@@ -120,5 +120,3 @@ pub const WORD_SALAD_LOGO_FONT_PATH: &str = "fonts/Montserrat-Bold.ttf";
 
 pub const ICON_BUTTON_SIZE: f32 = 40f32; //40 pixels
 pub const TOOLBAR_SIZE: f32 = 40f32; //40 pixels
-
-

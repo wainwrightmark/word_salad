@@ -1,4 +1,3 @@
-
 use const_sized_bit_set::BitSet;
 use indicatif::{ProgressBar, ProgressStyle};
 use itertools::Itertools;
@@ -16,7 +15,6 @@ pub fn get_combinations<const W: usize>(
     let upper_bounds = 0..(possible_words.len());
     let result: Vec<BitSet<W>> = upper_bounds
         .into_iter()
-
         .par_bridge()
         .map(|upper| {
             let words = &possible_words[0..upper];
@@ -129,9 +127,7 @@ pub struct WordCombination<const W: usize> {
 }
 
 /// Iterate all subsets of this set whose element count is exactly one less
-pub fn shrink_bit_sets<const W: usize>(
-    set: &BitSet<W>,
-) -> impl Iterator<Item = BitSet<W>> + '_ {
+pub fn shrink_bit_sets<const W: usize>(set: &BitSet<W>) -> impl Iterator<Item = BitSet<W>> + '_ {
     set.into_iter().map(|index| {
         let mut s = *set;
         s.set_bit(index, false);
@@ -226,7 +222,7 @@ impl<const W: usize> WordCombination<W> {
 pub mod tests {
     use super::*;
     use itertools::Itertools;
-    use std::{ time::Instant};
+    use std::time::Instant;
     use test_case::test_case;
 
     #[test]
@@ -238,11 +234,9 @@ pub mod tests {
         let words = make_finder_group_vec_from_file(input);
         let word_letters: Vec<LetterCounts> = words.iter().map(|x| x.counts).collect_vec();
 
-        let possible_combinations: Vec<BitSet<1>> =
-            get_combinations(word_letters.as_slice(), 16);
+        let possible_combinations: Vec<BitSet<1>> = get_combinations(word_letters.as_slice(), 16);
 
         let expected = "boron, carbon, helium, hydrogen\nboron, carbon, helium, lithium\nboron, helium, hydrogen, lithium";
-
 
         let actual = possible_combinations
             .iter()
@@ -283,8 +277,7 @@ pub mod tests {
 
         let word_letters: Vec<LetterCounts> = words.iter().map(|x| x.counts).collect_vec();
 
-        let possible_combinations: Vec<BitSet<1>> =
-            get_combinations(word_letters.as_slice(), 16);
+        let possible_combinations: Vec<BitSet<1>> = get_combinations(word_letters.as_slice(), 16);
 
         println!("{:?}", now.elapsed());
 
@@ -297,7 +290,6 @@ pub mod tests {
         if !contains_expected {
             let actual = possible_combinations
                 .into_iter()
-
                 .map(|x| WordCombination::from_bit_set(x, &word_letters).unwrap())
                 .map(|x| x.display_string(words.as_slice()))
                 .sorted()
