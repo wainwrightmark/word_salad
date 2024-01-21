@@ -2171,14 +2171,13 @@ checksum = "1d758ba1b47b00caf47f24925c0074ecb20d6dfcffe7f6d53395c0465674841a"
 
 [[package]]
 name = "geometrid"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dd07210117673391e8e42cbe874adbb326ce810096608f2a4e54f204789d4dfc"
+version = "0.7.0"
+source = "git+https://github.com/wainwrightmark/geometrid#0a520af1f90255871fcddcd330ca629afac926f5"
 dependencies = [
  "const_panic",
  "ethnum",
  "glam",
- "itertools 0.11.0",
+ "itertools 0.12.0",
  "serde",
  "serde_arrays",
  "strum",
@@ -2793,15 +2792,6 @@ name = "itertools"
 version = "0.10.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b0fd2260e829bddf4cb6ea802289de2f86d6a7a690192fbe91b3f46e0f2c8473"
-dependencies = [
- "either",
-]
-
-[[package]]
-name = "itertools"
-version = "0.11.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1c173a5686ce8bfa551b3563d0c2170bf24ca44da99c7ca4bfdab5418c3fe57"
 dependencies = [
  "either",
 ]

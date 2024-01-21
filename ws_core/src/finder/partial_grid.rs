@@ -178,35 +178,31 @@ impl PartialGrid {
             ..=3 => {}
             4..=5 => {
                 allowed = allowed.intersect(&NOT_CORNERS);
-                if allowed == GridSet::EMPTY {
-                    //todo remove
-                    return allowed;
-                }
             }
             6..=8 => {
                 allowed = allowed.intersect(&INNER_TILES);
-                if allowed == GridSet::EMPTY {
-                    //todo remove
-                    return allowed;
-                }
             }
             _ => {
                 return GridSet::EMPTY;
             }
         };
-        let mut new_allowed = allowed;
+        
+        
+        if allowed.is_empty() {
+            return allowed;
+        }
 
         //println!("{new_allowed}");
 
         for tile in allowed.iter_true_tiles() {
             if !node.are_constraints_met(&tile, self, multi_constraint_map) {
-                new_allowed.set_bit(&tile, false);
+                allowed.set_bit(&tile, false);
                 // println!("{tile}");
                 // println!("{new_allowed}");
             }
         }
 
-        new_allowed
+        allowed
     }
 
     pub fn remove_node(&mut self, node_id: NodeId) {
