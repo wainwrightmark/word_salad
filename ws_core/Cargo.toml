@@ -34,7 +34,15 @@ const_sized_bit_set ={git="https://github.com/wainwrightmark/const_sized_bit_set
 insta = "1"
 test-case = "3"
 criterion = "0.5"
+iai-callgrind = "0.10.0"
+
+[profile.bench]
+debug = true
 
 [[bench]]
-name = "my_benchmark"
+name = "criterion_benchmark"
+harness = false
+
+[[bench]]
+name = "iai_benchmark"
 harness = false
