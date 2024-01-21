@@ -15,6 +15,7 @@ use ws_core::prelude::*;
 #[derive(Debug, PartialEq)]
 pub struct HintsViewNode {
     pub hint_state: HintState,
+    pub selfie_mode: SelfieMode,
 }
 
 const CIRCLE_SCALE: f32 = 0.6;
@@ -36,7 +37,7 @@ impl MavericNode for HintsViewNode {
         }
 
         let size = context.as_ref();
-        let hints_rect = size.get_rect(&LayoutTopBar::HintCounter, &());
+        let hints_rect = size.get_rect(&LayoutTopBar::HintCounter, &self.selfie_mode);
 
         let final_translation =
             (hints_rect.centre()).extend(crate::z_indices::TOP_BAR_BUTTON - 1.0);
@@ -146,7 +147,7 @@ impl MavericNode for HintsViewNode {
                 let context = a.context;
 
                 let size = context.as_ref();
-                let hints_rect = size.get_rect(&LayoutTopBar::HintCounter, &());
+                let hints_rect = size.get_rect(&LayoutTopBar::HintCounter, &node.selfie_mode);
                 let hint_font_size = size.font_size::<LayoutTopBar>(
                     &LayoutTopBar::HintCounter,
                     &HintCount {

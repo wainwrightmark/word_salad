@@ -1,5 +1,7 @@
 use crate::LayoutSizing;
 
+use super::SelfieMode;
+
 pub const IDEAL_WIDTH: f32 = 320.;
 pub const IDEAL_HEIGHT: f32 = 568.;
 pub const IDEAL_RATIO: f32 = IDEAL_WIDTH as f32 / IDEAL_HEIGHT as f32;
@@ -45,7 +47,12 @@ pub const USED_HEIGHT_BASE: f32 = TOP_BAR_HEIGHT_BASE
 pub const GRID_MID_BASE: f32 =
     TOP_BAR_HEIGHT_BASE + THEME_HEIGHT + TIMER_HEIGHT + GRID_THEME_SPACER + (GRID_SIZE * 0.5);
 
-pub fn extra_top_bar_height(sizing: &LayoutSizing) -> f32 {
+pub fn extra_top_bar_height(sizing: &LayoutSizing, selfie_mode: &SelfieMode) -> f32 {
+
+    if selfie_mode.is_selfie_mode{
+        return 0.0;
+    }
+
     let bottom_padding = sizing.bottom_pad / sizing.size_ratio;
     let total_height = IDEAL_HEIGHT + bottom_padding;
     let mid = total_height * 0.5;
@@ -97,7 +104,7 @@ pub const GRID_TILE_FONT_SIZE: f32 = 34f32;
 pub const CONGRATS_BUTTON_FONT_SIZE: f32 = 22f32;
 pub const STATISTIC_NUMBER_FONT_SIZE_SELFIE: f32 = 22f32;
 pub const STATISTIC_NUMBER_FONT_SIZE_NORMAL: f32 = 34f32;
-pub const STATISTIC_LABEL_FONT_SIZE_SELFIE: f32 = 11f32;
+pub const STATISTIC_LABEL_FONT_SIZE_SELFIE: f32 = 10f32;
 pub const STATISTIC_LABEL_FONT_SIZE_NORMAL: f32 = 14f32;
 
 pub const THEME_FONT_SIZE: f32 = 22f32;

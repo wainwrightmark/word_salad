@@ -3,7 +3,7 @@ use strum::{Display, EnumCount, EnumIter, IntoEnumIterator};
 
 use crate::prelude::*;
 
-use super::consts::*;
+use super::{consts::*, SelfieMode};
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter, EnumCount, Display,
@@ -20,7 +20,7 @@ impl NonLevelLayoutEntity {
 }
 
 impl LayoutStructure for NonLevelLayoutEntity {
-    type Context<'a> = ();
+    type Context<'a> = SelfieMode;
 
     fn size(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
         match self {
@@ -35,8 +35,8 @@ impl LayoutStructure for NonLevelLayoutEntity {
         }
     }
 
-    fn location(&self, _context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
-        let top_offset = GRID_TILE_SIZE + (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing));
+    fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
+        let top_offset = GRID_TILE_SIZE + (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, context));
 
         match self {
             NonLevelLayoutEntity::Text => Vec2 {

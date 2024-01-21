@@ -113,7 +113,7 @@ impl LayoutSizing {
         entity: &T,
         context: &T::FontContext,
     ) -> f32 {
-        const FONT_INTERVAL: f32 = 2.0;
+        const FONT_INTERVAL: f32 = 1.0;
         let base_size = entity.font_size(context);
 
         (self.size_ratio * base_size / FONT_INTERVAL).floor() * FONT_INTERVAL

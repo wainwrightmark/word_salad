@@ -2,7 +2,7 @@ use crate::prelude::*;
 use glam::Vec2;
 use strum::{Display, EnumCount, EnumIter, IntoEnumIterator};
 
-use super::consts::*;
+use super::{consts::*, SelfieMode};
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Display, EnumIter, EnumCount,
@@ -24,18 +24,18 @@ impl LayoutTopBar {
 }
 
 impl LayoutStructure for LayoutTopBar {
-    type Context<'a> = ();
+    type Context<'a> = SelfieMode;
 
-    fn size(&self, _context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
+    fn size(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
         use LayoutTopBar::*;
         match self {
             MenuBurgerButton | HintCounter => Vec2 {
                 x: TOP_BAR_ICON_WIDTH,
-                y: (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing)),
+                y: (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, context)),
             },
             WordSaladLogo => Vec2 {
                 x: WORD_SALAD_LOGO_WIDTH,
-                y: (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing)),
+                y: (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, context)),
             },
         }
     }

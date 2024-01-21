@@ -41,7 +41,7 @@ impl MainMenuLayoutEntity {
 }
 
 impl LayoutStructure for MainMenuLayoutEntity {
-    type Context<'a> = ();
+    type Context<'a> = SelfieMode;
 
     fn size(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
         Vec2 {
@@ -50,12 +50,12 @@ impl LayoutStructure for MainMenuLayoutEntity {
         }
     }
 
-    fn location(&self, _context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
+    fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
         Vec2 {
             x: (IDEAL_WIDTH - MENU_BUTTON_WIDTH) / 2.,
-            y: (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing))
+            y: (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, context))
                 + Spacing::Centre.apply(
-                    IDEAL_HEIGHT - (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing)),
+                    IDEAL_HEIGHT - (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, context)),
                     MENU_BUTTON_HEIGHT + MENU_BUTTON_SPACING,
                     super::MENU_VIRTUAL_CHILDREN,
                     self.index(),

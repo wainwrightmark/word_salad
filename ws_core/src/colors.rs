@@ -50,10 +50,10 @@ pub mod palette {
     pub const THEME_TEXT_COLOR_NORMAL: Color = MY_BLACK;
     pub const THEME_TEXT_COLOR_SELFIE: Color = LIGHT_GRAY;
 
-    pub const CONGRATS_BUTTON_TEXT_NORMAL: Color = MY_BLACK;
+    pub const CONGRATS_BUTTON_TEXT_NORMAL: Color = MY_WHITE;
     pub const CONGRATS_BUTTON_FILL_NORMAL: Color = GREEN_LIGHT;
 
-    pub const CONGRATS_BUTTON_TEXT_SELFIE: Color = MY_BLACK.with_a(0.95);
+    pub const CONGRATS_BUTTON_TEXT_SELFIE: Color = MY_WHITE.with_a(0.95);
     pub const CONGRATS_BUTTON_FILL_SELFIE: Color = GREEN_LIGHT.with_a(0.5);
 
     pub const CONGRATS_STATISTIC_TEXT_SELFIE: Color = LIGHT_GRAY.with_a(0.95);
@@ -79,7 +79,8 @@ pub mod palette {
 
     pub const GRID_TILE_FILL_SELFIE: Color = DARK_GRAY.with_a(0.5);
 
-    pub const MENU_BUTTON_TEXT: Color = MY_BLACK;
+    pub const MENU_BUTTON_TEXT_REGULAR: Color = MY_WHITE;
+    pub const MENU_BUTTON_TEXT_DISCOURAGED: Color = MY_BLACK;
     pub const MENU_BUTTON_FILL: Color = GREEN_LIGHT;
     pub const BUTTON_CLICK_FILL: Color = GREEN_DARK;
     pub const MENU_BUTTON_DISCOURAGED_FILL: Color = LIGHT_GRAY;

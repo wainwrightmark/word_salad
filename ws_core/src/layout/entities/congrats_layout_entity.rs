@@ -93,7 +93,7 @@ impl LayoutStructure for CongratsLayoutEntity {
             word_list_top - (button_height + stat_size + CONGRATS_ENTITY_VERTICAL_GAP)
         } else {
             TOP_BAR_HEIGHT_BASE
-                + extra_top_bar_height(sizing)
+                + extra_top_bar_height(sizing, &context.0)
                 + THEME_HEIGHT
                 + GRID_WORD_LIST_SPACER
                 + GRID_THEME_SPACER

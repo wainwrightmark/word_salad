@@ -60,6 +60,7 @@ impl InteractionEntity {
         is_level_complete: bool,
         grid_tolerance: Option<f32>,
     ) -> Option<Self> {
+        let selfie_mode = &video_resource.selfie_mode();
         //info!("Try find input");
         if let Some(popup_type) = popup_state.0 {
             match popup_type {
@@ -111,7 +112,7 @@ impl InteractionEntity {
             }
         }
 
-        let tbi = Self::try_get_button::<LayoutTopBar>(position, size, &());
+        let tbi = Self::try_get_button::<LayoutTopBar>(position, size, &selfie_mode);
         if tbi.is_some() {
             return tbi;
         }
@@ -139,7 +140,7 @@ impl InteractionEntity {
 
                     match layout_entity {
                         GameLayoutEntity::TopBar => {
-                            Self::try_get_button::<LayoutTopBar>(position, size, &())
+                            Self::try_get_button::<LayoutTopBar>(position, size, &selfie_mode)
                         }
 
                         GameLayoutEntity::Grid => match grid_tolerance {
@@ -169,7 +170,7 @@ impl InteractionEntity {
                     }
                 }
                 itertools::Either::Right(..) => {
-                    let non_level_entity = size.try_pick::<NonLevelLayoutEntity>(*position, &())?;
+                    let non_level_entity = size.try_pick::<NonLevelLayoutEntity>(*position, &selfie_mode)?;
 
                     match non_level_entity {
                         NonLevelLayoutEntity::Text => None,
@@ -186,7 +187,7 @@ impl InteractionEntity {
                     return Some(back);
                 }
 
-                Self::try_get_button::<MainMenuLayoutEntity>(position, size, &())
+                Self::try_get_button::<MainMenuLayoutEntity>(position, size, &selfie_mode)
             }
             MenuState::ChooseLevelsPage => {
                 if let Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &())
@@ -194,7 +195,7 @@ impl InteractionEntity {
                     return Some(back);
                 }
 
-                Self::try_get_button::<LevelsMenuLayoutEntity>(position, size, &())
+                Self::try_get_button::<LevelsMenuLayoutEntity>(position, size, &selfie_mode)
             }
             MenuState::WordSaladLevels => {
                 if let Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &())
@@ -202,7 +203,7 @@ impl InteractionEntity {
                     return Some(back);
                 }
 
-                Self::try_get_button::<WordSaladMenuLayoutEntity>(position, size, &())
+                Self::try_get_button::<WordSaladMenuLayoutEntity>(position, size, &selfie_mode)
             }
             MenuState::LevelGroupPage(group) => {
                 if let Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &())
@@ -210,7 +211,7 @@ impl InteractionEntity {
                     return Some(back);
                 }
 
-                Self::try_get_button::<LevelGroupLayoutEntity>(position, size, group)
+                Self::try_get_button::<LevelGroupLayoutEntity>(position, size, &(selfie_mode, *group))
             }
         }
     }

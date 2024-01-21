@@ -110,7 +110,8 @@ impl MavericNode for WordNode {
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
-        commands.unordered_children_with_node(|node, commands| {
+        commands.unordered(|args, commands| {
+            let node = args.node;
             let text = match node.completion {
                 Completion::Unstarted => node.word.hidden_text.to_string(),
                 Completion::ManualHinted(hints) => node.word.hinted_text(hints).to_uppercase(),
@@ -178,6 +179,7 @@ impl MavericNode for WordNode {
                             WordButtonCompletion {
                                 completion,
                                 tile: node.tile,
+                                previous_completion: args.previous.map(|x|x.completion)
                             },
                             (node.rect.extents.y.abs() / node.rect.extents.x.abs()).into(),
                             ShaderProgress { progress },
@@ -205,6 +207,7 @@ impl MavericNode for WordNode {
 #[derive(Debug, PartialEq, Clone, Component, Default)]
 pub struct WordButtonCompletion {
     pub completion: Completion,
+    pub previous_completion: Option<Completion>,
     pub tile: LayoutWordTile,
 }
 
@@ -230,7 +233,11 @@ impl ExtractToShader for WordButtonBoxShader {
         resource: &<Self::ResourceParams<'_> as bevy::ecs::system::SystemParam>::Item<'_, '_>,
     ) -> <Self::Shader as ParameterizedShader>::Params {
         let (
-            WordButtonCompletion { completion, tile },
+            WordButtonCompletion {
+                completion,
+                tile,
+                previous_completion,
+            },
             ShaderAspectRatio { height },
             ShaderProgress { progress },
         ) = query_item;
@@ -277,7 +284,13 @@ impl ExtractToShader for WordButtonBoxShader {
             let color = match completion {
                 Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color().into(),
                 Completion::ManualHinted(_) => palette::WORD_BACKGROUND_MANUAL_HINT.convert_color(),
-                Completion::Complete => palette::WORD_BACKGROUND_UNSTARTED.convert_color().into(),
+                Completion::Complete => {
+                    if previous_completion.is_some_and(|x|x.is_manual_hinted()) {
+                        palette::WORD_BACKGROUND_MANUAL_HINT.convert_color()
+                    } else {
+                        palette::WORD_BACKGROUND_UNSTARTED.convert_color().into()
+                    }
+                }
             };
 
             let color2 = match completion {

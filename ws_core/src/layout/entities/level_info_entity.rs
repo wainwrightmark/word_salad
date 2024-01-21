@@ -92,7 +92,7 @@ impl LayoutStructureWithFont for LevelInfoLayoutEntity {
     fn font_size(&self, theme_length: &ThemeLengths) -> f32 {
         match self {
             LevelInfoLayoutEntity::Theme => {
-                if theme_length.theme_characters < 17 {
+                if theme_length.theme_characters <= 18 {
                     THEME_FONT_SIZE
                 } else {
                     THEME_FONT_SIZE_SMALL

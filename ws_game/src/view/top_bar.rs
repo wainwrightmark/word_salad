@@ -47,7 +47,7 @@ impl MavericNode for TopBar {
                         text_anchor: bevy::sprite::Anchor::CenterLeft,
                     }
                     .with_bundle(Transform::from_translation(
-                        size.get_rect(&LayoutTopBar::MenuBurgerButton, &())
+                        size.get_rect(&LayoutTopBar::MenuBurgerButton, &context.8.selfie_mode())
                             .centre_left()
                             .extend(crate::z_indices::TOP_BAR_BUTTON),
                     )),
@@ -58,6 +58,7 @@ impl MavericNode for TopBar {
                     "hints",
                     HintsViewNode {
                         hint_state: context.6.clone(),
+                        selfie_mode: context.8.selfie_mode()
                     },
                     size,
                 );
@@ -83,7 +84,7 @@ impl MavericNode for TopBar {
                         text_anchor: bevy::sprite::Anchor::Center,
                     }
                     .with_bundle((Transform::from_translation(
-                        size.get_rect(&LayoutTopBar::WordSaladLogo, &())
+                        size.get_rect(&LayoutTopBar::WordSaladLogo, &context.8.selfie_mode())
                             .centre()
                             .extend(crate::z_indices::TOP_BAR_BUTTON),
                     ),)),

@@ -85,16 +85,17 @@ impl MavericNode for Menu {
                     MenuState::Closed => {}
                     MenuState::ShowMainMenu => {
                         add_menu_items::<R, MainMenuLayoutEntity>(
-                            &(),
+                            &context.8.selfie_mode(),
                             commands,
                             size,
                             0,
                             palette::MENU_BUTTON_FILL.convert_color(),
+                            palette::MENU_BUTTON_TEXT_REGULAR.convert_color()
                         );
                     }
                     MenuState::ChooseLevelsPage => {
                         add_double_text_menu_items::<R, LevelsMenuLayoutEntity>(
-                            &(),
+                            &context.8.selfie_mode(),
                             commands,
                             size,
                             1,
@@ -102,11 +103,12 @@ impl MavericNode for Menu {
                             |x| get_variable_fill(x.is_complete(&context.7, context.9.as_ref())),
                             BUTTONS_FONT_PATH,
                             BUTTONS_FONT_PATH,
+                            palette::MENU_BUTTON_TEXT_REGULAR.convert_color()
                         );
                     }
                     MenuState::LevelGroupPage(group) => {
                         add_double_text_menu_items::<R, LevelGroupLayoutEntity>(
-                            group,
+                            &(context.8.selfie_mode(),*group),
                             commands,
                             size,
                             2,
@@ -114,11 +116,12 @@ impl MavericNode for Menu {
                             |x| get_variable_fill(x.is_complete(&context.7, group)),
                             BUTTONS_FONT_PATH,
                             BUTTONS_FONT_PATH,
+                            palette::MENU_BUTTON_TEXT_REGULAR.convert_color()
                         );
                     }
                     MenuState::WordSaladLevels => {
                         add_double_text_menu_items::<R, WordSaladMenuLayoutEntity>(
-                            &(),
+                            &context.8.selfie_mode(),
                             commands,
                             size,
                             5,
@@ -126,6 +129,7 @@ impl MavericNode for Menu {
                             |x| get_variable_fill(x.is_complete(&context.7)),
                             BUTTONS_FONT_PATH,
                             ICON_FONT_PATH,
+                            palette::MENU_BUTTON_TEXT_REGULAR.convert_color()
                         )
                     }
                 }
@@ -136,6 +140,7 @@ impl MavericNode for Menu {
                     size,
                     4,
                     palette::MENU_BUTTON_DISCOURAGED_FILL.convert_color(),
+                    palette::MENU_BUTTON_TEXT_DISCOURAGED.convert_color()
                 );
             });
     }
@@ -159,6 +164,7 @@ fn add_menu_items<
     size: &Size,
     page: u16,
     fill_color: Color,
+    text_color: Color
 ) {
     for (index, entity) in L::iter_all(context).enumerate() {
         let font_size = size.font_size::<L>(&entity, &());
@@ -170,7 +176,7 @@ fn add_menu_items<
                 rect,
                 text: entity.text(context),
                 interaction: entity.into(),
-                text_color: palette::MENU_BUTTON_TEXT.convert_color(),
+                text_color,
                 fill_color,
                 clicked_fill_color: BUTTON_CLICK_FILL.convert_color(),
             },
@@ -191,6 +197,7 @@ fn add_double_text_menu_items<
     fill_color_func: impl Fn(&L) -> Color,
     left_font: &'static str,
     right_font: &'static str,
+    text_color: Color
 ) {
     for (index, entity) in L::iter_all(context).enumerate() {
         let font_size = size.font_size::<L>(&entity, &());
@@ -206,7 +213,7 @@ fn add_double_text_menu_items<
                 left_text,
                 right_text,
                 interaction: entity.into(),
-                text_color: palette::MENU_BUTTON_TEXT.convert_color(),
+                text_color,
                 fill_color,
                 left_font,
                 right_font,

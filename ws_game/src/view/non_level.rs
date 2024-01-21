@@ -72,7 +72,7 @@ impl MavericNode for NonLevelView {
                 }
                 .with_bundle((
                     Transform::from_translation(
-                        size.get_rect(&NonLevelLayoutEntity::Text, &())
+                        size.get_rect(&NonLevelLayoutEntity::Text, &node.selfie_mode)
                             .centre()
                             .extend(crate::z_indices::CONGRATS_BUTTON),
                     ),
@@ -107,7 +107,7 @@ impl MavericNode for NonLevelView {
                     text: interaction_text,
                     font_size: size
                         .font_size(&NonLevelLayoutEntity::InteractButton, &non_level_type),
-                    rect: size.get_rect(&NonLevelLayoutEntity::InteractButton, &()),
+                    rect: size.get_rect(&NonLevelLayoutEntity::InteractButton, &node.selfie_mode),
                     interaction: ButtonInteraction::NonLevelInteractionButton,
                     text_color,
                     fill_color,
