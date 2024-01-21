@@ -532,7 +532,6 @@ impl NodeBuilder {
 impl From<NodeBuilder> for Node {
     fn from(val: NodeBuilder) -> Self {
         Node {
-            id: val.id,
             character: val.character,
             single_constraints: val.single_constraints.into_inner(),
             multiple_constraints: val.multiple_constraints.into_inner(),
@@ -544,7 +543,7 @@ impl From<NodeBuilder> for Node {
 pub struct Node {
     single_constraints: NodeIdSet,
     multiple_constraints: MultiConstraintIdSet,
-    pub id: NodeId,
+    // pub id: NodeId,
     pub character: Character,
 
 }

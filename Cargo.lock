@@ -1453,7 +1453,7 @@ checksum = "6051f239ecec86fde3410901ab7860d458d160371533842974fc61f96d15879b"
 [[package]]
 name = "const_sized_bit_set"
 version = "0.1.0"
-source = "git+https://github.com/wainwrightmark/const_sized_bit_set#7dd04933497f86385f4ceb6ae9a73dc8098f2d35"
+source = "git+https://github.com/wainwrightmark/const_sized_bit_set#f025f868eec9f1b9dc21f54348b12d8d772e35ee"
 
 [[package]]
 name = "const_soft_float"

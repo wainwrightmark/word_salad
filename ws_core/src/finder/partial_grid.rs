@@ -28,8 +28,8 @@ impl Default for PartialGrid {
 impl PartialGrid {
     pub fn to_grid(&self, nodes: &NodeMap) -> Grid {
         let mut grid: Grid = Grid::from_fn(|_| Character::Blank);
-        for node in nodes {
-            if let Some(tile) = self.map[node.id] {
+        for (node_id, node) in nodes.enumerate() {
+            if let Some(tile) = self.map[node_id] {
                 grid[tile] = node.character;
             }
         }
@@ -64,7 +64,7 @@ impl PartialGrid {
         &self,
         all_nodes: &NodeMap,
         multi_constraint_map: &MultiConstraintMap,
-    ) -> Option<(Node, GridSet)> {
+    ) -> Option<(NodeId, GridSet)> {
         let allowed_by_symmetry = if self.used_grid == GridSet::EMPTY {
             TOP_LOCATIONS
         } else if self.used_grid.is_subset(&DOWN_RIGHT_DIAGONAL) {
@@ -75,17 +75,18 @@ impl PartialGrid {
 
         self.nodes_to_add
             .iter_true_tiles()
-            .map(|tile| {
-                let node = all_nodes[tile];
+            .map(|node_id| {
+                let node = all_nodes[node_id];
                 let set = self.potential_locations(node, allowed_by_symmetry, multi_constraint_map);
 
-                (node, set)
+                (node_id, node, set)
             })
             .min_by(|a, b| {
-                a.1.count()
-                    .cmp(&b.1.count())
-                    .then(b.0.constraint_count().cmp(&a.0.constraint_count() )) //todo reverse this???
+                a.2.count()
+                    .cmp(&b.2.count())
+                    .then(b.1.constraint_count().cmp(&a.1.constraint_count())) //todo reverse this???
             })
+            .map(|x| (x.0, x.2))
     }
 
     pub fn solve(
@@ -97,32 +98,48 @@ impl PartialGrid {
         exclude_words: &Vec<FinderSingleWord>,
         multi_constraint_map: &MultiConstraintMap,
     ) {
-        let mut stack: ArrayVec<(Node, NodeId, RemainingLocations), 16> = Default::default();
+        struct Frame {
+            node_id: NodeId,
+            prev_node: NodeId,
+            remaining_locations: RemainingLocations,
+        }
 
-        let Some((n, pl)) = self.get_most_constrained_node(all_nodes, multi_constraint_map) else {
+        let mut stack: ArrayVec<Frame, 16> = Default::default();
+
+        let Some((n_id, pl)) = self.get_most_constrained_node(all_nodes, multi_constraint_map)
+        else {
             return;
         };
 
-        stack.push((n, NodeId::default(), RemainingLocations::new(pl)));
+        stack.push(Frame {
+            node_id: n_id,
+            prev_node: NodeId::default(),
+            remaining_locations: RemainingLocations::new(pl),
+        });
 
-        while let Some((node, prev_node, remaining_locations)) = stack.last_mut() {
+        while let Some(Frame {
+            node_id,
+            prev_node,
+            remaining_locations,
+        }) = stack.last_mut()
+        {
             if let Some(tile) = remaining_locations.next() {
                 if !counter.try_increment() {
                     return; //Give up
                 }
 
-                self.place_node(&node, tile);
+                self.place_node(*node_id, tile);
 
-                if let Some((next_node, potential_locations)) =
+                if let Some((next_node_id, potential_locations)) =
                     self.get_most_constrained_node(all_nodes, multi_constraint_map)
                 {
-                    let prev_node_id = node.id;
+                    let prev_node_id = *node_id;
 
-                    stack.push((
-                        next_node,
-                        prev_node_id,
-                        RemainingLocations::new(potential_locations),
-                    ))
+                    stack.push(Frame {
+                        node_id: next_node_id,
+                        prev_node: prev_node_id,
+                        remaining_locations: RemainingLocations::new(potential_locations),
+                    })
                 } else {
                     if self.check_matches(all_nodes, words, exclude_words) {
                         collector.collect_solution(self.clone());
@@ -130,7 +147,7 @@ impl PartialGrid {
                             return;
                         }
                     }
-                    self.remove_node(node.id)
+                    self.remove_node(*node_id)
                 }
             } else {
                 self.remove_node(*prev_node);
@@ -189,10 +206,10 @@ impl PartialGrid {
         self.map[node_id] = None;
     }
 
-    fn place_node(&mut self, node: &Node, tile: Tile) {
-        self.map[node.id] = Some(tile);
+    fn place_node(&mut self, node_id: NodeId, tile: Tile) {
+        self.map[node_id] = Some(tile);
         self.used_grid.set_bit(&tile, true);
-        self.nodes_to_add.set_bit(&node.id, false);
+        self.nodes_to_add.set_bit(&node_id, false);
     }
 }
 
@@ -314,7 +331,7 @@ mod tests {
         assert_sets_eq(a_locations, expected);
         let a_tile = Tile::new_const::<1, 1>();
 
-        grid.place_node(&a_node, a_tile);
+        grid.place_node(a_id, a_tile);
 
         let b_id = NodeId::try_from_inner(1).unwrap();
 
