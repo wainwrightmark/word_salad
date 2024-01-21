@@ -1,0 +1,5 @@
+[build]
+rustflags = ["-Ctarget-cpu=native"]
+
+[profile.release]
+opt-level = 3

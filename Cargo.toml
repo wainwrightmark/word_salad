@@ -18,8 +18,8 @@ debug = false
 opt-level = 'z'
 codegen-units = 1
 lto = 'fat'
-strip = "debuginfo"
-#panic = 'abort'
+strip = "symbols"
+panic = 'abort'
 
 
 [profile.release.package.grid_finder]
