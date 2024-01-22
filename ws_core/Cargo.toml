@@ -29,6 +29,8 @@ unicode-segmentation = "1.10"
 log = "0.4.20"
 ustr = {version = "1.0", features = ["serde"]}
 const_sized_bit_set ={git="https://github.com/wainwrightmark/const_sized_bit_set"}
+static_assertions = "1.1.0"
+
 
 [dev-dependencies]
 insta = "1"

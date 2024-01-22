@@ -292,7 +292,7 @@ pub struct WordLineSegmentShaderParams {
 
 impl ShaderParams for WordLineSegmentShaderParams {}
 
-const FULL_LINE_WIDTH: f32 = 0.24;
+const FULL_LINE_WIDTH: f32 = 0.28;
 const PULSED_LINE_WIDTH: f32 = FULL_LINE_WIDTH * 1.2;
 const ZERO_LINE_WIDTH: f32 = -0.01; //slightly below zero to prevent artifacts
 const LINE_WIDTH_DECREASE_SPEED: f32 = FULL_LINE_WIDTH * 1.2;
