@@ -33,7 +33,7 @@ impl MavericNode for WordsNode {
         _previous: &Self,
         context: &<Self::Context as NodeContext>::Wrapper<'_>,
     ) -> bool {
-        if context.1.is_changed() {
+        if context.current_level.is_changed() {
             true
         } else {
             false
@@ -51,19 +51,19 @@ impl MavericNode for WordsNode {
         commands
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
-                let Either::Left(level) = context.1.level(&context.9) else {
+                let Either::Left(level) = context.current_level.level(&context.daily_challenges) else {
                     return;
                 };
                 let words = level.words.as_slice();
 
-                let selfie_mode = context.8.selfie_mode();
+                let selfie_mode = context.video_resource.selfie_mode();
 
                 for (index, word) in words.iter().enumerate() {
-                    let completion = context.2.get_completion(index);
+                    let completion = context.found_words_state.get_completion(index);
                     let tile = LayoutWordTile(index);
-                    let font_size = context.3.font_size::<LayoutWordTile>(&tile, &());
-                    let rect = context.3.get_rect(&tile, &(words, selfie_mode));
-                    let level_indices: (u16, u16) = match context.1.as_ref() {
+                    let font_size = context.window_size.font_size::<LayoutWordTile>(&tile, &());
+                    let rect = context.window_size.get_rect(&tile, &(words, selfie_mode));
+                    let level_indices: (u16, u16) = match context.current_level.as_ref() {
                         CurrentLevel::Fixed { level_index, .. } => (0, *level_index as u16),
                         CurrentLevel::Custom { .. } => (1, 0),
                         CurrentLevel::Tutorial { index } => (2, *index as u16),

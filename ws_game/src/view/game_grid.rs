@@ -87,16 +87,16 @@ impl MavericNode for GridTiles {
             if node.level_complete {
                 return;
             }
-            let solution = context.0.current_solution();
+            let solution = context.chosen_state.current_solution();
 
-            let Either::Left(level) = context.1.level(&context.9) else {
+            let Either::Left(level) = context.current_level.level(&context.daily_challenges) else {
                 return;
             };
-            let inadvisable_tiles: GridSet = context.2.calculate_inadvisable_tiles(solution, level);
+            let inadvisable_tiles: GridSet = context.found_words_state.calculate_inadvisable_tiles(solution, level);
 
-            let hint_set = &context.2.manual_hint_set(level, solution); //TODO this should reveal if a tile is previously hinted
+            let hint_set = &context.found_words_state.manual_hint_set(level, solution); //TODO this should reveal if a tile is previously hinted
 
-            let selfie_mode = context.8.selfie_mode();
+            let selfie_mode = context.video_resource.selfie_mode();
 
             let inadvisable_tiles = inadvisable_tiles.intersect(&hint_set.negate());
             for (tile, character) in level.grid.enumerate() {
@@ -104,7 +104,7 @@ impl MavericNode for GridTiles {
                     continue;
                 }
 
-                let needed = !context.2.unneeded_tiles.get_bit(&tile);
+                let needed = !context.found_words_state.unneeded_tiles.get_bit(&tile);
                 if !needed {
                     continue;
                 }
@@ -113,7 +113,7 @@ impl MavericNode for GridTiles {
                 let hint_status =
                     HintStatus::new(tile, selectability, hint_set, &inadvisable_tiles);
 
-                let size = context.3.as_ref();
+                let size = context.window_size.as_ref();
                 let tile_size = size.tile_size(&selfie_mode);
                 let font_size = size.font_size::<LayoutGridTile>(&LayoutGridTile::default(), &());
                 let centre = size.get_rect(&LayoutGridTile(tile), &selfie_mode).centre();
@@ -128,8 +128,8 @@ impl MavericNode for GridTiles {
                         font_size,
 
                         hint_status,
-                        timer_paused: context.4.is_paused(),
-                        is_selfie_mode: context.8.is_selfie_mode,
+                        timer_paused: context.level_time.is_paused(),
+                        is_selfie_mode: context.video_resource.is_selfie_mode,
                     }
                     .with_bundle(Transform::from_translation(
                         centre.extend(crate::z_indices::GRID_TILE),
@@ -145,7 +145,7 @@ impl MavericNode for GridTiles {
         _previous: &Self,
         context: &<Self::Context as NodeContext>::Wrapper<'_>,
     ) -> bool {
-        context.1.is_changed()
+        context.current_level.is_changed()
     }
 }
 

@@ -28,20 +28,23 @@ pub use wordline::*;
 pub use words::*;
 
 use crate::{completion::TotalCompletion, prelude::*};
+use maveric::prelude::*;
 
-pub type ViewContext = (
-    ChosenState,
-    CurrentLevel,
-    FoundWordsState,
-    MyWindowSize,
-    LevelTime,
-    MenuState,
-    HintState,
-    TotalCompletion,
-    VideoResource,
-    DailyChallenges,
-    Streak,
-);
+#[derive(Debug, NodeContext)]
+pub struct ViewContext {
+    pub chosen_state: ChosenState,
+    pub current_level: CurrentLevel,
+    pub found_words_state: FoundWordsState,
+    pub window_size: MyWindowSize,
+    pub level_time: LevelTime,
+    pub menu_state: MenuState,
+    pub hint_state: HintState,
+    pub total_completion: TotalCompletion,
+    pub video_resource: VideoResource,
+    pub daily_challenges: DailyChallenges,
+    pub streak: Streak,
+}
+
 #[derive(MavericRoot)]
 pub struct ViewRoot;
 
@@ -54,37 +57,37 @@ impl MavericRootChildren for ViewRoot {
     ) {
         commands.add_child("Top Bar", TopBar, context);
 
-        let selfie_mode = context.8.selfie_mode();
-        if context.5.is_closed() {
-            let level_complete = context.2.is_level_complete();
+        let selfie_mode = context.video_resource.selfie_mode();
+        if context.menu_state.is_closed() {
+            let level_complete = context.found_words_state.is_level_complete();
 
             commands.add_child("cells", GridTiles { level_complete }, context);
             commands.add_child("words", WordsNode, context);
 
-            match context.1.level(&context.9) {
+            match context.current_level.level(&context.daily_challenges) {
                 itertools::Either::Left(level) => {
                     let close_to_solution =
-                        context.0.is_close_to_a_solution(level, context.2.as_ref());
+                        context.chosen_state.is_close_to_a_solution(level, context.found_words_state.as_ref());
 
-                    if !context.4.is_paused() {
+                    if !context.level_time.is_paused() {
                         commands.add_child(
                             "word_line",
                             WordLine {
-                                solution: context.0.solution.clone(),
-                                should_hide: context.0.is_just_finished,
+                                solution: context.chosen_state.solution.clone(),
+                                should_hide: context.chosen_state.is_just_finished,
                                 close_to_solution,
                                 selfie_mode,
                             },
-                            &context.3,
+                            &context.window_size,
                         );
                     }
 
-                    if context.2.is_level_complete() {
+                    if context.found_words_state.is_level_complete() {
                         commands.add_child("congrats", CongratsView, context);
                     }
 
-                    if let Some(text) = TutorialText::try_create(&context.1, &context.2) {
-                        commands.add_child("tutorial", TutorialNode { text }, &context.3);
+                    if let Some(text) = TutorialText::try_create(&context.current_level, &context.found_words_state) {
+                        commands.add_child("tutorial", TutorialNode { text }, &context.window_size);
                     } else {
                         let (theme, daily_challenge_number) = level.name_and_number();
                         commands.add_child(
@@ -94,7 +97,7 @@ impl MavericRootChildren for ViewRoot {
                                 selfie_mode,
                                 daily_challenge_number,
                             },
-                            &context.3,
+                            &context.window_size,
                         );
 
                         if let Some(info) = &level.extra_info {
@@ -105,26 +108,26 @@ impl MavericRootChildren for ViewRoot {
                                     selfie_mode,
                                     theme,
                                 },
-                                &context.3,
+                                &context.window_size,
                             );
                         }
 
-                        let total_seconds = context.4.as_ref().total_elapsed().as_secs();
+                        let total_seconds = context.level_time.as_ref().total_elapsed().as_secs();
                         let time_text = format_seconds(total_seconds);
                         commands.add_child(
                             "ui_timer",
                             UITimer {
                                 time_text,
                                 selfie_mode,
-                                is_daily_challenge: context.1.is_daily_challenge(),
+                                is_daily_challenge: context.current_level.is_daily_challenge(),
                                 theme,
                             },
-                            &context.3,
+                            &context.window_size,
                         );
 
                         //Draw a box around the theme - looks rubbish
-                        // if context.8.is_selfie_mode{
-                        //     let rect = context.3.get_rect(&GameLayoutEntity::Theme, &());
+                        // if context.video_resource.selfie_mode(){
+                        //     let rect = context.window_size.get_rect(&GameLayoutEntity::Theme, &());
                         //     commands.add_child("theme_box", box_node1(rect.width(), rect.height(), rect.centre().extend(z_indices::CONGRATS_BUTTON), palette::CONGRATS_STATISTIC_FILL_SELFIE.convert_color(), 0.1), &());
                         // }
                     }
@@ -136,7 +139,7 @@ impl MavericRootChildren for ViewRoot {
                             non_level,
                             selfie_mode,
                         },
-                        &context.3,
+                        &context.window_size,
                     );
                 }
             }

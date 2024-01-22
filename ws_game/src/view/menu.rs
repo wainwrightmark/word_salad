@@ -80,12 +80,12 @@ impl MavericNode for Menu {
         commands
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
-                let size = context.3.as_ref();
-                match context.5.as_ref() {
+                let size = context.window_size.as_ref();
+                match context.menu_state.as_ref() {
                     MenuState::Closed => {}
                     MenuState::ShowMainMenu => {
                         add_menu_items::<R, MainMenuLayoutEntity>(
-                            &context.8.selfie_mode(),
+                            &context.video_resource.selfie_mode(),
                             commands,
                             size,
                             0,
@@ -95,12 +95,12 @@ impl MavericNode for Menu {
                     }
                     MenuState::ChooseLevelsPage => {
                         add_double_text_menu_items::<R, LevelsMenuLayoutEntity>(
-                            &context.8.selfie_mode(),
+                            &context.video_resource.selfie_mode(),
                             commands,
                             size,
                             1,
-                            |x| x.get_text(context.7.as_ref(), context.9.as_ref()),
-                            |x| get_variable_fill(x.is_complete(&context.7, context.9.as_ref())),
+                            |x| x.get_text(context.total_completion.as_ref(), context.daily_challenges.as_ref()),
+                            |x| get_variable_fill(x.is_complete(&context.total_completion, context.daily_challenges.as_ref())),
                             BUTTONS_FONT_PATH,
                             BUTTONS_FONT_PATH,
                             palette::MENU_BUTTON_TEXT_REGULAR.convert_color()
@@ -108,12 +108,12 @@ impl MavericNode for Menu {
                     }
                     MenuState::LevelGroupPage(group) => {
                         add_double_text_menu_items::<R, LevelGroupLayoutEntity>(
-                            &(context.8.selfie_mode(),*group),
+                            &(context.video_resource.selfie_mode(),*group),
                             commands,
                             size,
                             2,
-                            |x| x.get_text(context.7.as_ref(), group),
-                            |x| get_variable_fill(x.is_complete(&context.7, group)),
+                            |x| x.get_text(context.total_completion.as_ref(), group),
+                            |x| get_variable_fill(x.is_complete(&context.total_completion, group)),
                             BUTTONS_FONT_PATH,
                             BUTTONS_FONT_PATH,
                             palette::MENU_BUTTON_TEXT_REGULAR.convert_color()
@@ -121,12 +121,12 @@ impl MavericNode for Menu {
                     }
                     MenuState::WordSaladLevels => {
                         add_double_text_menu_items::<R, WordSaladMenuLayoutEntity>(
-                            &context.8.selfie_mode(),
+                            &context.video_resource.selfie_mode(),
                             commands,
                             size,
                             5,
-                            |x| x.get_text(context.7.as_ref(), context.9.as_ref()),
-                            |x| get_variable_fill(x.is_complete(&context.7)),
+                            |x| x.get_text(context.total_completion.as_ref(), context.daily_challenges.as_ref()),
+                            |x| get_variable_fill(x.is_complete(&context.total_completion)),
                             BUTTONS_FONT_PATH,
                             ICON_FONT_PATH,
                             palette::MENU_BUTTON_TEXT_REGULAR.convert_color()

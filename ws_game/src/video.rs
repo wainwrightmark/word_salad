@@ -27,7 +27,7 @@ pub enum VideoEvent {
     VideoStopped,
 }
 
-#[derive(Default, Resource, MavericContext)]
+#[derive(Debug, Default, Resource, MavericContext)]
 pub struct VideoResource {
     pub is_selfie_mode: bool,
 }

@@ -26,12 +26,12 @@ impl MavericNode for CongratsView {
         _world: &World,
         entity_commands: &mut bevy::ecs::system::EntityCommands,
     ) {
-        if !context.2.is_changed() || context.2.is_added() {
+        if !context.found_words_state.is_changed() || context.found_words_state.is_added() {
             return;
         }
 
         //SHOW FIREWORKS
-        let size = &context.3;
+        let size = &context.window_size;
 
         const SECONDS: f32 = 5.0;
         const NUM_FIREWORKS: usize = 25;
@@ -45,7 +45,7 @@ impl MavericNode for CongratsView {
                     SECONDS,
                     size.as_ref(),
                     i <= 1,
-                    context.8.selfie_mode(),
+                    context.video_resource.selfie_mode(),
                 );
             }
         });
@@ -55,12 +55,10 @@ impl MavericNode for CongratsView {
         commands
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
-                let size = &context.3;
-                let selfie_mode = SelfieMode {
-                    is_selfie_mode: context.8.is_selfie_mode,
-                };
+                let size = &context.window_size;
+                let selfie_mode = context.video_resource.selfie_mode();
 
-                let congrats_context = (selfie_mode, context.1.level_type());
+                let congrats_context = (selfie_mode, context.current_level.level_type());
 
                 #[derive(Debug, Clone, Copy)]
                 enum Data {
@@ -70,17 +68,17 @@ impl MavericNode for CongratsView {
                     Sequence { complete: usize, remaining: usize },
                 }
 
-                let data = match context.1.as_ref() {
+                let data = match context.current_level.as_ref() {
                     CurrentLevel::DailyChallenge { index } => {
                         let today_index = DailyChallenges::get_today_index();
                         if today_index == *index {
-                            let streak = context.10.as_ref();
+                            let streak = context.streak.as_ref();
                             Data::TodaysChallenge {
                                 streak: streak.current,
                                 longest: streak.longest,
                             }
                         } else {
-                            let complete = context.7.get_daily_challenges_complete();
+                            let complete = context.total_completion.get_daily_challenges_complete();
                             let total = today_index + 1;
                             let remaining = total.saturating_sub(complete);
                             Data::Sequence {
@@ -91,7 +89,7 @@ impl MavericNode for CongratsView {
                     }
                     CurrentLevel::Tutorial { .. } => Data::None,
                     CurrentLevel::Fixed { sequence, .. } => {
-                        let complete = context.7.get_number_complete(sequence);
+                        let complete = context.total_completion.get_number_complete(&sequence);
                         let total = sequence.level_count();
                         let remaining = total.saturating_sub(complete);
                         Data::Sequence {
@@ -103,7 +101,7 @@ impl MavericNode for CongratsView {
                     CurrentLevel::NonLevel(_) => Data::None,
                 };
 
-                let initial_scale = if context.2.is_changed() {
+                let initial_scale = if context.found_words_state.is_changed() {
                     Vec3::ZERO
                 } else {
                     Vec3::ONE
@@ -125,7 +123,7 @@ impl MavericNode for CongratsView {
                         | (CongratsStatistic::Right, Data::JustHints) => None,
                         (CongratsStatistic::Left, _)
                         | (CongratsStatistic::Middle, Data::JustHints) => {
-                            Some((context.2.hints_used, "Hints"))
+                            Some((context.found_words_state.hints_used, "Hints"))
                         }
                         (CongratsStatistic::Middle, Data::TodaysChallenge { streak, .. }) => {
                             Some((streak, "Streak"))
@@ -192,10 +190,10 @@ impl MavericNode for CongratsView {
 
                 for (index, button) in CongratsButton::iter().enumerate().take(button_count) {
                     let text = match button {
-                        CongratsButton::Next => match context.1.level_type() {
+                        CongratsButton::Next => match context.current_level.level_type() {
                             ws_core::level_type::LevelType::Tutorial => "Next".to_string(),
                             _ => {
-                                let next_level = context.1.get_next_level(context.7.as_ref());
+                                let next_level = context.current_level.get_next_level(context.total_completion.as_ref());
 
                                 match next_level {
                                     CurrentLevel::Tutorial { .. } => "Next".to_string(),
@@ -203,7 +201,7 @@ impl MavericNode for CongratsView {
                                     CurrentLevel::DailyChallenge { index: next_index } => {
                                         if let CurrentLevel::DailyChallenge {
                                             index: current_index,
-                                        } = context.1.as_ref()
+                                        } = context.current_level.as_ref()
                                         {
                                             if next_index > *current_index
                                                 && next_index == DailyChallenges::get_today_index()

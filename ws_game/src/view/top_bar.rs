@@ -22,9 +22,9 @@ impl MavericNode for TopBar {
         commands
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
-                let size = &context.3;
+                let size = &context.window_size;
 
-                let selfie = context.8.selfie_mode().is_selfie_mode;
+                let selfie = context.video_resource.selfie_mode().is_selfie_mode;
 
                 commands.add_child(
                     "Burger",
@@ -47,7 +47,7 @@ impl MavericNode for TopBar {
                         text_anchor: bevy::sprite::Anchor::CenterLeft,
                     }
                     .with_bundle(Transform::from_translation(
-                        size.get_rect(&LayoutTopBar::MenuBurgerButton, &context.8.selfie_mode())
+                        size.get_rect(&LayoutTopBar::MenuBurgerButton, &context.video_resource.selfie_mode())
                             .centre_left()
                             .extend(crate::z_indices::TOP_BAR_BUTTON),
                     )),
@@ -57,8 +57,8 @@ impl MavericNode for TopBar {
                 commands.add_child(
                     "hints",
                     HintsViewNode {
-                        hint_state: context.6.clone(),
-                        selfie_mode: context.8.selfie_mode()
+                        hint_state: context.hint_state.clone(),
+                        selfie_mode: context.video_resource.selfie_mode()
                     },
                     size,
                 );
@@ -84,7 +84,7 @@ impl MavericNode for TopBar {
                         text_anchor: bevy::sprite::Anchor::Center,
                     }
                     .with_bundle((Transform::from_translation(
-                        size.get_rect(&LayoutTopBar::WordSaladLogo, &context.8.selfie_mode())
+                        size.get_rect(&LayoutTopBar::WordSaladLogo, &context.video_resource.selfie_mode())
                             .centre()
                             .extend(crate::z_indices::TOP_BAR_BUTTON),
                     ),)),
