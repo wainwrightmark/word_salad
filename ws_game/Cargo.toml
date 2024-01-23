@@ -17,7 +17,10 @@ bevy_pkv = { version = "0.9" }
 serde = { version = "1", features = ["derive", "rc"] }
 anyhow = "1"
 base64 = "0.21"
-geometrid = { git = "https://github.com/wainwrightmark/geometrid", features = ["glam", "serde"] }
+geometrid = { git = "https://github.com/wainwrightmark/geometrid", features = [
+  "glam",
+  "serde",
+] }
 serde_with = "3"
 # bevy_embedded_assets = "0.8"
 lazy_static = "1.4"
@@ -49,7 +52,17 @@ capacitor_bindings = { version = "0.10.0", features = [
 fixedbitset = { version = "0.4.2", features = ["serde"] }
 fmtastic = "0.1.0"
 bytemuck = { version = "1.14.0", features = ["derive"] }
-
+bevy = { version = "0.12", default_features = false, features = [
+  "bevy_winit",         # Window management
+  "bevy_render",        # Rendering framework core
+  "bevy_core_pipeline", # Higher-level rendering abstractions
+  # "bevy_sprite",        # 2D (sprites) rendering
+  "bevy_text", # Text/font rendering
+  # "bevy_ui",            # UI toolkit
+  "webgl2",
+  # "bevy_gizmos",
+  # "png"
+] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 js-sys = { version = "0.3" }
@@ -75,15 +88,7 @@ reqwest = { version = "0.11", default-features = false, features = [
 [dev-dependencies]
 insta = "1"
 test-case = "3"
-
-
-[dependencies.bevy]
-version = "0.12"
-
-
-# Disable the default features if there are any that you do not want
-default-features = false
-features = [
+bevy = { version = "0.12", default_features = false, features = [
   "bevy_winit",         # Window management
   "bevy_render",        # Rendering framework core
   "bevy_core_pipeline", # Higher-level rendering abstractions
@@ -91,9 +96,10 @@ features = [
   "bevy_text", # Text/font rendering
   # "bevy_ui",            # UI toolkit
   "webgl2",
+  "x11"
   # "bevy_gizmos",
   # "png"
-]
+] }
 
 [features]
 steam = []
