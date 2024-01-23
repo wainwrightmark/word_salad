@@ -96,6 +96,9 @@ pub mod palette {
     pub const WORD_TEXT_LETTERS: Color = MY_WHITE;
     pub const WORD_TEXT_NUMBER: Color = MY_BLACK;
 
+    pub const NON_LEVEL_TEXT_NORMAL: Color = MY_BLACK;
+    pub const NON_LEVEL_TEXT_SELFIE: Color = MY_WHITE;
+
     const MY_BLACK: Color = Color::rgba(0.12, 0., 0., 1.);
     const MY_WHITE: Color = Color::rgba(1.0, 1.0, 1.0, 1.);
 

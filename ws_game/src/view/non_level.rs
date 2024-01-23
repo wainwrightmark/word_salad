@@ -47,9 +47,9 @@ impl MavericNode for NonLevelView {
             };
 
             let text_color = if selfie_mode.is_selfie_mode {
-                palette::CONGRATS_BUTTON_TEXT_SELFIE
+                palette::NON_LEVEL_TEXT_SELFIE
             } else {
-                palette::CONGRATS_BUTTON_TEXT_NORMAL
+                palette::NON_LEVEL_TEXT_NORMAL
             }
             .convert_color();
 
