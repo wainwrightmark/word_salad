@@ -1,7 +1,7 @@
 use std::sync::atomic::AtomicUsize;
 
 pub use crate::prelude::*;
-use crate::{completion::TotalCompletion, input::InputPlugin, motion_blur::MotionBlurPlugin};
+use crate::{input::InputPlugin, motion_blur::MotionBlurPlugin};
 use bevy::{log::LogPlugin, window::RequestRedraw};
 use itertools::Either;
 use nice_bevy_utils::{async_event_writer, window_size::WindowSizePlugin, CanRegisterAsyncEvent};
@@ -141,7 +141,7 @@ fn choose_level_on_game_load(
     mut current_level: ResMut<CurrentLevel>,
     mut found_words: ResMut<FoundWordsState>,
     mut timer: ResMut<crate::level_time::LevelTime>,
-    completion: Res<TotalCompletion>,
+    daily_challenge_completion: Res<DailyChallengeCompletion>,
     daily_challenges: Res<DailyChallenges>,
 ) {
     #[cfg(target_arch = "wasm32")]
@@ -191,7 +191,8 @@ fn choose_level_on_game_load(
         _ => {}
     }
 
-    if let Some(index) = completion.get_next_incomplete_daily_challenge_from_today() {
+    if let Some(index) = daily_challenge_completion.get_next_incomplete_daily_challenge_from_today()
+    {
         let today_level = CurrentLevel::DailyChallenge { index };
         if today_level.level(&daily_challenges).is_left() {
             //Only change to this level if we have loaded it already

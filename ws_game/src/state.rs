@@ -1,7 +1,7 @@
 use std::{num::NonZeroUsize, time::Duration};
 
 use crate::{
-    completion::{track_level_completion, TotalCompletion},
+    completion::*,
     prelude::*,
 };
 use itertools::{Either, Itertools};
@@ -18,7 +18,9 @@ impl Plugin for StatePlugin {
         app.init_resource::<MenuState>();
         app.init_tracked_resource::<CurrentLevel>();
         app.init_tracked_resource::<FoundWordsState>();
-        app.init_tracked_resource::<TotalCompletion>();
+        app.init_tracked_resource::<SequenceCompletion>();
+        app.init_tracked_resource::<DailyChallengeCompletion>();
+        app.init_tracked_resource::<TutorialCompletion>();
         app.init_tracked_resource::<HintState>();
         app.init_tracked_resource::<SavedLevelsState>();
 

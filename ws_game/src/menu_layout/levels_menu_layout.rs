@@ -5,7 +5,7 @@ use ws_core::{
 };
 use ws_levels::level_group::LevelGroup;
 
-use crate::{completion::TotalCompletion, prelude::DailyChallenges};
+use crate::prelude::*;
 
 use super::{MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
 
@@ -27,13 +27,16 @@ impl LevelsMenuLayoutEntity {
 
     pub fn is_complete(
         &self,
-        completion: &TotalCompletion,
+        daily_challenge_completion: &DailyChallengeCompletion,
+        sequence_completion: &SequenceCompletion,
         daily_challenges: &DailyChallenges,
     ) -> bool {
         let num_complete = match self {
-            LevelsMenuLayoutEntity::WordSalad => completion.get_daily_challenges_complete(),
+            LevelsMenuLayoutEntity::WordSalad => {
+                daily_challenge_completion.get_daily_challenges_complete()
+            }
             LevelsMenuLayoutEntity::AdditionalLevel(group) => {
-                completion.get_number_complete_group(group)
+                sequence_completion.get_number_complete_group(group)
             }
         };
         let total = match self {
@@ -46,14 +49,17 @@ impl LevelsMenuLayoutEntity {
 
     pub fn get_text(
         &self,
-        completion: &TotalCompletion,
+        daily_challenge_completion: &DailyChallengeCompletion,
+        sequence_completion: &SequenceCompletion,
         daily_challenges: &DailyChallenges,
     ) -> (String, String) {
         let name = self.name();
         let num_complete = match self {
-            LevelsMenuLayoutEntity::WordSalad => completion.get_daily_challenges_complete(),
+            LevelsMenuLayoutEntity::WordSalad => {
+                daily_challenge_completion.get_daily_challenges_complete()
+            }
             LevelsMenuLayoutEntity::AdditionalLevel(group) => {
-                completion.get_number_complete_group(group)
+                sequence_completion.get_number_complete_group(group)
             }
         };
         let total = match self {

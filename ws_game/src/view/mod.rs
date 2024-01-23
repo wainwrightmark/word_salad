@@ -27,7 +27,7 @@ pub use tutorial::*;
 pub use wordline::*;
 pub use words::*;
 
-use crate::{completion::TotalCompletion, prelude::*};
+use crate::{completion::*, prelude::*};
 use maveric::prelude::*;
 
 #[derive(Debug, NodeContext)]
@@ -39,7 +39,8 @@ pub struct ViewContext {
     pub level_time: LevelTime,
     pub menu_state: MenuState,
     pub hint_state: HintState,
-    pub total_completion: TotalCompletion,
+    pub daily_challenge_completion: DailyChallengeCompletion,
+    pub sequence_completion: SequenceCompletion,
     pub video_resource: VideoResource,
     pub daily_challenges: DailyChallenges,
     pub streak: Streak,

@@ -1,7 +1,6 @@
 - Make Logo
 
 - use ustr in a bunch more places
-- split total completion into multiple resources
 - Change hint tracking
 
 - reorder level sequence

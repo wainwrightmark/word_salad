@@ -6,7 +6,10 @@ use strum::EnumIs;
 use ws_core::level_type::LevelType;
 use ws_levels::{all_levels::get_tutorial_level, level_sequence::LevelSequence};
 
-use crate::{completion::TotalCompletion, prelude::*};
+use crate::{
+    completion::{DailyChallengeCompletion, SequenceCompletion},
+    prelude::*,
+};
 
 #[derive(Debug, Clone, Resource, PartialEq, Eq, Serialize, Deserialize, MavericContext, EnumIs)]
 pub enum CurrentLevel {
@@ -93,13 +96,18 @@ impl CurrentLevel {
         }
     }
 
-    pub fn get_next_level(&self, total_completion: &TotalCompletion) -> CurrentLevel {
+    pub fn get_next_level(
+        &self,
+        daily_challenge_completion: &DailyChallengeCompletion,
+        sequence_completion: &SequenceCompletion,
+    ) -> CurrentLevel {
         match self {
             CurrentLevel::Tutorial { index } => {
                 let index = index.saturating_add(1);
                 match get_tutorial_level(index) {
                     Some(_) => CurrentLevel::Tutorial { index },
-                    None => match total_completion.get_next_incomplete_daily_challenge_from_today()
+                    None => match daily_challenge_completion
+                        .get_next_incomplete_daily_challenge_from_today()
                     {
                         Some(index) => CurrentLevel::DailyChallenge { index },
                         None => CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished),
@@ -110,7 +118,7 @@ impl CurrentLevel {
                 level_index: _,
                 sequence,
             } => {
-                if let Some(index) = total_completion.get_next_level_index(*sequence) {
+                if let Some(index) = sequence_completion.get_next_level_index(*sequence) {
                     if index > 0 && sequence.get_level(index).is_some() {
                         return Self::Fixed {
                             level_index: index,
@@ -122,7 +130,7 @@ impl CurrentLevel {
                 NonLevel::LevelSequenceFinished(*sequence).into()
             }
             CurrentLevel::DailyChallenge { .. } => {
-                match total_completion.get_next_incomplete_daily_challenge_from_today() {
+                match daily_challenge_completion.get_next_incomplete_daily_challenge_from_today() {
                     Some(index) => CurrentLevel::DailyChallenge { index },
                     None => CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished),
                 }

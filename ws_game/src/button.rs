@@ -7,7 +7,7 @@ use ws_core::layout::entities::{
     CongratsButton, CongratsLayoutEntity, LayoutTopBar, LayoutWordTile,
 };
 
-use crate::completion::TotalCompletion;
+use crate::completion::*;
 use crate::menu_layout::main_menu_back_button::MainMenuBackButton;
 use crate::menu_layout::word_salad_menu_layout::WordSaladMenuLayoutEntity;
 use crate::prelude::level_group_layout::LevelGroupLayoutEntity;
@@ -84,9 +84,11 @@ fn handle_button_activations(
     mut found_words: ResMut<FoundWordsState>,
     mut hint_state: ResMut<HintState>,
     mut popup_state: ResMut<PopupState>,
+    mut sequence_completion: ResMut<SequenceCompletion>,
+    mut daily_completion: ResMut<DailyChallengeCompletion>,
     video_state: Res<VideoResource>,
     video_events: AsyncEventWriter<VideoEvent>,
-    mut total_completion: ResMut<TotalCompletion>,
+
     daily_challenges: Res<DailyChallenges>,
     mut level_time: ResMut<LevelTime>,
     mut selfie_mode_history: ResMut<SelfieModeHistory>,
@@ -100,7 +102,8 @@ fn handle_button_activations(
             &mut found_words,
             &mut hint_state,
             &mut popup_state,
-            &mut total_completion,
+            &mut sequence_completion,
+            &mut daily_completion,
             video_state.as_ref(),
             &video_events,
             daily_challenges.as_ref(),
@@ -235,7 +238,8 @@ impl ButtonInteraction {
         hint_state: &mut ResMut<HintState>,
         popup_state: &mut ResMut<PopupState>,
 
-        total_completion: &mut ResMut<TotalCompletion>,
+        sequence_completion: &mut ResMut<SequenceCompletion>,
+        daily_challenge_completion: &mut ResMut<DailyChallengeCompletion>,
         video_state: &VideoResource,
         video_events: &AsyncEventWriter<VideoEvent>,
         daily_challenges: &DailyChallenges,
@@ -306,7 +310,7 @@ impl ButtonInteraction {
             ButtonInteraction::WordSaladMenu(WordSaladMenuLayoutEntity::NextPuzzle) => {
                 if let Some(index) = DailyChallenges::get_today_index()
                     .checked_sub(3)
-                    .and_then(|x| total_completion.get_next_incomplete_daily_challenge(x))
+                    .and_then(|x| daily_challenge_completion.get_next_incomplete_daily_challenge(x))
                 {
                     current_level.set_if_neq(CurrentLevel::DailyChallenge { index });
                 } else {
@@ -331,7 +335,7 @@ impl ButtonInteraction {
                     if let MenuState::LevelGroupPage(level_group) = menu_state.as_ref() {
                         let sequence = level_group.get_level_sequence(*index);
 
-                        if let Some(index) = total_completion.get_next_level_index(sequence) {
+                        if let Some(index) = sequence_completion.get_next_level_index(sequence) {
                             info!("Changing level to {sequence} {index}");
                             *current_level.as_mut() = CurrentLevel::Fixed {
                                 level_index: index,
@@ -371,15 +375,15 @@ impl ButtonInteraction {
                             }
                         }
                         NonLevel::DailyChallengeReset => {
-                            total_completion.reset_daily_challenge_completion();
-                            if let Some(index) =
-                                total_completion.get_next_incomplete_daily_challenge_from_today()
+                            daily_challenge_completion.reset_daily_challenge_completion();
+                            if let Some(index) = daily_challenge_completion
+                                .get_next_incomplete_daily_challenge_from_today()
                             {
                                 *current_level.as_mut() = CurrentLevel::DailyChallenge { index };
                             }
                         }
                         NonLevel::LevelSequenceReset(ls) => {
-                            total_completion.restart_level_sequence_completion(ls);
+                            sequence_completion.restart_level_sequence_completion(ls);
                             *current_level.as_mut() = CurrentLevel::Fixed {
                                 level_index: 0,
                                 sequence: ls,
@@ -392,7 +396,7 @@ impl ButtonInteraction {
                         }
                         NonLevel::DailyChallengeFinished => {
                             let new_current_level =
-                                match total_completion.get_next_level_sequence(None) {
+                                match sequence_completion.get_next_level_sequence(None) {
                                     Some((sequence, level_index)) => CurrentLevel::Fixed {
                                         level_index,
                                         sequence,
@@ -403,7 +407,7 @@ impl ButtonInteraction {
                             *current_level.as_mut() = new_current_level;
                         }
                         NonLevel::LevelSequenceFinished(seq) => {
-                            let new_current_level = match total_completion
+                            let new_current_level = match sequence_completion
                                 .get_next_level_sequence(Some(seq))
                             {
                                 Some((sequence, level_index)) => CurrentLevel::Fixed {
@@ -420,7 +424,7 @@ impl ButtonInteraction {
             }
             ButtonInteraction::TopMenuItem(LayoutTopBar::WordSaladLogo) => {
                 let index = DailyChallenges::get_today_index();
-                if total_completion.is_daily_challenge_complete(index) {
+                if daily_challenge_completion.is_daily_challenge_complete(index) {
                     current_level.set_if_neq(CurrentLevel::NonLevel(
                         NonLevel::DailyChallengeCountdown {
                             todays_index: index,
@@ -433,7 +437,8 @@ impl ButtonInteraction {
                 menu_state.close();
             }
             ButtonInteraction::Congrats(CongratsButton::Next) => {
-                let next_level = current_level.get_next_level(total_completion);
+                let next_level =
+                    current_level.get_next_level(&daily_challenge_completion, &sequence_completion);
                 *current_level.as_mut() = next_level;
             }
 

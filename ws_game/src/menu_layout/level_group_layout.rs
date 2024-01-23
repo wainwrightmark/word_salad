@@ -1,4 +1,4 @@
-use crate::completion::TotalCompletion;
+use crate::completion::SequenceCompletion;
 
 use super::{MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
 use bevy::math::Vec2;
@@ -13,7 +13,7 @@ pub struct LevelGroupLayoutEntity {
 }
 
 impl LevelGroupLayoutEntity {
-    pub fn get_text(&self, completion: &TotalCompletion, group: &LevelGroup) -> (String, String) {
+    pub fn get_text(&self, completion: &SequenceCompletion, group: &LevelGroup) -> (String, String) {
         let name = self.name(group);
 
         let sequence = group.get_level_sequence(self.index);
@@ -27,7 +27,7 @@ impl LevelGroupLayoutEntity {
         (name.to_string(), fraction)
     }
 
-    pub fn is_complete(&self, completion: &TotalCompletion, group: &LevelGroup) -> bool {
+    pub fn is_complete(&self, completion: &SequenceCompletion, group: &LevelGroup) -> bool {
         let sequence = group.get_level_sequence(self.index);
 
         let num_complete = completion.get_number_complete(&sequence);

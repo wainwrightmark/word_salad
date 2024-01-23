@@ -78,7 +78,7 @@ impl MavericNode for CongratsView {
                                 longest: streak.longest,
                             }
                         } else {
-                            let complete = context.total_completion.get_daily_challenges_complete();
+                            let complete = context.daily_challenge_completion.get_daily_challenges_complete();
                             let total = today_index + 1;
                             let remaining = total.saturating_sub(complete);
                             Data::Sequence {
@@ -89,7 +89,7 @@ impl MavericNode for CongratsView {
                     }
                     CurrentLevel::Tutorial { .. } => Data::None,
                     CurrentLevel::Fixed { sequence, .. } => {
-                        let complete = context.total_completion.get_number_complete(&sequence);
+                        let complete = context.sequence_completion.get_number_complete(&sequence);
                         let total = sequence.level_count();
                         let remaining = total.saturating_sub(complete);
                         Data::Sequence {
@@ -193,7 +193,7 @@ impl MavericNode for CongratsView {
                         CongratsButton::Next => match context.current_level.level_type() {
                             ws_core::level_type::LevelType::Tutorial => "Next".to_string(),
                             _ => {
-                                let next_level = context.current_level.get_next_level(context.total_completion.as_ref());
+                                let next_level = context.current_level.get_next_level(&context.daily_challenge_completion, &context.sequence_completion);
 
                                 match next_level {
                                     CurrentLevel::Tutorial { .. } => "Next".to_string(),

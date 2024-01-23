@@ -41,6 +41,7 @@ pub mod prelude {
     pub use crate::button_node::*;
     pub use crate::chosen_state::*;
     pub use crate::compatibility::*;
+    pub use crate::completion::*;
     pub use crate::constants::*;
     pub use crate::current_level::*;
     pub use crate::daily_challenge::*;

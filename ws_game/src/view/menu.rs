@@ -99,8 +99,8 @@ impl MavericNode for Menu {
                             commands,
                             size,
                             1,
-                            |x| x.get_text(context.total_completion.as_ref(), context.daily_challenges.as_ref()),
-                            |x| get_variable_fill(x.is_complete(&context.total_completion, context.daily_challenges.as_ref())),
+                            |x| x.get_text(&context.daily_challenge_completion.as_ref(), &context.sequence_completion.as_ref(),  context.daily_challenges.as_ref()),
+                            |x| get_variable_fill(x.is_complete(&context.daily_challenge_completion, &context.sequence_completion, context.daily_challenges.as_ref())),
                             BUTTONS_FONT_PATH,
                             BUTTONS_FONT_PATH,
                             palette::MENU_BUTTON_TEXT_REGULAR.convert_color()
@@ -112,8 +112,8 @@ impl MavericNode for Menu {
                             commands,
                             size,
                             2,
-                            |x| x.get_text(context.total_completion.as_ref(), group),
-                            |x| get_variable_fill(x.is_complete(&context.total_completion, group)),
+                            |x| x.get_text(&context.sequence_completion.as_ref(), group),
+                            |x| get_variable_fill(x.is_complete(&context.sequence_completion, group)),
                             BUTTONS_FONT_PATH,
                             BUTTONS_FONT_PATH,
                             palette::MENU_BUTTON_TEXT_REGULAR.convert_color()
@@ -125,8 +125,8 @@ impl MavericNode for Menu {
                             commands,
                             size,
                             5,
-                            |x| x.get_text(context.total_completion.as_ref(), context.daily_challenges.as_ref()),
-                            |x| get_variable_fill(x.is_complete(&context.total_completion)),
+                            |x| x.get_text(&context.daily_challenge_completion.as_ref(), context.daily_challenges.as_ref()),
+                            |x| get_variable_fill(x.is_complete(&context.daily_challenge_completion)),
                             BUTTONS_FONT_PATH,
                             ICON_FONT_PATH,
                             palette::MENU_BUTTON_TEXT_REGULAR.convert_color()

@@ -5,7 +5,7 @@ use ws_core::{
 };
 use ws_levels::level_group::LevelGroup;
 
-use crate::{completion::TotalCompletion, prelude::DailyChallenges};
+use crate::prelude::*;
 
 use super::{MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
 
@@ -28,7 +28,7 @@ impl WordSaladMenuLayoutEntity {
 
     pub fn get_text(
         &self,
-        completion: &TotalCompletion,
+        completion: &DailyChallengeCompletion,
         daily_challenges: &DailyChallenges,
     ) -> (String, String) {
         if let Some(result) = self.try_get_text(completion, daily_challenges) {
@@ -46,7 +46,7 @@ impl WordSaladMenuLayoutEntity {
         (s1.to_string(), "\u{f096}".to_string())
     }
 
-    pub fn is_complete(&self, completion: &TotalCompletion) -> bool {
+    pub fn is_complete(&self, completion: &DailyChallengeCompletion) -> bool {
         let today_index = DailyChallenges::get_today_index();
 
         let index = match self {
@@ -67,7 +67,7 @@ impl WordSaladMenuLayoutEntity {
 
     pub fn try_get_text(
         &self,
-        completion: &TotalCompletion,
+        completion: &DailyChallengeCompletion,
         daily_challenges: &DailyChallenges,
     ) -> Option<(String, String)> {
         let today_index = DailyChallenges::get_today_index();
