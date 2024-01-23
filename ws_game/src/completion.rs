@@ -1,9 +1,8 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashMap};
 use fixedbitset::FixedBitSet;
 use maveric::helpers::MavericContext;
 use nice_bevy_utils::TrackableResource;
 use serde::{Deserialize, Serialize};
-use strum::IntoEnumIterator;
 use ws_levels::{level_group::LevelGroup, level_sequence::LevelSequence};
 
 use crate::{
@@ -13,7 +12,7 @@ use crate::{
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, Default, Clone, Resource, MavericContext)]
 pub struct SequenceCompletion {
-    pub completions: Vec<LevelCompletion>,
+    pub completions: HashMap<LevelSequence, LevelCompletion>,
 }
 
 impl TrackableResource for SequenceCompletion {
@@ -51,30 +50,32 @@ impl SequenceCompletion {
         &self,
         current: Option<LevelSequence>,
     ) -> Option<(LevelSequence, usize)> {
-        let first_index = current.map(|x| x.index() + 1).unwrap_or_default();
+        let mut current = current;
+        loop {
+            let next = match current {
+                Some(s) => s.get_next()?,
+                None => LevelSequence::FIRST,
+            };
 
-        for sequence in LevelSequence::iter().filter(|x| x.index() >= first_index) {
-            if let Some(index) = self.get_next_level_index(sequence) {
-                return Some((sequence, index));
+            if let Some(index) = self.get_next_level_index(next) {
+                return Some((next, index));
             }
+
+            current = Some(next)
         }
-        None
     }
 
     pub fn restart_level_sequence_completion(&mut self, sequence: LevelSequence) {
-        if let Some(lc) = self.completions.get_mut(sequence.index()) {
-            lc.current_index = 0;
-        }
+        self.completions.entry(sequence).or_default().current_index = 0;
     }
 
     pub fn get_next_level_index(&self, sequence: LevelSequence) -> Option<usize> {
-        let sequence_index = sequence as usize;
-
         let index = self
             .completions
-            .get(sequence_index)
-            .map(|x| x.current_index)
-            .unwrap_or_default();
+            .get(&sequence)
+            .cloned()
+            .unwrap_or_default()
+            .current_index;
 
         if index >= sequence.level_count() {
             return None;
@@ -83,9 +84,8 @@ impl SequenceCompletion {
     }
 
     pub fn get_number_complete(&self, sequence: &LevelSequence) -> usize {
-        let sequence_index = *sequence as usize;
         self.completions
-            .get(sequence_index)
+            .get(sequence)
             .map(|x| x.total_complete)
             .unwrap_or_default()
     }
@@ -148,14 +148,11 @@ pub fn track_level_completion<'c>(
             sequence,
         } => {
             let number_complete = level_index + 1;
-            let sequence_index = *sequence as usize;
-            while sequence_completion.completions.len() <= sequence_index {
-                sequence_completion
-                    .completions
-                    .push(LevelCompletion::default());
-            }
 
-            let completion = &mut sequence_completion.completions[sequence_index];
+            let completion = sequence_completion
+                .completions
+                .entry(*sequence)
+                .or_default();
             completion.current_index = completion.current_index + 1;
             if completion.total_complete < number_complete {
                 completion.total_complete = number_complete;

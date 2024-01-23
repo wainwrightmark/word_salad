@@ -25,7 +25,6 @@ use ws_core::DesignedLevel;
 )]
 
 pub enum LevelSequence {
-    //DO NOT CHANGE THESE NUMBERS - THEY ARE USED FOR COMPLETION TRACKING
     EuropeanCapitals = 2,
     EuropeanCountries = 3,
     USStates = 4,
@@ -45,9 +44,9 @@ pub enum LevelSequence {
 }
 
 impl LevelSequence {
-    pub fn index(&self) -> usize {
-        *self as usize
-    }
+
+    pub const FIRST: Self = LevelSequence::EuropeanCapitals;
+
     pub fn get_next(self) -> Option<Self> {
         let current_index = self as usize;
         let next_index = (current_index + 1) % Self::COUNT;
