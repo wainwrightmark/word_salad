@@ -67,6 +67,9 @@ struct Options {
     #[arg(short, long, default_value = "false")]
     pub reorient: bool,
 
+    #[arg(long, default_value = "false")]
+    pub remove_duplicates: bool,
+
     #[arg(long, default_value = "50")]
     pub max_clusters: u32,
 }
@@ -92,6 +95,11 @@ fn main() {
         reorient_grids(&options);
     }
 
+    if options.remove_duplicates {
+        did_something = true;
+        remove_duplicate_grids(&options);
+    }
+
     if options.check_layout {
         did_something = true;
         word_layout::do_word_layout();
@@ -109,9 +117,85 @@ fn main() {
     io::stdin().read_line(&mut String::new()).unwrap();
 }
 
-// fn remove_duplicate_grids(_options: &Options){
+fn remove_duplicate_grids(_options: &Options) {
+    let folder = std::fs::read_dir("grids").unwrap();
+    let paths: Vec<_> = folder.collect();
 
-// }
+    let pb: ProgressBar = ProgressBar::new(paths.len() as u64)
+        .with_style(ProgressStyle::with_template("{msg:50} {wide_bar} {pos:2}/{len:2}").unwrap())
+        .with_message("Data files");
+
+    let _ = std::fs::create_dir("clusters");
+
+    for path in paths {
+        let grid_path = path.as_ref().unwrap().path();
+        let file_name = grid_path.file_name().unwrap().to_string_lossy();
+
+        pb.set_message(file_name.to_string());
+
+        let grid_file_text = std::fs::read_to_string(grid_path.clone()).unwrap();
+
+        let grids = grid_file_text
+            .lines()
+            .map(|l| GridResult::from_str(l).unwrap())
+            .collect_vec();
+
+        let all_words = grids
+            .iter()
+            .flat_map(|grid| &grid.words)
+            .cloned()
+            .sorted()
+            .dedup()
+            .collect_vec();
+
+        let sets: Vec<BitSet<4>> = grids
+            .iter()
+            .map(|grid_result| {
+                let set = BitSet::<4>::from_iter(
+                    grid_result
+                        .words
+                        .iter()
+                        .map(|w| all_words.binary_search(w).unwrap()),
+                );
+                set
+            })
+            .sorted()
+            .dedup()
+            .collect();
+
+        let new_grids: Vec<GridResult> = grids
+            .iter()
+            .filter(|grid_result| {
+                let set = BitSet::<4>::from_iter(
+                    grid_result
+                        .words
+                        .iter()
+                        .map(|w| all_words.binary_search(w).unwrap()),
+                );
+
+                !sets.iter().any(|s| s.is_superset(&set) && *s != set)
+            })
+            .cloned()
+            .collect();
+
+        if new_grids.len() < grids.len() {
+            info!(
+                "Only {:5} of {:6} are optimal and unique",
+                new_grids.len(),
+                grids.len()
+            );
+            let new_contents = new_grids.into_iter().join("\n");
+
+            match std::fs::write(grid_path, new_contents) {
+                Ok(_) => {}
+                Err(e) => log::error!("{e}"),
+            }
+        }
+        pb.inc(1);
+    }
+
+    pb.finish();
+}
 
 fn reorient_grids(_options: &Options) {
     let folder = std::fs::read_dir("grids").unwrap();
@@ -528,14 +612,9 @@ fn create_grids<const W: usize>(
             .into_par_iter()
             .chain(group.extras.into_par_iter())
             .filter(|x| !all_solved_combinations.iter().any(|sol| sol.is_superset(x)))
-
-
             .flat_map(|set| {
                 combinations::WordCombination::from_bit_set(set, word_letters.as_slice())
             })
-
-
-
             .map(|set| {
                 let mut counter = FakeCounter;
                 let finder_words = set.get_single_words(all_words);
