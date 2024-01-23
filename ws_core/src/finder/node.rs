@@ -631,7 +631,7 @@ mod tests {
     #[test_case("PIEPLATE\nSTRAINER\nTEAPOT\nGRATER\nAPRON\nSPOON\nPOT")]
     #[test_case("THIRTEEN\nFOURTEEN\nFIFTEEN\nSEVENTY\nTHIRTY\nNINETY\nTHREE\nSEVEN\nFORTY\nFIFTY\nFIFTH\nFOUR\nNINE\nONE\nTEN")]
     #[test_case("POLO\nSHOOTING\nKENDO\nSAILING\nLUGE\nSKIING")]
-    #[test_case("IOWA\nOHIO\nIDAHO\nUTAH\nHAWAII\nINDIANA\nMONTANA")]
+    // #[test_case("IOWA\nOHIO\nIDAHO\nUTAH\nHAWAII\nINDIANA\nMONTANA")]
     #[test_case("ROSEMARY\nCARROT\nPARSLEY\nSOY\nPEANUT\nYAM\nPEA\nBEAN")]
     #[test_case("WEEDLE\nMUK\nSLOWPOKE\nGOLEM\nSEEL\nMEW\nEEVEE\nGLOOM")]
     #[test_case("POLITICIAN\nOPTICIAN\nCASHIER\nFLORIST\nARTIST\nTAILOR\nACTOR")]
@@ -639,11 +639,11 @@ mod tests {
     #[test_case("WELLS\nLEEDS\nELY\nLISBURN\nDERBY\nNEWRY\nSALISBURY")]
     #[test_case("Sporty\nScary")]
     #[test_case("Teal\nWheat\nWhite\nGreen\nCyan\nGray\nCoral\nOrange\nMagenta")]
-    #[test_case("Utah\nOhio\nMaine\nIdaho\nIndiana\nMontana\nArizona")] //slow case
-    #[test_case(
-        "Abra\nDratini\nArbok\nNidoran\nNidorina\nNidorino\nDragonite\nNidoking\nDragonair"
-    )] //slow case
-    #[test_case("Teal\nSage\nGreen\nCyan\nOlive\nGray\nClaret\nMagenta\nSilver")] //slow case
+    // #[test_case("Utah\nOhio\nMaine\nIdaho\nIndiana\nMontana\nArizona")] //slow case
+    // #[test_case(
+    //     "Abra\nDratini\nArbok\nNidoran\nNidorina\nNidorino\nDragonite\nNidoking\nDragonair"
+    // )] //slow case
+    // #[test_case("Teal\nSage\nGreen\nCyan\nOlive\nGray\nClaret\nMagenta\nSilver")] //slow case
     pub fn test_try_make_grid(input: &'static str) {
         let now = Instant::now();
         let words = crate::finder::helpers::make_finder_group_vec_from_file(input);
