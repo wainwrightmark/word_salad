@@ -107,9 +107,8 @@ impl LayoutStructure for LevelsMenuLayoutEntity {
     fn iter_all(_context: &Self::Context<'_>) -> impl Iterator<Item = Self> {
         [
             Self::WordSalad,
-            Self::AdditionalLevel(LevelGroup::GlobalLocation),
-            Self::AdditionalLevel(LevelGroup::HistoryMythology),
-            Self::AdditionalLevel(LevelGroup::Science),
+            Self::AdditionalLevel(LevelGroup::Geography),
+            Self::AdditionalLevel(LevelGroup::NaturalWorld),
         ]
         .into_iter()
     }

@@ -639,6 +639,7 @@ mod tests {
     #[test_case("WELLS\nLEEDS\nELY\nLISBURN\nDERBY\nNEWRY\nSALISBURY")]
     #[test_case("Sporty\nScary")]
     #[test_case("Teal\nWheat\nWhite\nGreen\nCyan\nGray\nCoral\nOrange\nMagenta")]
+    #[test_case("Claret\nCoral\nCream\nCyan\nGray\nGreen\nIvory\nLime\nOlive\nOrange\nTeal")]
     // #[test_case("Utah\nOhio\nMaine\nIdaho\nIndiana\nMontana\nArizona")] //slow case
     // #[test_case(
     //     "Abra\nDratini\nArbok\nNidoran\nNidorina\nNidorino\nDragonite\nNidoking\nDragonair"

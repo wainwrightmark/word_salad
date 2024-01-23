@@ -1,6 +1,4 @@
 use crate::all_levels::*;
-use num_derive::FromPrimitive;
-use num_traits::FromPrimitive;
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumCount, EnumIs, EnumIter};
 use ws_core::DesignedLevel;
@@ -21,37 +19,40 @@ use ws_core::DesignedLevel;
     Serialize,
     Deserialize,
     Hash,
-    FromPrimitive,
 )]
 
 pub enum LevelSequence {
-    EuropeanCapitals = 2,
-    EuropeanCountries = 3,
-    USStates = 4,
-    GreekGods = 5,
-    USPresidents = 6,
-    Scientists = 7,
-    Insects = 8,
-    Fruit = 9,
-    Gemstones = 10,
-    Vegetables = 11,
+    USStates,
+    EuropeanCountries,
+    EuropeanCapitals,
 
-    Elements = 12,
-    FamousQueens = 13,
-
-    RomanGods = 14,
-    EgyptianGods = 15,
+    Mammals,
+    Birds,
+    Insects,
+    Fruit,
+    Vegetables,
+    Gemstones,
+    Elements,
 }
 
 impl LevelSequence {
-
     pub const FIRST: Self = LevelSequence::EuropeanCapitals;
 
     pub fn get_next(self) -> Option<Self> {
-        let current_index = self as usize;
-        let next_index = (current_index + 1) % Self::COUNT;
-
-        FromPrimitive::from_usize(next_index)
+        use LevelSequence::*;
+        let r = match self {
+            USStates => EuropeanCountries,
+            EuropeanCountries => EuropeanCapitals,
+            EuropeanCapitals => Mammals,
+            Mammals => Birds,
+            Birds => Insects,
+            Insects => Fruit,
+            Fruit => Vegetables,
+            Vegetables => Gemstones,
+            Gemstones => Elements,
+            Elements => return None,
+        };
+        return Some(r);
     }
 
     pub fn get_level(self, index: usize) -> Option<&'static DesignedLevel> {
@@ -71,18 +72,14 @@ impl LevelSequence {
             LevelSequence::EuropeanCapitals => &*EU_CAPITALS,
             LevelSequence::EuropeanCountries => &*EU_COUNTRIES,
             LevelSequence::USStates => &*US_STATES,
-            LevelSequence::GreekGods => &*GREEK_GODS,
-            LevelSequence::USPresidents => &*US_PRESIDENTS,
-            LevelSequence::Scientists => &*SCIENTISTS,
             LevelSequence::Insects => &*INSECTS,
             LevelSequence::Fruit => &*FRUIT,
             LevelSequence::Gemstones => &*GEMSTONES,
             LevelSequence::Vegetables => &*VEGETABLES,
 
             LevelSequence::Elements => &*ELEMENTS,
-            LevelSequence::FamousQueens => &*QUEENS,
-            LevelSequence::RomanGods => &*ROMAN_GODS,
-            LevelSequence::EgyptianGods => &*EGYPTIAN_GODS,
+            LevelSequence::Mammals => &*MAMMALS,
+            LevelSequence::Birds => &*BIRDS,
         };
         levels
     }
@@ -92,18 +89,13 @@ impl LevelSequence {
             LevelSequence::EuropeanCapitals => "European Capitals",
             LevelSequence::EuropeanCountries => "European Countries",
             LevelSequence::USStates => "US States",
-            LevelSequence::GreekGods => "Greek Gods",
-            LevelSequence::USPresidents => "US Presidents",
-            LevelSequence::Scientists => "Scientists",
             LevelSequence::Insects => "Insects",
-            LevelSequence::Fruit => "Fruit",
             LevelSequence::Gemstones => "Gemstones",
             LevelSequence::Vegetables => "Vegetables",
-
-            LevelSequence::FamousQueens => "Famous Queens",
-            LevelSequence::RomanGods => "Roman Gods",
-            LevelSequence::EgyptianGods => "Egyptian Gods",
             LevelSequence::Elements => "Elements",
+            LevelSequence::Mammals => "Mammals",
+            LevelSequence::Birds => "Birds",
+            LevelSequence::Fruit => "Fruit",
         }
     }
 }

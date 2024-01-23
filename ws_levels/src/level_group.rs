@@ -20,9 +20,8 @@ use crate::level_sequence::LevelSequence;
     Hash,
 )]
 pub enum LevelGroup {
-    GlobalLocation = 0,
-    HistoryMythology = 1,
-    Science = 2,
+    Geography,
+    NaturalWorld
 }
 
 impl LevelGroup {
@@ -33,15 +32,9 @@ impl LevelGroup {
     pub fn get_sequences(&self) -> &'static [LevelSequence] {
         use LevelSequence::*;
         match self {
-            LevelGroup::GlobalLocation => &[EuropeanCapitals, EuropeanCountries, USStates],
-            LevelGroup::HistoryMythology => &[
-                GreekGods,
-                USPresidents,
-                FamousQueens,
-                RomanGods,
-                EgyptianGods,
-            ],
-            LevelGroup::Science => &[Scientists, Insects, Fruit, Gemstones, Vegetables, Elements],
+            LevelGroup::Geography => &[USStates, EuropeanCountries, EuropeanCapitals],
+
+            LevelGroup::NaturalWorld => &[Mammals, Birds, Insects, Fruit, Vegetables, Gemstones,  Elements],
         }
     }
 
@@ -53,9 +46,8 @@ impl LevelGroup {
 
     pub fn name(&self) -> &'static str {
         match self {
-            LevelGroup::GlobalLocation => "Global Location",
-            LevelGroup::HistoryMythology => "History / Mythology",
-            LevelGroup::Science => "Science",
+            LevelGroup::Geography => "Geography",
+            LevelGroup::NaturalWorld => "Natural World",
         }
     }
 }

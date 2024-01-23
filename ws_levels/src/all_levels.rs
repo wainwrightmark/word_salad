@@ -9,102 +9,76 @@ lazy_static! { //todo data_bake
         .map(|x| x.unwrap())
         .collect_vec();
     pub(crate) static ref EU_CAPITALS: Vec<DesignedLevel> = number_levels(
-        include_str!("levels/global_location/european_capitals.tsv")
+        include_str!("levels/geography/european_capitals.tsv")
             .lines()
             .map(DesignedLevel::from_tsv_line)
             .map(|x| x.unwrap()),
         "European Capitals"
     );
     pub(crate) static ref EU_COUNTRIES: Vec<DesignedLevel> = number_levels(
-        include_str!("levels/global_location/european_countries.tsv")
+        include_str!("levels/geography/european_countries.tsv")
             .lines()
             .map(DesignedLevel::from_tsv_line)
             .map(|x| x.unwrap()),
         "European Countries"
     );
     pub(crate) static ref US_STATES: Vec<DesignedLevel> = number_levels(
-        include_str!("levels/global_location/us_states.tsv")
+        include_str!("levels/geography/us_states.tsv")
             .lines()
             .map(DesignedLevel::from_tsv_line)
             .map(|x| x.unwrap()),
         "US States"
     );
-    pub(crate) static ref GREEK_GODS: Vec<DesignedLevel> = number_levels(
-        include_str!("levels/history_and_mythology/greek_gods.tsv")
-            .lines()
-            .map(DesignedLevel::from_tsv_line)
-            .map(|x| x.unwrap()),
-        "Greek Gods"
-    );
-    pub(crate) static ref US_PRESIDENTS: Vec<DesignedLevel> = number_levels(
-        include_str!("levels/history_and_mythology/us_presidents.tsv")
-            .lines()
-            .map(DesignedLevel::from_tsv_line)
-            .map(|x| x.unwrap()),
-        "US Presidents"
-    );
-    pub(crate) static ref SCIENTISTS: Vec<DesignedLevel> = number_levels(
-        include_str!("levels/science/scientists.tsv")
-            .lines()
-            .map(DesignedLevel::from_tsv_line)
-            .map(|x| x.unwrap()),
-        "Scientists"
-    );
     pub(crate) static ref INSECTS: Vec<DesignedLevel> = number_levels(
-        include_str!("levels/science/insects.tsv")
+        include_str!("levels/natural_world/insects.tsv")
             .lines()
             .map(DesignedLevel::from_tsv_line)
             .map(|x| x.unwrap()),
         "Insects"
     );
     pub(crate) static ref FRUIT: Vec<DesignedLevel> = number_levels(
-        include_str!("levels/science/fruit.tsv")
+        include_str!("levels/natural_world/fruit.tsv")
             .lines()
             .map(DesignedLevel::from_tsv_line)
             .map(|x| x.unwrap()),
         "Fruit"
     );
     pub(crate) static ref GEMSTONES: Vec<DesignedLevel> = number_levels(
-        include_str!("levels/science/gemstones.tsv")
+        include_str!("levels/natural_world/gemstones.tsv")
             .lines()
             .map(DesignedLevel::from_tsv_line)
             .map(|x| x.unwrap()),
         "Gemstones"
     );
     pub(crate) static ref VEGETABLES: Vec<DesignedLevel> = number_levels(
-        include_str!("levels/science/vegetables.tsv")
+        include_str!("levels/natural_world/vegetables.tsv")
             .lines()
             .map(DesignedLevel::from_tsv_line)
             .map(|x| x.unwrap()),
         "Vegetables"
     );
     pub(crate) static ref ELEMENTS: Vec<DesignedLevel> = number_levels(
-        include_str!("levels/science/elements.tsv")
+        include_str!("levels/natural_world/elements.tsv")
             .lines()
             .map(DesignedLevel::from_tsv_line)
             .map(|x| x.unwrap()),
         "Elements"
     );
-    pub(crate) static ref QUEENS: Vec<DesignedLevel> = number_levels(
-        include_str!("levels/history_and_mythology/famous_queens.tsv")
+
+    pub(crate) static ref MAMMALS: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/natural_world/mammals.tsv")
             .lines()
             .map(DesignedLevel::from_tsv_line)
             .map(|x| x.unwrap()),
-        "Famous Queens"
+        "Mammals"
     );
-    pub(crate) static ref ROMAN_GODS: Vec<DesignedLevel> = number_levels(
-        include_str!("levels/history_and_mythology/roman_gods.tsv")
+
+    pub(crate) static ref BIRDS: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/natural_world/birds.tsv")
             .lines()
             .map(DesignedLevel::from_tsv_line)
             .map(|x| x.unwrap()),
-        "Roman Gods"
-    );
-    pub(crate) static ref EGYPTIAN_GODS: Vec<DesignedLevel> = number_levels(
-        include_str!("levels/history_and_mythology/egyptian_gods.tsv")
-            .lines()
-            .map(DesignedLevel::from_tsv_line)
-            .map(|x| x.unwrap()),
-        "Egyptian Gods"
+        "Birds"
     );
 }
 
@@ -142,18 +116,13 @@ pub mod tests {
             EU_CAPITALS.iter(),
             EU_COUNTRIES.iter(),
             US_STATES.iter(),
-            GREEK_GODS.iter(),
-            US_PRESIDENTS.iter(),
-            SCIENTISTS.iter(),
             INSECTS.iter(),
             FRUIT.iter(),
             GEMSTONES.iter(),
             VEGETABLES.iter(),
             ELEMENTS.iter(),
-            QUEENS.iter(),
-            GREEK_GODS.iter(),
-            EGYPTIAN_GODS.iter(),
-            ROMAN_GODS.iter(),
+            MAMMALS.iter(),
+            BIRDS.iter()
         ]
         .iter()
         .cloned()
