@@ -110,7 +110,6 @@ fn get_combinations_inner<const W: usize>(
                     new_combination.can_add(word_index, letter_indices, max_size)
                 })
             {
-
                 // if new_combination.display_string(words) == "Claret, Coral, Cream, Cyan, Gray, Green, Ivory, Lime, Olive, Orange, Teal"{
                 //     panic!("Hello world")
                 // }
@@ -256,7 +255,6 @@ pub mod tests {
     #[test_case(
         "Claret\nCoral\nCream\nCyan\nGray\nGreen\nIvory\nLime\nOlive\nOrange\nTeal",
         "Claret\nCoral\nCream\nCyan\nGray\nGreen\nIvory\nLime\nOlive\nOrange\nTeal"
-
     )]
     #[test_case(
         "POLITICIAN\nOPTICIAN\nCASHIER\nFLORIST\nARTIST\nTAILOR\nACTOR",
@@ -270,11 +268,12 @@ pub mod tests {
         "Teal\nWheat\nWhite\nGreen\nCyan\nGray\nCoral\nOrange\nMagenta",
         "Teal\nWheat\nWhite\nGreen\nCyan\nGray\nCoral\nOrange\nMagenta"
     )]
-    // #[test_case(
-    //     "White\nYellow\nBlue\nRed\nGreen\nBlack\nBrown\nAzure\nIvory\nTeal\nSilver\nPurple\nGray\nOrange\nMaroon\nCharcoal\nAquamarine\nCoral\nFuchsia\nWheat\nLime\nCrimson\nKhaki\nPink\nMagenta\nGold\nPlum\nOlive\nCyan\nBeige\nCerulean\nCerise\nChestnut\nClaret\nCoffee\nCopper\nCream\nCrimson\nEbony\nEggshell\nGold\nIndigo\nJasmine\nJet\nMango\nMauve\nMustard\nOchre\nRose\nRuby\nRusset\nSaffron\nSage\nSalmon\nScarlet\nSepia\nSilver\nTan",
-    //     "Claret\nCoral\nCream\nCyan\nGray\nGreen\nIvory\nLime\nOlive\nOrange\nTeal"
-    // )]
-    //#[test_case("White\nYellow\nBlue\nRed\nGreen\nBlack\nBrown\nAzure\nIvory\nTeal\nSilver\nPurple\nGray\nOrange\nMaroon\nCharcoal\nAquamarine\nCoral\nFuchsia\nWheat\nLime\nCrimson\nKhaki\npink\nMagenta\nGold\nPlum\nOlive\nCyan","Black\nCoral\nCyan\nGray\nGreen\nIvory\nOlive\nOrange\nRed\nTeal") ]
+    #[test_case(
+        "Claret\nCoral\nCream\nCyan\nGray\nGreen\nIvory\nLime\nOlive\nOrange\nTeal\nWhite\nYellow",
+        //"Claret\nCoral\nCream\nCyan\nGray\nGreen\nIvory\nLime\nOlive\nOrange\nTeal\nWhite\nYellow",
+        "Claret\nCoral\nCream\nCyan\nGray\nGreen\nIvory\nLime\nOlive\nOrange\nTeal\nWhite"
+    )]
+
     pub fn test_membership(input: &'static str, expected_member: &'static str) {
         let now = Instant::now();
 

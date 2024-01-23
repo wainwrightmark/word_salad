@@ -109,6 +109,10 @@ fn main() {
     io::stdin().read_line(&mut String::new()).unwrap();
 }
 
+// fn remove_duplicate_grids(_options: &Options){
+
+// }
+
 fn reorient_grids(_options: &Options) {
     let folder = std::fs::read_dir("grids").unwrap();
 
@@ -491,6 +495,7 @@ fn create_grids<const W: usize>(
     possible_combinations.sort_unstable_by_key(|x| std::cmp::Reverse(x.count()));
 
     let mut all_solutions: Vec<GridResult> = vec![];
+    let mut all_solved_combinations: Vec<BitSet<W>> = vec![];
 
     let mut grouped_combinations: BTreeMap<u32, SolutionGroup<W>> = Default::default();
 
@@ -522,9 +527,15 @@ fn create_grids<const W: usize>(
             .sets
             .into_par_iter()
             .chain(group.extras.into_par_iter())
+            .filter(|x| !all_solved_combinations.iter().any(|sol| sol.is_superset(x)))
+
+
             .flat_map(|set| {
                 combinations::WordCombination::from_bit_set(set, word_letters.as_slice())
             })
+
+
+
             .map(|set| {
                 let mut counter = FakeCounter;
                 let finder_words = set.get_single_words(all_words);
@@ -536,7 +547,6 @@ fn create_grids<const W: usize>(
                     .collect_vec();
 
                 let mut result = None;
-                //let now = std::time::Instant::now();
 
                 ws_core::finder::node::try_make_grid_with_blank_filling(
                     set.letter_counts,
@@ -548,13 +558,6 @@ fn create_grids<const W: usize>(
                 );
 
                 pb.inc(1);
-                // let elapsed = now.elapsed();
-                // if elapsed.as_secs_f32() > 1.0{
-                //     let found = result.is_some().then(||"found").unwrap_or_else(||"not found");
-                //     let fws = finder_words.iter().map(|x|x.text) .join(", ");
-                //     let excludes = exclude_words.iter().map(|x|x.text) .join(", ");
-                //     info!("Grid {found} in {:2.3} - {fws} --- EXCLUDE: {excludes} ", elapsed.as_secs_f32())
-                // }
 
                 (set, result)
             })
@@ -571,6 +574,7 @@ fn create_grids<const W: usize>(
             if let Some(mut solution) = result {
                 let _ = ws_core::finder::orientation::try_optimize_orientation(&mut solution);
                 solutions.push(solution);
+                all_solved_combinations.push(combination.word_indexes);
             } else {
                 next_group
                     .extras
