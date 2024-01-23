@@ -4,11 +4,29 @@ use maveric::with_bundle::CanWithBundle;
 use ws_core::layout::entities::*;
 use ws_core::prelude::*;
 
+
+#[derive(Debug, NodeContext)]
+pub struct TopBarContext {
+    pub window_size: MyWindowSize,
+    pub hint_state: HintState,
+    pub video_resource: VideoResource,
+}
+
+impl<'a, 'w : 'a> From<&'a ViewContextWrapper<'w>> for TopBarContextWrapper<'w> {
+    fn from(value: &'a ViewContextWrapper<'w>) -> Self {
+        Self {
+            hint_state: Res::clone(&value.hint_state),
+            window_size: Res::clone(&value.window_size),
+            video_resource: Res::clone(&value.video_resource),
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct TopBar;
 
 impl MavericNode for TopBar {
-    type Context = ViewContext; //TODO check
+    type Context = TopBarContext;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands

@@ -22,11 +22,32 @@ impl Plugin for WordsPlugin {
     }
 }
 
+#[derive(Debug, NodeContext)]
+pub struct WordsContext {
+    pub current_level: CurrentLevel,
+    pub found_words_state: FoundWordsState,
+    pub window_size: MyWindowSize,
+    pub video_resource: VideoResource,
+    pub daily_challenges: DailyChallenges,
+}
+
+impl<'a, 'w : 'a> From<&'a ViewContextWrapper<'w>> for WordsContextWrapper<'w> {
+    fn from(value: &'a ViewContextWrapper<'w>) -> Self {
+        Self {
+            current_level: Res::clone(&value.current_level),
+            found_words_state: Res::clone(&value.found_words_state),
+            window_size: Res::clone(&value.window_size),
+            video_resource: Res::clone(&value.video_resource),
+            daily_challenges: Res::clone(&value.daily_challenges),
+        }
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub struct WordsNode;
 
 impl MavericNode for WordsNode {
-    type Context = ViewContext;
+    type Context = WordsContext;
 
     fn should_recreate(
         &self,
@@ -51,7 +72,8 @@ impl MavericNode for WordsNode {
         commands
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
-                let Either::Left(level) = context.current_level.level(&context.daily_challenges) else {
+                let Either::Left(level) = context.current_level.level(&context.daily_challenges)
+                else {
                     return;
                 };
                 let words = level.words.as_slice();
@@ -179,7 +201,7 @@ impl MavericNode for WordNode {
                             WordButtonCompletion {
                                 completion,
                                 tile: node.tile,
-                                previous_completion: args.previous.map(|x|x.completion)
+                                previous_completion: args.previous.map(|x| x.completion),
                             },
                             (node.rect.extents.y.abs() / node.rect.extents.x.abs()).into(),
                             ShaderProgress { progress },
@@ -285,7 +307,7 @@ impl ExtractToShader for WordButtonBoxShader {
                 Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color().into(),
                 Completion::ManualHinted(_) => palette::WORD_BACKGROUND_MANUAL_HINT.convert_color(),
                 Completion::Complete => {
-                    if previous_completion.is_some_and(|x|x.is_manual_hinted()) {
+                    if previous_completion.is_some_and(|x| x.is_manual_hinted()) {
                         palette::WORD_BACKGROUND_MANUAL_HINT.convert_color()
                     } else {
                         palette::WORD_BACKGROUND_UNSTARTED.convert_color().into()

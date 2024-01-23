@@ -13,8 +13,33 @@ pub const TRANSITION_SECS: f32 = 1.0;
 #[derive(Debug, Clone, PartialEq)]
 pub struct CongratsView;
 
+#[derive(Debug, NodeContext)]
+pub struct CongratsContext {
+    pub current_level: CurrentLevel,
+    pub found_words_state: FoundWordsState,
+    pub window_size: MyWindowSize,
+    pub daily_challenge_completion: DailyChallengeCompletion,
+    pub sequence_completion: SequenceCompletion,
+    pub video_resource: VideoResource,
+    pub streak: Streak,
+}
+
+impl<'a, 'w : 'a> From<&'a ViewContextWrapper<'w>> for CongratsContextWrapper<'w> {
+    fn from(value: &'a ViewContextWrapper<'w>) -> Self {
+        Self {
+            current_level: Res::clone(&value.current_level),
+            found_words_state: Res::clone(&value.found_words_state),
+            window_size: Res::clone(&value.window_size),
+            daily_challenge_completion: Res::clone(&value.daily_challenge_completion),
+            sequence_completion: Res::clone(&value.sequence_completion),
+            video_resource: Res::clone(&value.video_resource),
+            streak: Res::clone(&value.streak),
+        }
+    }
+}
+
 impl MavericNode for CongratsView {
-    type Context = ViewContext;
+    type Context = CongratsContext;
 
     fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
         commands.insert_static_bundle(SpatialBundle::default());
@@ -78,7 +103,9 @@ impl MavericNode for CongratsView {
                                 longest: streak.longest,
                             }
                         } else {
-                            let complete = context.daily_challenge_completion.get_daily_challenges_complete();
+                            let complete = context
+                                .daily_challenge_completion
+                                .get_daily_challenges_complete();
                             let total = today_index + 1;
                             let remaining = total.saturating_sub(complete);
                             Data::Sequence {
@@ -193,7 +220,10 @@ impl MavericNode for CongratsView {
                         CongratsButton::Next => match context.current_level.level_type() {
                             ws_core::level_type::LevelType::Tutorial => "Next".to_string(),
                             _ => {
-                                let next_level = context.current_level.get_next_level(&context.daily_challenge_completion, &context.sequence_completion);
+                                let next_level = context.current_level.get_next_level(
+                                    &context.daily_challenge_completion,
+                                    &context.sequence_completion,
+                                );
 
                                 match next_level {
                                     CurrentLevel::Tutorial { .. } => "Next".to_string(),

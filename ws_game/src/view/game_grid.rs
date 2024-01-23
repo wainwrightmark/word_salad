@@ -71,8 +71,35 @@ const TILE_SCALE_SPEED: LinearSpeed = LinearSpeed {
     units_per_second: 1.0,
 };
 
+#[derive(Debug, NodeContext)]
+pub struct GridTilesContext {
+     pub chosen_state: ChosenState,
+     pub current_level: CurrentLevel,
+     pub found_words_state: FoundWordsState,
+     pub window_size: MyWindowSize,
+     pub level_time: LevelTime,
+     pub video_resource: VideoResource,
+     pub daily_challenges: DailyChallenges,
+}
+
+
+impl<'a, 'w : 'a> From<&'a ViewContextWrapper<'w>> for GridTilesContextWrapper<'w> {
+    fn from(value: &'a ViewContextWrapper<'w>) -> Self {
+        Self {
+            current_level: Res::clone(&value.current_level),
+            found_words_state: Res::clone(&value.found_words_state),
+            window_size: Res::clone(&value.window_size),
+            video_resource: Res::clone(&value.video_resource),
+            chosen_state: Res::clone(&value.chosen_state),
+            level_time: Res::clone(&value.level_time),
+            daily_challenges: Res::clone(&value.daily_challenges),
+        }
+    }
+}
+
+
 impl MavericNode for GridTiles {
-    type Context = ViewContext;
+    type Context = GridTilesContext;
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
         commands

@@ -56,14 +56,14 @@ impl MavericRootChildren for ViewRoot {
         context: &<Self::Context as NodeContext>::Wrapper<'_>,
         commands: &mut impl ChildCommands,
     ) {
-        commands.add_child("Top Bar", TopBar, context);
+        commands.add_child("Top Bar", TopBar, &context.into());
 
         let selfie_mode = context.video_resource.selfie_mode();
         if context.menu_state.is_closed() {
             let level_complete = context.found_words_state.is_level_complete();
 
-            commands.add_child("cells", GridTiles { level_complete }, context);
-            commands.add_child("words", WordsNode, context);
+            commands.add_child("cells", GridTiles { level_complete }, &context.into());
+            commands.add_child("words", WordsNode, &context.into());
 
             match context.current_level.level(&context.daily_challenges) {
                 itertools::Either::Left(level) => {
@@ -84,7 +84,7 @@ impl MavericRootChildren for ViewRoot {
                     }
 
                     if context.found_words_state.is_level_complete() {
-                        commands.add_child("congrats", CongratsView, context);
+                        commands.add_child("congrats", CongratsView, &context.into());
                     }
 
                     if let Some(text) = TutorialText::try_create(&context.current_level, &context.found_words_state) {
@@ -145,7 +145,7 @@ impl MavericRootChildren for ViewRoot {
                 }
             }
         } else {
-            commands.add_child("menu", Menu, context);
+            commands.add_child("menu", Menu, &context.into());
         }
     }
 }

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use maveric::{
-    helpers::{ChildCommands, MavericContext, UnorderedChildCommands},
+    helpers::{ChildCommands, MavericContext, NodeContext, UnorderedChildCommands},
     node::MavericNode,
     root::MavericRoot,
 };
@@ -18,12 +18,12 @@ use crate::{
         main_menu_back_button::MainMenuBackButton,
         word_salad_menu_layout::WordSaladMenuLayoutEntity,
     },
-    prelude::{
-        level_group_layout::LevelGroupLayoutEntity, levels_menu_layout::LevelsMenuLayoutEntity,
-        main_menu_layout::MainMenuLayoutEntity, ButtonInteraction, ConvertColor,
-        DoubleTextButtonNode, SaladWindowSize, Size, ViewContext, WSButtonNode, BUTTONS_FONT_PATH,
-        ICON_FONT_PATH,
-    },
+    prelude::*,
+};
+
+use self::{
+    level_group_layout::LevelGroupLayoutEntity, levels_menu_layout::LevelsMenuLayoutEntity,
+    main_menu_layout::MainMenuLayoutEntity,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Resource, EnumIs, MavericContext)]
@@ -61,11 +61,34 @@ impl MenuState {
     }
 }
 
+#[derive(Debug, NodeContext)]
+pub struct MenuContext {
+    pub window_size: MyWindowSize,
+    pub menu_state: MenuState,
+    pub daily_challenge_completion: DailyChallengeCompletion,
+    pub sequence_completion: SequenceCompletion,
+    pub video_resource: VideoResource,
+    pub daily_challenges: DailyChallenges,
+}
+
+impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for MenuContextWrapper<'w> {
+    fn from(value: &'a ViewContextWrapper<'w>) -> Self {
+        Self {
+            window_size: Res::clone(&value.window_size),
+            video_resource: Res::clone(&value.video_resource),
+            daily_challenges: Res::clone(&value.daily_challenges),
+            menu_state: Res::clone(&value.menu_state),
+            daily_challenge_completion: Res::clone(&value.daily_challenge_completion),
+            sequence_completion: Res::clone(&value.sequence_completion),
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Menu;
 
 impl MavericNode for Menu {
-    type Context = ViewContext;
+    type Context = MenuContext;
 
     fn set_components(commands: maveric::prelude::SetComponentCommands<Self, Self::Context>) {
         commands
@@ -90,7 +113,7 @@ impl MavericNode for Menu {
                             size,
                             0,
                             palette::MENU_BUTTON_FILL.convert_color(),
-                            palette::MENU_BUTTON_TEXT_REGULAR.convert_color()
+                            palette::MENU_BUTTON_TEXT_REGULAR.convert_color(),
                         );
                     }
                     MenuState::ChooseLevelsPage => {
@@ -99,39 +122,61 @@ impl MavericNode for Menu {
                             commands,
                             size,
                             1,
-                            |x| x.get_text(&context.daily_challenge_completion.as_ref(), &context.sequence_completion.as_ref(),  context.daily_challenges.as_ref()),
-                            |x| get_variable_fill(x.is_complete(&context.daily_challenge_completion, &context.sequence_completion, context.daily_challenges.as_ref())),
+                            |x| {
+                                x.get_text(
+                                    &context.daily_challenge_completion.as_ref(),
+                                    &context.sequence_completion.as_ref(),
+                                    context.daily_challenges.as_ref(),
+                                )
+                            },
+                            |x| {
+                                get_variable_fill(x.is_complete(
+                                    &context.daily_challenge_completion,
+                                    &context.sequence_completion,
+                                    context.daily_challenges.as_ref(),
+                                ))
+                            },
                             BUTTONS_FONT_PATH,
                             BUTTONS_FONT_PATH,
-                            palette::MENU_BUTTON_TEXT_REGULAR.convert_color()
+                            palette::MENU_BUTTON_TEXT_REGULAR.convert_color(),
                         );
                     }
                     MenuState::LevelGroupPage(group) => {
                         add_double_text_menu_items::<R, LevelGroupLayoutEntity>(
-                            &(context.video_resource.selfie_mode(),*group),
+                            &(context.video_resource.selfie_mode(), *group),
                             commands,
                             size,
                             2,
                             |x| x.get_text(&context.sequence_completion.as_ref(), group),
-                            |x| get_variable_fill(x.is_complete(&context.sequence_completion, group)),
+                            |x| {
+                                get_variable_fill(
+                                    x.is_complete(&context.sequence_completion, group),
+                                )
+                            },
                             BUTTONS_FONT_PATH,
                             BUTTONS_FONT_PATH,
-                            palette::MENU_BUTTON_TEXT_REGULAR.convert_color()
+                            palette::MENU_BUTTON_TEXT_REGULAR.convert_color(),
                         );
                     }
-                    MenuState::WordSaladLevels => {
-                        add_double_text_menu_items::<R, WordSaladMenuLayoutEntity>(
-                            &context.video_resource.selfie_mode(),
-                            commands,
-                            size,
-                            5,
-                            |x| x.get_text(&context.daily_challenge_completion.as_ref(), context.daily_challenges.as_ref()),
-                            |x| get_variable_fill(x.is_complete(&context.daily_challenge_completion)),
-                            BUTTONS_FONT_PATH,
-                            ICON_FONT_PATH,
-                            palette::MENU_BUTTON_TEXT_REGULAR.convert_color()
-                        )
-                    }
+                    MenuState::WordSaladLevels => add_double_text_menu_items::<
+                        R,
+                        WordSaladMenuLayoutEntity,
+                    >(
+                        &context.video_resource.selfie_mode(),
+                        commands,
+                        size,
+                        5,
+                        |x| {
+                            x.get_text(
+                                &context.daily_challenge_completion.as_ref(),
+                                context.daily_challenges.as_ref(),
+                            )
+                        },
+                        |x| get_variable_fill(x.is_complete(&context.daily_challenge_completion)),
+                        BUTTONS_FONT_PATH,
+                        ICON_FONT_PATH,
+                        palette::MENU_BUTTON_TEXT_REGULAR.convert_color(),
+                    ),
                 }
 
                 add_menu_items::<R, MainMenuBackButton>(
@@ -140,7 +185,7 @@ impl MavericNode for Menu {
                     size,
                     4,
                     palette::MENU_BUTTON_DISCOURAGED_FILL.convert_color(),
-                    palette::MENU_BUTTON_TEXT_DISCOURAGED.convert_color()
+                    palette::MENU_BUTTON_TEXT_DISCOURAGED.convert_color(),
                 );
             });
     }
@@ -164,7 +209,7 @@ fn add_menu_items<
     size: &Size,
     page: u16,
     fill_color: Color,
-    text_color: Color
+    text_color: Color,
 ) {
     for (index, entity) in L::iter_all(context).enumerate() {
         let font_size = size.font_size::<L>(&entity, &());
@@ -197,7 +242,7 @@ fn add_double_text_menu_items<
     fill_color_func: impl Fn(&L) -> Color,
     left_font: &'static str,
     right_font: &'static str,
-    text_color: Color
+    text_color: Color,
 ) {
     for (index, entity) in L::iter_all(context).enumerate() {
         let font_size = size.font_size::<L>(&entity, &());
