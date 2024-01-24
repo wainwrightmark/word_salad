@@ -1,4 +1,4 @@
-use crate::all_levels::*;
+use crate::{all_levels::*, prelude::LevelGroup};
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumCount, EnumIs, EnumIter};
 use ws_core::DesignedLevel;
@@ -55,6 +55,16 @@ impl LevelSequence {
         return Some(r);
     }
 
+    pub fn group(self) -> LevelGroup {
+        use LevelSequence::*;
+        match self {
+            USStates | EuropeanCountries | EuropeanCapitals => LevelGroup::Geography,
+            Mammals | Birds | Insects | Fruit | Vegetables | Gemstones | Elements => {
+                LevelGroup::NaturalWorld
+            }
+        }
+    }
+
     pub fn get_level(self, index: usize) -> Option<&'static DesignedLevel> {
         let levels = self.levels();
 
@@ -65,6 +75,10 @@ impl LevelSequence {
     pub fn level_count(self) -> usize {
         let levels = self.levels();
         levels.len()
+    }
+
+    pub fn free_level_count(self)-> usize{
+        2
     }
 
     fn levels(self) -> &'static Vec<DesignedLevel> {

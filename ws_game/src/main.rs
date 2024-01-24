@@ -21,6 +21,7 @@ pub mod streak;
 pub mod test_res_mut;
 pub mod video;
 pub mod view;
+pub mod purchases;
 
 #[cfg(target_arch = "wasm32")]
 pub mod wasm;

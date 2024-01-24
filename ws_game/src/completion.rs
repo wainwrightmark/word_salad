@@ -6,7 +6,8 @@ use serde::{Deserialize, Serialize};
 use ws_levels::{level_group::LevelGroup, level_sequence::LevelSequence};
 
 use crate::{
-    prelude::{CurrentLevel, DailyChallenges, FoundWordsState, Streak},
+    prelude::{CurrentLevel, DailyChallenges, FoundWordsState, NonLevel, Streak},
+    purchases::Purchases,
     state::HintState,
 };
 
@@ -45,10 +46,28 @@ pub struct LevelCompletion {
     pub current_index: usize,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum NextLevelResult {
+    Index(usize),
+    MustPurchase,
+    NoMoreLevels,
+}
+
+impl NextLevelResult{
+    pub fn to_level(self, sequence: LevelSequence)-> CurrentLevel{
+        match self{
+            NextLevelResult::Index(index) => CurrentLevel::Fixed { level_index: index, sequence },
+            NextLevelResult::MustPurchase => CurrentLevel::NonLevel(NonLevel::LevelSequenceMustPurchaseGroup(sequence)),
+            NextLevelResult::NoMoreLevels => CurrentLevel::NonLevel(NonLevel::LevelSequenceAllFinished(sequence)),
+        }
+    }
+}
+
 impl SequenceCompletion {
     pub fn get_next_level_sequence(
         &self,
         current: Option<LevelSequence>,
+        purchases: &Purchases,
     ) -> Option<(LevelSequence, usize)> {
         let mut current = current;
         loop {
@@ -57,7 +76,7 @@ impl SequenceCompletion {
                 None => LevelSequence::FIRST,
             };
 
-            if let Some(index) = self.get_next_level_index(next) {
+            if let NextLevelResult::Index(index) = self.get_next_level_index(next, purchases) {
                 return Some((next, index));
             }
 
@@ -69,7 +88,11 @@ impl SequenceCompletion {
         self.completions.entry(sequence).or_default().current_index = 0;
     }
 
-    pub fn get_next_level_index(&self, sequence: LevelSequence) -> Option<usize> {
+    pub fn get_next_level_index(
+        &self,
+        sequence: LevelSequence,
+        purchases: &Purchases,
+    ) -> NextLevelResult {
         let index = self
             .completions
             .get(&sequence)
@@ -78,9 +101,14 @@ impl SequenceCompletion {
             .current_index;
 
         if index >= sequence.level_count() {
-            return None;
+            return NextLevelResult::NoMoreLevels;
+        } else if index >= sequence.free_level_count()
+            && !purchases.groups_purchased.contains(&sequence.group())
+        {
+            return NextLevelResult::MustPurchase;
+        } else {
+            NextLevelResult::Index(index)
         }
-        Some(index)
     }
 
     pub fn get_number_complete(&self, sequence: &LevelSequence) -> usize {

@@ -34,7 +34,7 @@ impl MavericNode for NonLevelView {
                 NonLevel::DailyChallengeReset => {
                     "You have completed\nAll daily challenges".to_string()
                 }
-                NonLevel::LevelSequenceFinished(ls) => {
+                NonLevel::LevelSequenceAllFinished(ls) => {
                     format!("You have completed\nAll {}", ls.name())
                 }
                 NonLevel::LevelSequenceReset(ls) => {
@@ -43,6 +43,14 @@ impl MavericNode for NonLevelView {
                 NonLevel::DailyChallengeCountdown { todays_index } => {
                     DailyChallenges::time_until_challenge_string(todays_index)
                         .unwrap_or_else(|| "00:00:00".to_string())
+                }
+                NonLevel::LevelSequenceMustPurchaseGroup(ls) => {
+                    format!(
+                        "Buy the {} addon
+                    \nTo unlock all {} levels",
+                        ls.group().name(),
+                        ls.group().total_count()
+                    )
                 }
             };
 
@@ -88,10 +96,11 @@ impl MavericNode for NonLevelView {
                 NonLevel::DailyChallengeReset | NonLevel::LevelSequenceReset(_) => {
                     "Reset".to_string()
                 }
-                NonLevel::LevelSequenceFinished(_) => "Next".to_string(),
+                NonLevel::LevelSequenceAllFinished(_) => "Next".to_string(),
                 NonLevel::DailyChallengeCountdown { todays_index } => {
                     format!("Replay #{}", todays_index + 1)
                 }
+                NonLevel::LevelSequenceMustPurchaseGroup(_) => "Purchase".to_string(),
             };
 
             let fill_color = if selfie_mode.is_selfie_mode {

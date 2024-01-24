@@ -1,7 +1,7 @@
 use std::sync::atomic::AtomicUsize;
 
 pub use crate::prelude::*;
-use crate::{input::InputPlugin, motion_blur::MotionBlurPlugin};
+use crate::{input::InputPlugin, motion_blur::MotionBlurPlugin, purchases::PurchasesPlugin};
 use bevy::{log::LogPlugin, window::RequestRedraw};
 use itertools::Either;
 use nice_bevy_utils::{async_event_writer, window_size::WindowSizePlugin, CanRegisterAsyncEvent};
@@ -64,6 +64,7 @@ pub fn go() {
     app.add_plugins(StreakPlugin);
     app.add_plugins(MotionBlurPlugin);
     app.add_plugins(WordsPlugin);
+    app.add_plugins(PurchasesPlugin);
 
     app.register_transition::<BackgroundColorLens>();
     app.register_transition::<TransformRotationYLens>();

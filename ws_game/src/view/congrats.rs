@@ -1,4 +1,4 @@
-use crate::{prelude::*, z_indices};
+use crate::{prelude::*, purchases::Purchases, z_indices};
 use bevy::{sprite::Anchor, text::Text2dBounds};
 
 use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
@@ -223,6 +223,7 @@ impl MavericNode for CongratsView {
                                 let next_level = context.current_level.get_next_level(
                                     &context.daily_challenge_completion,
                                     &context.sequence_completion,
+                                    &Purchases::default() //don't actually worry about purchases here :)
                                 );
 
                                 match next_level {
@@ -245,7 +246,8 @@ impl MavericNode for CongratsView {
                                         }
                                     }
                                     CurrentLevel::Custom { .. } => "Next".to_string(),
-                                    CurrentLevel::NonLevel(_) => "Finish".to_string(),
+                                    CurrentLevel::NonLevel(NonLevel::LevelSequenceAllFinished(_)) => "Finish".to_string(),
+                                    CurrentLevel::NonLevel(_) => "Next".to_string(),
                                 }
                             }
                         },
