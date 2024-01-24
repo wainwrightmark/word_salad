@@ -65,6 +65,7 @@ pub fn go() {
     app.add_plugins(MotionBlurPlugin);
     app.add_plugins(WordsPlugin);
     app.add_plugins(PurchasesPlugin);
+    app.add_plugins(NotificationPlugin);
 
     app.register_transition::<BackgroundColorLens>();
     app.register_transition::<TransformRotationYLens>();

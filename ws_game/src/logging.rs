@@ -208,20 +208,18 @@ pub enum LoggableEvent {
         seconds: u64,
         hints_used: usize, //TODO permutation
     }, // GoAppStore {
-       //     store: String,
-       //     level: String,
-       //     max_demo_level: u8,
-       // },
+    //     store: String,
+    //     level: String,
+    //     max_demo_level: u8,
+    // },
+    PermissionsRequested {
+        given: String,
+    },
+    // FollowNewsLink,
 
-       // PermissionsRequested{
-       //     given: String
-       // },
+    // NotificationClick,
 
-       // FollowNewsLink,
-
-       // NotificationClick,
-
-       // ActedInTutorial
+    // ActedInTutorial
 }
 
 #[cfg(any(feature = "android", feature = "ios", feature = "web"))]
