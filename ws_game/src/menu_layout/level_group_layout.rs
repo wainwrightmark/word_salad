@@ -78,7 +78,7 @@ impl LayoutStructure for LevelGroupLayoutEntity {
 impl LayoutStructureWithFont for LevelGroupLayoutEntity {
     type FontContext = ();
     fn font_size(&self, _: &()) -> f32 {
-        MENU_BUTTON_FONT_SIZE
+        MENU_BUTTON_FONT_SIZE_SMALL
     }
 }
 

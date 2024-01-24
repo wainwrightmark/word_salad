@@ -11,3 +11,8 @@
 - Achievements
 - Fun Facts
 - better unpausing
+
+
+- change menu button clicking
+- Change steks menu button
+- integrate

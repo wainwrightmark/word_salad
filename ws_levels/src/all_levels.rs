@@ -8,27 +8,67 @@ lazy_static! { //todo data_bake
         .map(DesignedLevel::from_tsv_line)
         .map(|x| x.unwrap())
         .collect_vec();
-    pub(crate) static ref EU_CAPITALS: Vec<DesignedLevel> = number_levels(
+
+
+        pub(crate) static ref US_STATES: Vec<DesignedLevel> = number_levels(
+            include_str!("levels/geography/us_states.tsv")
+                .lines()
+                .map(DesignedLevel::from_tsv_line)
+                .map(|x| x.unwrap()),
+            "US States"
+        );
+
+    pub(crate) static ref EUROPEAN_CAPITALS: Vec<DesignedLevel> = number_levels(
         include_str!("levels/geography/european_capitals.tsv")
             .lines()
             .map(DesignedLevel::from_tsv_line)
             .map(|x| x.unwrap()),
         "European Capitals"
     );
-    pub(crate) static ref EU_COUNTRIES: Vec<DesignedLevel> = number_levels(
+    pub(crate) static ref EUROPEAN_COUNTRIES: Vec<DesignedLevel> = number_levels(
         include_str!("levels/geography/european_countries.tsv")
             .lines()
             .map(DesignedLevel::from_tsv_line)
             .map(|x| x.unwrap()),
         "European Countries"
     );
-    pub(crate) static ref US_STATES: Vec<DesignedLevel> = number_levels(
-        include_str!("levels/geography/us_states.tsv")
+
+
+    pub(crate) static ref SOUTH_AND_EAST_ASIAN_COUNTRIES: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/geography/south_and_east_asian_countries.tsv")
             .lines()
             .map(DesignedLevel::from_tsv_line)
             .map(|x| x.unwrap()),
-        "US States"
+        "South & East Asian Countries"
     );
+
+    pub(crate) static ref MIDDLE_EASTERN_COUNTRIES: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/geography/middle_eastern_countries.tsv")
+            .lines()
+            .map(DesignedLevel::from_tsv_line)
+            .map(|x| x.unwrap()),
+        "Middle Eastern Countries"
+    );
+
+    pub(crate) static ref SOUTH_AND_EAST_ASIAN_CAPITALS: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/geography/south_and_east_asian_capitals.tsv")
+            .lines()
+            .map(DesignedLevel::from_tsv_line)
+            .map(|x| x.unwrap()),
+        "South & East Asian Capitals"
+    );
+
+    pub(crate) static ref MIDDLE_EASTERN_CAPITALS: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/geography/middle_eastern_capitals.tsv")
+            .lines()
+            .map(DesignedLevel::from_tsv_line)
+            .map(|x| x.unwrap()),
+        "Middle Eastern Capitals"
+    );
+
+
+
+
     pub(crate) static ref INSECTS: Vec<DesignedLevel> = number_levels(
         include_str!("levels/natural_world/insects.tsv")
             .lines()
@@ -113,9 +153,17 @@ pub mod tests {
     pub fn get_all_levels() -> Vec<DesignedLevel> {
         [
             TUTORIAL.iter(),
-            EU_CAPITALS.iter(),
-            EU_COUNTRIES.iter(),
+
             US_STATES.iter(),
+            EUROPEAN_COUNTRIES.iter(),
+            EUROPEAN_CAPITALS.iter(),
+            SOUTH_AND_EAST_ASIAN_COUNTRIES.iter(),
+            MIDDLE_EASTERN_COUNTRIES.iter(),
+            SOUTH_AND_EAST_ASIAN_CAPITALS.iter(),
+            MIDDLE_EASTERN_CAPITALS.iter(),
+
+
+
             INSECTS.iter(),
             FRUIT.iter(),
             GEMSTONES.iter(),

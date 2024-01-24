@@ -24,7 +24,12 @@ use ws_core::DesignedLevel;
 pub enum LevelSequence {
     USStates,
     EuropeanCountries,
+    SouthAndEastAsianCountries,
+    MiddleEasternCountries,
+
     EuropeanCapitals,
+    SouthAndEastAsianCapitals,
+    MiddleEasternCapitals,
 
     Mammals,
     Birds,
@@ -42,8 +47,12 @@ impl LevelSequence {
         use LevelSequence::*;
         let r = match self {
             USStates => EuropeanCountries,
-            EuropeanCountries => EuropeanCapitals,
-            EuropeanCapitals => Mammals,
+            EuropeanCountries => SouthAndEastAsianCountries,
+            SouthAndEastAsianCountries => MiddleEasternCountries,
+            MiddleEasternCountries => EuropeanCapitals,
+            EuropeanCapitals => SouthAndEastAsianCapitals,
+            SouthAndEastAsianCapitals => MiddleEasternCapitals,
+            MiddleEasternCapitals => Mammals,
             Mammals => Birds,
             Birds => Insects,
             Insects => Fruit,
@@ -58,7 +67,7 @@ impl LevelSequence {
     pub fn group(self) -> LevelGroup {
         use LevelSequence::*;
         match self {
-            USStates | EuropeanCountries | EuropeanCapitals => LevelGroup::Geography,
+            USStates | EuropeanCountries | EuropeanCapitals | SouthAndEastAsianCountries | MiddleEasternCountries | SouthAndEastAsianCapitals | MiddleEasternCapitals => LevelGroup::Geography,
             Mammals | Birds | Insects | Fruit | Vegetables | Gemstones | Elements => {
                 LevelGroup::NaturalWorld
             }
@@ -83,26 +92,37 @@ impl LevelSequence {
 
     fn levels(self) -> &'static Vec<DesignedLevel> {
         let levels = match self {
-            LevelSequence::EuropeanCapitals => &*EU_CAPITALS,
-            LevelSequence::EuropeanCountries => &*EU_COUNTRIES,
             LevelSequence::USStates => &*US_STATES,
+            LevelSequence::EuropeanCapitals => &*EUROPEAN_CAPITALS,
+            LevelSequence::EuropeanCountries => &*EUROPEAN_COUNTRIES,
+            LevelSequence::SouthAndEastAsianCountries => &*SOUTH_AND_EAST_ASIAN_COUNTRIES,
+            LevelSequence::MiddleEasternCountries => &*MIDDLE_EASTERN_COUNTRIES,
+            LevelSequence::SouthAndEastAsianCapitals => &*SOUTH_AND_EAST_ASIAN_CAPITALS,
+            LevelSequence::MiddleEasternCapitals => &*MIDDLE_EASTERN_CAPITALS,
+
+
             LevelSequence::Insects => &*INSECTS,
             LevelSequence::Fruit => &*FRUIT,
             LevelSequence::Gemstones => &*GEMSTONES,
             LevelSequence::Vegetables => &*VEGETABLES,
-
             LevelSequence::Elements => &*ELEMENTS,
             LevelSequence::Mammals => &*MAMMALS,
             LevelSequence::Birds => &*BIRDS,
+
         };
         levels
     }
 
     pub fn name(self) -> &'static str {
         match self {
+            LevelSequence::USStates => "US States",
             LevelSequence::EuropeanCapitals => "European Capitals",
             LevelSequence::EuropeanCountries => "European Countries",
-            LevelSequence::USStates => "US States",
+            LevelSequence::SouthAndEastAsianCountries => "South & East Asian Countries",
+            LevelSequence::MiddleEasternCountries => "Middle Eastern Countries",
+            LevelSequence::MiddleEasternCapitals => "Middle Eastern Capitals",
+            LevelSequence::SouthAndEastAsianCapitals => "South & East Asian Capitals",
+
             LevelSequence::Insects => "Insects",
             LevelSequence::Gemstones => "Gemstones",
             LevelSequence::Vegetables => "Vegetables",

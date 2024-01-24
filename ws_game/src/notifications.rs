@@ -18,13 +18,12 @@ impl Plugin for NotificationPlugin {
             app.register_async_event::<ChangeLevelEvent>(); //todo handle this event
             app.add_systems(Startup, setup);
         }
-
     }
 }
 
 #[derive(Debug, Event, Clone, Copy, PartialEq)]
-pub enum ChangeLevelEvent{
-    StartDailyChallenge
+pub enum ChangeLevelEvent {
+    StartDailyChallenge,
 }
 
 fn setup(writer: AsyncEventWriter<ChangeLevelEvent>) {

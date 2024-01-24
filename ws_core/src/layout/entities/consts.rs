@@ -10,7 +10,7 @@ pub const TOP_BAR_HEIGHT_BASE: f32 = 60.;
 pub const TOP_BAR_ICON_WIDTH: f32 = 25.;
 pub const WORD_SALAD_LOGO_WIDTH: f32 = 160.;
 
-pub const THEME_HEIGHT: f32 = 30.;
+pub const THEME_HEIGHT: f32 = 26.;
 pub const THEME_WIDTH: f32 = GRID_SIZE - DAILY_CHALLENGE_NUMBER_WIDTH;
 pub const DAILY_CHALLENGE_NUMBER_WIDTH: f32 = 40.0;
 
@@ -28,7 +28,7 @@ pub const GRID_WORD_LIST_SPACER: f32 = GRID_TILE_SIZE * 0.5;
 pub const GRID_THEME_SPACER: f32 = GRID_TILE_SIZE * 0.5;
 pub const WORD_LIST_EXTRA_WIDTH: f32 = 20.0;
 
-pub const WORD_LIST_HEIGHT: f32 = 126.;
+pub const WORD_LIST_HEIGHT: f32 = 130.;
 pub const WORD_HEIGHT: f32 = 22.;
 pub const WORD_WIDTH_PER_CHARACTER: f32 = 11.;
 pub const WORD_WIDTH_FIXED: f32 = 20.;
