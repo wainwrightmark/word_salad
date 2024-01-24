@@ -53,12 +53,19 @@ pub enum NextLevelResult {
     NoMoreLevels,
 }
 
-impl NextLevelResult{
-    pub fn to_level(self, sequence: LevelSequence)-> CurrentLevel{
-        match self{
-            NextLevelResult::Index(index) => CurrentLevel::Fixed { level_index: index, sequence },
-            NextLevelResult::MustPurchase => CurrentLevel::NonLevel(NonLevel::LevelSequenceMustPurchaseGroup(sequence)),
-            NextLevelResult::NoMoreLevels => CurrentLevel::NonLevel(NonLevel::LevelSequenceAllFinished(sequence)),
+impl NextLevelResult {
+    pub fn to_level(self, sequence: LevelSequence) -> CurrentLevel {
+        match self {
+            NextLevelResult::Index(index) => CurrentLevel::Fixed {
+                level_index: index,
+                sequence,
+            },
+            NextLevelResult::MustPurchase => {
+                CurrentLevel::NonLevel(NonLevel::LevelSequenceMustPurchaseGroup(sequence))
+            }
+            NextLevelResult::NoMoreLevels => {
+                CurrentLevel::NonLevel(NonLevel::LevelSequenceAllFinished(sequence))
+            }
         }
     }
 }
@@ -185,6 +192,15 @@ pub fn track_level_completion<'c>(
             if completion.total_complete < number_complete {
                 completion.total_complete = number_complete;
 
+                if completion.total_complete % 5 == 0 {
+                    #[cfg(any(feature = "android", feature = "ios"))]
+                    {
+                        crate::logging::do_or_report_error(
+                            capacitor_bindings::rate::Rate::request_review(),
+                        );
+                    }
+                }
+
                 if number_complete <= sequence.level_count() {
                     hints_state.hints_remaining += 1;
                     hints_state.total_earned_hints += 1;
@@ -228,6 +244,13 @@ pub fn track_level_completion<'c>(
                     } else if streak.last_completed == index.checked_sub(1) {
                         info!("Streak increased by one");
                         streak.current += 1;
+
+                        #[cfg(any(feature = "android", feature = "ios"))]
+                        {
+                            crate::logging::do_or_report_error(
+                                capacitor_bindings::rate::Rate::request_review(),
+                            );
+                        }
                     } else {
                         info!("Streak set to one");
                         streak.current = 1;
