@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use bevy::text::Text2dBounds;
 use bevy_param_shaders::ShaderBundle;
 use itertools::Either;
 use maveric::transition::speed::LinearSpeed;
@@ -73,17 +74,16 @@ const TILE_SCALE_SPEED: LinearSpeed = LinearSpeed {
 
 #[derive(Debug, NodeContext)]
 pub struct GridTilesContext {
-     pub chosen_state: ChosenState,
-     pub current_level: CurrentLevel,
-     pub found_words_state: FoundWordsState,
-     pub window_size: MyWindowSize,
-     pub level_time: LevelTime,
-     pub video_resource: VideoResource,
-     pub daily_challenges: DailyChallenges,
+    pub chosen_state: ChosenState,
+    pub current_level: CurrentLevel,
+    pub found_words_state: FoundWordsState,
+    pub window_size: MyWindowSize,
+    pub level_time: LevelTime,
+    pub video_resource: VideoResource,
+    pub daily_challenges: DailyChallenges,
 }
 
-
-impl<'a, 'w : 'a> From<&'a ViewContextWrapper<'w>> for GridTilesContextWrapper<'w> {
+impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for GridTilesContextWrapper<'w> {
     fn from(value: &'a ViewContextWrapper<'w>) -> Self {
         Self {
             current_level: Res::clone(&value.current_level),
@@ -96,7 +96,6 @@ impl<'a, 'w : 'a> From<&'a ViewContextWrapper<'w>> for GridTilesContextWrapper<'
         }
     }
 }
-
 
 impl MavericNode for GridTiles {
     type Context = GridTilesContext;
@@ -119,13 +118,20 @@ impl MavericNode for GridTiles {
             let Either::Left(level) = context.current_level.level(&context.daily_challenges) else {
                 return;
             };
-            let inadvisable_tiles: GridSet = context.found_words_state.calculate_inadvisable_tiles(solution, level);
+            let inadvisable_tiles: GridSet = context
+                .found_words_state
+                .calculate_inadvisable_tiles(solution, level);
 
             let hint_set = &context.found_words_state.manual_hint_set(level, solution); //TODO this should reveal if a tile is previously hinted
 
             let selfie_mode = context.video_resource.selfie_mode();
 
             let inadvisable_tiles = inadvisable_tiles.intersect(&hint_set.negate());
+
+            let size = context.window_size.as_ref();
+            let tile_size = size.tile_size(&selfie_mode);
+            let font_size = size.font_size::<LayoutGridTile>(&LayoutGridTile::default(), &());
+
             for (tile, character) in level.grid.enumerate() {
                 if character.is_blank() {
                     continue;
@@ -140,9 +146,6 @@ impl MavericNode for GridTiles {
                 let hint_status =
                     HintStatus::new(tile, selectability, hint_set, &inadvisable_tiles);
 
-                let size = context.window_size.as_ref();
-                let tile_size = size.tile_size(&selfie_mode);
-                let font_size = size.font_size::<LayoutGridTile>(&LayoutGridTile::default(), &());
                 let centre = size.get_rect(&LayoutGridTile(tile), &selfie_mode).centre();
 
                 commands.add_child(
@@ -160,6 +163,27 @@ impl MavericNode for GridTiles {
                     }
                     .with_bundle(Transform::from_translation(
                         centre.extend(crate::z_indices::GRID_TILE),
+                    )),
+                    &(),
+                );
+            }
+
+            if context.level_time.is_paused() {
+                commands.add_child(
+                    "play_button",
+                    Text2DNode {
+                        text: "\u{e801}",
+                        font: ICON_FONT_PATH,
+                        font_size: PlayButtonLayoutStructure.font_size(&()),
+                        color: if selfie_mode.is_selfie_mode {palette::GRID_LETTER_SELFIE.convert_color()} else{palette::GRID_LETTER_NORMAL.convert_color()} ,
+                        alignment: TextAlignment::Center,
+                        linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                        text_anchor: bevy::sprite::Anchor::Center,
+                        text_2d_bounds: Text2dBounds::UNBOUNDED,
+                    }
+                    .with_bundle(Transform::from_translation(
+                        size.get_rect(&PlayButtonLayoutStructure, &selfie_mode).centre()
+                            .extend(crate::z_indices::TILE_TEXT),
                     )),
                     &(),
                 );
@@ -307,5 +331,32 @@ impl MavericNode for GridTile {
         //info!("Grid Tile on deleted {found_children:?} children found");
 
         DeletionPolicy::Linger(std::time::Duration::from_secs(1))
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub struct PlayButtonLayoutStructure;
+
+impl LayoutStructure for PlayButtonLayoutStructure{
+    type Context<'a> = SelfieMode;
+
+    fn size(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
+        GameLayoutEntity::Grid.size(context, sizing)
+    }
+
+    fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
+        GameLayoutEntity::Grid.location(context, sizing)
+    }
+
+    fn iter_all(_context: &Self::Context<'_>) -> impl Iterator<Item = Self> {
+        [Self].into_iter()
+    }
+}
+
+impl LayoutStructureWithFont for PlayButtonLayoutStructure{
+    type FontContext = ();
+
+    fn font_size(&self, _context: &Self::FontContext) -> f32 {
+        160.0
     }
 }
