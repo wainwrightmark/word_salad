@@ -11,7 +11,7 @@ pub struct LevelTimePlugin;
 impl Plugin for LevelTimePlugin {
     fn build(&self, app: &mut App) {
         app.init_tracked_resource::<LevelTime>();
-        app.add_systems(Update, manage_timer);
+        app.add_systems(PostUpdate, manage_timer);
         app.add_systems(
             Update,
             count_up.run_if(|timer: Res<LevelTime>| timer.is_running()),

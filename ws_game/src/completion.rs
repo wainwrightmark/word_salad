@@ -240,7 +240,6 @@ pub fn track_level_completion<'c>(
                 let index = DailyChallenges::get_today_index();
                 {
                     if streak.last_completed == Some(index) {
-                        warn!("Daily challenge completed for the first time again?");
                     } else if streak.last_completed == index.checked_sub(1) {
                         info!("Streak increased by one");
                         streak.current += 1;
