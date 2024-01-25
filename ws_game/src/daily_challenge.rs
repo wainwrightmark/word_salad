@@ -18,7 +18,11 @@ impl Plugin for DailyChallengePlugin {
         app.register_async_event::<DailyChallengeDataLoadedEvent>();
 
         app.add_systems(PostStartup, load_levels);
-        app.add_systems(Update, handle_daily_challenge_data_loaded);
+        app.add_systems(
+            Update,
+            handle_daily_challenge_data_loaded
+                .run_if(|ev: EventReader<DailyChallengeDataLoadedEvent>| !ev.is_empty()),
+        );
     }
 }
 
@@ -151,8 +155,11 @@ async fn load_levels_async(writer: AsyncEventWriter<DailyChallengeDataLoadedEven
 }
 
 fn handle_daily_challenge_data_loaded(
-    mut challenges: ResMut<DailyChallenges>,
+    mut daily_challenges: ResMut<DailyChallenges>,
     mut ev: EventReader<DailyChallengeDataLoadedEvent>,
+    mut current_level: ResMut<CurrentLevel>,
+    mut found_words: ResMut<FoundWordsState>,
+    mut timer: ResMut<crate::level_time::LevelTime>,
 ) {
     for event in ev.read() {
         //info!("Daily challenge data loaded '{}'", event.data);
@@ -167,19 +174,31 @@ fn handle_daily_challenge_data_loaded(
             level.numbering = Some(Numbering::WordSaladNumber(index + 1));
         }
 
-        if levels.len() > challenges.levels.len() {
+        if levels.len() > daily_challenges.levels.len() {
             info!(
                 "Downloaded {} levels (previously had {})",
                 levels.len(),
-                challenges.levels.len()
+                daily_challenges.levels.len()
             );
-            challenges.level_data = event.data.clone();
-            challenges.levels = levels;
-        } else if levels.len() < challenges.levels.len() {
+            daily_challenges.level_data = event.data.clone();
+            daily_challenges.levels = levels;
+
+            if *current_level == CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished) {
+                let index = DailyChallenges::get_today_index();
+
+                let new_current_level = CurrentLevel::DailyChallenge { index };
+
+                if let itertools::Either::Left(level) = new_current_level.level(daily_challenges.as_mut()) {
+                    *current_level = new_current_level;
+                    *found_words = FoundWordsState::new_from_level(level);
+                    *timer = LevelTime::default();
+                }
+            }
+        } else if levels.len() < daily_challenges.levels.len() {
             warn!(
                 "Downloaded {} levels (but previously had {})",
                 levels.len(),
-                challenges.levels.len()
+                daily_challenges.levels.len()
             );
         }
     }

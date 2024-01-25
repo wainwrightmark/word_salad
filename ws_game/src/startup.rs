@@ -65,6 +65,7 @@ pub fn go() {
     app.add_plugins(MotionBlurPlugin);
     app.add_plugins(WordsPlugin);
     app.add_plugins(PurchasesPlugin);
+    #[cfg(any(feature = "ios", feature = "android"))]
     app.add_plugins(NotificationPlugin);
 
     app.register_transition::<BackgroundColorLens>();
@@ -146,18 +147,27 @@ fn choose_level_on_game_load(
     daily_challenge_completion: Res<DailyChallengeCompletion>,
     daily_challenges: Res<DailyChallenges>,
 ) {
+
+
+
     #[cfg(target_arch = "wasm32")]
     {
         if let Some(daily_index) = crate::wasm::get_daily_from_location() {
             info!("Loaded daily challenge {daily_index} from path");
 
-            if current_level.set_if_neq(CurrentLevel::DailyChallenge { index: daily_index }) {
-                if let Some(level) = current_level.level(&daily_challenges).left() {
+            let new_current_level = CurrentLevel::DailyChallenge { index: daily_index };
+            if new_current_level != *current_level{
+                if let Some(level) = new_current_level.level(&daily_challenges).left() {
+                    *current_level = new_current_level;
                     *found_words = FoundWordsState::new_from_level(level);
                     *timer = LevelTime::default();
                 }
+                else{
+                    current_level.set_if_neq(CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished));
+                    *found_words = FoundWordsState::default();
+                    *timer = LevelTime::default();
+                }
             }
-
             return;
         }
 

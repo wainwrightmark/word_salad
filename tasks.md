@@ -10,9 +10,10 @@
 - Credits
 - Achievements
 - Fun Facts
-- better unpausing
+- make it clearer what's happening when it's paused
 
-
+- timer on end screen
 - change menu button clicking
 - Change steks menu button
-- integrate
+- integrate ads
+- change icons

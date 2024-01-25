@@ -22,6 +22,7 @@ pub mod test_res_mut;
 pub mod video;
 pub mod view;
 pub mod purchases;
+#[cfg(any(feature = "ios", feature = "android"))]
 pub mod notifications;
 
 #[cfg(target_arch = "wasm32")]
@@ -51,6 +52,7 @@ pub mod prelude {
     pub use crate::level_time::*;
     pub use crate::logging::*;
     pub use crate::menu_layout::*;
+    #[cfg(any(feature = "ios", feature = "android"))]
     pub use crate::notifications::*;
     pub use crate::shapes::*;
     pub use crate::state::*;

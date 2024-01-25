@@ -128,7 +128,9 @@ fn manage_timer(
 
     if menu_state.is_changed() {
         if menu_state.is_closed() {
-            timer.resume_timer();
+            if !found_words.is_level_complete(){
+                timer.resume_timer();
+            }
         } else {
             timer.pause_timer();
         }

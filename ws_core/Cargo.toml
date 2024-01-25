@@ -38,8 +38,6 @@ test-case = "3"
 criterion = "0.5"
 iai-callgrind = "0.10.0"
 
-[profile.bench]
-debug = true
 
 [[bench]]
 name = "criterion_benchmark"
