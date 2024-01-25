@@ -85,7 +85,7 @@ impl WordSaladMenuLayoutEntity {
 
         let complete = completion.is_daily_challenge_complete(index);
         let name = level.full_name();
-        let right = if complete { "\u{e802}" } else { "" }.to_string(); //check boxes
+        let right = if complete { "\u{e803}" } else { "" }.to_string(); //check boxes
 
         Some((name.to_string(), right))
     }

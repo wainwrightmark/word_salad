@@ -47,7 +47,7 @@ impl MavericNode for TopBar {
                 commands.add_child(
                     "Burger",
                     Text2DNode {
-                        text: "\u{e800}",
+                        text: "\u{f0c9}",
                         font_size: size.font_size::<LayoutTopBar>(
                             &LayoutTopBar::MenuBurgerButton,
                             &HintCount::default(),
