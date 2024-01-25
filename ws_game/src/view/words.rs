@@ -265,10 +265,11 @@ impl ExtractToShader for WordButtonBoxShader {
         ) = query_item;
 
         if let Some(pressed_duration) = match resource.as_ref() {
-            PressedButton::None => None,
+            PressedButton::None | PressedButton::NoInteractionPressed { .. } => None,
             PressedButton::Pressed {
                 interaction,
                 duration,
+                ..
             } => {
                 if interaction == &ButtonInteraction::WordButton(*tile) {
                     Some(duration)

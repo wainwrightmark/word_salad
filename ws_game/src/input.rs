@@ -125,9 +125,6 @@ impl InteractionEntity {
         match menu_state {
             MenuState::Closed => match current_level.level(daily_challenges) {
                 itertools::Either::Left(level) => {
-
-
-
                     if is_level_complete {
                         return Self::try_get_button::<CongratsLayoutEntity>(
                             position,
@@ -136,15 +133,13 @@ impl InteractionEntity {
                         );
                     }
 
-
-
                     let Some(layout_entity) =
                         size.try_pick::<GameLayoutEntity>(*position, &selfie_mode)
                     else {
                         return None;
                     };
 
-                    if is_game_paused{
+                    if is_game_paused {
                         return Some(InteractionEntity::Button(ButtonInteraction::TimerButton));
                     }
 
@@ -180,7 +175,8 @@ impl InteractionEntity {
                     }
                 }
                 itertools::Either::Right(..) => {
-                    let non_level_entity = size.try_pick::<NonLevelLayoutEntity>(*position, &selfie_mode)?;
+                    let non_level_entity =
+                        size.try_pick::<NonLevelLayoutEntity>(*position, &selfie_mode)?;
 
                     match non_level_entity {
                         NonLevelLayoutEntity::Text => None,
@@ -221,7 +217,11 @@ impl InteractionEntity {
                     return Some(back);
                 }
 
-                Self::try_get_button::<LevelGroupLayoutEntity>(position, size, &(selfie_mode, *group))
+                Self::try_get_button::<LevelGroupLayoutEntity>(
+                    position,
+                    size,
+                    &(selfie_mode, *group),
+                )
             }
         }
     }
@@ -242,11 +242,25 @@ impl InputType {
         video_resource: &VideoResource,
         daily_challenges: &DailyChallenges,
         event_writer: &mut EventWriter<ButtonActivated>,
-        timer: &LevelTime
+        timer: &LevelTime,
     ) {
         startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 
         let is_level_complete = found_words.is_level_complete();
+
+        let current_state: StartPressState = {
+            if popup_state.0.is_some() {
+                StartPressState::Popup
+            } else if !menu_state.is_closed() {
+                StartPressState::Menu
+            } else {
+                if found_words.is_level_complete() {
+                    StartPressState::Congrats
+                } else {
+                    StartPressState::Gameplay
+                }
+            }
+        };
 
         let button_interaction: Option<ButtonInteraction> = match self {
             InputType::Start(position) => {
@@ -263,24 +277,16 @@ impl InputType {
                     None,
                 ) {
                     match interaction {
-                        InteractionEntity::Button(button) => {
-                            //TODO handle held buttons
-                            if button.button_press_type().is_on_start() {
-                                event_writer.send(ButtonActivated(button));
-                            }
-
-                            Some(button)
-                        }
+                        InteractionEntity::Button(button) => Some(button),
                         InteractionEntity::Tile(tile) => {
-                            let Some(level) = current_level.level(daily_challenges).left() else {
-                                return;
-                            };
-                            input_state.handle_input_start(
-                                chosen_state,
-                                tile,
-                                &level.grid,
-                                found_words,
-                            );
+                            if let Some(level) = current_level.level(daily_challenges).left() {
+                                input_state.handle_input_start(
+                                    chosen_state,
+                                    tile,
+                                    &level.grid,
+                                    found_words,
+                                );
+                            }
                             None
                         }
                     }
@@ -304,15 +310,15 @@ impl InputType {
                     match interaction {
                         InteractionEntity::Button(button) => Some(button),
                         InteractionEntity::Tile(tile) => {
-                            let Some(level) = current_level.level(daily_challenges).left() else {
-                                return;
+                            if let Some(level) = current_level.level(daily_challenges).left() {
+                                input_state.handle_input_move(
+                                    chosen_state,
+                                    tile,
+                                    &level.grid,
+                                    found_words,
+                                );
                             };
-                            input_state.handle_input_move(
-                                chosen_state,
-                                tile,
-                                &level.grid,
-                                found_words,
-                            );
+
                             None
                         }
                     }
@@ -336,7 +342,16 @@ impl InputType {
                     match interaction {
                         InteractionEntity::Button(button) => {
                             if button.button_press_type().is_on_end() {
-                                event_writer.send(ButtonActivated(button));
+                                match pressed_button.as_ref() {
+                                    PressedButton::None
+                                    | PressedButton::NoInteractionPressed { .. }
+                                    | PressedButton::PressedAfterActivated { .. } => {}
+                                    PressedButton::Pressed { start_state, .. } => {
+                                        if start_state == &current_state {
+                                            event_writer.send(ButtonActivated(button));
+                                        }
+                                    }
+                                }
                             }
 
                             input_state.handle_input_end_no_location();
@@ -361,7 +376,10 @@ impl InputType {
         match button_interaction {
             Some(new_interaction) => {
                 let should_change = match pressed_button.as_ref() {
-                    PressedButton::None => true,
+                    PressedButton::None => self.is_start(),
+                    PressedButton::NoInteractionPressed { start_state } => {
+                        current_state == *start_state
+                    }
                     PressedButton::Pressed { interaction, .. } => *interaction != new_interaction,
                     PressedButton::PressedAfterActivated { interaction } => {
                         *interaction != new_interaction
@@ -372,12 +390,41 @@ impl InputType {
                     *pressed_button.as_mut() = PressedButton::Pressed {
                         interaction: new_interaction,
                         duration: Duration::ZERO,
+                        start_state: current_state,
                     };
+
+                    //info!("Changed button state to {:?}", *pressed_button)
                 }
             }
 
             None => {
-                pressed_button.set_if_neq(PressedButton::None);
+                let new_state = match self {
+                    InputType::Start(_) => PressedButton::NoInteractionPressed {
+                        start_state: current_state,
+                    },
+                    InputType::Move(_) => {
+                        if let Some(start_state) = match pressed_button.as_ref() {
+                            PressedButton::None | PressedButton::PressedAfterActivated { .. } => {
+                                None
+                            }
+                            PressedButton::NoInteractionPressed { start_state }
+                            | PressedButton::Pressed { start_state, .. } => Some(*start_state),
+                        } {
+                            if start_state == current_state {
+                                PressedButton::NoInteractionPressed {
+                                    start_state: current_state,
+                                }
+                            } else {
+                                PressedButton::None
+                            }
+                        } else {
+                            PressedButton::None
+                        }
+                    }
+                    InputType::End(_) => PressedButton::None,
+                };
+
+                pressed_button.set_if_neq(new_state);
             }
         };
     }
@@ -429,7 +476,7 @@ pub fn handle_mouse_input(
         &video_resource,
         &daily_challenges,
         &mut event_writer,
-        &timer
+        &timer,
     );
 }
 
@@ -483,7 +530,7 @@ pub fn handle_touch_input(
             &video_resource,
             &daily_challenges,
             &mut event_writer,
-            &timer
+            &timer,
         );
     }
 }

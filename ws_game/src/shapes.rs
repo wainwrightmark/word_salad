@@ -67,10 +67,11 @@ impl ExtractToShader for ButtonBoxShaderExtraction {
         let (color, rounding, height, color2, button_interaction) = query_item;
 
         if let Some(duration) = match resource.as_ref() {
-            PressedButton::None => None,
+            PressedButton::None | PressedButton::NoInteractionPressed { .. } => None,
             PressedButton::Pressed {
                 interaction,
                 duration,
+                ..
             } => {
                 if interaction == button_interaction {
                     Some(duration)

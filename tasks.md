@@ -10,10 +10,8 @@
 - Credits
 - Achievements
 - Fun Facts
-- make it clearer what's happening when it's paused
 
 - timer on end screen
 - change menu button clicking
 - Change steks menu button
 - integrate ads
-- change icons

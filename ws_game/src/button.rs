@@ -48,6 +48,7 @@ fn track_held_button(
     let PressedButton::Pressed {
         interaction,
         duration,
+        start_state
     } = pressed_button.as_ref()
     else {
         return;
@@ -62,6 +63,7 @@ fn track_held_button(
         *pressed_button.as_mut() = PressedButton::Pressed {
             interaction,
             duration,
+            start_state: *start_state
         };
         return;
     };
@@ -73,6 +75,7 @@ fn track_held_button(
         *pressed_button.as_mut() = PressedButton::Pressed {
             interaction,
             duration,
+            start_state: *start_state
         };
     }
 }
@@ -124,18 +127,30 @@ pub struct ButtonActivated(pub ButtonInteraction);
 pub enum PressedButton {
     #[default]
     None,
+    NoInteractionPressed{
+        start_state: StartPressState
+    },
     Pressed {
         interaction: ButtonInteraction,
         duration: Duration,
+        start_state: StartPressState
     },
     PressedAfterActivated {
         interaction: ButtonInteraction,
     },
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, EnumIs)]
+pub enum StartPressState{
+    Gameplay,
+    Congrats,
+    Menu,
+    Popup
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, EnumIs)]
 pub enum ButtonPressType {
-    OnStart,
+    // OnStart,
     OnHold(Duration),
     OnEnd,
 }
@@ -170,9 +185,7 @@ impl ButtonInteraction {
     pub fn button_press_type(&self) -> ButtonPressType {
         if self.is_word_button() {
             ButtonPressType::OnHold(Duration::from_secs_f32(WORD_BUTTON_HOLD_SECONDS))
-        } else if self.is_congrats() || *self == Self::Popup(PopupInteraction::ClickGreyedOut) {
-            ButtonPressType::OnStart
-        } else {
+        }else {
             ButtonPressType::OnEnd
         }
     }
