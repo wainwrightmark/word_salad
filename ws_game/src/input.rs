@@ -58,6 +58,7 @@ impl InteractionEntity {
         daily_challenges: &DailyChallenges,
         video_resource: &VideoResource,
         is_level_complete: bool,
+        is_game_paused: bool,
         grid_tolerance: Option<f32>,
     ) -> Option<Self> {
         let selfie_mode = &video_resource.selfie_mode();
@@ -124,6 +125,9 @@ impl InteractionEntity {
         match menu_state {
             MenuState::Closed => match current_level.level(daily_challenges) {
                 itertools::Either::Left(level) => {
+
+
+
                     if is_level_complete {
                         return Self::try_get_button::<CongratsLayoutEntity>(
                             position,
@@ -132,11 +136,17 @@ impl InteractionEntity {
                         );
                     }
 
+
+
                     let Some(layout_entity) =
                         size.try_pick::<GameLayoutEntity>(*position, &selfie_mode)
                     else {
                         return None;
                     };
+
+                    if is_game_paused{
+                        return Some(InteractionEntity::Button(ButtonInteraction::TimerButton));
+                    }
 
                     match layout_entity {
                         GameLayoutEntity::TopBar => {
@@ -232,6 +242,7 @@ impl InputType {
         video_resource: &VideoResource,
         daily_challenges: &DailyChallenges,
         event_writer: &mut EventWriter<ButtonActivated>,
+        timer: &LevelTime
     ) {
         startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 
@@ -248,6 +259,7 @@ impl InputType {
                     daily_challenges,
                     video_resource,
                     is_level_complete,
+                    timer.is_paused(),
                     None,
                 ) {
                     match interaction {
@@ -286,6 +298,7 @@ impl InputType {
                     daily_challenges,
                     video_resource,
                     is_level_complete,
+                    timer.is_paused(),
                     Some(MOVE_TOLERANCE),
                 ) {
                     match interaction {
@@ -317,6 +330,7 @@ impl InputType {
                     daily_challenges,
                     video_resource,
                     is_level_complete,
+                    timer.is_paused(),
                     None,
                 ) {
                     match interaction {
@@ -381,8 +395,9 @@ pub fn handle_mouse_input(
     found_words: Res<FoundWordsState>,
     mut pressed_button: ResMut<PressedButton>,
     popup_state: Res<PopupState>,
-    video_state: Res<VideoResource>,
+    video_resource: Res<VideoResource>,
     daily_challenges: Res<DailyChallenges>,
+    timer: Res<LevelTime>,
     mut event_writer: EventWriter<ButtonActivated>,
 ) {
     let input_type = if mouse_input.just_released(MouseButton::Left) {
@@ -411,9 +426,10 @@ pub fn handle_mouse_input(
         &found_words,
         &mut pressed_button,
         &popup_state,
-        &video_state,
+        &video_resource,
         &daily_challenges,
         &mut event_writer,
+        &timer
     );
 }
 
@@ -429,8 +445,9 @@ pub fn handle_touch_input(
     found_words: Res<FoundWordsState>,
     mut pressed_button: ResMut<PressedButton>,
     popup_state: Res<PopupState>,
-    video_state: Res<VideoResource>,
+    video_resource: Res<VideoResource>,
     daily_challenges: Res<DailyChallenges>,
+    timer: Res<LevelTime>,
     mut event_writer: EventWriter<ButtonActivated>,
 ) {
     for ev in touch_events.read() {
@@ -463,9 +480,10 @@ pub fn handle_touch_input(
             &found_words,
             &mut pressed_button,
             &popup_state,
-            &video_state,
+            &video_resource,
             &daily_challenges,
             &mut event_writer,
+            &timer
         );
     }
 }
