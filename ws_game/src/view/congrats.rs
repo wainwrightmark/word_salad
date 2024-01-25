@@ -22,9 +22,10 @@ pub struct CongratsContext {
     pub sequence_completion: SequenceCompletion,
     pub video_resource: VideoResource,
     pub streak: Streak,
+    pub level_time: LevelTime,
 }
 
-impl<'a, 'w : 'a> From<&'a ViewContextWrapper<'w>> for CongratsContextWrapper<'w> {
+impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for CongratsContextWrapper<'w> {
     fn from(value: &'a ViewContextWrapper<'w>) -> Self {
         Self {
             current_level: Res::clone(&value.current_level),
@@ -34,6 +35,7 @@ impl<'a, 'w : 'a> From<&'a ViewContextWrapper<'w>> for CongratsContextWrapper<'w
             sequence_completion: Res::clone(&value.sequence_completion),
             video_resource: Res::clone(&value.video_resource),
             streak: Res::clone(&value.streak),
+            level_time: Res::clone(&value.level_time),
         }
     }
 }
@@ -138,10 +140,73 @@ impl MavericNode for CongratsView {
                     .then_ease(Vec3::ONE, (1.0 / TRANSITION_SECS).into(), Ease::CubicOut)
                     .build();
 
-                // info!(
-                //     "Transition: {:?}",
-                //     transition.remaining_duration(&Vec3::ZERO)
-                // );
+                let stat_text_color = if selfie_mode.is_selfie_mode {
+                    palette::CONGRATS_STATISTIC_TEXT_SELFIE
+                } else {
+                    palette::CONGRATS_STATISTIC_TEXT_NORMAL
+                }
+                .convert_color();
+
+                let stat_fill_color = if selfie_mode.is_selfie_mode {
+                    palette::CONGRATS_STATISTIC_FILL_SELFIE
+                } else {
+                    palette::CONGRATS_STATISTIC_FILL_NORMAL
+                }
+                .convert_color();
+
+                {
+                    let timer_rect = size.get_rect(&CongratsLayoutEntity::Time, &congrats_context);
+
+                    let target_scale =  0.5 * timer_rect.width().abs();
+
+                    let box_transition = TransitionBuilder::default()
+                        .then_wait(Duration::from_secs_f32(TRANSITION_WAIT_SECS))
+                        .then_ease(Vec3::ONE *target_scale, (target_scale/ TRANSITION_SECS).into(), Ease::CubicOut)
+                        .build();
+
+                    commands.add_child(
+                        "Timer_Box",
+                        basic_box_node1(
+                            timer_rect.width(),
+                            timer_rect.height(),
+                            timer_rect.centre().extend(z_indices::CONGRATS_BUTTON),
+                            stat_fill_color,
+                            crate::rounding::OTHER_BUTTON_NORMAL,
+                        )
+                        .with_transition::<TransformScaleLens, ()>(
+                            initial_scale,
+                            box_transition,
+                            (),
+                        ),
+                        &(),
+                    );
+
+                    commands.add_child(
+                        "Timer_Text",
+                        Text2DNode {
+                            text: format_seconds(context.level_time.total_elapsed().as_secs()),
+                            font: BUTTONS_FONT_PATH,
+                            font_size: size.font_size(&CongratsTimer, &selfie_mode),
+                            color: stat_text_color,
+                            alignment: TextAlignment::Center,
+                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                            text_anchor: Anchor::Center,
+                            text_2d_bounds: Text2dBounds::UNBOUNDED,
+                        }
+                        .with_bundle(Transform::from_translation(
+                            timer_rect.centre().extend(z_indices::CONGRATS_BUTTON + 1.0),
+                        ))
+                        .with_transition::<TransformScaleLens, ()>(
+                            initial_scale,
+                            transition.clone(),
+                            (),
+                        ),
+                        &(),
+                    );
+                }
+
+                let stat_number_font_size = size.font_size(&StatisticNumber, &selfie_mode);
+                let stat_text_font_size = size.font_size(&StatisticLabel, &selfie_mode);
 
                 for (index, statistic) in CongratsStatistic::iter().enumerate() {
                     let data = match (statistic, data) {
@@ -173,22 +238,6 @@ impl MavericNode for CongratsView {
                         &CongratsLayoutEntity::Statistic(statistic),
                         &congrats_context,
                     );
-                    let number_font_size = size.font_size(&StatisticNumber, &selfie_mode);
-                    let text_font_size = size.font_size(&StatisticLabel, &selfie_mode);
-
-                    let text_color = if selfie_mode.is_selfie_mode {
-                        palette::CONGRATS_STATISTIC_TEXT_SELFIE
-                    } else {
-                        palette::CONGRATS_STATISTIC_TEXT_NORMAL
-                    }
-                    .convert_color();
-
-                    let fill_color = if selfie_mode.is_selfie_mode {
-                        palette::CONGRATS_STATISTIC_FILL_SELFIE
-                    } else {
-                        palette::CONGRATS_STATISTIC_FILL_NORMAL
-                    }
-                    .convert_color();
 
                     commands.add_child(
                         (0u16, index as u16),
@@ -196,10 +245,10 @@ impl MavericNode for CongratsView {
                             rect,
                             number,
                             text: label,
-                            text_color,
-                            fill_color,
-                            number_font_size,
-                            text_font_size,
+                            text_color: stat_text_color,
+                            fill_color: stat_fill_color,
+                            number_font_size: stat_number_font_size,
+                            text_font_size: stat_text_font_size,
                         }
                         .with_bundle(Transform::from_translation(
                             rect.centre().extend(z_indices::CONGRATS_BUTTON),
@@ -223,7 +272,7 @@ impl MavericNode for CongratsView {
                                 let next_level = context.current_level.get_next_level(
                                     &context.daily_challenge_completion,
                                     &context.sequence_completion,
-                                    &Purchases::default() //don't actually worry about purchases here :)
+                                    &Purchases::default(), //don't actually worry about purchases here :)
                                 );
 
                                 match next_level {
@@ -246,7 +295,9 @@ impl MavericNode for CongratsView {
                                         }
                                     }
                                     CurrentLevel::Custom { .. } => "Next".to_string(),
-                                    CurrentLevel::NonLevel(NonLevel::LevelSequenceAllFinished(_)) => "Finish".to_string(),
+                                    CurrentLevel::NonLevel(NonLevel::LevelSequenceAllFinished(
+                                        _,
+                                    )) => "Finish".to_string(),
                                     CurrentLevel::NonLevel(_) => "Next".to_string(),
                                 }
                             }

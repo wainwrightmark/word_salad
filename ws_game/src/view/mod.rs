@@ -67,8 +67,9 @@ impl MavericRootChildren for ViewRoot {
 
             match context.current_level.level(&context.daily_challenges) {
                 itertools::Either::Left(level) => {
-                    let close_to_solution =
-                        context.chosen_state.is_close_to_a_solution(level, context.found_words_state.as_ref());
+                    let close_to_solution = context
+                        .chosen_state
+                        .is_close_to_a_solution(level, context.found_words_state.as_ref());
 
                     if !context.level_time.is_paused() {
                         commands.add_child(
@@ -87,7 +88,9 @@ impl MavericRootChildren for ViewRoot {
                         commands.add_child("congrats", CongratsView, &context.into());
                     }
 
-                    if let Some(text) = TutorialText::try_create(&context.current_level, &context.found_words_state) {
+                    if let Some(text) =
+                        TutorialText::try_create(&context.current_level, &context.found_words_state)
+                    {
                         commands.add_child("tutorial", TutorialNode { text }, &context.window_size);
                     } else {
                         let (theme, daily_challenge_number) = level.name_and_number();
@@ -113,24 +116,21 @@ impl MavericRootChildren for ViewRoot {
                             );
                         }
 
-                        let total_seconds = context.level_time.as_ref().total_elapsed().as_secs();
-                        let time_text = format_seconds(total_seconds);
-                        commands.add_child(
-                            "ui_timer",
-                            UITimer {
-                                time_text,
-                                selfie_mode,
-                                is_daily_challenge: context.current_level.is_daily_challenge(),
-                                theme,
-                            },
-                            &context.window_size,
-                        );
-
-                        //Draw a box around the theme - looks rubbish
-                        // if context.video_resource.selfie_mode(){
-                        //     let rect = context.window_size.get_rect(&GameLayoutEntity::Theme, &());
-                        //     commands.add_child("theme_box", box_node1(rect.width(), rect.height(), rect.centre().extend(z_indices::CONGRATS_BUTTON), palette::CONGRATS_STATISTIC_FILL_SELFIE.convert_color(), 0.1), &());
-                        // }
+                        if !context.found_words_state.is_level_complete() {
+                            let total_seconds =
+                                context.level_time.as_ref().total_elapsed().as_secs();
+                            let time_text = format_seconds(total_seconds);
+                            commands.add_child(
+                                "ui_timer",
+                                UITimer {
+                                    time_text,
+                                    selfie_mode,
+                                    is_daily_challenge: context.current_level.is_daily_challenge(),
+                                    theme,
+                                },
+                                &context.window_size,
+                            );
+                        }
                     }
                 }
                 itertools::Either::Right(non_level) => {

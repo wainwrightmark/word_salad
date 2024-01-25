@@ -231,7 +231,7 @@ impl From<CongratsButton> for ButtonInteraction {
 impl From<CongratsLayoutEntity> for ButtonInteraction {
     fn from(value: CongratsLayoutEntity) -> Self {
         match value {
-            CongratsLayoutEntity::Statistic(_) => ButtonInteraction::None,
+            CongratsLayoutEntity::Statistic(_) | CongratsLayoutEntity::Time => ButtonInteraction::None,
             CongratsLayoutEntity::Button(b) => b.into(),
         }
     }

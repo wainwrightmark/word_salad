@@ -12,6 +12,5 @@
 - Fun Facts
 
 - timer on end screen
-- change menu button clicking
 - Change steks menu button
 - integrate ads

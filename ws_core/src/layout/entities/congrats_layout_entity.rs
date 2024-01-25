@@ -29,6 +29,7 @@ pub enum CongratsButton {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, EnumCount, Display)]
 pub enum CongratsLayoutEntity {
+    Time,
     Statistic(CongratsStatistic),
     Button(CongratsButton),
 }
@@ -53,6 +54,20 @@ impl LayoutStructure for CongratsLayoutEntity {
 
     fn size(&self, context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
         match self {
+            CongratsLayoutEntity::Time => {
+                if context.0.is_selfie_mode {
+                    Vec2 {
+                        x: CONGRATS_ENTITY_BUTTON_WIDTH_SELFIE,
+                        y: CONGRATS_ENTITY_STATISTIC_SIZE_SELFIE,
+                    }
+                } else {
+                    Vec2 {
+                        x: CONGRATS_ENTITY_BUTTON_WIDTH_NORMAL,
+                        y: CONGRATS_ENTITY_STATISTIC_SIZE_NORMAL,
+                    }
+                }
+            }
+
             CongratsLayoutEntity::Statistic(_) => {
                 let stat_size = if context.0.is_selfie_mode {
                     CONGRATS_ENTITY_STATISTIC_SIZE_SELFIE
@@ -85,12 +100,12 @@ impl LayoutStructure for CongratsLayoutEntity {
         let button_height = if context.0.is_selfie_mode {
             CONGRATS_ENTITY_BUTTON_HEIGHT + (MENU_BUTTON_SPACING * 2.0)
         } else {
-            GRID_SIZE - stat_size - CONGRATS_ENTITY_VERTICAL_GAP
+            GRID_SIZE - ((stat_size + CONGRATS_ENTITY_SPACING) * 2.0)
         };
 
         let top_offset = if context.0.is_selfie_mode {
             let word_list_top = GameLayoutEntity::WordList.location(&context.0, sizing).y;
-            word_list_top - (button_height + stat_size + CONGRATS_ENTITY_VERTICAL_GAP)
+            word_list_top - (button_height + ((stat_size + CONGRATS_ENTITY_SPACING) * 2.0))
         } else {
             TOP_BAR_HEIGHT_BASE
                 + extra_top_bar_height(sizing, &context.0)
@@ -109,6 +124,11 @@ impl LayoutStructure for CongratsLayoutEntity {
         };
 
         match self {
+            CongratsLayoutEntity::Time => Vec2 {
+                x: (IDEAL_WIDTH - button_width) * 0.5,
+                y: top_offset,
+            },
+
             CongratsLayoutEntity::Statistic(statistic) => Vec2 {
                 x: Spacing::SpaceBetween.apply(
                     button_width,
@@ -116,13 +136,12 @@ impl LayoutStructure for CongratsLayoutEntity {
                     CongratsStatistic::COUNT,
                     *statistic as usize,
                 ) + ((IDEAL_WIDTH - button_width) * 0.5),
-                y: top_offset,
+                y: top_offset + stat_size + CONGRATS_ENTITY_SPACING,
             },
             CongratsLayoutEntity::Button(button) => Vec2 {
                 x: (IDEAL_WIDTH - button_width) * 0.5,
                 y: top_offset
-                    + stat_size
-                    + CONGRATS_ENTITY_VERTICAL_GAP
+                    + ((stat_size + CONGRATS_ENTITY_SPACING) * 2.0)
                     + Spacing::Centre.apply(
                         button_height,
                         CONGRATS_ENTITY_BUTTON_HEIGHT + MENU_BUTTON_SPACING,
@@ -148,6 +167,19 @@ impl LayoutStructureWithFont for CongratsLayoutEntity {
     type FontContext = ();
     fn font_size(&self, _context: &()) -> f32 {
         CONGRATS_BUTTON_FONT_SIZE
+    }
+}
+
+pub struct CongratsTimer;
+
+impl LayoutStructureWithFont for CongratsTimer {
+    type FontContext = SelfieMode;
+    fn font_size(&self, context: &SelfieMode) -> f32 {
+        if context.is_selfie_mode {
+            CONGRATS_TIMER_FONT_SIZE_SELFIE
+        } else {
+            CONGRATS_TIMER_FONT_SIZE_NORMAL
+        }
     }
 }
 
