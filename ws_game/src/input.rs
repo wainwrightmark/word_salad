@@ -193,7 +193,7 @@ impl InteractionEntity {
                     return Some(back);
                 }
 
-                Self::try_get_button::<MainMenuLayoutEntity>(position, size, &selfie_mode)
+                Some(Self::try_get_button::<MainMenuLayoutEntity>(position, size, &selfie_mode).unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)))
             }
             MenuState::ChooseLevelsPage => {
                 if let Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &())
@@ -201,7 +201,7 @@ impl InteractionEntity {
                     return Some(back);
                 }
 
-                Self::try_get_button::<LevelsMenuLayoutEntity>(position, size, &selfie_mode)
+                Some(Self::try_get_button::<LevelsMenuLayoutEntity>(position, size, &selfie_mode).unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)))
             }
             MenuState::WordSaladLevels => {
                 if let Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &())
@@ -209,7 +209,7 @@ impl InteractionEntity {
                     return Some(back);
                 }
 
-                Self::try_get_button::<WordSaladMenuLayoutEntity>(position, size, &selfie_mode)
+                Some(Self::try_get_button::<WordSaladMenuLayoutEntity>(position, size, &selfie_mode).unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)))
             }
             MenuState::LevelGroupPage(group) => {
                 if let Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &())
@@ -217,11 +217,11 @@ impl InteractionEntity {
                     return Some(back);
                 }
 
-                Self::try_get_button::<LevelGroupLayoutEntity>(
+                Some(Self::try_get_button::<LevelGroupLayoutEntity>(
                     position,
                     size,
                     &(selfie_mode, *group),
-                )
+                ).unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)))
             }
         }
     }

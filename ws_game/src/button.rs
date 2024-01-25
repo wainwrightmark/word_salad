@@ -177,6 +177,7 @@ pub enum ButtonInteraction {
     Congrats(CongratsButton),
     Popup(PopupInteraction),
     MenuBackButton,
+    CloseMenu,
     NonLevelInteractionButton,
     TimerButton,
 }
@@ -266,6 +267,10 @@ impl ButtonInteraction {
     ) {
         match self {
             ButtonInteraction::None => {}
+
+            ButtonInteraction::CloseMenu=>{
+                menu_state.close();
+            }
 
             ButtonInteraction::MenuBackButton => {
                 menu_state.go_back();
