@@ -155,46 +155,19 @@ impl MavericNode for CongratsView {
                 .convert_color();
 
                 {
-                    let timer_rect = size.get_rect(&CongratsLayoutEntity::Time, &congrats_context);
-
-                    let target_scale =  0.5 * timer_rect.width().abs();
-
-                    let box_transition = TransitionBuilder::default()
-                        .then_wait(Duration::from_secs_f32(TRANSITION_WAIT_SECS))
-                        .then_ease(Vec3::ONE *target_scale, (target_scale/ TRANSITION_SECS).into(), Ease::CubicOut)
-                        .build();
+                    let rect = size.get_rect(&CongratsLayoutEntity::Time, &congrats_context);
 
                     commands.add_child(
-                        "Timer_Box",
-                        basic_box_node1(
-                            timer_rect.width(),
-                            timer_rect.height(),
-                            timer_rect.centre().extend(z_indices::CONGRATS_BUTTON),
-                            stat_fill_color,
-                            crate::rounding::OTHER_BUTTON_NORMAL,
-                        )
-                        .with_transition::<TransformScaleLens, ()>(
-                            initial_scale,
-                            box_transition,
-                            (),
-                        ),
-                        &(),
-                    );
-
-                    commands.add_child(
-                        "Timer_Text",
-                        Text2DNode {
+                        "Timer",
+                        TimerNode {
+                            rect,
                             text: format_seconds(context.level_time.total_elapsed().as_secs()),
-                            font: BUTTONS_FONT_PATH,
-                            font_size: size.font_size(&CongratsTimer, &selfie_mode),
-                            color: stat_text_color,
-                            alignment: TextAlignment::Center,
-                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                            text_anchor: Anchor::Center,
-                            text_2d_bounds: Text2dBounds::UNBOUNDED,
+                            text_color: stat_text_color,
+                            fill_color: stat_fill_color,
+                            text_font_size: size.font_size(&CongratsTimer, &selfie_mode),
                         }
                         .with_bundle(Transform::from_translation(
-                            timer_rect.centre().extend(z_indices::CONGRATS_BUTTON + 1.0),
+                            rect.centre().extend(z_indices::CONGRATS_BUTTON),
                         ))
                         .with_transition::<TransformScaleLens, ()>(
                             initial_scale,
@@ -414,6 +387,71 @@ impl MavericNode for StatisticNode {
                 .with_bundle(Transform::from_translation(Vec3 {
                     x: 0.0,
                     y: rect.extents.y * 0.4,
+                    z: 1.0,
+                })),
+                &(),
+            );
+
+            commands.add_child(
+                "box",
+                basic_box_node1(
+                    rect.width(),
+                    rect.height(),
+                    Vec3::ZERO,
+                    *background_color,
+                    crate::rounding::OTHER_BUTTON_NORMAL,
+                ),
+                &(),
+            );
+        });
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+struct TimerNode {
+    rect: LayoutRectangle,
+    text: String,
+    text_color: Color,
+    fill_color: Color,
+    text_font_size: f32,
+}
+
+impl MavericNode for TimerNode {
+    type Context = ();
+
+    fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
+        commands.insert_static_bundle((
+            GlobalTransform::default(),
+            Transform::default(),
+            VisibilityBundle::default(),
+        ));
+    }
+
+    fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
+        commands.unordered_children_with_node(|node, commands| {
+            let TimerNode {
+                rect,
+                text,
+                text_color,
+                fill_color: background_color,
+                text_font_size,
+            } = node;
+
+            commands.add_child(
+                "label",
+                Text2DNode {
+                    text: text.clone(),
+                    font_size: *text_font_size,
+                    color: *text_color,
+                    font: BUTTONS_FONT_PATH,
+                    alignment: TextAlignment::Center,
+                    linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                    text_2d_bounds: Text2dBounds::default(),
+                    text_anchor: Anchor::Center,
+                }
+                .with_bundle(Transform::from_translation(Vec3 {
+                    x: 0.0,
+                    y: 0.0,
                     z: 1.0,
                 })),
                 &(),
