@@ -59,14 +59,21 @@ impl MavericRootChildren for ViewRoot {
         commands.add_child("Top Bar", TopBar, &context.into());
 
         let selfie_mode = context.video_resource.selfie_mode();
-        if context.menu_state.is_closed() {
-            let level_complete = context.found_words_state.is_level_complete();
 
+        if !context.menu_state.is_closed() {
+            commands.add_child("menu", Menu, &context.into());
+        }
+
+        let level_complete = context.found_words_state.is_level_complete();
+
+        if context.menu_state.is_closed() {
             commands.add_child("cells", GridTiles { level_complete }, &context.into());
             commands.add_child("words", WordsNode, &context.into());
+        }
 
-            match context.current_level.level(&context.daily_challenges) {
-                itertools::Either::Left(level) => {
+        match context.current_level.level(&context.daily_challenges) {
+            itertools::Either::Left(level) => {
+                if context.menu_state.is_closed() {
                     let close_to_solution = context
                         .chosen_state
                         .is_close_to_a_solution(level, context.found_words_state.as_ref());
@@ -87,53 +94,56 @@ impl MavericRootChildren for ViewRoot {
                     if context.found_words_state.is_level_complete() {
                         commands.add_child("congrats", CongratsView, &context.into());
                     }
+                }
 
-                    if let Some(text) =
-                        TutorialText::try_create(&context.current_level, &context.found_words_state)
-                    {
+                if let Some(text) =
+                    TutorialText::try_create(&context.current_level, &context.found_words_state)
+                {
+                    if context.menu_state.is_closed() {
                         commands.add_child("tutorial", TutorialNode { text }, &context.window_size);
-                    } else {
-                        let (theme, daily_challenge_number) = level.name_and_number();
+                    }
+                } else {
+                    let (theme, daily_challenge_number) = level.name_and_number();
+                    commands.add_child(
+                        "ui_theme",
+                        LevelName {
+                            theme,
+                            selfie_mode,
+                            daily_challenge_number,
+                        },
+                        &context.window_size,
+                    );
+
+                    if let Some(info) = &level.extra_info {
                         commands.add_child(
-                            "ui_theme",
-                            LevelName {
-                                theme,
+                            "ui_theme_info",
+                            LevelExtraInfo {
+                                info: *info,
                                 selfie_mode,
-                                daily_challenge_number,
+                                theme,
                             },
                             &context.window_size,
                         );
+                    }
 
-                        if let Some(info) = &level.extra_info {
-                            commands.add_child(
-                                "ui_theme_info",
-                                LevelExtraInfo {
-                                    info: *info,
-                                    selfie_mode,
-                                    theme,
-                                },
-                                &context.window_size,
-                            );
-                        }
-
-                        if !context.found_words_state.is_level_complete() {
-                            let total_seconds =
-                                context.level_time.as_ref().total_elapsed().as_secs();
-                            let time_text = format_seconds(total_seconds);
-                            commands.add_child(
-                                "ui_timer",
-                                UITimer {
-                                    time_text,
-                                    selfie_mode,
-                                    is_daily_challenge: context.current_level.is_daily_challenge(),
-                                    theme,
-                                },
-                                &context.window_size,
-                            );
-                        }
+                    if !context.found_words_state.is_level_complete() {
+                        let total_seconds = context.level_time.as_ref().total_elapsed().as_secs();
+                        let time_text = format_seconds(total_seconds);
+                        commands.add_child(
+                            "ui_timer",
+                            UITimer {
+                                time_text,
+                                selfie_mode,
+                                is_daily_challenge: context.current_level.is_daily_challenge(),
+                                theme,
+                            },
+                            &context.window_size,
+                        );
                     }
                 }
-                itertools::Either::Right(non_level) => {
+            }
+            itertools::Either::Right(non_level) => {
+                if context.menu_state.is_closed() {
                     commands.add_child(
                         "non_level",
                         NonLevelView {
@@ -144,8 +154,6 @@ impl MavericRootChildren for ViewRoot {
                     );
                 }
             }
-        } else {
-            commands.add_child("menu", Menu, &context.into());
         }
     }
 }
