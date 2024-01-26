@@ -157,9 +157,8 @@ async fn load_levels_async(writer: AsyncEventWriter<DailyChallengeDataLoadedEven
 fn handle_daily_challenge_data_loaded(
     mut daily_challenges: ResMut<DailyChallenges>,
     mut ev: EventReader<DailyChallengeDataLoadedEvent>,
-    mut current_level: ResMut<CurrentLevel>,
-    mut found_words: ResMut<FoundWordsState>,
-    mut timer: ResMut<crate::level_time::LevelTime>,
+    current_level: Res<CurrentLevel>,
+    mut change_level_events: EventWriter<ChangeLevelEvent>
 ) {
     for event in ev.read() {
         //info!("Daily challenge data loaded '{}'", event.data);
@@ -188,10 +187,8 @@ fn handle_daily_challenge_data_loaded(
 
                 let new_current_level = CurrentLevel::DailyChallenge { index };
 
-                if let itertools::Either::Left(level) = new_current_level.level(daily_challenges.as_mut()) {
-                    *current_level = new_current_level;
-                    *found_words = FoundWordsState::new_from_level(level);
-                    *timer = LevelTime::default();
+                if new_current_level.level(daily_challenges.as_mut()).is_left() {
+                    change_level_events.send(new_current_level.into());
                 }
             }
         } else if levels.len() < daily_challenges.levels.len() {

@@ -3,7 +3,6 @@ use std::sync::atomic::AtomicUsize;
 pub use crate::prelude::*;
 use crate::{input::InputPlugin, motion_blur::MotionBlurPlugin, purchases::PurchasesPlugin};
 use bevy::{log::LogPlugin, window::RequestRedraw};
-use itertools::Either;
 use nice_bevy_utils::{async_event_writer, window_size::WindowSizePlugin, CanRegisterAsyncEvent};
 use ws_core::layout::entities::*;
 
@@ -141,88 +140,78 @@ fn maybe_request_redraw(mut writer: EventWriter<RequestRedraw>, mut buffer: Loca
 
 #[allow(unused_variables, unused_mut)]
 fn choose_level_on_game_load(
-    mut current_level: ResMut<CurrentLevel>,
-    mut found_words: ResMut<FoundWordsState>,
-    mut timer: ResMut<crate::level_time::LevelTime>,
+    current_level: Res<CurrentLevel>,
     daily_challenge_completion: Res<DailyChallengeCompletion>,
     daily_challenges: Res<DailyChallenges>,
+    mut change_level_events: EventWriter<ChangeLevelEvent>,
 ) {
-    #[cfg(target_arch = "wasm32")]
-    {
-        if let Some(daily_index) = crate::wasm::get_daily_from_location() {
-            info!("Loaded daily challenge {daily_index} from path");
+    fn get_new_level(
+        current_level: Res<CurrentLevel>,
+        daily_challenge_completion: Res<DailyChallengeCompletion>,
+        daily_challenges: Res<DailyChallenges>,
+    ) -> Option<CurrentLevel> {
+        #[cfg(target_arch = "wasm32")]
+        {
+            if let Some(daily_index) = crate::wasm::get_daily_from_location() {
+                info!("Loaded daily challenge {daily_index} from path");
 
-            let new_current_level = CurrentLevel::DailyChallenge { index: daily_index };
-            if new_current_level != *current_level {
-                //todo save progress if on an existing puzzle
-                if let Some(level) = new_current_level.level(&daily_challenges).left() {
-                    *current_level = new_current_level;
-                    *found_words = FoundWordsState::new_from_level(level);
-                    *timer = LevelTime::default();
-                } else {
-                    current_level
-                        .set_if_neq(CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished));
-                    *found_words = FoundWordsState::default();
-                    *timer = LevelTime::default();
+                let new_level = CurrentLevel::DailyChallenge { index: daily_index };
+                if new_level != *current_level {
+                    //todo save progress if on an existing puzzle
+                    if let Some(level) = new_level.level(&daily_challenges).left() {
+                        return Some(new_level);
+                    } else {
+                        return Some(CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished));
+                    }
                 }
             }
-            return;
-        }
 
-        if let Some(level) = crate::wasm::get_game_from_location() {
-            info!("Loaded custom level from path");
-            if !current_level.as_ref().eq(&CurrentLevel::Custom {
-                name: level.full_name().to_string(),
-            }) {
-                *current_level = CurrentLevel::Custom {
-                    name: level.full_name().to_string(),
+            if let Some(level) = crate::wasm::get_game_from_location() {
+                info!("Loaded custom level from path");
+
+
+
+                let custom_level = CurrentLevel::Custom {
+                    name: level.clone().full_name().to_string(),
                 };
-                *found_words = FoundWordsState::new_from_level(&level);
-            }
 
-            if let Err(err) = CUSTOM_LEVEL.set(level) {
-                error!("{err}");
-            }
+                if let Err(err) = CUSTOM_LEVEL.set(level) {
+                    error!("{err}");
+                }
 
-            *timer = LevelTime::default();
-            return;
+                if !current_level.as_ref().eq(&custom_level) {
+                    return Some(custom_level);
+                }
+            }
         }
-    }
 
-    match current_level.as_ref() {
-        CurrentLevel::Tutorial { .. } | CurrentLevel::NonLevel(NonLevel::BeforeTutorial) => {
-            if let Either::Left(level) = current_level.level(&daily_challenges) {
-                *found_words = FoundWordsState::new_from_level(level);
-                *timer = LevelTime::default();
+        match current_level.as_ref() {
+            CurrentLevel::Tutorial { .. } | CurrentLevel::NonLevel(NonLevel::BeforeTutorial) => {
+                return None;
             }
-
-            return;
+            _ => {}
         }
-        _ => {}
+
+        if let Some(index) =
+            daily_challenge_completion.get_next_incomplete_daily_challenge_from_today()
+        {
+            let today_level = CurrentLevel::DailyChallenge { index };
+            if today_level.level(&daily_challenges).is_left() {
+                //Only change to this level if we have loaded it already
+
+                return Some(today_level);
+            } else {
+                return Some(CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished));
+            }
+        }
+
+        return None;
     }
 
-    if !found_words.is_level_complete() && found_words.is_level_started() {
-        info!("Level incomplete and started");
-        //todo save progress and move to todays daily challenge
-
-        return;
-    }
-
-    if let Some(index) = daily_challenge_completion.get_next_incomplete_daily_challenge_from_today()
+    if let Some(level) = get_new_level(current_level, daily_challenge_completion, daily_challenges)
     {
-        let today_level = CurrentLevel::DailyChallenge { index };
-        if today_level.level(&daily_challenges).is_left() {
-            //Only change to this level if we have loaded it already
-            *current_level = today_level;
-        }
-    } else {
-        *current_level = CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished);
+        change_level_events.send(level.into());
     }
-
-    if let Either::Left(dl) = current_level.level(daily_challenges.as_ref()) {
-        *found_words = FoundWordsState::new_from_level(dl);
-    }
-    *timer = LevelTime::default();
 }
 
 fn hide_splash() {

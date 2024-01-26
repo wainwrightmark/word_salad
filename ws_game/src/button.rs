@@ -29,6 +29,7 @@ impl Plugin for ButtonPlugin {
         app.add_systems(
             Update,
             handle_button_activations
+            .run_if(|ev: EventReader<ButtonActivated>| !ev.is_empty())
                 .after(input::handle_mouse_input)
                 .after(input::handle_touch_input)
                 .after(track_held_button),
@@ -82,7 +83,7 @@ fn track_held_button(
 
 fn handle_button_activations(
     mut events: EventReader<ButtonActivated>,
-    mut current_level: ResMut<CurrentLevel>,
+    mut current_level: Res<CurrentLevel>,
     mut menu_state: ResMut<MenuState>,
     mut chosen_state: ResMut<ChosenState>,
     mut found_words: ResMut<FoundWordsState>,
@@ -97,7 +98,8 @@ fn handle_button_activations(
     daily_challenges: Res<DailyChallenges>,
     mut level_time: ResMut<LevelTime>,
     mut selfie_mode_history: ResMut<SelfieModeHistory>,
-    mut ew: EventWriter<AnimateSolutionsEvent>,
+
+    mut event_writers:(EventWriter<AnimateSolutionsEvent>, EventWriter<ChangeLevelEvent>) ,
 ) {
     for ev in events.read() {
         ev.0.on_activated(
@@ -115,7 +117,8 @@ fn handle_button_activations(
             &mut level_time,
             &mut selfie_mode_history,
             &mut purchases,
-            &mut ew,
+            &mut event_writers.0,
+            &mut event_writers.1
         )
     }
 }
@@ -250,7 +253,7 @@ impl ButtonInteraction {
     /// Called when the button action is activated
     fn on_activated(
         &self,
-        current_level: &mut ResMut<CurrentLevel>,
+        current_level: &CurrentLevel,
         menu_state: &mut ResMut<MenuState>,
         chosen_state: &mut ResMut<ChosenState>,
         found_words: &mut ResMut<FoundWordsState>,
@@ -265,7 +268,8 @@ impl ButtonInteraction {
         level_time: &mut ResMut<LevelTime>,
         selfie_mode_history: &mut ResMut<SelfieModeHistory>,
         purchases: &mut ResMut<Purchases>,
-        ew: &mut EventWriter<AnimateSolutionsEvent>,
+        animate_solution_events: &mut EventWriter<AnimateSolutionsEvent>,
+        change_level_events: &mut EventWriter<ChangeLevelEvent>
     ) {
         match self {
             ButtonInteraction::None => {}
@@ -279,7 +283,7 @@ impl ButtonInteraction {
             }
 
             ButtonInteraction::MainMenu(MainMenuLayoutEntity::ResetPuzzle) => {
-                current_level.set_changed();
+                change_level_events.send(ChangeLevelEvent::Reset);
                 menu_state.close();
             }
             ButtonInteraction::MainMenu(MainMenuLayoutEntity::Puzzles) => {
@@ -294,7 +298,7 @@ impl ButtonInteraction {
             }
 
             ButtonInteraction::MainMenu(MainMenuLayoutEntity::Tutorial) => {
-                *current_level.as_mut() = CurrentLevel::NonLevel(NonLevel::BeforeTutorial);
+                change_level_events.send(CurrentLevel::NonLevel(NonLevel::BeforeTutorial).into());
                 menu_state.close();
             }
             #[cfg(target_arch = "wasm32")]
@@ -309,25 +313,25 @@ impl ButtonInteraction {
             ButtonInteraction::WordSaladMenu(WordSaladMenuLayoutEntity::TodayPuzzle) => {
                 let index = DailyChallenges::get_today_index();
                 {
-                    current_level.set_if_neq(CurrentLevel::DailyChallenge { index });
+                    change_level_events.send(CurrentLevel::DailyChallenge { index }.into());
                 }
                 menu_state.close();
             }
             ButtonInteraction::WordSaladMenu(WordSaladMenuLayoutEntity::YesterdayPuzzle) => {
                 let index = DailyChallenges::get_today_index();
                 {
-                    current_level.set_if_neq(CurrentLevel::DailyChallenge {
+                    change_level_events.send(CurrentLevel::DailyChallenge {
                         index: index.saturating_sub(1),
-                    });
+                    }.into());
                 }
                 menu_state.close();
             }
             ButtonInteraction::WordSaladMenu(WordSaladMenuLayoutEntity::EreYesterdayPuzzle) => {
                 let index = DailyChallenges::get_today_index();
                 {
-                    current_level.set_if_neq(CurrentLevel::DailyChallenge {
+                    change_level_events.send(CurrentLevel::DailyChallenge {
                         index: index.saturating_sub(2),
-                    });
+                    }.into());
                 }
                 menu_state.close();
             }
@@ -336,9 +340,9 @@ impl ButtonInteraction {
                     .checked_sub(3)
                     .and_then(|x| daily_challenge_completion.get_next_incomplete_daily_challenge(x))
                 {
-                    current_level.set_if_neq(CurrentLevel::DailyChallenge { index });
+                    change_level_events.send(CurrentLevel::DailyChallenge { index }.into());
                 } else {
-                    current_level.set_if_neq(CurrentLevel::NonLevel(NonLevel::DailyChallengeReset));
+                    change_level_events.send(CurrentLevel::NonLevel(NonLevel::DailyChallengeReset).into());
                 }
                 menu_state.close();
             }
@@ -363,8 +367,8 @@ impl ButtonInteraction {
                             .get_next_level_index(sequence, &purchases)
                             .to_level(sequence);
 
-                        info!("Changing level to {level:?}");
-                        *current_level.as_mut() = level;
+
+                        change_level_events.send(level.into());
 
                         menu_state.close();
                     }
@@ -374,7 +378,7 @@ impl ButtonInteraction {
                 if hint_state.hints_remaining == 0 {
                     popup_state.0 = Some(PopupType::BuyMoreHints);
                 } else if let Either::Left(level) = current_level.level(daily_challenges) {
-                    found_words.try_hint_word(hint_state, level, word.0, chosen_state, ew);
+                    found_words.try_hint_word(hint_state, level, word.0, chosen_state, animate_solution_events);
                 }
             }
             ButtonInteraction::TopMenuItem(LayoutTopBar::HintCounter) => {
@@ -396,13 +400,13 @@ impl ButtonInteraction {
                 if let Some(non_level) = current_level.level(daily_challenges).right() {
                     match non_level {
                         NonLevel::BeforeTutorial => {
-                            *current_level.as_mut() = CurrentLevel::Tutorial { index: 0 };
+                            change_level_events.send(CurrentLevel::Tutorial { index: 0 }.into());
                         }
                         NonLevel::AfterCustomLevel => {
                             if let Some(l) = CUSTOM_LEVEL.get() {
-                                *current_level.as_mut() = CurrentLevel::Custom {
+                                change_level_events.send(CurrentLevel::Custom {
                                     name: l.name.to_string(),
-                                };
+                                }.into());
                             }
                         }
                         NonLevel::LevelSequenceMustPurchaseGroup(sequence) => {
@@ -411,28 +415,28 @@ impl ButtonInteraction {
                                 .get_next_level_index(sequence, &purchases)
                                 .to_level(sequence);
 
-                            info!("Changing level to {level:?}");
-                            *current_level.as_mut() = level;
+
+                            change_level_events.send(level.into());
                         }
                         NonLevel::DailyChallengeReset => {
                             daily_challenge_completion.reset_daily_challenge_completion();
                             if let Some(index) = daily_challenge_completion
                                 .get_next_incomplete_daily_challenge_from_today()
                             {
-                                *current_level.as_mut() = CurrentLevel::DailyChallenge { index };
+                                change_level_events.send(CurrentLevel::DailyChallenge { index }.into());
                             }
                         }
                         NonLevel::LevelSequenceReset(ls) => {
                             sequence_completion.restart_level_sequence_completion(ls);
-                            *current_level.as_mut() = CurrentLevel::Fixed {
+                            change_level_events.send(CurrentLevel::Fixed {
                                 level_index: 0,
                                 sequence: ls,
-                            };
+                            }.into());
                         }
                         NonLevel::DailyChallengeCountdown { todays_index } => {
-                            *current_level.as_mut() = CurrentLevel::DailyChallenge {
+                            change_level_events.send(CurrentLevel::DailyChallenge {
                                 index: todays_index,
-                            };
+                            }.into());
                         }
                         NonLevel::DailyChallengeFinished => {
                             let new_current_level = match sequence_completion
@@ -445,7 +449,7 @@ impl ButtonInteraction {
                                 None => CurrentLevel::NonLevel(NonLevel::DailyChallengeReset),
                             };
 
-                            *current_level.as_mut() = new_current_level;
+                            change_level_events.send(new_current_level.into());
                         }
                         NonLevel::LevelSequenceAllFinished(seq) => {
                             let new_current_level = match sequence_completion
@@ -458,7 +462,7 @@ impl ButtonInteraction {
                                 None => CurrentLevel::NonLevel(NonLevel::LevelSequenceReset(seq)),
                             };
 
-                            *current_level.as_mut() = new_current_level;
+                            change_level_events.send(new_current_level.into());
                         }
                     }
                 }
@@ -483,7 +487,7 @@ impl ButtonInteraction {
                     &sequence_completion,
                     &purchases,
                 );
-                *current_level.as_mut() = next_level;
+                change_level_events.send(next_level.into());
             }
 
             ButtonInteraction::Congrats(CongratsButton::MoreLevels) => {

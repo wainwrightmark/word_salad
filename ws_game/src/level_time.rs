@@ -160,7 +160,8 @@ fn count_down(
     mut query: Query<&mut Text, With<NonLevelText>>,
     time: Res<Time>,
     mut elapsed: Local<Duration>,
-    mut current_level: ResMut<CurrentLevel>,
+    current_level: Res<CurrentLevel>,
+    mut change_level_events: EventWriter<ChangeLevelEvent>
 ) {
     let todays_index = match current_level.as_ref() {
         CurrentLevel::NonLevel(NonLevel::DailyChallengeCountdown { todays_index }) => todays_index,
@@ -179,7 +180,7 @@ fn count_down(
             }
         } else {
             let index = DailyChallenges::get_today_index();
-            current_level.set_if_neq(CurrentLevel::DailyChallenge { index });
+            change_level_events.send(CurrentLevel::DailyChallenge { index }.into());
         }
         startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     }

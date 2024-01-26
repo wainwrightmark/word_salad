@@ -1,11 +1,8 @@
 use std::{num::NonZeroUsize, time::Duration};
 
-use crate::{
-    completion::*,
-    prelude::*,
-};
+use crate::{completion::*, prelude::*};
 use itertools::{Either, Itertools};
-use nice_bevy_utils::{CanInitTrackedResource, TrackableResource};
+use nice_bevy_utils::{CanInitTrackedResource, CanRegisterAsyncEvent, TrackableResource};
 use serde::{Deserialize, Serialize};
 use strum::EnumIs;
 use ws_levels::level_sequence::LevelSequence;
@@ -25,80 +22,100 @@ impl Plugin for StatePlugin {
         app.init_tracked_resource::<SavedLevelsState>();
 
         app.add_event::<AnimateSolutionsEvent>();
-        app.add_event::<ChangeLevelEvent>();
+        app.register_async_event::<ChangeLevelEvent>();
 
         app.add_systems(Update, track_found_words);
         app.add_systems(Update, track_level_completion);
-        app.add_systems(PostUpdate, update_state_on_level_change);
+
         app.add_systems(Update, animate_solutions.after(track_found_words));
+
+        app.add_systems(
+            PostUpdate,
+            handle_change_level_event.run_if(|ev: EventReader<ChangeLevelEvent>| !ev.is_empty()),
+        );
     }
 }
 #[derive(Debug, Event)]
-struct ChangeLevelEvent{
-    pub new_level: CurrentLevel
+pub enum ChangeLevelEvent {
+    ChangeTo(CurrentLevel),
+    Reset,
 }
 
+impl From<CurrentLevel> for ChangeLevelEvent {
+    fn from(value: CurrentLevel) -> Self {
+        Self::ChangeTo(value)
+    }
+}
 
-
-fn update_state_on_level_change(
-    current_level: Res<CurrentLevel>,
+fn handle_change_level_event(
+    mut events: EventReader<ChangeLevelEvent>,
+    mut current_level: ResMut<CurrentLevel>,
     daily_challenges: Res<DailyChallenges>,
     mut found_words: ResMut<FoundWordsState>,
     mut chosen: ResMut<ChosenState>,
-
     mut saved_levels: ResMut<SavedLevelsState>,
 
-    mut current_level_key: Local<Option<SavedLevelKey>>,
     mut time: ResMut<LevelTime>,
 ) {
-    if !current_level.is_changed() {
-        return;
-    }
+    for event in events.read() {
+        let new_level = match event {
+            ChangeLevelEvent::ChangeTo(new_level) => {
+                if new_level == current_level.as_ref() {
+                    continue;
+                }
+                new_level
+            }
+            ChangeLevelEvent::Reset => {
+                if let Either::Left(level) = current_level.level(daily_challenges.as_ref()) {
+                    *time = LevelTime::default();
+                    *found_words = FoundWordsState::new_from_level(level);
+                }
 
-    let previous_key = *current_level_key;
-    let new_key = SavedLevelKey::try_from_current(&current_level);
-    *current_level_key = new_key;
+                return;
+            }
+        };
 
-    if current_level.is_added() {
-        return;
-    }
+        let previous_key = SavedLevelKey::try_from_current(&current_level);
+        let new_key = SavedLevelKey::try_from_current(&new_level);
 
-    if let Some(previous_key) = previous_key {
-        if found_words.is_level_started() {
-            if !found_words.is_level_complete() {
-                let state = found_words.clone();
-                let elapsed = time.total_elapsed();
-                let saved_state = SavedState {
-                    found_words_state: state,
-                    elapsed,
-                };
-                saved_levels.insert(previous_key, saved_state);
+        if let Some(previous_key) = previous_key {
+            if found_words.is_level_started() {
+                if !found_words.is_level_complete() {
+                    let state = found_words.clone();
+                    let elapsed = time.total_elapsed();
+                    let saved_state = SavedState {
+                        found_words_state: state,
+                        elapsed,
+                    };
+                    saved_levels.insert(previous_key, saved_state);
+                }
             }
         }
+
+        let loaded_level = new_key
+            .and_then(|k| saved_levels.remove(k))
+            .filter(|_| previous_key != new_key);
+
+        let saved_state = match new_level.level(daily_challenges.as_ref()) {
+            Either::Left(level) => loaded_level.unwrap_or_else(|| SavedState {
+                elapsed: Duration::ZERO,
+                found_words_state: FoundWordsState::new_from_level(level),
+            }),
+            Either::Right(..) => SavedState {
+                elapsed: Duration::ZERO,
+                found_words_state: FoundWordsState::default(),
+            },
+        };
+
+        *current_level = new_level.clone();
+        *found_words = saved_state.found_words_state;
+        *time = LevelTime::Paused {
+            elapsed: saved_state.elapsed,
+        };
+        time.resume_timer();
+
+        *chosen = ChosenState::default();
     }
-
-    let loaded_level = new_key
-        .and_then(|k| saved_levels.remove(k))
-        .filter(|_| previous_key != new_key);
-
-    let saved_state = match current_level.level(daily_challenges.as_ref()) {
-        Either::Left(level) => loaded_level.unwrap_or_else(|| SavedState {
-            elapsed: Duration::ZERO,
-            found_words_state: FoundWordsState::new_from_level(level),
-        }),
-        Either::Right(..) => SavedState {
-            elapsed: Duration::ZERO,
-            found_words_state: FoundWordsState::default(),
-        },
-    };
-
-    *found_words = saved_state.found_words_state;
-    *time = LevelTime::Paused {
-        elapsed: saved_state.elapsed,
-    };
-    time.resume_timer();
-
-    *chosen = ChosenState::default();
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use capacitor_bindings::local_notifications::*;
-use nice_bevy_utils::{async_event_writer::AsyncEventWriter, CanRegisterAsyncEvent};
+use nice_bevy_utils::async_event_writer::AsyncEventWriter;
 
 #[allow(unused_imports)]
 use crate::{logging, prelude::*};
@@ -15,22 +15,19 @@ impl Plugin for NotificationPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         #[cfg(any(feature = "ios", feature = "android"))]
         {
-            app.register_async_event::<ChangeLevelEvent>(); //todo handle this event
             app.add_systems(Startup, setup);
         }
     }
 }
 
-#[derive(Debug, Event, Clone, Copy, PartialEq)]
-pub enum ChangeLevelEvent {
-    StartDailyChallenge,
+fn setup(writer: AsyncEventWriter<ChangeLevelEvent>, daily_challenges: Res<DailyChallenges>) {
+    spawn_and_run(setup_notifications_async(writer, daily_challenges.clone()));
 }
 
-fn setup(writer: AsyncEventWriter<ChangeLevelEvent>) {
-    spawn_and_run(setup_notifications_async(writer));
-}
-
-async fn setup_notifications_async(writer: AsyncEventWriter<ChangeLevelEvent>) {
+async fn setup_notifications_async(
+    writer: AsyncEventWriter<ChangeLevelEvent>,
+    daily_challenges: DailyChallenges,
+) {
     let schedule_options = LocalNotificationSchema::builder()
         .title("Steks daily challenge")
         .body("Beat your friends in the Steks daily challenge")
@@ -48,8 +45,20 @@ async fn setup_notifications_async(writer: AsyncEventWriter<ChangeLevelEvent>) {
         if action.action_id == DAILY_CHALLENGE_ACTION_TYPE_ID || action.action_id == "tap" {
             bevy::log::info!("Clicked Action");
 
+            let new_level = CurrentLevel::DailyChallenge {
+                index: DailyChallenges::get_today_index(),
+            };
+
+            let level_to_send = if new_level.level(&daily_challenges).is_left() {
+                //Only change to this level if we have loaded it already
+
+                new_level
+            } else {
+                CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished)
+            };
+
             writer
-                .send_blocking(ChangeLevelEvent::StartDailyChallenge)
+                .send_blocking(level_to_send.into())
                 .expect("Channel closed prematurely");
         }
     };
