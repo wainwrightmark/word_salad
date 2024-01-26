@@ -48,7 +48,7 @@ fn track_held_button(
     let PressedButton::Pressed {
         interaction,
         duration,
-        start_state
+        start_state,
     } = pressed_button.as_ref()
     else {
         return;
@@ -63,7 +63,7 @@ fn track_held_button(
         *pressed_button.as_mut() = PressedButton::Pressed {
             interaction,
             duration,
-            start_state: *start_state
+            start_state: *start_state,
         };
         return;
     };
@@ -75,7 +75,7 @@ fn track_held_button(
         *pressed_button.as_mut() = PressedButton::Pressed {
             interaction,
             duration,
-            start_state: *start_state
+            start_state: *start_state,
         };
     }
 }
@@ -91,7 +91,7 @@ fn handle_button_activations(
     mut sequence_completion: ResMut<SequenceCompletion>,
     mut daily_challenge_completion: ResMut<DailyChallengeCompletion>,
     mut purchases: ResMut<Purchases>,
-    video_state: Res<VideoResource>,
+    mut video_resource: ResMut<VideoResource>,
     video_events: AsyncEventWriter<VideoEvent>,
 
     daily_challenges: Res<DailyChallenges>,
@@ -109,7 +109,7 @@ fn handle_button_activations(
             &mut popup_state,
             &mut sequence_completion,
             &mut daily_challenge_completion,
-            video_state.as_ref(),
+            &mut video_resource,
             &video_events,
             daily_challenges.as_ref(),
             &mut level_time,
@@ -127,13 +127,13 @@ pub struct ButtonActivated(pub ButtonInteraction);
 pub enum PressedButton {
     #[default]
     None,
-    NoInteractionPressed{
-        start_state: StartPressState
+    NoInteractionPressed {
+        start_state: StartPressState,
     },
     Pressed {
         interaction: ButtonInteraction,
         duration: Duration,
-        start_state: StartPressState
+        start_state: StartPressState,
     },
     PressedAfterActivated {
         interaction: ButtonInteraction,
@@ -141,11 +141,11 @@ pub enum PressedButton {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, EnumIs)]
-pub enum StartPressState{
+pub enum StartPressState {
     Gameplay,
     Congrats,
     Menu,
-    Popup
+    Popup,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, EnumIs)]
@@ -186,7 +186,7 @@ impl ButtonInteraction {
     pub fn button_press_type(&self) -> ButtonPressType {
         if self.is_word_button() {
             ButtonPressType::OnHold(Duration::from_secs_f32(WORD_BUTTON_HOLD_SECONDS))
-        }else {
+        } else {
             ButtonPressType::OnEnd
         }
     }
@@ -232,7 +232,9 @@ impl From<CongratsButton> for ButtonInteraction {
 impl From<CongratsLayoutEntity> for ButtonInteraction {
     fn from(value: CongratsLayoutEntity) -> Self {
         match value {
-            CongratsLayoutEntity::Statistic(_) | CongratsLayoutEntity::Time => ButtonInteraction::None,
+            CongratsLayoutEntity::Statistic(_) | CongratsLayoutEntity::Time => {
+                ButtonInteraction::None
+            }
             CongratsLayoutEntity::Button(b) => b.into(),
         }
     }
@@ -257,7 +259,7 @@ impl ButtonInteraction {
 
         sequence_completion: &mut ResMut<SequenceCompletion>,
         daily_challenge_completion: &mut ResMut<DailyChallengeCompletion>,
-        video_state: &VideoResource,
+        video_resource: &mut ResMut<VideoResource>,
         video_events: &AsyncEventWriter<VideoEvent>,
         daily_challenges: &DailyChallenges,
         level_time: &mut ResMut<LevelTime>,
@@ -268,13 +270,14 @@ impl ButtonInteraction {
         match self {
             ButtonInteraction::None => {}
 
-            ButtonInteraction::CloseMenu=>{
+            ButtonInteraction::CloseMenu => {
                 menu_state.close();
             }
 
             ButtonInteraction::MenuBackButton => {
                 menu_state.go_back();
             }
+
             ButtonInteraction::MainMenu(MainMenuLayoutEntity::ResetPuzzle) => {
                 current_level.set_changed();
                 menu_state.close();
@@ -286,7 +289,7 @@ impl ButtonInteraction {
                 //todo do something
             }
             ButtonInteraction::MainMenu(MainMenuLayoutEntity::SelfieMode) => {
-                video_state.toggle_video_streaming(video_events.clone());
+                video_resource.toggle_selfie_mode(video_events.clone());
                 menu_state.close();
             }
 
@@ -377,6 +380,17 @@ impl ButtonInteraction {
             ButtonInteraction::TopMenuItem(LayoutTopBar::HintCounter) => {
                 popup_state.0 = Some(PopupType::BuyMoreHints);
             }
+
+            ButtonInteraction::TopMenuItem(LayoutTopBar::ToggleRecordingButton) => {
+                if video_resource.is_selfie_mode {
+                    if video_resource.is_recording {
+                        crate::video::stop_screen_record(video_resource);
+                    } else {
+                        crate::video::start_screen_record(video_resource);
+
+                    }
+                }
+            }
             ButtonInteraction::TopMenuItem(LayoutTopBar::MenuBurgerButton) => menu_state.toggle(),
             ButtonInteraction::NonLevelInteractionButton => {
                 if let Some(non_level) = current_level.level(daily_challenges).right() {
@@ -421,14 +435,15 @@ impl ButtonInteraction {
                             };
                         }
                         NonLevel::DailyChallengeFinished => {
-                            let new_current_level =
-                                match sequence_completion.get_next_level_sequence(None, &purchases) {
-                                    Some((sequence, level_index)) => CurrentLevel::Fixed {
-                                        level_index,
-                                        sequence,
-                                    },
-                                    None => CurrentLevel::NonLevel(NonLevel::DailyChallengeReset),
-                                };
+                            let new_current_level = match sequence_completion
+                                .get_next_level_sequence(None, &purchases)
+                            {
+                                Some((sequence, level_index)) => CurrentLevel::Fixed {
+                                    level_index,
+                                    sequence,
+                                },
+                                None => CurrentLevel::NonLevel(NonLevel::DailyChallengeReset),
+                            };
 
                             *current_level.as_mut() = new_current_level;
                         }
@@ -463,8 +478,11 @@ impl ButtonInteraction {
                 menu_state.close();
             }
             ButtonInteraction::Congrats(CongratsButton::Next) => {
-                let next_level =
-                    current_level.get_next_level(&daily_challenge_completion, &sequence_completion, &purchases);
+                let next_level = current_level.get_next_level(
+                    &daily_challenge_completion,
+                    &sequence_completion,
+                    &purchases,
+                );
                 *current_level.as_mut() = next_level;
             }
 

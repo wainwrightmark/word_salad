@@ -9,19 +9,21 @@ use super::{consts::*, SelfieMode};
 )]
 pub enum LayoutTopBar {
     MenuBurgerButton,
+    ToggleRecordingButton,
     WordSaladLogo,
     HintCounter,
+
 }
 
-impl LayoutTopBar {
-    pub const fn index(&self) -> usize {
-        match self {
-            LayoutTopBar::MenuBurgerButton => 0,
-            LayoutTopBar::WordSaladLogo => 1,
-            LayoutTopBar::HintCounter => 2,
-        }
-    }
-}
+// impl LayoutTopBar {
+//     pub const fn index(&self) -> usize {
+//         match self {
+//             LayoutTopBar::MenuBurgerButton => 0,
+//             LayoutTopBar::WordSaladLogo => 1,
+//             LayoutTopBar::HintCounter => 2,
+//         }
+//     }
+// }
 
 impl LayoutStructure for LayoutTopBar {
     type Context<'a> = SelfieMode;
@@ -29,7 +31,7 @@ impl LayoutStructure for LayoutTopBar {
     fn size(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
         use LayoutTopBar::*;
         match self {
-            MenuBurgerButton | HintCounter => Vec2 {
+            MenuBurgerButton | HintCounter | ToggleRecordingButton => Vec2 {
                 x: TOP_BAR_ICON_WIDTH,
                 y: (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, context)),
             },
@@ -44,6 +46,10 @@ impl LayoutStructure for LayoutTopBar {
         match self {
             LayoutTopBar::MenuBurgerButton => Vec2 {
                 x: (IDEAL_WIDTH - GRID_SIZE) * 0.5,
+                y: 0.,
+            },
+            LayoutTopBar::ToggleRecordingButton => Vec2 {
+                x: (IDEAL_WIDTH - GRID_SIZE) * 0.5 + (TOP_BAR_ICON_WIDTH * 1.0),
                 y: 0.,
             },
             LayoutTopBar::HintCounter => Vec2 {
@@ -71,7 +77,7 @@ impl LayoutStructureWithFont for LayoutTopBar {
     type FontContext = HintCount;
     fn font_size(&self, hint_count: &HintCount) -> f32 {
         match self {
-            LayoutTopBar::MenuBurgerButton => BURGER_FONT_SIZE,
+            LayoutTopBar::MenuBurgerButton | LayoutTopBar::ToggleRecordingButton => BURGER_FONT_SIZE,
             LayoutTopBar::WordSaladLogo => LOGO_FONT_SIZE,
             LayoutTopBar::HintCounter => match hint_count.count {
                 0..=99 => HINT_COUNTER_FONT_SIZE,

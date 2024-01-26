@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, video};
 use maveric::widgets::text2d_node::Text2DNode;
 use maveric::with_bundle::CanWithBundle;
 use ws_core::layout::entities::*;
@@ -71,6 +71,47 @@ impl MavericNode for TopBar {
                     )),
                     &(),
                 );
+
+                if selfie{
+
+                    let (text, color) = if context.video_resource.is_recording{
+                        let color = (if selfie {
+                            palette::TOP_BAR_BURGER_SELFIE
+                        } else {
+                            palette::TOP_BAR_BURGER_NORMAL
+                        })
+                        .convert_color();
+                        ("\u{e802}", color)
+                    }else{
+
+                        ("\u{e804}", Color::RED)
+                    };
+
+                    commands.add_child(
+                        "ToggleRecording",
+                        Text2DNode {
+                            text,
+                            font_size: size.font_size::<LayoutTopBar>(
+                                &LayoutTopBar::ToggleRecordingButton,
+                                &HintCount::default(),
+                            ),
+                            color,
+                            font: ICON_FONT_PATH,
+                            alignment: TextAlignment::Left,
+                            linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                            text_2d_bounds: Default::default(),
+                            text_anchor: bevy::sprite::Anchor::CenterLeft,
+                        }
+                        .with_bundle(Transform::from_translation(
+                            size.get_rect(&LayoutTopBar::ToggleRecordingButton, &context.video_resource.selfie_mode())
+                                .centre_left()
+                                .extend(crate::z_indices::TOP_BAR_BUTTON),
+                        )),
+                        &(),
+                    );
+                }
+
+
 
                 commands.add_child(
                     "hints",
