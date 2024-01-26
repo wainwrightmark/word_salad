@@ -450,26 +450,26 @@ fn do_finder(options: Options) {
 
             info!("Found {total_master_count} words on the master list. {new_master_count} will be treated as exclusions");
 
-            if !master_words.is_empty() {
-                let mut bad_master_words: HashSet<FinderSingleWord> = Default::default();
-                for word in word_map.iter().flat_map(|x| x.words.iter()) {
-                    for master_word in master_words.iter() {
-                        if master_word.is_strict_substring(word) {
-                            warn!(
-                                "{} is a superstring of {} so will be impossible",
-                                word.text, master_word.text
-                            );
-                            bad_master_words.insert(master_word.clone());
-                        }
-                    }
-                }
-                for bad in bad_master_words.drain() {
-                    if let Some((index, word)) = master_words.iter().find_position(|x| **x == bad) {
-                        info!("Removed '{}' from master words", word.text);
-                        master_words.remove(index);
-                    }
-                }
-            }
+            // if !master_words.is_empty() { //TODO remove
+            //     let mut bad_master_words: HashSet<FinderSingleWord> = Default::default();
+            //     for word in word_map.iter().flat_map(|x| x.words.iter()) {
+            //         for master_word in master_words.iter() {
+            //             if master_word.is_strict_substring(word) {
+            //                 warn!(
+            //                     "{} is a superstring of {} so will be impossible",
+            //                     word.text, master_word.text
+            //                 );
+            //                 bad_master_words.insert(master_word.clone());
+            //             }
+            //         }
+            //     }
+            //     for bad in bad_master_words.drain() {
+            //         if let Some((index, word)) = master_words.iter().find_position(|x| **x == bad) {
+            //             info!("Removed '{}' from master words", word.text);
+            //             master_words.remove(index);
+            //         }
+            //     }
+            // }
         }
 
         let grids_write_path = Path::new(write_path.as_str());
@@ -622,6 +622,7 @@ fn create_grids<const W: usize>(
                 let exclude_words = exclude_words
                     .iter()
                     .filter(|w| set.letter_counts.is_superset(&w.counts))
+                    .filter(|excluded_word| !finder_words.iter().any(|fw| excluded_word.is_strict_substring(fw)))
                     .cloned()
                     .collect_vec();
 
