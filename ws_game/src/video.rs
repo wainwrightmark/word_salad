@@ -7,7 +7,7 @@ use nice_bevy_utils::{
 use serde::{Deserialize, Serialize};
 use ws_core::layout::entities::SelfieMode;
 
-use crate::prelude::PopupState;
+use crate::{prelude::PopupState, startup};
 
 pub struct VideoPlugin;
 
@@ -68,6 +68,7 @@ fn handle_video_event(
             }
             VideoEvent::VideoStopped => res.is_selfie_mode = false,
         }
+        startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     }
 }
 
@@ -79,6 +80,18 @@ impl VideoResource {
             if self.is_selfie_mode {
                 crate::wasm::stop_video();
                 writer.send_blocking(VideoEvent::VideoStopped).unwrap();
+
+                #[cfg(any(feature = "android", feature = "ios"))]
+                {
+                    match crate::wasm::stop_screen_record(){
+                        Ok(())=>{},
+                        Err(err)=>match crate::wasm::JsException::try_from(err) {
+                            Ok(e) => error!("{}", e.message),
+                            Err(()) => error!("Error Starting Screen Recorder"),
+                        },
+                    }
+                }
+
             } else {
                 crate::asynchronous::spawn_and_run(start_video_async(writer));
             }
@@ -100,6 +113,19 @@ async fn start_video_async(writer: AsyncEventWriter<VideoEvent>) {
                 Err(()) => error!("Error Starting Video"),
             },
         }
+
+        #[cfg(any(feature = "android", feature = "ios"))]
+        {
+            // info!("Starting screen record");
+            match crate::wasm::start_screen_record(){
+                Ok(())=>{},
+                Err(err)=>match crate::wasm::JsException::try_from(err) {
+                    Ok(e) => error!("{}", e.message),
+                    Err(()) => error!("Error Starting Screen Recorder"),
+                },
+            }
+        }
+
     }
 }
 

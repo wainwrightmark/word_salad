@@ -175,7 +175,6 @@ impl MavericRootChildren for PopupStateRoot {
                 for item in SelfiePopupLayoutEntity::iter() {
                     let font_size = size.font_size::<SelfiePopupLayoutEntity>(&item, &());
                     let rect: LayoutRectangle = size.get_rect(&item, &());
-                    info!("{rect:?}");
                     match item {
                         SelfiePopupLayoutEntity::Text => {
                             let text = "Wanna film yourself playing?\n\

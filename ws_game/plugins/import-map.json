@@ -8,6 +8,7 @@
     "@capacitor/share": "./@capacitor/share.js",
     "@capacitor/splash-screen": "./@capacitor/splash-screen.js",
     "@capacitor/status-bar": "./@capacitor/status-bar.js",
+    "@capgo/capacitor-screen-recorder": "./@capgo/capacitor-screen-recorder.js",
     "@openforge/capacitor-game-connect": "./@openforge/capacitor-game-connect.js",
     "capacitor-rate-app": "./capacitor-rate-app.js"
   }

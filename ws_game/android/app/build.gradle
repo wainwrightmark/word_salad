@@ -1,5 +1,12 @@
 apply plugin: 'com.android.application'
 
+configurations {
+    all {
+        exclude group: 'androidx.lifecycle', module: 'lifecycle-runtime-ktx'
+        exclude group: 'androidx.lifecycle', module: 'lifecycle-viewmodel-ktx'
+    }
+}
+
 android {
     namespace "com.wordsalad.app"
     compileSdkVersion rootProject.ext.compileSdkVersion
