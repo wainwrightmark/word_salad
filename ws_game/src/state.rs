@@ -25,6 +25,7 @@ impl Plugin for StatePlugin {
         app.init_tracked_resource::<SavedLevelsState>();
 
         app.add_event::<AnimateSolutionsEvent>();
+        app.add_event::<ChangeLevelEvent>();
 
         app.add_systems(Update, track_found_words);
         app.add_systems(Update, track_level_completion);
@@ -32,6 +33,12 @@ impl Plugin for StatePlugin {
         app.add_systems(Update, animate_solutions.after(track_found_words));
     }
 }
+#[derive(Debug, Event)]
+struct ChangeLevelEvent{
+    pub new_level: CurrentLevel
+}
+
+
 
 fn update_state_on_level_change(
     current_level: Res<CurrentLevel>,

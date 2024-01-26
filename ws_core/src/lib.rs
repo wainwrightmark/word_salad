@@ -6,6 +6,7 @@ pub mod finder;
 pub mod layout;
 pub mod level_type;
 pub mod word;
+pub mod font_icons;
 pub use crate::prelude::*;
 
 pub mod prelude {
@@ -15,6 +16,7 @@ pub mod prelude {
     pub use crate::designed_level::*;
     pub use crate::display_word::*;
     pub use crate::word::*;
+    pub use crate::font_icons::*;
 
     pub use arrayvec::ArrayVec;
     pub use geometrid::prelude::HasCenter;

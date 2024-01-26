@@ -14,3 +14,6 @@
 - timer on end screen
 - Change steks menu button
 - integrate ads
+- fireworks performance
+- end selfie mode / recording when resuming app
+- S & E asian countries

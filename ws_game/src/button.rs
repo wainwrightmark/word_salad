@@ -464,18 +464,18 @@ impl ButtonInteraction {
                 }
             }
             ButtonInteraction::TopMenuItem(LayoutTopBar::WordSaladLogo) => {
-                let index = DailyChallenges::get_today_index();
-                if daily_challenge_completion.is_daily_challenge_complete(index) {
-                    current_level.set_if_neq(CurrentLevel::NonLevel(
-                        NonLevel::DailyChallengeCountdown {
-                            todays_index: index,
-                        },
-                    ));
-                } else {
-                    current_level.set_if_neq(CurrentLevel::DailyChallenge { index });
-                }
+                // let index = DailyChallenges::get_today_index();
+                // if daily_challenge_completion.is_daily_challenge_complete(index) {
+                //     current_level.set_if_neq(CurrentLevel::NonLevel(
+                //         NonLevel::DailyChallengeCountdown {
+                //             todays_index: index,
+                //         },
+                //     ));
+                // } else {
+                //     current_level.set_if_neq(CurrentLevel::DailyChallenge { index });
+                // }
 
-                menu_state.close();
+                // menu_state.close();
             }
             ButtonInteraction::Congrats(CongratsButton::Next) => {
                 let next_level = current_level.get_next_level(

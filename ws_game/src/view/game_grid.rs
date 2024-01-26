@@ -6,7 +6,7 @@ use maveric::transition::speed::LinearSpeed;
 use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
 use strum::EnumIs;
 use ws_core::layout::entities::*;
-use ws_core::prelude::*;
+use ws_core::{font_icons, prelude::*};
 use ws_core::Tile;
 
 #[derive(Debug, Clone, Copy, PartialEq, EnumIs)]
@@ -172,7 +172,7 @@ impl MavericNode for GridTiles {
                 commands.add_child(
                     "play_button",
                     Text2DNode {
-                        text: "\u{e801}",
+                        text: font_icons::PLAY,
                         font: ICON_FONT_PATH,
                         font_size: PlayButtonLayoutStructure.font_size(&()),
                         color: if selfie_mode.is_selfie_mode {palette::GRID_LETTER_SELFIE.convert_color()} else{palette::GRID_LETTER_NORMAL.convert_color()} ,

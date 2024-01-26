@@ -147,23 +147,21 @@ fn choose_level_on_game_load(
     daily_challenge_completion: Res<DailyChallengeCompletion>,
     daily_challenges: Res<DailyChallenges>,
 ) {
-
-
-
     #[cfg(target_arch = "wasm32")]
     {
         if let Some(daily_index) = crate::wasm::get_daily_from_location() {
             info!("Loaded daily challenge {daily_index} from path");
 
             let new_current_level = CurrentLevel::DailyChallenge { index: daily_index };
-            if new_current_level != *current_level{
+            if new_current_level != *current_level {
+                //todo save progress if on an existing puzzle
                 if let Some(level) = new_current_level.level(&daily_challenges).left() {
                     *current_level = new_current_level;
                     *found_words = FoundWordsState::new_from_level(level);
                     *timer = LevelTime::default();
-                }
-                else{
-                    current_level.set_if_neq(CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished));
+                } else {
+                    current_level
+                        .set_if_neq(CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished));
                     *found_words = FoundWordsState::default();
                     *timer = LevelTime::default();
                 }
@@ -191,16 +189,23 @@ fn choose_level_on_game_load(
         }
     }
 
-    if !found_words.is_level_complete() && found_words.is_level_started() {
-        info!("Level incomplete and started");
-        return;
-    }
-
     match current_level.as_ref() {
         CurrentLevel::Tutorial { .. } | CurrentLevel::NonLevel(NonLevel::BeforeTutorial) => {
+            if let Either::Left(level) = current_level.level(&daily_challenges) {
+                *found_words = FoundWordsState::new_from_level(level);
+                *timer = LevelTime::default();
+            }
+
             return;
         }
         _ => {}
+    }
+
+    if !found_words.is_level_complete() && found_words.is_level_started() {
+        info!("Level incomplete and started");
+        //todo save progress and move to todays daily challenge
+
+        return;
     }
 
     if let Some(index) = daily_challenge_completion.get_next_incomplete_daily_challenge_from_today()

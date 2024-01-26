@@ -2,7 +2,7 @@ use crate::{prelude::*, video};
 use maveric::widgets::text2d_node::Text2DNode;
 use maveric::with_bundle::CanWithBundle;
 use ws_core::layout::entities::*;
-use ws_core::prelude::*;
+use ws_core::{font_icons, prelude::*};
 
 
 #[derive(Debug, NodeContext)]
@@ -75,16 +75,17 @@ impl MavericNode for TopBar {
                 if selfie{
 
                     let (text, color) = if context.video_resource.is_recording{
+                        let color = Color::RED;
+                        (font_icons::STOP_CIRCLED, color)
+                    }else{
                         let color = (if selfie {
                             palette::TOP_BAR_BURGER_SELFIE
                         } else {
                             palette::TOP_BAR_BURGER_NORMAL
                         })
                         .convert_color();
-                        ("\u{e802}", color)
-                    }else{
 
-                        ("\u{e804}", Color::RED)
+                        (font_icons::RECORD_CIRCLED, color)
                     };
 
                     commands.add_child(
