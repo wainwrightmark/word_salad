@@ -147,23 +147,14 @@ impl MavericNode for CongratsView {
                 }
                 .convert_color();
 
-                let stat_fill_color = if selfie_mode.is_selfie_mode {
-                    palette::CONGRATS_STATISTIC_FILL_SELFIE
-                } else {
-                    palette::CONGRATS_STATISTIC_FILL_NORMAL
-                }
-                .convert_color();
-
                 {
                     let rect = size.get_rect(&CongratsLayoutEntity::Time, &congrats_context);
 
                     commands.add_child(
                         "Timer",
                         TimerNode {
-                            rect,
                             text: format_seconds(context.level_time.total_elapsed().as_secs()),
                             text_color: stat_text_color,
-                            fill_color: stat_fill_color,
                             text_font_size: size.font_size(&CongratsTimer, &selfie_mode),
                         }
                         .with_bundle(Transform::from_translation(
@@ -219,7 +210,6 @@ impl MavericNode for CongratsView {
                             number,
                             text: label,
                             text_color: stat_text_color,
-                            fill_color: stat_fill_color,
                             number_font_size: stat_number_font_size,
                             text_font_size: stat_text_font_size,
                         }
@@ -324,7 +314,6 @@ struct StatisticNode {
     number: usize,
     text: &'static str,
     text_color: Color,
-    fill_color: Color,
     number_font_size: f32,
     text_font_size: f32,
 }
@@ -347,7 +336,6 @@ impl MavericNode for StatisticNode {
                 number,
                 text,
                 text_color,
-                fill_color: background_color,
                 number_font_size,
                 text_font_size,
             } = node;
@@ -392,27 +380,25 @@ impl MavericNode for StatisticNode {
                 &(),
             );
 
-            commands.add_child(
-                "box",
-                basic_box_node1(
-                    rect.width(),
-                    rect.height(),
-                    Vec3::ZERO,
-                    *background_color,
-                    crate::rounding::OTHER_BUTTON_NORMAL,
-                ),
-                &(),
-            );
+            // commands.add_child(
+            //     "box",
+            //     basic_box_node1(
+            //         rect.width(),
+            //         rect.height(),
+            //         Vec3::ZERO,
+            //         *background_color,
+            //         crate::rounding::OTHER_BUTTON_NORMAL,
+            //     ),
+            //     &(),
+            // );
         });
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
 struct TimerNode {
-    rect: LayoutRectangle,
     text: String,
     text_color: Color,
-    fill_color: Color,
     text_font_size: f32,
 }
 
@@ -430,10 +416,8 @@ impl MavericNode for TimerNode {
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node(|node, commands| {
             let TimerNode {
-                rect,
                 text,
                 text_color,
-                fill_color: background_color,
                 text_font_size,
             } = node;
 
@@ -457,17 +441,17 @@ impl MavericNode for TimerNode {
                 &(),
             );
 
-            commands.add_child(
-                "box",
-                basic_box_node1(
-                    rect.width(),
-                    rect.height(),
-                    Vec3::ZERO,
-                    *background_color,
-                    crate::rounding::OTHER_BUTTON_NORMAL,
-                ),
-                &(),
-            );
+            // commands.add_child(
+            //     "box",
+            //     basic_box_node1(
+            //         rect.width(),
+            //         rect.height(),
+            //         Vec3::ZERO,
+            //         *background_color,
+            //         crate::rounding::OTHER_BUTTON_NORMAL,
+            //     ),
+            //     &(),
+            // );
         });
     }
 }

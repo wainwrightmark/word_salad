@@ -11,14 +11,8 @@ pub const TOP_BAR_ICON_WIDTH: f32 = 25.;
 //pub const WORD_SALAD_LOGO_WIDTH: f32 = 160.;
 
 pub const THEME_HEIGHT: f32 = 26.;
-pub const THEME_WIDTH: f32 = GRID_SIZE - DAILY_CHALLENGE_NUMBER_WIDTH;
-pub const DAILY_CHALLENGE_NUMBER_WIDTH: f32 = 40.0;
 
-pub const THEME_INFO_HEIGHT: f32 = 18.;
-pub const THEME_INFO_WIDTH: f32 = 100.;
-
-pub const TIMER_HEIGHT: f32 = 20.;
-pub const TIMER_WIDTH: f32 = 40.;
+pub const THEME_INFO_HEIGHT: f32 = 20.;
 
 pub const GRID_TILE_SIZE: f32 = 64.;
 pub const GRID_GAP: f32 = 12.;
@@ -39,7 +33,7 @@ pub const WORD_CROSS_PAD: f32 = 5.;
 
 pub const USED_HEIGHT_BASE: f32 = TOP_BAR_HEIGHT_BASE
     + THEME_HEIGHT
-    + TIMER_HEIGHT
+    + THEME_INFO_HEIGHT
     + GRID_SIZE
     + GRID_THEME_SPACER
     + GRID_WORD_LIST_SPACER
@@ -48,7 +42,7 @@ pub const USED_HEIGHT_BASE: f32 = TOP_BAR_HEIGHT_BASE
 static_assertions::const_assert_eq!(USED_HEIGHT_BASE, IDEAL_HEIGHT);
 
 pub const GRID_MID_BASE: f32 =
-    TOP_BAR_HEIGHT_BASE + THEME_HEIGHT + TIMER_HEIGHT + GRID_THEME_SPACER + (GRID_SIZE * 0.5);
+    TOP_BAR_HEIGHT_BASE + THEME_HEIGHT + THEME_INFO_HEIGHT + GRID_THEME_SPACER + (GRID_SIZE * 0.5);
 
 pub fn extra_top_bar_height(sizing: &LayoutSizing, selfie_mode: &SelfieMode) -> f32 {
 
@@ -104,8 +98,8 @@ pub const SELFIE_POPUP_BOX_BUTTON_WIDTH: f32 = 280.;
 
 pub const GRID_TILE_FONT_SIZE: f32 = 40f32;
 
-pub const CONGRATS_TIMER_FONT_SIZE_SELFIE: f32 = 34f32;
-pub const CONGRATS_TIMER_FONT_SIZE_NORMAL: f32 = 40f32;
+pub const CONGRATS_TIMER_FONT_SIZE_SELFIE: f32 = 40f32;
+pub const CONGRATS_TIMER_FONT_SIZE_NORMAL: f32 = 60f32;
 
 pub const CONGRATS_BUTTON_FONT_SIZE: f32 = 22f32;
 pub const STATISTIC_NUMBER_FONT_SIZE_SELFIE: f32 = 22f32;

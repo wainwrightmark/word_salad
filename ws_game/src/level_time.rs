@@ -145,13 +145,13 @@ fn manage_timer(
     }
 }
 
-fn count_up(mut query: Query<&mut Text, With<TimeCounterMarker>>, timer: Res<LevelTime>) {
+fn count_up(mut query: Query<(&mut Text, &TimeCounterMarker),>, timer: Res<LevelTime>) {
     let elapsed = timer.total_elapsed();
 
-    for mut t in query.iter_mut() {
-        if let Some(section) = t.sections.first_mut() {
+    for (mut text, marker) in query.iter_mut() {
+        if let Some(section) = text.sections.first_mut() {
             let total_seconds = elapsed.as_secs();
-            section.value = format_seconds(total_seconds);
+            section.value = format!("{theme_info} {time}",theme_info = marker.theme_info, time= format_seconds(total_seconds)) ;
         }
     }
 }
@@ -186,8 +186,10 @@ fn count_down(
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Component)]
-pub struct TimeCounterMarker;
+#[derive(Debug, PartialEq, Eq, Clone,  Component)]
+pub struct TimeCounterMarker{
+    pub theme_info: Ustr
+}
 
 pub fn format_seconds(total_seconds: u64) -> String {
     if total_seconds >= 3600 {

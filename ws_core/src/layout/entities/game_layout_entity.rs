@@ -31,7 +31,7 @@ impl LayoutStructure for GameLayoutEntity {
             },
             GameLayoutEntity::LevelInfo => Vec2 {
                 x: GRID_SIZE,
-                y: THEME_HEIGHT + TIMER_HEIGHT,
+                y: THEME_HEIGHT + THEME_INFO_HEIGHT,
             },
             GameLayoutEntity::Grid => Vec2 {
                 x: GRID_SIZE,
@@ -57,7 +57,7 @@ impl LayoutStructure for GameLayoutEntity {
                 x: (IDEAL_WIDTH - GRID_SIZE) * 0.5,
                 y: (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, context))
                     + THEME_HEIGHT
-                    + TIMER_HEIGHT
+                    + THEME_INFO_HEIGHT
                     + GRID_THEME_SPACER,
             },
             GameLayoutEntity::WordList => {
@@ -66,7 +66,7 @@ impl LayoutStructure for GameLayoutEntity {
                 } else {
                     (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, context))
                             + THEME_HEIGHT
-                            + TIMER_HEIGHT
+                            + THEME_INFO_HEIGHT
                             + GRID_SIZE
                             + GRID_THEME_SPACER
                             + GRID_WORD_LIST_SPACER

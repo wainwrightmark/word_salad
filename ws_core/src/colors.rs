@@ -47,7 +47,7 @@ pub mod palette {
     pub const TOP_BAR_BURGER_SELFIE: Color = MY_WHITE;
     pub const TOP_BAR_LOGO_SELFIE: Color = MY_WHITE;
 
-    pub const THEME_TEXT_COLOR_NORMAL: Color = MY_BLACK;
+    pub const THEME_TEXT_COLOR_NORMAL: Color = MEDIUM_GRAY;
     pub const THEME_TEXT_COLOR_SELFIE: Color = LIGHT_GRAY;
 
     pub const CONGRATS_BUTTON_TEXT_NORMAL: Color = MY_WHITE;
@@ -57,10 +57,9 @@ pub mod palette {
     pub const CONGRATS_BUTTON_FILL_SELFIE: Color = GREEN_LIGHT.with_a(0.5);
 
     pub const CONGRATS_STATISTIC_TEXT_SELFIE: Color = LIGHT_GRAY.with_a(0.95);
-    pub const CONGRATS_STATISTIC_FILL_SELFIE: Color = DARK_GRAY.with_a(0.5);
 
-    pub const CONGRATS_STATISTIC_TEXT_NORMAL: Color = MY_BLACK;
-    pub const CONGRATS_STATISTIC_FILL_NORMAL: Color = LIGHT_GRAY;
+
+    pub const CONGRATS_STATISTIC_TEXT_NORMAL: Color = MEDIUM_GRAY;
 
     pub const ICON_BUTTON_BACKGROUND: Color = Color::NONE;
     pub const TEXT_BUTTON_BACKGROUND: Color = Color::WHITE;
@@ -96,7 +95,7 @@ pub mod palette {
     pub const WORD_TEXT_LETTERS: Color = MY_WHITE;
     pub const WORD_TEXT_NUMBER: Color = MY_BLACK;
 
-    pub const NON_LEVEL_TEXT_NORMAL: Color = MY_BLACK;
+    pub const NON_LEVEL_TEXT_NORMAL: Color = MEDIUM_GRAY;
     pub const NON_LEVEL_TEXT_SELFIE: Color = MY_WHITE;
 
     const MY_BLACK: Color = Color::rgba(0.12, 0., 0., 1.);
@@ -106,6 +105,8 @@ pub mod palette {
 
     const LIGHT_GRAY: Color = Color::rgba(0.90, 0.90, 0.90, 1.);
     const DARK_GRAY: Color = Color::rgba(0.4, 0.4, 0.4, 1.);
+
+    const MEDIUM_GRAY: Color = Color::rgba(0.37, 0.4, 0.42, 1.0);
 
     const GREEN_LIGHT: Color = Color::rgba(0.17, 0.71, 0.35, 1.);
     const GREEN_DARK: Color = Color::rgba(0.07, 0.34, 0.27, 1.);

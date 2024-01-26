@@ -21,7 +21,6 @@ pub use level_theme::*;
 pub use menu::*;
 pub use non_level::*;
 pub use popup::*;
-pub use timer::*;
 pub use top_bar::*;
 pub use tutorial::*;
 pub use wordline::*;
@@ -68,7 +67,7 @@ impl MavericRootChildren for ViewRoot {
 
         if context.menu_state.is_closed() {
             commands.add_child("cells", GridTiles { level_complete }, &context.into());
-            commands.add_child("words", WordsNode, &context.into());
+
         }
 
         match context.current_level.level(&context.daily_challenges) {
@@ -94,6 +93,9 @@ impl MavericRootChildren for ViewRoot {
                     if context.found_words_state.is_level_complete() {
                         commands.add_child("congrats", CongratsView, &context.into());
                     }
+                    else{
+                        commands.add_child("words", WordsNode, &context.into());
+                    }
                 }
 
                 if let Some(text) =
@@ -103,13 +105,12 @@ impl MavericRootChildren for ViewRoot {
                         commands.add_child("tutorial", TutorialNode { text }, &context.window_size);
                     }
                 } else {
-                    let (theme, daily_challenge_number) = level.name_and_number();
+                    let full_name = level.full_name();
                     commands.add_child(
                         "ui_theme",
                         LevelName {
-                            theme,
+                            full_name,
                             selfie_mode,
-                            daily_challenge_number,
                         },
                         &context.window_size,
                     );
@@ -120,26 +121,27 @@ impl MavericRootChildren for ViewRoot {
                             LevelExtraInfo {
                                 info: *info,
                                 selfie_mode,
-                                theme,
+                                full_name_characters: full_name.len()
+
                             },
                             &context.window_size,
                         );
                     }
 
-                    if !context.found_words_state.is_level_complete() {
-                        let total_seconds = context.level_time.as_ref().total_elapsed().as_secs();
-                        let time_text = format_seconds(total_seconds);
-                        commands.add_child(
-                            "ui_timer",
-                            UITimer {
-                                time_text,
-                                selfie_mode,
-                                is_daily_challenge: context.current_level.is_daily_challenge(),
-                                theme,
-                            },
-                            &context.window_size,
-                        );
-                    }
+                    // if !context.found_words_state.is_level_complete() {
+                    //     let total_seconds = context.level_time.as_ref().total_elapsed().as_secs();
+                    //     let time_text = format_seconds(total_seconds);
+                    //     commands.add_child(
+                    //         "ui_timer",
+                    //         UITimer {
+                    //             time_text,
+                    //             selfie_mode,
+                    //             is_daily_challenge: context.current_level.is_daily_challenge(),
+                    //             theme,
+                    //         },
+                    //         &context.window_size,
+                    //     );
+                    // }
                 }
             }
             itertools::Either::Right(non_level) => {

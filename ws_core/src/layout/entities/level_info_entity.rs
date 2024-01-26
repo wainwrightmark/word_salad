@@ -8,11 +8,9 @@ use super::{consts::*, GameLayoutEntity, SelfieMode};
     Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter, Display, EnumCount,
 )]
 pub enum LevelInfoLayoutEntity {
-    Theme,
-    DailyChallengeNumber,
-    TimerRight,
-    TimerLeft,
-    ThemeInfo,
+    ThemeAndNumber,
+
+    ThemeInfoAndTimer,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -27,26 +25,13 @@ impl LayoutStructure for LevelInfoLayoutEntity {
     ///The size on a 320x568 canvas
     fn size(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
         match self {
-            LevelInfoLayoutEntity::Theme => Vec2 {
-                x: THEME_WIDTH,
+            LevelInfoLayoutEntity::ThemeAndNumber => Vec2 {
+                x: GRID_SIZE,
                 y: THEME_HEIGHT,
             },
-
-            LevelInfoLayoutEntity::DailyChallengeNumber => Vec2 {
-                x: GRID_SIZE - THEME_WIDTH,
-                y: THEME_HEIGHT,
-            },
-            LevelInfoLayoutEntity::ThemeInfo => Vec2 {
-                x: THEME_INFO_WIDTH,
+            LevelInfoLayoutEntity::ThemeInfoAndTimer => Vec2 {
+                x: GRID_SIZE,
                 y: THEME_INFO_HEIGHT,
-            },
-            LevelInfoLayoutEntity::TimerRight => Vec2 {
-                x: TIMER_WIDTH,
-                y: TIMER_HEIGHT,
-            },
-            LevelInfoLayoutEntity::TimerLeft => Vec2 {
-                x: TIMER_WIDTH,
-                y: TIMER_HEIGHT,
             },
         }
     }
@@ -55,25 +40,12 @@ impl LayoutStructure for LevelInfoLayoutEntity {
             GameLayoutEntity::location(&GameLayoutEntity::LevelInfo, &context, sizing);
 
         match self {
-            LevelInfoLayoutEntity::Theme => Vec2 {
+            LevelInfoLayoutEntity::ThemeAndNumber => Vec2 {
                 x: base_location.x,
                 y: base_location.y,
             },
 
-            LevelInfoLayoutEntity::DailyChallengeNumber => Vec2 {
-                x: base_location.x + GRID_SIZE - DAILY_CHALLENGE_NUMBER_WIDTH,
-                y: base_location.y,
-            },
-            LevelInfoLayoutEntity::ThemeInfo => Vec2 {
-                x: base_location.x,
-                y: base_location.y + THEME_HEIGHT,
-            },
-
-            LevelInfoLayoutEntity::TimerRight => Vec2 {
-                x: base_location.x + GRID_SIZE - TIMER_WIDTH,
-                y: base_location.y + THEME_HEIGHT,
-            },
-            LevelInfoLayoutEntity::TimerLeft => Vec2 {
+            LevelInfoLayoutEntity::ThemeInfoAndTimer => Vec2 {
                 x: base_location.x,
                 y: base_location.y + THEME_HEIGHT,
             },
@@ -83,7 +55,7 @@ impl LayoutStructure for LevelInfoLayoutEntity {
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct ThemeLengths {
-    pub theme_characters: usize,
+    pub full_name_characters: usize,
 }
 
 impl LayoutStructureWithFont for LevelInfoLayoutEntity {
@@ -91,17 +63,14 @@ impl LayoutStructureWithFont for LevelInfoLayoutEntity {
 
     fn font_size(&self, theme_length: &ThemeLengths) -> f32 {
         match self {
-            LevelInfoLayoutEntity::Theme => {
-                if theme_length.theme_characters <= 18 {
+            LevelInfoLayoutEntity::ThemeAndNumber => {
+                if theme_length.full_name_characters <= 22 {
                     THEME_FONT_SIZE
                 } else {
                     THEME_FONT_SIZE_SMALL
                 }
             }
-            LevelInfoLayoutEntity::DailyChallengeNumber => THEME_FONT_SIZE,
-            LevelInfoLayoutEntity::TimerLeft => TIMER_FONT_SIZE,
-            LevelInfoLayoutEntity::TimerRight => TIMER_FONT_SIZE,
-            LevelInfoLayoutEntity::ThemeInfo => THEME_INFO_FONT_SIZE,
+            LevelInfoLayoutEntity::ThemeInfoAndTimer => THEME_INFO_FONT_SIZE,
         }
     }
 }

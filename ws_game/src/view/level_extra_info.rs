@@ -9,7 +9,7 @@ use ws_core::prelude::*;
 pub struct LevelExtraInfo {
     pub info: Ustr,
     pub selfie_mode: SelfieMode,
-    pub theme: Ustr,
+    pub full_name_characters: usize
 }
 
 impl MavericNode for LevelExtraInfo {
@@ -26,9 +26,9 @@ impl MavericNode for LevelExtraInfo {
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
             let theme_font_size = context.font_size(
-                &LevelInfoLayoutEntity::ThemeInfo,
+                &LevelInfoLayoutEntity::ThemeInfoAndTimer,
                 &ThemeLengths {
-                    theme_characters: node.theme.len(),
+                    full_name_characters: node.full_name_characters,
                 },
             );
 
@@ -46,17 +46,17 @@ impl MavericNode for LevelExtraInfo {
                     font_size: theme_font_size,
                     color,
                     font: THEME_INFO_FONT_PATH,
-                    alignment: TextAlignment::Left,
+                    alignment: TextAlignment::Center,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     text_2d_bounds: Default::default(),
-                    text_anchor: bevy::sprite::Anchor::CenterLeft,
+                    text_anchor: bevy::sprite::Anchor::Center,
                 }
-                .with_bundle(Transform::from_translation(
+                .with_bundle((Transform::from_translation(
                     context
-                        .get_rect(&LevelInfoLayoutEntity::ThemeInfo, &node.selfie_mode)
-                        .centre_left()
+                        .get_rect(&LevelInfoLayoutEntity::ThemeInfoAndTimer, &node.selfie_mode)
+                        .centre()
                         .extend(crate::z_indices::THEME),
-                )),
+                ), TimeCounterMarker{theme_info: node.info})),
                 &(),
             );
         });

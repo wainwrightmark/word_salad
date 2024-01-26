@@ -7,8 +7,8 @@ use ws_core::prelude::*;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct LevelName {
-    pub theme: Ustr,
-    pub daily_challenge_number: Option<usize>,
+    pub full_name: Ustr,
+    // pub daily_challenge_number: Option<usize>,
     pub selfie_mode: SelfieMode,
 }
 
@@ -26,9 +26,9 @@ impl MavericNode for LevelName {
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
             let theme_font_size = context.font_size(
-                &LevelInfoLayoutEntity::Theme,
+                &LevelInfoLayoutEntity::ThemeAndNumber,
                 &ThemeLengths {
-                    theme_characters: node.theme.len(),
+                    full_name_characters: node.full_name.len(),
                 },
             );
 
@@ -42,49 +42,49 @@ impl MavericNode for LevelName {
             commands.add_child(
                 "theme",
                 Text2DNode {
-                    text: node.theme.to_string(),
+                    text: node.full_name.to_string(),
                     font_size: theme_font_size,
                     color,
                     font: THEME_FONT_PATH,
-                    alignment: TextAlignment::Left,
+                    alignment: TextAlignment::Center,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     text_2d_bounds: Default::default(),
-                    text_anchor: bevy::sprite::Anchor::CenterLeft,
+                    text_anchor: bevy::sprite::Anchor::Center,
                 }
                 .with_bundle(Transform::from_translation(
                     context
-                        .get_rect(&LevelInfoLayoutEntity::Theme, &node.selfie_mode)
-                        .centre_left()
+                        .get_rect(&LevelInfoLayoutEntity::ThemeAndNumber, &node.selfie_mode)
+                        .centre()
                         .extend(crate::z_indices::THEME),
                 )),
                 &(),
             );
 
-            if let Some(dcn) = node.daily_challenge_number {
-                commands.add_child(
-                    "daily_challenge_number",
-                    Text2DNode {
-                        text: format!("#{dcn}",),
-                        font_size: theme_font_size,
-                        color,
-                        font: THEME_FONT_PATH,
-                        alignment: TextAlignment::Right,
-                        linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                        text_2d_bounds: Default::default(),
-                        text_anchor: bevy::sprite::Anchor::CenterRight,
-                    }
-                    .with_bundle(Transform::from_translation(
-                        context
-                            .get_rect(
-                                &LevelInfoLayoutEntity::DailyChallengeNumber,
-                                &node.selfie_mode,
-                            )
-                            .centre_right()
-                            .extend(crate::z_indices::THEME),
-                    )),
-                    &(),
-                );
-            }
+            // if let Some(dcn) = node.daily_challenge_number {
+            //     commands.add_child(
+            //         "daily_challenge_number",
+            //         Text2DNode {
+            //             text: format!("#{dcn}",),
+            //             font_size: theme_font_size,
+            //             color,
+            //             font: THEME_FONT_PATH,
+            //             alignment: TextAlignment::Right,
+            //             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+            //             text_2d_bounds: Default::default(),
+            //             text_anchor: bevy::sprite::Anchor::CenterRight,
+            //         }
+            //         .with_bundle(Transform::from_translation(
+            //             context
+            //                 .get_rect(
+            //                     &LevelInfoLayoutEntity::DailyChallengeNumber,
+            //                     &node.selfie_mode,
+            //                 )
+            //                 .centre_right()
+            //                 .extend(crate::z_indices::THEME),
+            //         )),
+            //         &(),
+            //     );
+            // }
         });
     }
 }
