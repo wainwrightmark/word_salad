@@ -44,34 +44,35 @@ impl MavericNode for TopBar {
 
                 let selfie = context.video_resource.selfie_mode().is_selfie_mode;
 
-                commands.add_child(
-                    "Burger",
-                    Text2DNode {
-                        text: "\u{f0c9}",
-                        font_size: size.font_size::<LayoutTopBar>(
-                            &LayoutTopBar::MenuBurgerButton,
-                            &HintCount::default(),
-                        ),
-                        color: (if selfie {
-                            palette::TOP_BAR_BURGER_SELFIE
-                        } else {
-                            palette::TOP_BAR_BURGER_NORMAL
-                        })
-                        .convert_color(),
-                        font: ICON_FONT_PATH,
-                        alignment: TextAlignment::Left,
-                        linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                        text_2d_bounds: Default::default(),
-                        text_anchor: bevy::sprite::Anchor::CenterLeft,
-                    }
-                    .with_bundle(Transform::from_translation(
-                        size.get_rect(&LayoutTopBar::MenuBurgerButton, &context.video_resource.selfie_mode())
-                            .centre_left()
-                            .extend(crate::z_indices::TOP_BAR_BUTTON),
-                    )),
-                    &(),
-                );
+                // commands.add_child(
+                //     "Burger",
+                //     Text2DNode {
+                //         text: "\u{f0c9}",
+                //         font_size: size.font_size::<LayoutTopBar>(
+                //             &LayoutTopBar::MenuBurgerButton,
+                //             &HintCount::default(),
+                //         ),
+                //         color: (if selfie {
+                //             palette::TOP_BAR_BURGER_SELFIE
+                //         } else {
+                //             palette::TOP_BAR_BURGER_NORMAL
+                //         })
+                //         .convert_color(),
+                //         font: ICON_FONT_PATH,
+                //         alignment: TextAlignment::Left,
+                //         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                //         text_2d_bounds: Default::default(),
+                //         text_anchor: bevy::sprite::Anchor::CenterLeft,
+                //     }
+                //     .with_bundle(Transform::from_translation(
+                //         size.get_rect(&LayoutTopBar::MenuBurgerButton, &context.video_resource.selfie_mode())
+                //             .centre_left()
+                //             .extend(crate::z_indices::TOP_BAR_BUTTON),
+                //     )),
+                //     &(),
+                // );
 
+                //play / record button
                 if selfie{
 
                     let (text, color) = if context.video_resource.is_recording{
@@ -123,33 +124,63 @@ impl MavericNode for TopBar {
                     size,
                 );
 
+                let logo_rect = size.get_rect(&LayoutTopBar::WordSaladLogo, &context.video_resource.selfie_mode());
+
                 commands.add_child(
-                    "Word Salad Logo text",
-                    Text2DNode {
-                        text: "Word Salad",
-                        font_size: size.font_size::<LayoutTopBar>(
-                            &LayoutTopBar::WordSaladLogo,
-                            &HintCount::default(),
-                        ),
-                        color: (if selfie {
-                            palette::TOP_BAR_LOGO_SELFIE
-                        } else {
-                            palette::TOP_BAR_LOGO_NORMAL
-                        })
-                        .convert_color(),
-                        font: WORD_SALAD_LOGO_FONT_PATH,
-                        alignment: TextAlignment::Center,
-                        linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                        text_2d_bounds: Default::default(),
-                        text_anchor: bevy::sprite::Anchor::Center,
+                    "Word Salad Icon",
+                    SpriteNode{
+                        texture_path: r#"images/icon512.png"#,
+                        sprite: Sprite{
+                            custom_size: Some(logo_rect.extents.abs()),
+                            ..Default::default()
+                        },
                     }
+
+
+                    // Text2DNode {
+                    //     text: "Word Salad",
+                    //     font_size: size.font_size::<LayoutTopBar>(
+                    //         &LayoutTopBar::WordSaladLogo,
+                    //         &HintCount::default(),
+                    //     ),
+                    //     color: (if selfie {
+                    //         palette::TOP_BAR_LOGO_SELFIE
+                    //     } else {
+                    //         palette::TOP_BAR_LOGO_NORMAL
+                    //     })
+                    //     .convert_color(),
+                    //     font: WORD_SALAD_LOGO_FONT_PATH,
+                    //     alignment: TextAlignment::Center,
+                    //     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                    //     text_2d_bounds: Default::default(),
+                    //     text_anchor: bevy::sprite::Anchor::Center,
+                    // }
                     .with_bundle((Transform::from_translation(
-                        size.get_rect(&LayoutTopBar::WordSaladLogo, &context.video_resource.selfie_mode())
+                        logo_rect
                             .centre()
                             .extend(crate::z_indices::TOP_BAR_BUTTON),
                     ),)),
                     &(),
                 );
             });
+    }
+}
+
+
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
+struct LogoImageNodeStyle;
+
+impl IntoBundle for LogoImageNodeStyle {
+    type B = Style;
+
+    fn into_bundle(self) -> Self::B {
+        Style {
+            width: Val::Px(100.0),
+            height: Val::Px(100.0),
+            margin: UiRect::DEFAULT,
+            align_self: AlignSelf::Center,
+            justify_self: JustifySelf::Center,
+            ..default()
+        }
     }
 }

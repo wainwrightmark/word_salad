@@ -8,7 +8,7 @@ pub const IDEAL_RATIO: f32 = IDEAL_WIDTH as f32 / IDEAL_HEIGHT as f32;
 
 pub const TOP_BAR_HEIGHT_BASE: f32 = 60.;
 pub const TOP_BAR_ICON_WIDTH: f32 = 25.;
-pub const WORD_SALAD_LOGO_WIDTH: f32 = 160.;
+//pub const WORD_SALAD_LOGO_WIDTH: f32 = 160.;
 
 pub const THEME_HEIGHT: f32 = 26.;
 pub const THEME_WIDTH: f32 = GRID_SIZE - DAILY_CHALLENGE_NUMBER_WIDTH;

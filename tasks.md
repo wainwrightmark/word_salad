@@ -17,3 +17,11 @@
 - fireworks performance
 - end selfie mode / recording when resuming app
 - S & E asian countries
+
+
+- New Look
+- use word salad logo
+- change theme info alignment and font color
+- change button roundedness
+- new end of level screen
+- new end of level screen in selfie mode

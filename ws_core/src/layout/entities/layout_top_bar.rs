@@ -8,7 +8,7 @@ use super::{consts::*, SelfieMode};
     Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Display, EnumIter, EnumCount,
 )]
 pub enum LayoutTopBar {
-    MenuBurgerButton,
+
     ToggleRecordingButton,
     WordSaladLogo,
     HintCounter,
@@ -31,23 +31,20 @@ impl LayoutStructure for LayoutTopBar {
     fn size(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
         use LayoutTopBar::*;
         match self {
-            MenuBurgerButton | HintCounter | ToggleRecordingButton => Vec2 {
+             HintCounter | ToggleRecordingButton => Vec2 {
                 x: TOP_BAR_ICON_WIDTH,
                 y: (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, context)),
             },
             WordSaladLogo => Vec2 {
-                x: WORD_SALAD_LOGO_WIDTH,
+                x: (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, context)),
                 y: (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, context)),
             },
         }
     }
 
-    fn location(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
+    fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
         match self {
-            LayoutTopBar::MenuBurgerButton => Vec2 {
-                x: (IDEAL_WIDTH - GRID_SIZE) * 0.5,
-                y: 0.,
-            },
+
             LayoutTopBar::ToggleRecordingButton => Vec2 {
                 x: (IDEAL_WIDTH - GRID_SIZE) * 0.5 + (TOP_BAR_ICON_WIDTH * 1.0),
                 y: 0.,
@@ -57,7 +54,7 @@ impl LayoutStructure for LayoutTopBar {
                 y: 0.,
             },
             LayoutTopBar::WordSaladLogo => Vec2 {
-                x: (IDEAL_WIDTH - WORD_SALAD_LOGO_WIDTH) / 2.,
+                x: (IDEAL_WIDTH - (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, context))) / 2.,
                 y: 0.,
             },
         }
@@ -77,7 +74,7 @@ impl LayoutStructureWithFont for LayoutTopBar {
     type FontContext = HintCount;
     fn font_size(&self, hint_count: &HintCount) -> f32 {
         match self {
-            LayoutTopBar::MenuBurgerButton | LayoutTopBar::ToggleRecordingButton => BURGER_FONT_SIZE,
+             LayoutTopBar::ToggleRecordingButton => BURGER_FONT_SIZE,
             LayoutTopBar::WordSaladLogo => LOGO_FONT_SIZE,
             LayoutTopBar::HintCounter => match hint_count.count {
                 0..=99 => HINT_COUNTER_FONT_SIZE,
