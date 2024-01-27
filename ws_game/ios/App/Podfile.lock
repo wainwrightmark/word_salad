@@ -1,0 +1,70 @@
+PODS:
+  - Capacitor (5.6.0):
+    - CapacitorCordova
+  - CapacitorApp (5.0.6):
+    - Capacitor
+  - CapacitorCordova (5.6.0)
+  - CapacitorDevice (5.0.6):
+    - Capacitor
+  - CapacitorHaptics (5.0.6):
+    - Capacitor
+  - CapacitorLocalNotifications (5.0.6):
+    - Capacitor
+  - CapacitorShare (5.0.6):
+    - Capacitor
+  - CapacitorSplashScreen (5.0.6):
+    - Capacitor
+  - CapacitorStatusBar (5.0.6):
+    - Capacitor
+  - CapgoCapacitorScreenRecorder (8.0.9):
+    - Capacitor
+
+DEPENDENCIES:
+  - "Capacitor (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorApp (from `../../node_modules/@capacitor/app`)"
+  - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorDevice (from `../../node_modules/@capacitor/device`)"
+  - "CapacitorHaptics (from `../../node_modules/@capacitor/haptics`)"
+  - "CapacitorLocalNotifications (from `../../node_modules/@capacitor/local-notifications`)"
+  - "CapacitorShare (from `../../node_modules/@capacitor/share`)"
+  - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
+  - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
+  - CapgoCapacitorScreenRecorder (from `../../../../capacitor-screen-recorder`)
+
+EXTERNAL SOURCES:
+  Capacitor:
+    :path: "../../node_modules/@capacitor/ios"
+  CapacitorApp:
+    :path: "../../node_modules/@capacitor/app"
+  CapacitorCordova:
+    :path: "../../node_modules/@capacitor/ios"
+  CapacitorDevice:
+    :path: "../../node_modules/@capacitor/device"
+  CapacitorHaptics:
+    :path: "../../node_modules/@capacitor/haptics"
+  CapacitorLocalNotifications:
+    :path: "../../node_modules/@capacitor/local-notifications"
+  CapacitorShare:
+    :path: "../../node_modules/@capacitor/share"
+  CapacitorSplashScreen:
+    :path: "../../node_modules/@capacitor/splash-screen"
+  CapacitorStatusBar:
+    :path: "../../node_modules/@capacitor/status-bar"
+  CapgoCapacitorScreenRecorder:
+    :path: "../../../../capacitor-screen-recorder"
+
+SPEC CHECKSUMS:
+  Capacitor: ebfc16cdb8116d04c101686b080342872da42d43
+  CapacitorApp: 024e1b1bea5f883d79f6330d309bc441c88ad04a
+  CapacitorCordova: 931b48fcdbc9bc985fc2f16cec9f77c794a27729
+  CapacitorDevice: 2c968f98a1ec4d22357418c1521e7ddc46c675e6
+  CapacitorHaptics: 1fffc1217c7e64a472d7845be50fb0c2f7d4204c
+  CapacitorLocalNotifications: c2d8b14794064fd4814b1d6c4ddbac8029afa295
+  CapacitorShare: cd41743331cb71d217c029de54b681cbd91e0fcc
+  CapacitorSplashScreen: 5fa2ab5e46cf5cc530cf16a51c80c7a986579ccd
+  CapacitorStatusBar: 565c0a1ebd79bb40d797606a8992b4a105885309
+  CapgoCapacitorScreenRecorder: 253d86288062ab823df2889256fa32a288ef8884
+
+PODFILE CHECKSUM: 59fde6f7dace73198a40397c79c91731a3e8906d
+
+COCOAPODS: 1.14.3
