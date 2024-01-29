@@ -9,6 +9,8 @@ use ws_core::layout::entities::*;
 use ws_core::{font_icons, prelude::*};
 use ws_core::Tile;
 
+pub const TILE_LINGER_SECONDS: f32 = 1.0;
+
 #[derive(Debug, Clone, Copy, PartialEq, EnumIs)]
 pub enum Selectability {
     Selected,
@@ -306,7 +308,7 @@ impl MavericNode for GridTile {
 
     fn on_deleted(&self, commands: &mut ComponentCommands) -> DeletionPolicy {
         let transition = TransitionBuilder::<TransformScaleLens>::default()
-            .then_ease(Vec3::ZERO, TILE_SCALE_SPEED, Ease::BackIn)
+            .then_ease(Vec3::ZERO, TILE_SCALE_SPEED, Ease::CircIn)
             .build();
 
         commands.insert(transition);
@@ -330,7 +332,7 @@ impl MavericNode for GridTile {
 
         //info!("Grid Tile on deleted {found_children:?} children found");
 
-        DeletionPolicy::Linger(std::time::Duration::from_secs(1))
+        DeletionPolicy::Linger(std::time::Duration::from_secs_f32(TILE_LINGER_SECONDS))
     }
 }
 

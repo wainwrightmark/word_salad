@@ -77,23 +77,27 @@ impl MavericRootChildren for ViewRoot {
                         .chosen_state
                         .is_close_to_a_solution(level, context.found_words_state.as_ref());
 
-                    if !context.level_time.is_paused() {
-                        commands.add_child(
-                            "word_line",
-                            WordLine {
-                                solution: context.chosen_state.solution.clone(),
-                                should_hide: context.chosen_state.is_just_finished,
-                                close_to_solution,
-                                selfie_mode,
-                            },
-                            &context.window_size,
-                        );
-                    }
+
 
                     if context.found_words_state.is_level_complete() {
+
                         commands.add_child("congrats", CongratsView, &context.into());
                     }
                     else{
+
+                        if !context.level_time.is_paused() {
+                            commands.add_child(
+                                "word_line",
+                                WordLine {
+                                    solution: context.chosen_state.solution.clone(),
+                                    should_hide: context.chosen_state.is_just_finished,
+                                    close_to_solution,
+                                    selfie_mode,
+                                },
+                                &context.window_size,
+                            );
+                        }
+
                         commands.add_child("words", WordsNode, &context.into());
                     }
                 }
@@ -110,9 +114,8 @@ impl MavericRootChildren for ViewRoot {
                         "ui_theme",
                         LevelName {
                             full_name,
-                            selfie_mode,
                         },
-                        &context.window_size,
+                        &context.into(),
                     );
 
                     if let Some(info) = &level.extra_info {
@@ -120,11 +123,10 @@ impl MavericRootChildren for ViewRoot {
                             "ui_theme_info",
                             LevelExtraInfo {
                                 info: *info,
-                                selfie_mode,
                                 full_name_characters: full_name.len()
 
                             },
-                            &context.window_size,
+                            &context.into(),
                         );
                     }
                 }

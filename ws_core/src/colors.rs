@@ -47,7 +47,8 @@ pub mod palette {
     pub const TOP_BAR_BURGER_SELFIE: Color = MY_WHITE;
     pub const TOP_BAR_LOGO_SELFIE: Color = MY_WHITE;
 
-    pub const THEME_TEXT_COLOR_NORMAL: Color = MEDIUM_GRAY;
+    pub const THEME_TEXT_COLOR_INCOMPLETE_NORMAL: Color = MEDIUM_GRAY;
+    pub const THEME_TEXT_COLOR_COMPLETE_NORMAL: Color = MY_BLACK;
     pub const THEME_TEXT_COLOR_SELFIE: Color = LIGHT_GRAY;
 
     pub const CONGRATS_BUTTON_TEXT_NORMAL: Color = MY_WHITE;
@@ -77,7 +78,7 @@ pub mod palette {
     pub const GRID_LETTER_SELFIE: Color = LIGHT_GRAY.with_a(0.95);
     pub const GRID_LETTER_SELECTED: Color = GOLD;
 
-    pub const GRID_TILE_FILL_SELFIE: Color = DARK_GRAY.with_a(0.5);
+    pub const GRID_TILE_FILL_SELFIE: Color = MEDIUM_GRAY.with_a(0.5);
 
     pub const MENU_BUTTON_TEXT_REGULAR: Color = MY_WHITE;
     pub const MENU_BUTTON_TEXT_DISCOURAGED: Color = MY_BLACK;
@@ -110,7 +111,7 @@ pub mod palette {
     //pub const MY_BLUE: Color = Color::rgba(0.17, 0.48, 0.71, 1.0);
 
     const LIGHT_GRAY: Color = Color::rgba(0.90, 0.90, 0.90, 1.);
-    const DARK_GRAY: Color = Color::rgba(0.4, 0.4, 0.4, 1.);
+    //const DARK_GRAY: Color = Color::rgba(0.4, 0.4, 0.4, 1.);
 
     const MEDIUM_GRAY: Color = Color::rgba(0.37, 0.4, 0.42, 1.0);
 

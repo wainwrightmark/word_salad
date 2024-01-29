@@ -57,25 +57,31 @@ impl MavericNode for CongratsView {
             return;
         }
 
-        //SHOW FIREWORKS
-        let size = &context.window_size;
 
-        const SECONDS: f32 = 5.0;
-        const NUM_FIREWORKS: usize = 25;
+        //SHOW FIREWORKS - only in Selfie mode
+        if context.video_resource.is_selfie_mode
+        {
 
-        entity_commands.with_children(|cb| {
-            let mut rng = ThreadRng::default();
-            for i in 0..NUM_FIREWORKS {
-                fireworks::create_firework(
-                    cb,
-                    &mut rng,
-                    SECONDS,
-                    size.as_ref(),
-                    i <= 1,
-                    context.video_resource.selfie_mode(),
-                );
-            }
-        });
+            let size = &context.window_size;
+
+            const SECONDS: f32 = 5.0;
+            const NUM_FIREWORKS: usize = 25;
+
+            entity_commands.with_children(|cb| {
+                let mut rng = ThreadRng::default();
+                for i in 0..NUM_FIREWORKS {
+                    fireworks::create_firework(
+                        cb,
+                        &mut rng,
+                        SECONDS,
+                        size.as_ref(),
+                        TILE_LINGER_SECONDS,
+                        i <= 1,
+                        context.video_resource.selfie_mode(),
+                    );
+                }
+            });
+        }
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
@@ -285,8 +291,6 @@ impl MavericNode for CongratsView {
                         #[cfg(target_arch = "wasm32")]
                         CongratsButton::Share => "Share".to_string(),
                     };
-
-
 
                     commands.add_child(
                         (1u16, index as u16),

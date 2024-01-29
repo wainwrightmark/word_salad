@@ -32,6 +32,7 @@ impl MavericNode for HintsViewNode {
         world: &World,
         entity_commands: &mut bevy::ecs::system::EntityCommands,
     ) {
+        return;
         if previous.hint_state.total_earned_hints >= self.hint_state.total_earned_hints {
             return;
         }

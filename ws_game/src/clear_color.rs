@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::prelude::*;
 use bevy::prelude::*;
 
@@ -30,31 +32,55 @@ fn clear_color_transition(
     clear_color: Res<ClearColor>,
 ) {
     if video.is_changed() || current_level.is_changed() || found_words.is_changed() {
-        let new_color = get_clear_color(&video, &current_level, &found_words);
+        let ClearColorTransition { color, instant } = get_clear_color_transition(&video, &current_level, &found_words);
 
-        if clear_transition.transition.is_some() || clear_color.0 != new_color {
-            clear_transition.transition = Some(Transition::ThenEase {
-                destination: new_color,
-                speed: 1.0.into(),
-                ease: Ease::CubicInOut,
-                next: None,
-            })
+        if clear_transition.transition.is_some() || clear_color.0 != color {
+
+            if instant{
+                clear_transition.transition = Some(
+                    Transition::SetValue { value: color, next: None },
+                )
+            }else{
+                clear_transition.transition = Some(
+                    Transition::Wait {
+                        remaining: Duration::from_secs_f32(crate::view::TILE_LINGER_SECONDS),
+                        next: Some(Box::new(Transition::ThenEase {
+
+                            next: None,
+                            destination: color,
+                            speed: 2.0.into(),
+                            ease: Ease::CubicOut,
+                        })),
+                    },
+                )
+            }
+
+
+
         }
     }
 }
 
-fn get_clear_color(
+struct ClearColorTransition{
+    pub color: Color,
+    pub instant: bool
+}
+
+fn get_clear_color_transition(
     video: &VideoResource,
     current_level: &CurrentLevel,
     found_words: &FoundWordsState,
-) -> Color {
+) -> ClearColorTransition {
     if video.is_selfie_mode {
-        palette::CLEAR_COLOR_SELFIE.convert_color()
+        ClearColorTransition{color:palette::CLEAR_COLOR_SELFIE.convert_color(), instant: true }
     } else if current_level.is_non_level() {
-        palette::CLEAR_COLOR_NON_LEVEL.convert_color()
+        ClearColorTransition{color: palette::CLEAR_COLOR_NON_LEVEL.convert_color(), instant: true }
+
     } else if found_words.is_level_complete() {
-        palette::CLEAR_COLOR_CONGRATS.convert_color()
+        ClearColorTransition{color: palette::CLEAR_COLOR_CONGRATS.convert_color(), instant: false }
+
     } else {
-        palette::CLEAR_COLOR_NORMAL.convert_color()
+        ClearColorTransition{color: palette::CLEAR_COLOR_NORMAL.convert_color(), instant: true }
+
     }
 }

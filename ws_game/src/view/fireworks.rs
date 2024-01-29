@@ -11,9 +11,13 @@ use ws_core::layout::entities::*;
 pub fn create_firework(
     cb: &mut ChildBuilder,
     rng: &mut impl Rng,
+
     total_seconds: f32,
+
     size: &Size,
-    no_delay: bool,
+    delay_sec: f32,
+    start_straight_after_delay: bool,
+
     selfie_mode: SelfieMode,
 ) {
     let rect = size.get_rect(
@@ -21,12 +25,22 @@ pub fn create_firework(
         &selfie_mode,
     );
 
-    let delay = if no_delay {
+    let delay = delay_sec + if start_straight_after_delay {
         0.0
     } else {
         rng.gen_range(0.0..(total_seconds - 1.0))
     };
-    let color = Color::hsl(rng.gen_range(0.0..=360.0), 1.0, 0.75);
+
+    let color =
+    if selfie_mode.is_selfie_mode
+    {
+        Color::hsl(rng.gen_range(0.0..=360.0), 1.0, 0.75)
+    }
+    else{
+        let hue = rng.gen_range(200.0..=440.0) % 360.0;
+        Color::hsl(hue, 1.0, 0.75)
+    };
+
 
     let position = rect.top_left
         + Vec2 {
