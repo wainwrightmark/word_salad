@@ -4,5 +4,5 @@ dist = "ws_game/dist"
 
 [serve]
 port = 8080
-#address = "192.168.68.133" #ovington
+address = "192.168.68.133" #ovington
 #address = "192.168.1.33"   #new north rd

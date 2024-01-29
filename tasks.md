@@ -18,7 +18,8 @@
 - end selfie mode / recording when resuming app
 - S & E asian countries
 - Way to retry loading daily puzzles
-
+- NO haptics on selfie mode
+- Hints popup on touch device whne you have 0 hints
 
 - New Look
 - use word salad logo

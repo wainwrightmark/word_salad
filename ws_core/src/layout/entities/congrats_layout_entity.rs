@@ -130,7 +130,7 @@ impl LayoutStructure for CongratsLayoutEntity {
             },
 
             CongratsLayoutEntity::Statistic(statistic) => Vec2 {
-                x: Spacing::SpaceBetween.apply(
+                x: Spacing::SpaceAround.apply(
                     button_width,
                     stat_size,
                     CongratsStatistic::COUNT,
@@ -142,6 +142,7 @@ impl LayoutStructure for CongratsLayoutEntity {
                 x: (IDEAL_WIDTH - button_width) * 0.5,
                 y: top_offset
                     + ((stat_size + CONGRATS_ENTITY_SPACING) * 2.0)
+                    + 100.0
                     + Spacing::Centre.apply(
                         button_height,
                         CONGRATS_ENTITY_BUTTON_HEIGHT + MENU_BUTTON_SPACING,

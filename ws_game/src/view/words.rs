@@ -233,7 +233,7 @@ pub struct WordButtonCompletion {
     pub tile: LayoutWordTile,
 }
 
-pub const WORD_BUTTON_HOLD_SECONDS: f32 = 0.4;
+pub const WORD_BUTTON_HOLD_SECONDS: f32 = 0.3;
 
 #[repr(C)]
 #[derive(Debug, Reflect, Clone, Copy, TypeUuid, Default, PartialEq)]

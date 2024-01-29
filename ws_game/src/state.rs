@@ -1,6 +1,7 @@
 use std::{num::NonZeroUsize, time::Duration};
 
-use crate::{completion::*, prelude::*};
+use crate::{asynchronous, completion::*, logging, prelude::*};
+use capacitor_bindings::haptics::{ImpactOptions, ImpactStyle, NotificationOptions};
 use itertools::{Either, Itertools};
 use nice_bevy_utils::{CanInitTrackedResource, CanRegisterAsyncEvent, TrackableResource};
 use serde::{Deserialize, Serialize};
@@ -389,6 +390,8 @@ impl FoundWordsState {
             warn!("Could not find solution during hint");
         }
 
+        logging::do_or_report_error(capacitor_bindings::haptics::Haptics::impact(ImpactOptions{style: capacitor_bindings::haptics::ImpactStyle::Light})) ;
+
         true
     }
 }
@@ -462,6 +465,15 @@ fn track_found_words(
         found_words.word_completions[word_index] = Completion::Complete;
 
         found_words.update_unneeded_tiles(level);
+
+        if found_words.is_level_complete(){ //todo no haptics on selfie mode
+            logging::do_or_report_error(capacitor_bindings::haptics::Haptics::impact(ImpactOptions{style: ImpactStyle::Heavy }));
+            //logging::do_or_report_error(capacitor_bindings::haptics::Haptics::notification(NotificationOptions{notification_type: capacitor_bindings::haptics::NotificationType::Success}));
+        }else{
+            logging::do_or_report_error(capacitor_bindings::haptics::Haptics::impact(ImpactOptions{style: ImpactStyle::Light }));
+        };
+
+
     }
 
     ew.send(AnimateSolutionsEvent {
