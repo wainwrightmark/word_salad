@@ -10,9 +10,10 @@ pub const TOP_BAR_HEIGHT_BASE: f32 = 60.;
 pub const TOP_BAR_ICON_WIDTH: f32 = 25.;
 //pub const WORD_SALAD_LOGO_WIDTH: f32 = 160.;
 
-pub const THEME_HEIGHT: f32 = 26.;
+pub const THEME_HEIGHT: f32 = 24.;
 
-pub const THEME_INFO_HEIGHT: f32 = 20.;
+pub const THEME_INFO_HEIGHT: f32 = 18.;
+pub const TIMER_HEIGHT: f32 = 10.;
 
 pub const GRID_TILE_SIZE: f32 = 64.;
 pub const GRID_GAP: f32 = 12.;
@@ -22,7 +23,7 @@ pub const GRID_WORD_LIST_SPACER: f32 = GRID_TILE_SIZE * 0.5;
 pub const GRID_THEME_SPACER: f32 = GRID_TILE_SIZE * 0.5;
 pub const WORD_LIST_EXTRA_WIDTH: f32 = 20.0;
 
-pub const WORD_LIST_HEIGHT: f32 = 130.;
+pub const WORD_LIST_HEIGHT: f32 = 124.;
 pub const WORD_HEIGHT: f32 = 22.;
 pub const WORD_WIDTH_PER_CHARACTER: f32 = 11.;
 pub const WORD_WIDTH_FIXED: f32 = 20.;
@@ -34,6 +35,7 @@ pub const WORD_CROSS_PAD: f32 = 5.;
 pub const USED_HEIGHT_BASE: f32 = TOP_BAR_HEIGHT_BASE
     + THEME_HEIGHT
     + THEME_INFO_HEIGHT
+    + TIMER_HEIGHT
     + GRID_SIZE
     + GRID_THEME_SPACER
     + GRID_WORD_LIST_SPACER
@@ -42,7 +44,7 @@ pub const USED_HEIGHT_BASE: f32 = TOP_BAR_HEIGHT_BASE
 static_assertions::const_assert_eq!(USED_HEIGHT_BASE, IDEAL_HEIGHT);
 
 pub const GRID_MID_BASE: f32 =
-    TOP_BAR_HEIGHT_BASE + THEME_HEIGHT + THEME_INFO_HEIGHT + GRID_THEME_SPACER + (GRID_SIZE * 0.5);
+    TOP_BAR_HEIGHT_BASE + THEME_HEIGHT + THEME_INFO_HEIGHT + TIMER_HEIGHT + GRID_THEME_SPACER + (GRID_SIZE * 0.5);
 
 pub fn extra_top_bar_height(sizing: &LayoutSizing, selfie_mode: &SelfieMode) -> f32 {
 

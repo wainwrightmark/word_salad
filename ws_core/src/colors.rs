@@ -43,6 +43,7 @@ pub mod palette {
 
     pub const TOP_BAR_BURGER_NORMAL: Color = MY_BLACK;
     pub const TOP_BAR_LOGO_NORMAL: Color = MY_BLACK;
+    pub const TOP_BAR_LOGO_CIRCLE: Color = MY_WHITE;
 
     pub const TOP_BAR_BURGER_SELFIE: Color = MY_WHITE;
     pub const TOP_BAR_LOGO_SELFIE: Color = MY_WHITE;

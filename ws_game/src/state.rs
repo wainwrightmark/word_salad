@@ -1,7 +1,7 @@
 use std::{num::NonZeroUsize, time::Duration};
 
-use crate::{asynchronous, completion::*, logging, prelude::*};
-use capacitor_bindings::haptics::{ImpactOptions, ImpactStyle, NotificationOptions};
+use crate::{completion::*, logging, prelude::*};
+use capacitor_bindings::haptics::{ImpactOptions, ImpactStyle};
 use itertools::{Either, Itertools};
 use nice_bevy_utils::{CanInitTrackedResource, CanRegisterAsyncEvent, TrackableResource};
 use serde::{Deserialize, Serialize};
@@ -29,7 +29,11 @@ impl Plugin for StatePlugin {
         app.add_systems(Update, track_level_completion);
 
         app.add_systems(Update, animate_solutions.after(track_found_words));
-        app.add_systems(Update, remove_animated_solutions_on_complete.run_if(|f: Res<FoundWordsState>| f.is_changed() && f.is_level_complete()));
+        app.add_systems(
+            Update,
+            remove_animated_solutions_on_complete
+                .run_if(|f: Res<FoundWordsState>| f.is_changed() && f.is_level_complete()),
+        );
 
         app.add_systems(
             PostUpdate,
@@ -390,7 +394,11 @@ impl FoundWordsState {
             warn!("Could not find solution during hint");
         }
 
-        logging::do_or_report_error(capacitor_bindings::haptics::Haptics::impact(ImpactOptions{style: capacitor_bindings::haptics::ImpactStyle::Light})) ;
+        logging::do_or_report_error(capacitor_bindings::haptics::Haptics::impact(
+            ImpactOptions {
+                style: capacitor_bindings::haptics::ImpactStyle::Light,
+            },
+        ));
 
         true
     }
@@ -466,14 +474,21 @@ fn track_found_words(
 
         found_words.update_unneeded_tiles(level);
 
-        if found_words.is_level_complete(){ //todo no haptics on selfie mode
-            logging::do_or_report_error(capacitor_bindings::haptics::Haptics::impact(ImpactOptions{style: ImpactStyle::Heavy }));
+        if found_words.is_level_complete() {
+            //todo no haptics on selfie mode
+            logging::do_or_report_error(capacitor_bindings::haptics::Haptics::impact(
+                ImpactOptions {
+                    style: ImpactStyle::Heavy,
+                },
+            ));
             //logging::do_or_report_error(capacitor_bindings::haptics::Haptics::notification(NotificationOptions{notification_type: capacitor_bindings::haptics::NotificationType::Success}));
-        }else{
-            logging::do_or_report_error(capacitor_bindings::haptics::Haptics::impact(ImpactOptions{style: ImpactStyle::Light }));
+        } else {
+            logging::do_or_report_error(capacitor_bindings::haptics::Haptics::impact(
+                ImpactOptions {
+                    style: ImpactStyle::Light,
+                },
+            ));
         };
-
-
     }
 
     ew.send(AnimateSolutionsEvent {

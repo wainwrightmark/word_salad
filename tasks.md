@@ -19,8 +19,9 @@
 - S & E asian countries
 - Way to retry loading daily puzzles
 - NO haptics on selfie mode
-- Hints popup on touch device whne you have 0 hints
+- Hints popup on touch device when you have 0 hints
 - Make sure words have enough height -check recent colors puzzle
+- Status bar color change
 
 - New Look
 - use word salad logo

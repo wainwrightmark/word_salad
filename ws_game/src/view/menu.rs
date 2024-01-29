@@ -85,7 +85,9 @@ impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for MenuContextWrapper<'w> {
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
-pub struct Menu;
+pub struct Menu {
+    pub background_type: BackgroundType,
+}
 
 impl MavericNode for Menu {
     type Context = MenuContext;
@@ -100,77 +102,88 @@ impl MavericNode for Menu {
     fn set_children<R: maveric::prelude::MavericRoot>(
         commands: maveric::prelude::SetChildrenCommands<Self, Self::Context, R>,
     ) {
+        commands.unordered_children_with_node_and_context(|node, context, commands| {
+            let (button_fill_color_complete, button_fill_color_incomplete, border) =
+                match node.background_type {
+                    BackgroundType::Congrats | BackgroundType::NonLevel => (
+                        Color::NONE,
+                        Color::NONE,
+                        ShaderBorder::from_color(palette::MENU_BUTTON_TEXT_REGULAR.convert_color()),
+                    ),
+                    BackgroundType::Selfie => (
+                        palette::MENU_BUTTON_COMPLETE_FILL.convert_color(),
+                        palette::MENU_BUTTON_FILL.convert_color(),
+                        ShaderBorder::NONE,
+                    ),
+                    BackgroundType::Normal => (
+                        palette::MENU_BUTTON_COMPLETE_FILL.convert_color(),
+                        palette::MENU_BUTTON_FILL.convert_color(),
+                        ShaderBorder::NONE,
+                    ),
+                };
 
-
-        commands
-            .ignore_node()
-            .unordered_children_with_context(|context, commands| {
-
-                let border =  ShaderBorder::NONE; //TODO change border when level complete
-
-
-                let size = context.window_size.as_ref();
-                match context.menu_state.as_ref() {
-                    MenuState::Closed => {}
-                    MenuState::ShowMainMenu => {
-                        add_menu_items::<R, MainMenuLayoutEntity>(
-                            &context.video_resource.selfie_mode(),
-                            commands,
-                            size,
-                            0,
-                            palette::MENU_BUTTON_FILL.convert_color(),
-                            palette::MENU_BUTTON_TEXT_REGULAR.convert_color(),
-                            border,
-                        );
-                    }
-                    MenuState::ChooseLevelsPage => {
-                        add_double_text_menu_items::<R, LevelsMenuLayoutEntity>(
-                            &context.video_resource.selfie_mode(),
-                            commands,
-                            size,
-                            1,
-                            |x| {
-                                x.get_text(
-                                    &context.daily_challenge_completion.as_ref(),
-                                    &context.sequence_completion.as_ref(),
-                                    context.daily_challenges.as_ref(),
-                                )
-                            },
-                            |x| {
-                                get_variable_fill(x.is_complete(
-                                    &context.daily_challenge_completion,
-                                    &context.sequence_completion,
-                                    context.daily_challenges.as_ref(),
-                                ))
-                            },
-                            BUTTONS_FONT_PATH,
-                            BUTTONS_FONT_PATH,
-                            palette::MENU_BUTTON_TEXT_REGULAR.convert_color(),
-                            border,
-                        );
-                    }
-                    MenuState::LevelGroupPage(group) => {
-                        add_double_text_menu_items::<R, LevelGroupLayoutEntity>(
-                            &(context.video_resource.selfie_mode(), *group),
-                            commands,
-                            size,
-                            2,
-                            |x| x.get_text(&context.sequence_completion.as_ref(), group),
-                            |x| {
-                                get_variable_fill(
-                                    x.is_complete(&context.sequence_completion, group),
-                                )
-                            },
-                            BUTTONS_FONT_PATH,
-                            BUTTONS_FONT_PATH,
-                            palette::MENU_BUTTON_TEXT_REGULAR.convert_color(),
-                            border,
-                        );
-                    }
-                    MenuState::WordSaladLevels => add_double_text_menu_items::<
-                        R,
-                        WordSaladMenuLayoutEntity,
-                    >(
+            let size = context.window_size.as_ref();
+            match context.menu_state.as_ref() {
+                MenuState::Closed => {}
+                MenuState::ShowMainMenu => {
+                    add_menu_items::<R, MainMenuLayoutEntity>(
+                        &context.video_resource.selfie_mode(),
+                        commands,
+                        size,
+                        0,
+                        palette::MENU_BUTTON_FILL.convert_color(),
+                        palette::MENU_BUTTON_TEXT_REGULAR.convert_color(),
+                        border,
+                    );
+                }
+                MenuState::ChooseLevelsPage => {
+                    add_double_text_menu_items::<R, LevelsMenuLayoutEntity>(
+                        &context.video_resource.selfie_mode(),
+                        commands,
+                        size,
+                        1,
+                        |x| {
+                            x.get_text(
+                                &context.daily_challenge_completion.as_ref(),
+                                &context.sequence_completion.as_ref(),
+                                context.daily_challenges.as_ref(),
+                            )
+                        },
+                        |x| {
+                            x.is_complete(
+                                &context.daily_challenge_completion,
+                                &context.sequence_completion,
+                                context.daily_challenges.as_ref(),
+                            )
+                            .then(|| button_fill_color_complete)
+                            .unwrap_or(button_fill_color_incomplete)
+                        },
+                        BUTTONS_FONT_PATH,
+                        BUTTONS_FONT_PATH,
+                        palette::MENU_BUTTON_TEXT_REGULAR.convert_color(),
+                        border,
+                    );
+                }
+                MenuState::LevelGroupPage(group) => {
+                    add_double_text_menu_items::<R, LevelGroupLayoutEntity>(
+                        &(context.video_resource.selfie_mode(), *group),
+                        commands,
+                        size,
+                        2,
+                        |x| x.get_text(&context.sequence_completion.as_ref(), group),
+                        |x| {
+                            x.is_complete(&context.sequence_completion, group)
+                                .then(|| button_fill_color_complete)
+                                .unwrap_or(button_fill_color_incomplete)
+                        },
+                        BUTTONS_FONT_PATH,
+                        BUTTONS_FONT_PATH,
+                        palette::MENU_BUTTON_TEXT_REGULAR.convert_color(),
+                        border,
+                    );
+                }
+                MenuState::WordSaladLevels => {
+                    add_double_text_menu_items::<R, WordSaladMenuLayoutEntity>(
                         &context.video_resource.selfie_mode(),
                         commands,
                         size,
@@ -181,34 +194,32 @@ impl MavericNode for Menu {
                                 context.daily_challenges.as_ref(),
                             )
                         },
-                        |x| get_variable_fill(x.is_complete(&context.daily_challenge_completion)),
+                        |x| {
+                            x.is_complete(&context.daily_challenge_completion)
+                                .then(|| button_fill_color_complete)
+                                .unwrap_or(button_fill_color_incomplete)
+                        },
                         BUTTONS_FONT_PATH,
                         ICON_FONT_PATH,
                         palette::MENU_BUTTON_TEXT_REGULAR.convert_color(),
                         border,
-                    ),
+                    )
                 }
+            }
 
-                add_menu_items::<R, MainMenuBackButton>(
-                    &(),
-                    commands,
-                    size,
-                    4,
-                    palette::MENU_BUTTON_DISCOURAGED_FILL.convert_color(),
-                    palette::MENU_BUTTON_TEXT_DISCOURAGED.convert_color(),
-                    border,
-                );
-            });
+            add_menu_items::<R, MainMenuBackButton>(
+                &(),
+                commands,
+                size,
+                4,
+                palette::MENU_BUTTON_DISCOURAGED_FILL.convert_color(),
+                palette::MENU_BUTTON_TEXT_DISCOURAGED.convert_color(),
+                border,
+            );
+        });
     }
 }
 
-fn get_variable_fill(is_complete: bool) -> Color {
-    if is_complete {
-        palette::MENU_BUTTON_COMPLETE_FILL.convert_color()
-    } else {
-        palette::MENU_BUTTON_FILL.convert_color()
-    }
-}
 fn add_menu_items<
     R: MavericRoot,
     L: LayoutStructureWithFont<FontContext = ()>

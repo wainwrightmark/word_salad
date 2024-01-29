@@ -67,7 +67,7 @@ impl HintStatus {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct GridTiles {
-    pub level_complete: bool,
+    pub is_level_complete: bool,
 }
 
 const TILE_SCALE_SPEED: LinearSpeed = LinearSpeed {
@@ -112,7 +112,7 @@ impl MavericNode for GridTiles {
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.ordered_children_with_node_and_context(|node, context, commands| {
-            if node.level_complete {
+            if node.is_level_complete {
                 return;
             }
             let solution = context.chosen_state.current_solution();

@@ -2,11 +2,10 @@ pub mod congrats;
 pub mod fireworks;
 pub mod game_grid;
 pub mod hints;
-pub mod level_extra_info;
-pub mod level_theme;
 pub mod menu;
 pub mod non_level;
 pub mod popup;
+pub mod theme_view;
 pub mod timer;
 pub mod top_bar;
 pub mod tutorial;
@@ -16,11 +15,10 @@ pub mod words;
 pub use congrats::*;
 pub use game_grid::*;
 pub use hints::*;
-pub use level_extra_info::*;
-pub use level_theme::*;
 pub use menu::*;
 pub use non_level::*;
 pub use popup::*;
+pub use theme_view::*;
 pub use top_bar::*;
 pub use tutorial::*;
 pub use wordline::*;
@@ -55,20 +53,29 @@ impl MavericRootChildren for ViewRoot {
         context: &<Self::Context as NodeContext>::Wrapper<'_>,
         commands: &mut impl ChildCommands,
     ) {
-        commands.add_child("Top Bar", TopBar, &context.into());
+
 
         let selfie_mode = context.video_resource.selfie_mode();
+        let is_level_complete = context.found_words_state.is_level_complete();
+        let background_type = BackgroundType::from_resources(
+            &context.video_resource,
+            &context.current_level,
+            &context.found_words_state,
+        );
+
+        commands.add_child("Top Bar", TopBar{background_type}, &context.into());
 
         if !context.menu_state.is_closed() {
-            commands.add_child("menu", Menu, &context.into());
+            commands.add_child("menu", Menu{background_type}, &context.into());
         }
 
-        let level_complete = context.found_words_state.is_level_complete();
+
 
         if context.menu_state.is_closed() {
-            commands.add_child("cells", GridTiles { level_complete }, &context.into());
-
+            commands.add_child("cells", GridTiles { is_level_complete }, &context.into());
         }
+
+
 
         match context.current_level.level(&context.daily_challenges) {
             itertools::Either::Left(level) => {
@@ -77,14 +84,9 @@ impl MavericRootChildren for ViewRoot {
                         .chosen_state
                         .is_close_to_a_solution(level, context.found_words_state.as_ref());
 
-
-
                     if context.found_words_state.is_level_complete() {
-
                         commands.add_child("congrats", CongratsView, &context.into());
-                    }
-                    else{
-
+                    } else {
                         if !context.level_time.is_paused() {
                             commands.add_child(
                                 "word_line",
@@ -112,23 +114,15 @@ impl MavericRootChildren for ViewRoot {
                     let full_name = level.full_name();
                     commands.add_child(
                         "ui_theme",
-                        LevelName {
+                        ThemeView {
                             full_name,
+                            info: level.extra_info,
+                            background_type,
+                            selfie_mode,
+                            is_level_complete
                         },
-                        &context.into(),
+                        &context.window_size,
                     );
-
-                    if let Some(info) = &level.extra_info {
-                        commands.add_child(
-                            "ui_theme_info",
-                            LevelExtraInfo {
-                                info: *info,
-                                full_name_characters: full_name.len()
-
-                            },
-                            &context.into(),
-                        );
-                    }
                 }
             }
             itertools::Either::Right(non_level) => {
