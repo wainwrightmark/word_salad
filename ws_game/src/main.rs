@@ -7,6 +7,7 @@ pub mod compatibility;
 pub mod completion;
 pub mod constants;
 pub mod current_level;
+pub mod haptics;
 pub mod grid_input;
 pub mod input;
 pub mod level_time;
@@ -50,6 +51,7 @@ pub mod prelude {
     pub use crate::constants::*;
     pub use crate::current_level::*;
     pub use crate::daily_challenge::*;
+    pub use crate::haptics::*;
     pub use crate::grid_input::*;
     pub use crate::level_time::*;
     pub use crate::logging::*;

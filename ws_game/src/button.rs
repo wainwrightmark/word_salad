@@ -29,7 +29,7 @@ impl Plugin for ButtonPlugin {
         app.add_systems(
             Update,
             handle_button_activations
-            .run_if(|ev: EventReader<ButtonActivated>| !ev.is_empty())
+                .run_if(|ev: EventReader<ButtonActivated>| !ev.is_empty())
                 .after(input::handle_mouse_input)
                 .after(input::handle_touch_input)
                 .after(track_held_button),
@@ -99,7 +99,10 @@ fn handle_button_activations(
     mut level_time: ResMut<LevelTime>,
     mut selfie_mode_history: ResMut<SelfieModeHistory>,
 
-    mut event_writers:(EventWriter<AnimateSolutionsEvent>, EventWriter<ChangeLevelEvent>) ,
+    mut event_writers: (
+        EventWriter<AnimateSolutionsEvent>,
+        EventWriter<ChangeLevelEvent>,
+    ),
 ) {
     for ev in events.read() {
         ev.0.on_activated(
@@ -118,7 +121,7 @@ fn handle_button_activations(
             &mut selfie_mode_history,
             &mut purchases,
             &mut event_writers.0,
-            &mut event_writers.1
+            &mut event_writers.1,
         )
     }
 }
@@ -269,7 +272,7 @@ impl ButtonInteraction {
         selfie_mode_history: &mut ResMut<SelfieModeHistory>,
         purchases: &mut ResMut<Purchases>,
         animate_solution_events: &mut EventWriter<AnimateSolutionsEvent>,
-        change_level_events: &mut EventWriter<ChangeLevelEvent>
+        change_level_events: &mut EventWriter<ChangeLevelEvent>,
     ) {
         match self {
             ButtonInteraction::None => {}
@@ -320,18 +323,24 @@ impl ButtonInteraction {
             ButtonInteraction::WordSaladMenu(WordSaladMenuLayoutEntity::YesterdayPuzzle) => {
                 let index = DailyChallenges::get_today_index();
                 {
-                    change_level_events.send(CurrentLevel::DailyChallenge {
-                        index: index.saturating_sub(1),
-                    }.into());
+                    change_level_events.send(
+                        CurrentLevel::DailyChallenge {
+                            index: index.saturating_sub(1),
+                        }
+                        .into(),
+                    );
                 }
                 menu_state.close();
             }
             ButtonInteraction::WordSaladMenu(WordSaladMenuLayoutEntity::EreYesterdayPuzzle) => {
                 let index = DailyChallenges::get_today_index();
                 {
-                    change_level_events.send(CurrentLevel::DailyChallenge {
-                        index: index.saturating_sub(2),
-                    }.into());
+                    change_level_events.send(
+                        CurrentLevel::DailyChallenge {
+                            index: index.saturating_sub(2),
+                        }
+                        .into(),
+                    );
                 }
                 menu_state.close();
             }
@@ -342,7 +351,8 @@ impl ButtonInteraction {
                 {
                     change_level_events.send(CurrentLevel::DailyChallenge { index }.into());
                 } else {
-                    change_level_events.send(CurrentLevel::NonLevel(NonLevel::DailyChallengeReset).into());
+                    change_level_events
+                        .send(CurrentLevel::NonLevel(NonLevel::DailyChallengeReset).into());
                 }
                 menu_state.close();
             }
@@ -367,7 +377,6 @@ impl ButtonInteraction {
                             .get_next_level_index(sequence, &purchases)
                             .to_level(sequence);
 
-
                         change_level_events.send(level.into());
 
                         menu_state.close();
@@ -378,7 +387,14 @@ impl ButtonInteraction {
                 if hint_state.hints_remaining == 0 {
                     popup_state.0 = Some(PopupType::BuyMoreHints);
                 } else if let Either::Left(level) = current_level.level(daily_challenges) {
-                    found_words.try_hint_word(hint_state, level, word.0, chosen_state, animate_solution_events);
+                    found_words.try_hint_word(
+                        hint_state,
+                        level,
+                        word.0,
+                        chosen_state,
+                        animate_solution_events,
+                        video_resource.selfie_mode(),
+                    );
                 }
             }
             ButtonInteraction::TopMenuItem(LayoutTopBar::HintCounter) => {
@@ -391,7 +407,6 @@ impl ButtonInteraction {
                         crate::video::stop_screen_record(video_resource);
                     } else {
                         crate::video::start_screen_record(video_resource);
-
                     }
                 }
             }
@@ -404,9 +419,12 @@ impl ButtonInteraction {
                         }
                         NonLevel::AfterCustomLevel => {
                             if let Some(l) = CUSTOM_LEVEL.get() {
-                                change_level_events.send(CurrentLevel::Custom {
-                                    name: l.name.to_string(),
-                                }.into());
+                                change_level_events.send(
+                                    CurrentLevel::Custom {
+                                        name: l.name.to_string(),
+                                    }
+                                    .into(),
+                                );
                             }
                         }
                         NonLevel::LevelSequenceMustPurchaseGroup(sequence) => {
@@ -415,7 +433,6 @@ impl ButtonInteraction {
                                 .get_next_level_index(sequence, &purchases)
                                 .to_level(sequence);
 
-
                             change_level_events.send(level.into());
                         }
                         NonLevel::DailyChallengeReset => {
@@ -423,20 +440,27 @@ impl ButtonInteraction {
                             if let Some(index) = daily_challenge_completion
                                 .get_next_incomplete_daily_challenge_from_today()
                             {
-                                change_level_events.send(CurrentLevel::DailyChallenge { index }.into());
+                                change_level_events
+                                    .send(CurrentLevel::DailyChallenge { index }.into());
                             }
                         }
                         NonLevel::LevelSequenceReset(ls) => {
                             sequence_completion.restart_level_sequence_completion(ls);
-                            change_level_events.send(CurrentLevel::Fixed {
-                                level_index: 0,
-                                sequence: ls,
-                            }.into());
+                            change_level_events.send(
+                                CurrentLevel::Fixed {
+                                    level_index: 0,
+                                    sequence: ls,
+                                }
+                                .into(),
+                            );
                         }
                         NonLevel::DailyChallengeCountdown { todays_index } => {
-                            change_level_events.send(CurrentLevel::DailyChallenge {
-                                index: todays_index,
-                            }.into());
+                            change_level_events.send(
+                                CurrentLevel::DailyChallenge {
+                                    index: todays_index,
+                                }
+                                .into(),
+                            );
                         }
                         NonLevel::DailyChallengeFinished => {
                             let new_current_level = match sequence_completion
@@ -467,9 +491,7 @@ impl ButtonInteraction {
                     }
                 }
             }
-            ButtonInteraction::TopMenuItem(LayoutTopBar::WordSaladLogo) => {
-                menu_state.toggle()
-            }
+            ButtonInteraction::TopMenuItem(LayoutTopBar::WordSaladLogo) => menu_state.toggle(),
             ButtonInteraction::Congrats(CongratsButton::Next) => {
                 let next_level = current_level.get_next_level(
                     &daily_challenge_completion,

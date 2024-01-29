@@ -1,11 +1,11 @@
 use std::{num::NonZeroUsize, time::Duration};
 
-use crate::{completion::*, logging, prelude::*};
-use capacitor_bindings::haptics::{ImpactOptions, ImpactStyle};
+use crate::{completion::*, prelude::*};
 use itertools::{Either, Itertools};
 use nice_bevy_utils::{CanInitTrackedResource, CanRegisterAsyncEvent, TrackableResource};
 use serde::{Deserialize, Serialize};
 use strum::EnumIs;
+use ws_core::layout::entities::SelfieMode;
 use ws_levels::level_sequence::LevelSequence;
 
 pub struct StatePlugin;
@@ -324,6 +324,7 @@ impl FoundWordsState {
         word_index: usize,
         chosen_state: &mut ChosenState,
         ew: &mut impl AnyEventWriter<AnimateSolutionsEvent>,
+        selfie_mode: SelfieMode,
     ) -> bool {
         let Some(new_hints) = hint_state.hints_remaining.checked_sub(1) else {
             return false;
@@ -394,11 +395,7 @@ impl FoundWordsState {
             warn!("Could not find solution during hint");
         }
 
-        logging::do_or_report_error(capacitor_bindings::haptics::Haptics::impact(
-            ImpactOptions {
-                style: capacitor_bindings::haptics::ImpactStyle::Light,
-            },
-        ));
+        crate::haptics::HapticEvent::UseHint.try_activate(selfie_mode);
 
         true
     }
@@ -445,6 +442,7 @@ fn track_found_words(
     mut found_words: ResMut<FoundWordsState>,
     daily_challenges: Res<DailyChallenges>,
     mut ew: EventWriter<AnimateSolutionsEvent>,
+    video: Res<VideoResource>,
 ) {
     if !chosen.is_changed() || chosen.is_just_finished {
         return;
@@ -473,22 +471,13 @@ fn track_found_words(
         found_words.word_completions[word_index] = Completion::Complete;
 
         found_words.update_unneeded_tiles(level);
+        let selfie_mode = video.selfie_mode();
+
+        crate::haptics::HapticEvent::FinishWord.try_activate(selfie_mode);
 
         if found_words.is_level_complete() {
-            //todo no haptics on selfie mode
-            logging::do_or_report_error(capacitor_bindings::haptics::Haptics::impact(
-                ImpactOptions {
-                    style: ImpactStyle::Heavy,
-                },
-            ));
-            //logging::do_or_report_error(capacitor_bindings::haptics::Haptics::notification(NotificationOptions{notification_type: capacitor_bindings::haptics::NotificationType::Success}));
-        } else {
-            logging::do_or_report_error(capacitor_bindings::haptics::Haptics::impact(
-                ImpactOptions {
-                    style: ImpactStyle::Light,
-                },
-            ));
-        };
+            crate::haptics::HapticEvent::FinishPuzzle.try_activate(selfie_mode);
+        }
     }
 
     ew.send(AnimateSolutionsEvent {
@@ -839,6 +828,8 @@ fn count_hints(
 pub mod tests {
     use std::num::NonZeroUsize;
 
+    use ws_core::layout::entities::SelfieMode;
+
     use crate::{
         chosen_state::ChosenState,
         prelude::{Completion, DesignedLevel, FoundWordsState, TestEventWriter},
@@ -909,6 +900,9 @@ pub mod tests {
             4,
             &mut chosen_state,
             &mut event_writer,
+            SelfieMode {
+                is_selfie_mode: true,
+            },
         );
 
         assert!(hinted);

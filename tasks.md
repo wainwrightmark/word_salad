@@ -18,14 +18,7 @@
 - end selfie mode / recording when resuming app
 - S & E asian countries
 - Way to retry loading daily puzzles
-- NO haptics on selfie mode
 - Hints popup on touch device when you have 0 hints
 - Make sure words have enough height -check recent colors puzzle
 - Status bar color change
 
-- New Look
-- use word salad logo
-- change theme info alignment and font color
-- change button roundedness
-- new end of level screen
-- new end of level screen in selfie mode
