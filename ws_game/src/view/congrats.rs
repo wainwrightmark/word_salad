@@ -147,6 +147,7 @@ impl MavericNode for CongratsView {
                 }
                 .convert_color();
 
+                if !context.current_level.is_tutorial()
                 {
                     let rect = size.get_rect(&CongratsLayoutEntity::Time, &congrats_context);
 

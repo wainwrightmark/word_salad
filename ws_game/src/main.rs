@@ -22,6 +22,7 @@ pub mod test_res_mut;
 pub mod video;
 pub mod view;
 pub mod purchases;
+pub mod clear_color;
 #[cfg(any(feature = "ios", feature = "android"))]
 pub mod notifications;
 
@@ -43,6 +44,7 @@ pub mod prelude {
     pub use crate::button::*;
     pub use crate::button_node::*;
     pub use crate::chosen_state::*;
+    pub use crate::clear_color::*;
     pub use crate::compatibility::*;
     pub use crate::completion::*;
     pub use crate::constants::*;

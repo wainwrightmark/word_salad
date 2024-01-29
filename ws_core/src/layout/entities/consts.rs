@@ -127,3 +127,5 @@ pub const MENU_BUTTON_FONT_SIZE: f32 = 22f32;
 pub const MENU_BUTTON_FONT_SIZE_SMALL: f32 = 18f32;
 
 pub const TUTORIAL_TEXT_FONT_SIZE: f32 = 18f32;
+
+

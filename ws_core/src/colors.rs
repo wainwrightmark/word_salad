@@ -52,6 +52,8 @@ pub mod palette {
 
     pub const CONGRATS_BUTTON_TEXT_NORMAL: Color = MY_WHITE;
     pub const CONGRATS_BUTTON_FILL_NORMAL: Color = GREEN_LIGHT;
+    pub const CONGRATS_STATISTIC_TEXT_NORMAL: Color = MY_WHITE;
+
 
     pub const CONGRATS_BUTTON_TEXT_SELFIE: Color = MY_WHITE.with_a(0.95);
     pub const CONGRATS_BUTTON_FILL_SELFIE: Color = GREEN_LIGHT.with_a(0.5);
@@ -59,7 +61,6 @@ pub mod palette {
     pub const CONGRATS_STATISTIC_TEXT_SELFIE: Color = LIGHT_GRAY.with_a(0.95);
 
 
-    pub const CONGRATS_STATISTIC_TEXT_NORMAL: Color = MEDIUM_GRAY;
 
     pub const ICON_BUTTON_BACKGROUND: Color = Color::NONE;
     pub const TEXT_BUTTON_BACKGROUND: Color = Color::WHITE;
@@ -98,6 +99,11 @@ pub mod palette {
     pub const NON_LEVEL_TEXT_NORMAL: Color = MEDIUM_GRAY;
     pub const NON_LEVEL_TEXT_SELFIE: Color = MY_WHITE;
 
+    pub const CLEAR_COLOR_SELFIE: Color = Color::rgba(0.1, 0.1, 0.1, 0.1);
+    pub const CLEAR_COLOR_NORMAL: Color = MY_WHITE;
+    pub const CLEAR_COLOR_NON_LEVEL: Color = GOLD;
+    pub const CLEAR_COLOR_CONGRATS: Color = GREEN_LIGHT;
+
     const MY_BLACK: Color = Color::rgba(0.12, 0., 0., 1.);
     const MY_WHITE: Color = Color::rgba(1.0, 1.0, 1.0, 1.);
 
@@ -112,6 +118,6 @@ pub mod palette {
     const GREEN_DARK: Color = Color::rgba(0.07, 0.34, 0.27, 1.);
     const GREEN_OTHER: Color = Color::rgba(0.36, 0.73, 0.28, 1.);
     const GOLD: Color = Color::rgba(1., 0.94, 0.62, 1.);
-    //pub const FULL_GREEN: Color = Color::rgba(0.17, 0.71, 0.35, 1.);
-    //pub const LIGHT_GREEN: Color = Color::rgba(0.463, 0.851, 0.596, 1.);
+    #[allow(dead_code)]
+    const TRANSPARENT: Color = Color::rgba(0., 0., 0., 0.);
 }

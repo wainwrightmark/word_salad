@@ -28,6 +28,7 @@ impl Plugin for StatePlugin {
         app.add_systems(Update, track_level_completion);
 
         app.add_systems(Update, animate_solutions.after(track_found_words));
+        app.add_systems(Update, remove_animated_solutions_on_complete.run_if(|f: Res<FoundWordsState>| f.is_changed() && f.is_level_complete()));
 
         app.add_systems(
             PostUpdate,

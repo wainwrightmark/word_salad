@@ -127,21 +127,6 @@ impl MavericRootChildren for ViewRoot {
                             &context.window_size,
                         );
                     }
-
-                    // if !context.found_words_state.is_level_complete() {
-                    //     let total_seconds = context.level_time.as_ref().total_elapsed().as_secs();
-                    //     let time_text = format_seconds(total_seconds);
-                    //     commands.add_child(
-                    //         "ui_timer",
-                    //         UITimer {
-                    //             time_text,
-                    //             selfie_mode,
-                    //             is_daily_challenge: context.current_level.is_daily_challenge(),
-                    //             theme,
-                    //         },
-                    //         &context.window_size,
-                    //     );
-                    // }
                 }
             }
             itertools::Either::Right(non_level) => {

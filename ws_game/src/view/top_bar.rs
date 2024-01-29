@@ -129,7 +129,7 @@ impl MavericNode for TopBar {
                 commands.add_child(
                     "Word Salad Icon",
                     SpriteNode{
-                        texture_path: r#"images/icon512.png"#,
+                        texture_path: r#"images/logo1024.png"#,
                         sprite: Sprite{
                             custom_size: Some(logo_rect.extents.abs()),
                             ..Default::default()

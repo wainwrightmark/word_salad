@@ -6,14 +6,6 @@ use bevy::{log::LogPlugin, window::RequestRedraw};
 use nice_bevy_utils::{async_event_writer, window_size::WindowSizePlugin, CanRegisterAsyncEvent};
 use ws_core::layout::entities::*;
 
-const CLEAR_COLOR: Color = {
-    //Color::NONE
-    if cfg!(target_arch = "wasm32") {
-        Color::NONE
-    } else {
-        Color::WHITE
-    }
-};
 
 pub fn go() {
     let mut app = App::new();
@@ -38,7 +30,7 @@ pub fn go() {
     };
 
     app.insert_resource(Msaa::Off)
-        .insert_resource(ClearColor(CLEAR_COLOR))
+
         .add_plugins(
             DefaultPlugins
                 .set(window_plugin)
@@ -51,6 +43,8 @@ pub fn go() {
                 ),
         )
         .add_systems(Startup, setup_system);
+
+    app.add_plugins(ClearColorPlugin);
 
     app.add_plugins(WordlinePlugin);
     app.register_maveric::<ViewRoot>();
