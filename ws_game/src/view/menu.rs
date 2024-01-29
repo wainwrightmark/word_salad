@@ -100,9 +100,15 @@ impl MavericNode for Menu {
     fn set_children<R: maveric::prelude::MavericRoot>(
         commands: maveric::prelude::SetChildrenCommands<Self, Self::Context, R>,
     ) {
+
+
         commands
             .ignore_node()
             .unordered_children_with_context(|context, commands| {
+
+                let border =  ShaderBorder::NONE; //TODO change border when level complete
+
+
                 let size = context.window_size.as_ref();
                 match context.menu_state.as_ref() {
                     MenuState::Closed => {}
@@ -114,6 +120,7 @@ impl MavericNode for Menu {
                             0,
                             palette::MENU_BUTTON_FILL.convert_color(),
                             palette::MENU_BUTTON_TEXT_REGULAR.convert_color(),
+                            border,
                         );
                     }
                     MenuState::ChooseLevelsPage => {
@@ -139,6 +146,7 @@ impl MavericNode for Menu {
                             BUTTONS_FONT_PATH,
                             BUTTONS_FONT_PATH,
                             palette::MENU_BUTTON_TEXT_REGULAR.convert_color(),
+                            border,
                         );
                     }
                     MenuState::LevelGroupPage(group) => {
@@ -156,6 +164,7 @@ impl MavericNode for Menu {
                             BUTTONS_FONT_PATH,
                             BUTTONS_FONT_PATH,
                             palette::MENU_BUTTON_TEXT_REGULAR.convert_color(),
+                            border,
                         );
                     }
                     MenuState::WordSaladLevels => add_double_text_menu_items::<
@@ -176,6 +185,7 @@ impl MavericNode for Menu {
                         BUTTONS_FONT_PATH,
                         ICON_FONT_PATH,
                         palette::MENU_BUTTON_TEXT_REGULAR.convert_color(),
+                        border,
                     ),
                 }
 
@@ -186,6 +196,7 @@ impl MavericNode for Menu {
                     4,
                     palette::MENU_BUTTON_DISCOURAGED_FILL.convert_color(),
                     palette::MENU_BUTTON_TEXT_DISCOURAGED.convert_color(),
+                    border,
                 );
             });
     }
@@ -210,6 +221,7 @@ fn add_menu_items<
     page: u16,
     fill_color: Color,
     text_color: Color,
+    border: ShaderBorder,
 ) {
     for (index, entity) in L::iter_all(context).enumerate() {
         let font_size = size.font_size::<L>(&entity, &());
@@ -224,6 +236,7 @@ fn add_menu_items<
                 text_color,
                 fill_color,
                 clicked_fill_color: BUTTON_CLICK_FILL.convert_color(),
+                border,
             },
             &(),
         );
@@ -243,6 +256,7 @@ fn add_double_text_menu_items<
     left_font: &'static str,
     right_font: &'static str,
     text_color: Color,
+    border: ShaderBorder,
 ) {
     for (index, entity) in L::iter_all(context).enumerate() {
         let font_size = size.font_size::<L>(&entity, &());
@@ -263,6 +277,7 @@ fn add_double_text_menu_items<
                 left_font,
                 right_font,
                 clicked_fill_color: BUTTON_CLICK_FILL.convert_color(),
+                border,
             },
             &(),
         );

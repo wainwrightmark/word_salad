@@ -101,6 +101,7 @@ impl MavericRootChildren for PopupStateRoot {
                                 palette::MENU_BUTTON_FILL.convert_color(),
                                 BUTTON_CLICK_FILL.convert_color(),
                                 OTHER_BUTTON_NORMAL,
+                                ShaderBorder::NONE,
                                 ButtonInteraction::Popup(PopupInteraction::HintsBuyMore),
                             );
 
@@ -132,6 +133,7 @@ impl MavericRootChildren for PopupStateRoot {
                                 palette::MENU_BUTTON_DISCOURAGED_FILL.convert_color(),
                                 BUTTON_CLICK_FILL.convert_color(),
                                 OTHER_BUTTON_NORMAL,
+                                ShaderBorder::NONE,
                                 ButtonInteraction::Popup(PopupInteraction::ClickClose),
                             );
 
@@ -161,9 +163,11 @@ impl MavericRootChildren for PopupStateRoot {
                                 rect.height(),
                                 rect.centre().extend(crate::z_indices::POPUP_BOX_BACKGROUND),
                                 POPUP_BOX_BACKGROUND.convert_color(),
-                                POPUP_BOX_BORDER.convert_color(),
                                 0.1,
-                                0.01,
+                                ShaderBorder {
+                                    border_color: POPUP_BOX_BORDER.convert_color(),
+                                    border: 0.01,
+                                },
                             );
 
                             commands.add_child("background", node, &())
@@ -204,6 +208,7 @@ impl MavericRootChildren for PopupStateRoot {
                                 palette::MENU_BUTTON_FILL.convert_color(),
                                 BUTTON_CLICK_FILL.convert_color(),
                                 OTHER_BUTTON_NORMAL,
+                                ShaderBorder::NONE,
                                 ButtonInteraction::Popup(PopupInteraction::SelfieInformation),
                             );
 
@@ -236,6 +241,7 @@ impl MavericRootChildren for PopupStateRoot {
                                 palette::MENU_BUTTON_FILL.convert_color(),
                                 BUTTON_CLICK_FILL.convert_color(),
                                 OTHER_BUTTON_NORMAL,
+                                ShaderBorder::NONE,
                                 ButtonInteraction::Popup(PopupInteraction::ClickClose),
                             );
 
@@ -267,6 +273,7 @@ impl MavericRootChildren for PopupStateRoot {
                                 palette::MENU_BUTTON_DISCOURAGED_FILL.convert_color(),
                                 BUTTON_CLICK_FILL.convert_color(),
                                 OTHER_BUTTON_NORMAL,
+                                ShaderBorder::NONE,
                                 ButtonInteraction::Popup(PopupInteraction::SelfieDontShowAgain),
                             );
 
@@ -296,9 +303,12 @@ impl MavericRootChildren for PopupStateRoot {
                                 rect.height(),
                                 rect.centre().extend(crate::z_indices::POPUP_BOX_BACKGROUND),
                                 POPUP_BOX_BACKGROUND.convert_color(),
-                                POPUP_BOX_BORDER.convert_color(),
                                 0.1,
-                                0.01,
+                                ShaderBorder {
+                                    border_color: POPUP_BOX_BORDER.convert_color(),
+                                    border: 0.01,
+                                },
+
                             );
 
                             commands.add_child("background", node, &())

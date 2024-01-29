@@ -147,8 +147,7 @@ impl MavericNode for CongratsView {
                 }
                 .convert_color();
 
-                if !context.current_level.is_tutorial()
-                {
+                if !context.current_level.is_tutorial() {
                     let rect = size.get_rect(&CongratsLayoutEntity::Time, &congrats_context);
 
                     commands.add_child(
@@ -228,6 +227,22 @@ impl MavericNode for CongratsView {
 
                 let button_count = CongratsLayoutEntity::get_button_count(&congrats_context);
 
+                let button_text_color = if selfie_mode.is_selfie_mode {
+                    palette::CONGRATS_BUTTON_TEXT_SELFIE
+                } else {
+                    palette::CONGRATS_BUTTON_TEXT_NORMAL
+                }
+                .convert_color();
+
+                let (button_fill_color, border) = if selfie_mode.is_selfie_mode {
+                    (
+                        palette::CONGRATS_BUTTON_FILL_SELFIE.convert_color(),
+                        ShaderBorder::NONE,
+                    )
+                } else {
+                    (Color::NONE, ShaderBorder::from_color(button_text_color))
+                };
+
                 for (index, button) in CongratsButton::iter().enumerate().take(button_count) {
                     let text = match button {
                         CongratsButton::Next => match context.current_level.level_type() {
@@ -271,19 +286,7 @@ impl MavericNode for CongratsView {
                         CongratsButton::Share => "Share".to_string(),
                     };
 
-                    let text_color = if selfie_mode.is_selfie_mode {
-                        palette::CONGRATS_BUTTON_TEXT_SELFIE
-                    } else {
-                        palette::CONGRATS_BUTTON_TEXT_NORMAL
-                    }
-                    .convert_color();
 
-                    let fill_color = if selfie_mode.is_selfie_mode {
-                        palette::CONGRATS_BUTTON_FILL_SELFIE
-                    } else {
-                        palette::CONGRATS_BUTTON_FILL_NORMAL
-                    }
-                    .convert_color();
 
                     commands.add_child(
                         (1u16, index as u16),
@@ -293,9 +296,10 @@ impl MavericNode for CongratsView {
                             rect: size
                                 .get_rect(&CongratsLayoutEntity::Button(button), &congrats_context),
                             interaction: ButtonInteraction::Congrats(button),
-                            text_color,
-                            fill_color,
+                            text_color: button_text_color,
+                            fill_color: button_fill_color,
                             clicked_fill_color: BUTTON_CLICK_FILL.convert_color(),
+                            border,
                         }
                         .with_transition::<TransformScaleLens, ()>(
                             initial_scale,

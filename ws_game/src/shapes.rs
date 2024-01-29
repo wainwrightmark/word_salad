@@ -43,12 +43,13 @@ pub struct BoxShader;
 struct ButtonBoxShaderExtraction;
 
 impl ExtractToShader for ButtonBoxShaderExtraction {
-    type Shader = BoxShader;
+    type Shader = BoxWithBorderShader;
     type ParamsQuery<'a> = (
         &'a ShaderColor,
         &'a ShaderRounding,
         &'a ShaderAspectRatio,
         &'a ShaderSecondColor,
+        &'a ShaderBorder,
         &'a ButtonInteraction,
     );
     type ParamsBundle = (
@@ -56,6 +57,7 @@ impl ExtractToShader for ButtonBoxShaderExtraction {
         ShaderRounding,
         ShaderAspectRatio,
         ShaderSecondColor,
+        ShaderBorder,
         ButtonInteraction,
     );
     type ResourceParams<'w> = Res<'w, PressedButton>;
@@ -64,7 +66,9 @@ impl ExtractToShader for ButtonBoxShaderExtraction {
         query_item: <Self::ParamsQuery<'_> as bevy::ecs::query::WorldQuery>::Item<'_>,
         resource: &<Self::ResourceParams<'_> as bevy::ecs::system::SystemParam>::Item<'_, '_>,
     ) -> <Self::Shader as ParameterizedShader>::Params {
-        let (color, rounding, height, color2, button_interaction) = query_item;
+        let (color, rounding, height, color2, shader_border, button_interaction) = query_item;
+
+
 
         if let Some(duration) = match resource.as_ref() {
             PressedButton::None | PressedButton::NoInteractionPressed { .. } => None,
@@ -89,16 +93,20 @@ impl ExtractToShader for ButtonBoxShaderExtraction {
 
             let new_color = rgba2 * ratio + (rgba1 * (1.0 - ratio));
 
-            BoxShaderParams {
+            BoxWithBorderShaderParams {
                 color: new_color,
                 rounding: rounding.rounding,
                 height: height.height,
+                border_color: shader_border.border_color.into(),
+                border: shader_border.border,
             }
         } else {
-            BoxShaderParams {
+            BoxWithBorderShaderParams {
                 color: color.color.into(),
                 rounding: rounding.rounding,
                 height: height.height,
+                border_color: shader_border.border_color.into(),
+                border: shader_border.border,
             }
         }
     }
@@ -266,7 +274,7 @@ pub struct BoxWithBorderShaderParams {
     pub rounding: f32,
 
     pub color: LinearRGBA,
-    pub border_color: LinearRGB,
+    pub border_color: LinearRGBA,
     pub border: f32,
 }
 
@@ -274,6 +282,17 @@ pub struct BoxWithBorderShaderParams {
 pub struct ShaderBorder {
     pub border_color: Color,
     pub border: f32,
+}
+
+impl ShaderBorder {
+    pub const NONE: Self  = ShaderBorder{
+        border_color: Color::NONE,
+        border: 0.0,
+    };
+
+    pub fn from_color(color: Color)-> Self{
+        Self { border_color: color, border: 0.01 }
+    }
 }
 
 impl ShaderParams for BoxWithBorderShaderParams {}
@@ -452,7 +471,9 @@ pub fn button_box_node(
     translation: Vec3,
     color: Color,
     color2: Color,
+
     rounding: f32,
+    border: ShaderBorder,
     button_interaction: ButtonInteraction,
 ) -> impl MavericNode<Context = ()> {
     let height = height.abs();
@@ -464,6 +485,7 @@ pub fn button_box_node(
             rounding.into(),
             (height / scale).into(),
             color2.into(),
+            border,
             button_interaction,
         ),
         transform: Transform {
@@ -480,9 +502,9 @@ pub fn box_with_border_node(
     height: f32,
     translation: Vec3,
     color: Color,
-    border_color: Color,
+
     rounding: f32,
-    border_proportion: f32,
+    border: ShaderBorder
 ) -> impl MavericNode<Context = ()> {
     let scale = width;
     ShaderBundle::<BoxWithBorderShader> {
@@ -490,10 +512,7 @@ pub fn box_with_border_node(
             color.into(),
             rounding.into(),
             (height / scale).into(),
-            ShaderBorder {
-                border_color,
-                border: border_proportion,
-            },
+            border,
         ),
         transform: Transform {
             translation,

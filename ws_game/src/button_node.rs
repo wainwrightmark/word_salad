@@ -8,7 +8,10 @@ use maveric::{
 
 use ws_core::LayoutRectangle;
 
-use crate::prelude::{button_box_node, ButtonInteraction, BUTTONS_FONT_PATH};
+use crate::{
+    prelude::{button_box_node, ButtonInteraction, BUTTONS_FONT_PATH},
+    shapes::ShaderBorder,
+};
 
 #[derive(Debug, PartialEq)]
 pub struct WSButtonNode<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> {
@@ -17,7 +20,9 @@ pub struct WSButtonNode<T: Into<String> + PartialEq + Debug + Send + Sync + Clon
     pub text: T,
     pub interaction: ButtonInteraction,
     pub fill_color: Color,
+
     pub clicked_fill_color: Color,
+    pub border: ShaderBorder,
     pub text_color: Color,
 }
 
@@ -43,6 +48,7 @@ impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> Maveri
                     interaction,
                     fill_color,
                     clicked_fill_color,
+                    border,
                     text_color,
                 } = node;
                 let centre = rect.centre();
@@ -74,6 +80,7 @@ impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> Maveri
                         *fill_color,
                         *clicked_fill_color,
                         crate::rounding::OTHER_BUTTON_NORMAL,
+                        *border,
                         *interaction,
                     ),
                     &(),
@@ -92,6 +99,7 @@ pub struct DoubleTextButtonNode<T: Into<String> + PartialEq + Debug + Send + Syn
     pub interaction: ButtonInteraction,
     pub fill_color: Color,
     pub clicked_fill_color: Color,
+    pub border: ShaderBorder,
     pub text_color: Color,
     pub left_font: &'static str,
     pub right_font: &'static str,
@@ -120,9 +128,11 @@ impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> Maveri
                     interaction,
                     fill_color,
                     clicked_fill_color,
+
                     text_color,
                     left_font,
                     right_font,
+                    border,
                 } = node;
                 let centre = rect.centre();
                 let left_text_translation = (rect.centre_left()
@@ -180,6 +190,7 @@ impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> Maveri
                         *fill_color,
                         *clicked_fill_color,
                         crate::rounding::OTHER_BUTTON_NORMAL,
+                        *border,
                         *interaction,
                     )
                     .with_bundle(*interaction),

@@ -141,11 +141,13 @@ impl MavericNode for TutorialPopupNode {
                 ws_core::palette::POPUP_BOX_BACKGROUND
                     .convert_color()
                     .with_a(0.8),
-                ws_core::palette::POPUP_BOX_BORDER
-                    .convert_color()
-                    .with_a(0.8),
                 0.1,
-                0.01,
+                ShaderBorder {
+                    border_color: ws_core::palette::POPUP_BOX_BORDER
+                        .convert_color()
+                        .with_a(0.8),
+                    border: 0.01,
+                },
             );
 
             commands.add_child("background", background, &());

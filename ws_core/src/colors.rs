@@ -96,12 +96,12 @@ pub mod palette {
     pub const WORD_TEXT_LETTERS: Color = MY_WHITE;
     pub const WORD_TEXT_NUMBER: Color = MY_BLACK;
 
-    pub const NON_LEVEL_TEXT_NORMAL: Color = MEDIUM_GRAY;
+    pub const NON_LEVEL_TEXT_NORMAL: Color = MY_WHITE;
     pub const NON_LEVEL_TEXT_SELFIE: Color = MY_WHITE;
 
     pub const CLEAR_COLOR_SELFIE: Color = Color::rgba(0.1, 0.1, 0.1, 0.1);
     pub const CLEAR_COLOR_NORMAL: Color = MY_WHITE;
-    pub const CLEAR_COLOR_NON_LEVEL: Color = GOLD;
+    pub const CLEAR_COLOR_NON_LEVEL: Color = GREEN_LIGHT;
     pub const CLEAR_COLOR_CONGRATS: Color = GREEN_LIGHT;
 
     const MY_BLACK: Color = Color::rgba(0.12, 0., 0., 1.);
@@ -119,5 +119,5 @@ pub mod palette {
     const GREEN_OTHER: Color = Color::rgba(0.36, 0.73, 0.28, 1.);
     const GOLD: Color = Color::rgba(1., 0.94, 0.62, 1.);
     #[allow(dead_code)]
-    const TRANSPARENT: Color = Color::rgba(0., 0., 0., 0.);
+    pub const TRANSPARENT: Color = Color::rgba(0., 0., 0., 0.);
 }

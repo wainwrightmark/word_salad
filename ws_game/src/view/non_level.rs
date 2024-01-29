@@ -103,12 +103,14 @@ impl MavericNode for NonLevelView {
                 NonLevel::LevelSequenceMustPurchaseGroup(_) => "Purchase".to_string(),
             };
 
-            let fill_color = if selfie_mode.is_selfie_mode {
-                palette::CONGRATS_BUTTON_FILL_SELFIE
+            let (fill_color, border) = if selfie_mode.is_selfie_mode {
+                (
+                    palette::CONGRATS_BUTTON_FILL_SELFIE.convert_color(),
+                    ShaderBorder::NONE,
+                )
             } else {
-                palette::CONGRATS_BUTTON_FILL_NORMAL
-            }
-            .convert_color();
+                (Color::NONE, ShaderBorder::from_color(text_color))
+            };
 
             commands.add_child(
                 "interaction",
@@ -121,6 +123,7 @@ impl MavericNode for NonLevelView {
                     text_color,
                     fill_color,
                     clicked_fill_color: BUTTON_CLICK_FILL.convert_color(),
+                    border
                 },
                 &(),
             );
