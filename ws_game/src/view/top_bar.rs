@@ -65,7 +65,7 @@ impl MavericNode for TopBar {
                             text,
                             font_size: size.font_size::<LayoutTopBar>(
                                 &LayoutTopBar::ToggleRecordingButton,
-                                &HintCount::default(),
+                                &(),
                             ),
                             color,
                             font: ICON_FONT_PATH,

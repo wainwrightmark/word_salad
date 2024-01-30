@@ -129,7 +129,7 @@ fn handle_button_activations(
 #[derive(Debug, PartialEq, Event)]
 pub struct ButtonActivated(pub ButtonInteraction);
 
-#[derive(Debug, Clone, Copy, PartialEq, Resource, Default, EnumIs)]
+#[derive(Debug, Clone, Copy, PartialEq, Resource, Default, EnumIs, MavericContext)]
 pub enum PressedButton {
     #[default]
     None,
@@ -138,7 +138,7 @@ pub enum PressedButton {
     },
     Pressed {
         interaction: ButtonInteraction,
-        duration: Duration,
+        duration: Duration, //todo change to start time
         start_state: StartPressState,
     },
     PressedAfterActivated {
@@ -396,9 +396,6 @@ impl ButtonInteraction {
                         video_resource.selfie_mode(),
                     );
                 }
-            }
-            ButtonInteraction::TopMenuItem(LayoutTopBar::HintCounter) => {
-                popup_state.0 = Some(PopupType::BuyMoreHints);
             }
 
             ButtonInteraction::TopMenuItem(LayoutTopBar::ToggleRecordingButton) => {

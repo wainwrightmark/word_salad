@@ -57,11 +57,8 @@ impl MavericNode for CongratsView {
             return;
         }
 
-
         //SHOW FIREWORKS - only in Selfie mode
-        if context.video_resource.is_selfie_mode
-        {
-
+        if context.video_resource.is_selfie_mode {
             let size = &context.window_size;
 
             const SECONDS: f32 = 5.0;
@@ -388,18 +385,6 @@ impl MavericNode for StatisticNode {
                 })),
                 &(),
             );
-
-            // commands.add_child(
-            //     "box",
-            //     basic_box_node1(
-            //         rect.width(),
-            //         rect.height(),
-            //         Vec3::ZERO,
-            //         *background_color,
-            //         crate::rounding::OTHER_BUTTON_NORMAL,
-            //     ),
-            //     &(),
-            // );
         });
     }
 }
@@ -449,18 +434,6 @@ impl MavericNode for TimerNode {
                 })),
                 &(),
             );
-
-            // commands.add_child(
-            //     "box",
-            //     basic_box_node1(
-            //         rect.width(),
-            //         rect.height(),
-            //         Vec3::ZERO,
-            //         *background_color,
-            //         crate::rounding::OTHER_BUTTON_NORMAL,
-            //     ),
-            //     &(),
-            // );
         });
     }
 }
