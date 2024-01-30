@@ -12,7 +12,6 @@ use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use indicatif_log_bridge::LogWrapper;
 use itertools::Itertools;
 use log::{info, warn};
-use rayon::iter::ParallelIterator;
 use std::{
     collections::HashSet,
     fs::DirEntry,
@@ -20,17 +19,13 @@ use std::{
     path::{Path, PathBuf},
     str::FromStr,
 };
-use ws_core::{
-    finder::{
-        helpers::*,
-        node::GridResult,
-        orientation::{self, *},
-    },
-    prelude::*,
+use ws_core::finder::{
+    helpers::*,
+    node::GridResult,
+    orientation::{self, *},
 };
 
 use crate::clustering::cluster_words;
-
 
 #[derive(Parser, Debug)]
 #[command()]

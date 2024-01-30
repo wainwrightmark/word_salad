@@ -193,7 +193,5 @@ pub fn create_grids<const W: usize>(
             return all_solutions;
         }
     }
-
-    panic!();
     all_solutions
 }
