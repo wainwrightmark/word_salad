@@ -5,12 +5,18 @@ use rayon::prelude::*;
 use ws_core::finder::helpers::*;
 
 pub fn get_combinations<const W: usize>(
+    category: Option<String>,
     possible_words: &[LetterCounts],
     max_size: u8,
 ) -> Vec<BitSet<W>> {
-    let pb = ProgressBar::new(possible_words.len() as u64)
-        .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:3}/{len:3}").unwrap())
-        .with_message("Getting word combinations");
+    let pb =
+
+    category.map(|category|ProgressBar::new(possible_words.len() as u64)
+    .with_style(ProgressStyle::with_template("{prefix} {msg} {pos:3}/{len:3} {elapsed} {wide_bar}").unwrap())
+    .with_prefix(category.clone())
+    .with_message("Getting word combinations"));
+
+
 
     let upper_bounds = 0..(possible_words.len());
     let result: Vec<BitSet<W>> = upper_bounds
@@ -34,7 +40,7 @@ pub fn get_combinations<const W: usize>(
                 );
             }
 
-            pb.inc(1);
+            pb.iter().for_each(|x|x.inc(1));
             //println!("Found {} for upper {upper}", found_combinations.len());
             found_combinations
         })
@@ -47,7 +53,7 @@ pub fn get_combinations<const W: usize>(
 
     //println!("Found a total of {} results", result.len());
 
-    pb.finish();
+    pb.iter().for_each(|x|x.finish());
     result
 }
 
@@ -237,7 +243,7 @@ pub mod tests {
         let words = make_finder_group_vec_from_file(input);
         let word_letters: Vec<LetterCounts> = words.iter().map(|x| x.counts).collect_vec();
 
-        let possible_combinations: Vec<BitSet<1>> = get_combinations(word_letters.as_slice(), 16);
+        let possible_combinations: Vec<BitSet<1>> = get_combinations(None, word_letters.as_slice(), 16);
 
         let expected = "boron, carbon, helium, hydrogen\nboron, carbon, helium, lithium\nboron, helium, hydrogen, lithium";
 
@@ -289,7 +295,7 @@ pub mod tests {
 
         let word_letters: Vec<LetterCounts> = words.iter().map(|x| x.counts).collect_vec();
 
-        let possible_combinations: Vec<BitSet<1>> = get_combinations(word_letters.as_slice(), 16);
+        let possible_combinations: Vec<BitSet<1>> = get_combinations(None, word_letters.as_slice(), 16);
 
         println!("{:?}", now.elapsed());
 

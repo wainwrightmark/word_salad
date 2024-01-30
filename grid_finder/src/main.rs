@@ -366,11 +366,13 @@ struct FinderCase {
     data_file_text: String,
     file_name: String,
     write_path: String,
+    stem: String
 }
 
 impl FinderCase {
     fn new_from_path(dir_entry: DirEntry) -> Self {
         let data_path = dir_entry.path();
+        let stem = data_path.file_stem().unwrap().to_string_lossy().to_string();
         let file_name = data_path.file_name().unwrap().to_string_lossy().to_string();
         let write_path = format!("grids/{file_name}",);
         info!("{}", write_path);
@@ -384,6 +386,7 @@ impl FinderCase {
             file_name,
             data_file_text,
             write_path,
+            stem
         }
     }
 }
@@ -414,6 +417,7 @@ fn do_finder(options: Options) {
             file_name,
             write_path,
             data_file_text,
+            stem
         } = finder_case;
 
         info!("Found {} Words", word_map.len());
@@ -476,6 +480,7 @@ fn do_finder(options: Options) {
 
         let mut grids: Vec<GridResult> = match word_map.len() {
             0..=64 => create_grids::<1>(
+                &stem,
                 word_map,
                 &master_words,
                 grids_writer,
@@ -484,6 +489,7 @@ fn do_finder(options: Options) {
                 resume_grids,
             ),
             65..=128 => create_grids::<2>(
+                &stem,
                 word_map,
                 &master_words,
                 grids_writer,
@@ -492,6 +498,7 @@ fn do_finder(options: Options) {
                 resume_grids,
             ),
             129..=192 => create_grids::<3>(
+                &stem,
                 word_map,
                 &master_words,
                 grids_writer,
@@ -500,6 +507,7 @@ fn do_finder(options: Options) {
                 resume_grids,
             ),
             193..=256 => create_grids::<4>(
+                &stem,
                 word_map,
                 &master_words,
                 grids_writer,
@@ -560,7 +568,7 @@ struct SolutionGroup<const W: usize> {
     extras: MySet<BitSet<W>>,
 }
 
-fn create_grids<const W: usize>(
+fn create_grids<const W: usize>(category: &str,
     all_words: &Vec<FinderGroup>,
     exclude_words: &Vec<FinderSingleWord>,
     mut file: BufWriter<File>,
@@ -569,7 +577,7 @@ fn create_grids<const W: usize>(
     resume_grids: Vec<GridResult>,
 ) -> Vec<GridResult> {
     let word_letters: Vec<LetterCounts> = all_words.iter().map(|x| x.counts).collect();
-    let mut possible_combinations: Vec<BitSet<W>> = get_combinations(word_letters.as_slice(), 16);
+    let mut possible_combinations: Vec<BitSet<W>> = get_combinations(Some(category.to_string()), word_letters.as_slice(), 16);
 
     info!(
         "{c} possible combinations founds",
@@ -603,6 +611,10 @@ fn create_grids<const W: usize>(
             resume_grids.len(),
             min_resume_grid.unwrap_or_default()
         );
+
+        // for (set, gr) in resume_grids.iter() {
+        //     info!("{:?} - {}", set.into_iter().join(", "), gr.grid);
+        // }
     }
 
     while let Some((size, group)) = grouped_combinations.pop_last() {
@@ -614,28 +626,34 @@ fn create_grids<const W: usize>(
             break;
         }
 
-        let now = std::time::Instant::now();
-
         let pb = ProgressBar::new((group.sets.len() + group.extras.len()) as u64)
-            .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:7}/{len:7}").unwrap())
-            .with_message(format!("Groups of size {size}"));
+            .with_style(
+                ProgressStyle::with_template(
+                    "{prefix} {msg} {elapsed:6} {human_pos:11}/{human_len:11} {wide_bar}",
+                )
+                .unwrap(),
+            )
+            .with_prefix(format!("{category}: {size:2} words"));
 
         let results: Vec<(WordCombination<W>, Option<GridResult>)> =
-            if min_resume_grid.is_some_and(|mrg| mrg >= size) {
+            if min_resume_grid.is_some_and(|mrg| mrg <= size) {
+                pb.set_message(format!("resuming"));
                 group
                     .sets
-                    .into_iter()
-                    .chain(group.extras.into_iter())
+                    .into_par_iter()
+                    .chain(group.extras.into_par_iter())
                     .filter(|x| !all_solved_combinations.iter().any(|sol| sol.is_superset(x)))
                     .flat_map(|set| {
                         combinations::WordCombination::from_bit_set(set, word_letters.as_slice())
                     })
                     .map(|combination| {
                         let result = resume_grids.get(&combination.word_indexes).cloned();
+                        pb.inc(1);
                         (combination, result)
                     })
                     .collect()
             } else {
+                pb.set_message(format!("finding"));
                 group
                     .sets
                     .into_par_iter()
@@ -677,6 +695,8 @@ fn create_grids<const W: usize>(
                     .collect()
             };
 
+        pb.set_message(format!("finishing"));
+
         let results_count = results.len();
 
         let mut solutions: Vec<GridResult> = vec![];
@@ -706,10 +726,9 @@ fn create_grids<const W: usize>(
         }
 
         let solution_count = solutions.len();
-        let impossible_count = results_count - solution_count;
-        let elapsed = now.elapsed().as_secs_f32();
+        
         pb.finish_with_message(format!(
-            "{size:2} words: {solution_count:6} Solutions {impossible_count:9} Impossible {elapsed:4.3}s"
+            "{solution_count:6} Solutions"
         ));
 
         all_solutions.extend(solutions);
@@ -719,5 +738,6 @@ fn create_grids<const W: usize>(
         }
     }
 
+    panic!();
     all_solutions
 }
