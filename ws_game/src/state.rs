@@ -57,6 +57,7 @@ fn handle_change_level_event(
     mut events: EventReader<ChangeLevelEvent>,
     mut current_level: ResMut<CurrentLevel>,
     daily_challenges: Res<DailyChallenges>,
+    daily_challenge_completions: Res<DailyChallengeCompletion>,
     mut found_words: ResMut<FoundWordsState>,
     mut chosen: ResMut<ChosenState>,
     mut saved_levels: ResMut<SavedLevelsState>,
@@ -86,6 +87,7 @@ fn handle_change_level_event(
         let new_key = SavedLevelKey::try_from_current(new_level);
 
         if let Some(previous_key) = previous_key {
+            // Save the current progress
             if found_words.is_level_started() && !found_words.is_level_complete() {
                 let state = found_words.clone();
                 let elapsed = time.total_elapsed();
@@ -95,6 +97,23 @@ fn handle_change_level_event(
                 };
                 saved_levels.insert(previous_key, saved_state);
             }
+        }
+
+        if let CurrentLevel::DailyChallenge { index } = new_level {
+            if let Either::Left(level) = new_level.level(&daily_challenges){
+                if let Some(level_result) = daily_challenge_completions.results.get(index) {
+                    *current_level = new_level.clone();
+                    *found_words = FoundWordsState::new_level_complete(level, level_result.hints_used as usize);
+                    *time = LevelTime::Paused {
+                        elapsed: Duration::from_secs(level_result.seconds as u64),
+                    };
+                    time.resume_timer();
+
+                    *chosen = ChosenState::default();
+                    return;
+                }
+            }
+
         }
 
         let loaded_level = new_key
@@ -237,6 +256,14 @@ impl FoundWordsState {
             unneeded_tiles: GridSet::EMPTY,
             word_completions: vec![Completion::Unstarted; level.words.len()],
             hints_used: 0,
+        }
+    }
+
+    pub fn new_level_complete(level: &DesignedLevel, hints_used: usize) -> Self {
+        Self {
+            unneeded_tiles: GridSet::ALL,
+            word_completions: vec![Completion::Complete; level.words.len()],
+            hints_used,
         }
     }
 

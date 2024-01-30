@@ -29,14 +29,15 @@ async fn setup_notifications_async(
     daily_challenges: DailyChallenges,
 ) {
     let schedule_options = LocalNotificationSchema::builder()
-        .title("Steks daily challenge")
-        .body("Beat your friends in the Steks daily challenge")
-        .summary_text("Beat your friends in the Steks daily challenge")
+        .title("Work Salad")
+        .body("Today's Daily Challenge is ready")
+        .summary_text("Today's Daily Challenge is ready")
         .id(-1225158782) //Very Random number
         .action_type_id(DAILY_CHALLENGE_ACTION_TYPE_ID)
         .small_icon("notification_icon")
         .large_icon("notification_icon")
         .icon_color("#86AEEA")
+
         .schedule(ScheduleOn::builder().hour(7).build())
         .auto_cancel(true)
         .build();

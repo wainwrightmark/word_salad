@@ -11,6 +11,5 @@
 - integrate ads
 - fireworks performance
 - end selfie mode / recording when resuming app
-- S & E asian countries
 - Way to retry loading daily puzzles
 - Make sure words have enough height -check recent colors puzzle

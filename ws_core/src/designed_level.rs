@@ -46,16 +46,6 @@ impl DesignedLevel {
         }
     }
 
-    // pub fn name_and_number(&self) -> (Ustr, Option<usize>) {
-    //     match self.numbering {
-    //         Some(Numbering::SequenceNumber(num)) => {
-    //             (Ustr::from(format!("{} {num}", self.name).as_str()), None)
-    //         }
-    //         Some(Numbering::WordSaladNumber(num)) => (self.name, Some(num)),
-    //         None => (self.name, None),
-    //     }
-    // }
-
     pub fn unknown() -> Self {
         Self {
             name: Ustr::from("Unknown"),

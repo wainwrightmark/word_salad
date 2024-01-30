@@ -6,8 +6,7 @@ use serde::{Deserialize, Serialize};
 use ws_levels::{level_group::LevelGroup, level_sequence::LevelSequence};
 
 use crate::{
-    prelude::{CurrentLevel, DailyChallenges, FoundWordsState, NonLevel, Streak},
-    purchases::Purchases,
+    level_time::LevelTime, prelude::{CurrentLevel, DailyChallenges, FoundWordsState, NonLevel, Streak}, purchases::Purchases
 };
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, Default, Clone, Resource, MavericContext)]
@@ -28,10 +27,16 @@ impl TrackableResource for TutorialCompletion {
     const KEY: &'static str = "TutorialCompletion";
 }
 
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+pub struct LevelResult {
+    pub seconds: u32,
+    pub hints_used: u32,
+}
+
 #[derive(Debug, PartialEq, Serialize, Deserialize, Default, Clone, Resource, MavericContext)]
 pub struct DailyChallengeCompletion {
+    pub results: HashMap<usize, LevelResult>,
     total_completion: FixedBitSet,
-    current_completion: FixedBitSet,
 }
 
 impl TrackableResource for DailyChallengeCompletion {
@@ -135,7 +140,8 @@ impl SequenceCompletion {
 
 impl DailyChallengeCompletion {
     pub fn reset_daily_challenge_completion(&mut self) {
-        self.current_completion.clear();
+        self.results.clear();
+        //keep total completions
     }
 
     pub fn is_daily_challenge_complete(&self, index: usize) -> bool {
@@ -148,14 +154,15 @@ impl DailyChallengeCompletion {
     }
 
     pub fn get_next_incomplete_daily_challenge(&self, today_date_index: usize) -> Option<usize> {
-        if !self.current_completion.contains(today_date_index) {
-            return Some(today_date_index);
+        let mut current_index = today_date_index;
+
+        loop {
+            if !self.results.contains_key(&current_index) {
+                return Some(current_index);
+            }
+
+            current_index = current_index.checked_sub(1)?;
         }
-
-        let mut set = self.current_completion.clone();
-        set.toggle_range(..);
-
-        set.ones().take(today_date_index).last()
     }
 
     pub fn get_daily_challenges_complete(&self) -> usize {
@@ -170,6 +177,7 @@ pub fn track_level_completion(
     current_level: Res<CurrentLevel>,
     found_words: Res<FoundWordsState>,
     mut streak: ResMut<Streak>,
+    level_time: Res<LevelTime>
 ) {
     if !found_words.is_changed() || !found_words.is_level_complete() {
         return;
@@ -245,10 +253,7 @@ pub fn track_level_completion(
                     streak.longest = streak.current.max(streak.longest);
                 }
             }
-            daily_challenge_completion
-                .current_completion
-                .grow(index.saturating_add(1));
-            daily_challenge_completion.current_completion.insert(*index);
+            daily_challenge_completion.results.insert(*index, LevelResult { seconds: level_time.total_elapsed().as_secs() as u32, hints_used: found_words.hints_used as u32 });
         }
         CurrentLevel::NonLevel(..) => {}
     }
@@ -261,17 +266,17 @@ pub mod test {
     #[test]
     pub fn go() {
         let mut completion = DailyChallengeCompletion::default();
-        completion.current_completion.grow(4);
+
 
         assert_eq!(Some(3), completion.get_next_incomplete_daily_challenge(3));
 
-        completion.current_completion.set(3, true);
-        completion.current_completion.set(2, true);
+        completion.results.insert(3, LevelResult { seconds: 0, hints_used: 0 });
+        completion.results.insert(2, LevelResult { seconds: 0, hints_used: 0 });
 
         assert_eq!(Some(1), completion.get_next_incomplete_daily_challenge(3));
 
-        completion.current_completion.set(1, true);
-        completion.current_completion.set(0, true);
+        completion.results.insert(1, LevelResult { seconds: 0, hints_used: 0 });
+        completion.results.insert(0, LevelResult { seconds: 0, hints_used: 0 });
 
         assert_eq!(None, completion.get_next_incomplete_daily_challenge(3));
     }

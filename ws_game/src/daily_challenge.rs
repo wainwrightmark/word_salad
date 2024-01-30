@@ -66,6 +66,8 @@ pub struct DailyChallengeDataLoadedEvent {
     pub data: String,
 }
 
+
+
 impl DailyChallenges {
     const OFFSET_HOURS: i64 = -5;
 
