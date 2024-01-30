@@ -381,8 +381,9 @@ impl InputType {
                         current_state == *start_state
                     }
                     PressedButton::Pressed { interaction, .. } => *interaction != new_interaction,
-                    PressedButton::PressedAfterActivated { interaction } => {
-                        *interaction != new_interaction
+                    PressedButton::PressedAfterActivated { .. } => {
+                        false
+                        // *interaction != new_interaction
                     }
                 };
 
