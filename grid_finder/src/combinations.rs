@@ -1,4 +1,5 @@
-use const_sized_bit_set::BitSet;
+use crate::word_set::WordSet;
+
 use indicatif::{ProgressBar, ProgressStyle};
 use itertools::Itertools;
 use rayon::prelude::*;
@@ -8,7 +9,7 @@ pub fn get_combinations<const W: usize>(
     category: Option<String>,
     possible_words: &[LetterCounts],
     max_size: u8,
-) -> Vec<BitSet<W>> {
+) -> Vec<WordSet<W>> {
     let pb = category.map(|category| {
         ProgressBar::new(possible_words.len() as u64)
             .with_style(
@@ -20,14 +21,14 @@ pub fn get_combinations<const W: usize>(
     });
 
     let upper_bounds = 0..(possible_words.len());
-    let result: Vec<BitSet<W>> = upper_bounds
+    let result: Vec<WordSet<W>> = upper_bounds
         .into_iter()
         .par_bridge()
         .map(|upper| {
             let words = &possible_words[0..upper];
             let first_word = possible_words[upper];
 
-            let mut found_combinations: Vec<BitSet<W>> = vec![];
+            let mut found_combinations: Vec<WordSet<W>> = vec![];
 
             if let Some(first_combination) =
                 WordCombination::<W>::default().try_add_word(&first_word, upper)
@@ -66,7 +67,7 @@ enum GCIResult {
 }
 
 fn get_combinations_inner<const W: usize>(
-    found_combinations: &mut Vec<BitSet<W>>,
+    found_combinations: &mut Vec<WordSet<W>>,
     current_combination: WordCombination<W>,
     mut possible_words: &[LetterCounts],
     all_possible_words: &[LetterCounts],
@@ -131,13 +132,13 @@ fn get_combinations_inner<const W: usize>(
 
 #[derive(Debug, Clone, PartialEq, Default, Ord, PartialOrd, Eq)]
 pub struct WordCombination<const W: usize> {
-    pub word_indexes: BitSet<W>,
+    pub word_indexes: WordSet<W>,
     pub letter_counts: LetterCounts,
     pub total_letters: u8,
 }
 
 /// Iterate all subsets of this set whose element count is exactly one less
-pub fn shrink_bit_sets<const W: usize>(set: &BitSet<W>) -> impl Iterator<Item = BitSet<W>> + '_ {
+pub fn shrink_bit_sets<const W: usize>(set: &WordSet<W>) -> impl Iterator<Item = WordSet<W>> + '_ {
     set.into_iter().map(|index| {
         let mut s = *set;
         s.set_bit(index, false);
@@ -146,7 +147,7 @@ pub fn shrink_bit_sets<const W: usize>(set: &BitSet<W>) -> impl Iterator<Item = 
 }
 
 impl<const W: usize> WordCombination<W> {
-    pub fn from_bit_set(word_indexes: BitSet<W>, words: &[LetterCounts]) -> Option<Self> {
+    pub fn from_bit_set(word_indexes: WordSet<W>, words: &[LetterCounts]) -> Option<Self> {
         let mut letter_counts = LetterCounts::default();
         for word in word_indexes.into_iter().map(|i| words[i]) {
             letter_counts = letter_counts.try_union(&word)?
@@ -244,7 +245,7 @@ pub mod tests {
         let words = make_finder_group_vec_from_file(input);
         let word_letters: Vec<LetterCounts> = words.iter().map(|x| x.counts).collect_vec();
 
-        let possible_combinations: Vec<BitSet<1>> =
+        let possible_combinations: Vec<WordSet<1>> =
             get_combinations(None, word_letters.as_slice(), 16);
 
         let expected = "boron, carbon, helium, hydrogen\nboron, carbon, helium, lithium\nboron, helium, hydrogen, lithium";
@@ -297,7 +298,7 @@ pub mod tests {
 
         let word_letters: Vec<LetterCounts> = words.iter().map(|x| x.counts).collect_vec();
 
-        let possible_combinations: Vec<BitSet<1>> =
+        let possible_combinations: Vec<WordSet<1>> =
             get_combinations(None, word_letters.as_slice(), 16);
 
         println!("{:?}", now.elapsed());

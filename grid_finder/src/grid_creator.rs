@@ -1,4 +1,3 @@
-use const_sized_bit_set::BitSet;
 use indicatif::{ProgressBar, ProgressStyle};
 
 use itertools::Itertools;
@@ -14,14 +13,16 @@ use ws_core::{
     prelude::*,
 };
 
-use hashbrown::{hash_set::HashSet as MySet, HashMap};
+use crate::word_set::WordSet;
+use hashbrown::HashMap;
+use std::collections::btree_set::BTreeSet as MySet; //todo try other sets - roaring?
 
 use crate::combinations::{self, get_combinations, WordCombination};
 
 #[derive(Debug, Default)]
 struct SolutionGroup<const W: usize> {
-    sets: Vec<BitSet<W>>,
-    extras: MySet<BitSet<W>>,
+    sets: Vec<WordSet<W>>,
+    extras: MySet<WordSet<W>>,
 }
 
 pub fn create_grids<const W: usize>(
@@ -34,7 +35,7 @@ pub fn create_grids<const W: usize>(
     resume_grids: Vec<GridResult>,
 ) -> Vec<GridResult> {
     let word_letters: Vec<LetterCounts> = all_words.iter().map(|x| x.counts).collect();
-    let mut possible_combinations: Vec<BitSet<W>> =
+    let mut possible_combinations: Vec<WordSet<W>> =
         get_combinations(Some(category.to_string()), word_letters.as_slice(), 16);
 
     info!(
@@ -45,7 +46,7 @@ pub fn create_grids<const W: usize>(
     possible_combinations.sort_unstable_by_key(|x| std::cmp::Reverse(x.count()));
 
     let mut all_solutions: Vec<GridResult> = vec![];
-    let mut all_solved_combinations: Vec<BitSet<W>> = vec![];
+    let mut all_solved_combinations: Vec<WordSet<W>> = vec![];
 
     let mut grouped_combinations: BTreeMap<u32, SolutionGroup<W>> = Default::default();
 
@@ -58,9 +59,9 @@ pub fn create_grids<const W: usize>(
             sg.sets.extend(group);
         });
 
-    let resume_grids: HashMap<BitSet<W>, GridResult> = resume_grids
+    let resume_grids: HashMap<WordSet<W>, GridResult> = resume_grids
         .into_iter()
-        .map(|g| (g.get_word_bitset(&all_words), g))
+        .map(|g| (WordSet(g.get_word_bitset(&all_words)), g))
         .collect();
     let min_resume_grid = resume_grids.keys().map(|x| x.count()).min();
     if min_resume_grid.is_some() {
@@ -69,9 +70,8 @@ pub fn create_grids<const W: usize>(
             resume_grids.len(),
             min_resume_grid.unwrap_or_default()
         );
-
-        // for (set, gr) in resume_grids.iter() {
-        //     info!("{:?} - {}", set.into_iter().join(", "), gr.grid);
+        // for (size, count) in resume_grids.keys().map(|x| x.count()).counts(){
+        //     info!("{count} grids of size {size}");
         // }
     }
 

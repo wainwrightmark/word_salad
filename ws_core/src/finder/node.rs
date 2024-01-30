@@ -32,6 +32,12 @@ impl GridResult {
             }
         }
 
+        if set.count() as usize != self.words.len() {
+            log::error!("Grid had a {words_len} words ({words}) but produced a set with {set_count} members ({set_members})",
+            set_members = set.into_iter().map(|x| all_words[x].text).join(", "),
+            words_len=self.words.len(), set_count = set.count(), words = self.words.iter().map(|x|x.text) .join(", "));
+        }
+
         set
     }
 }

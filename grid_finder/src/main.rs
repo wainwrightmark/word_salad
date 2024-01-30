@@ -4,6 +4,7 @@ pub mod combinations;
 pub mod grid_creator;
 pub mod search;
 pub mod word_layout;
+pub mod word_set;
 
 use clap::Parser;
 use const_sized_bit_set::BitSet;
@@ -29,6 +30,7 @@ use ws_core::{
 };
 
 use crate::clustering::cluster_words;
+
 
 #[derive(Parser, Debug)]
 #[command()]
