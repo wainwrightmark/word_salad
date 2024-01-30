@@ -13,7 +13,7 @@ const CLEAR_COLOR: Color = {
     }
 };
 
-define_lens_transparent!(ClearColorLens, ClearColor, Color);
+maveric::define_lens_transparent!(ClearColorLens, ClearColor, Color);
 
 pub struct ClearColorPlugin;
 

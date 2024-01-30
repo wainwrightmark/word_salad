@@ -8,7 +8,6 @@ use ws_levels::{level_group::LevelGroup, level_sequence::LevelSequence};
 use crate::{
     prelude::{CurrentLevel, DailyChallenges, FoundWordsState, NonLevel, Streak},
     purchases::Purchases,
-    state::HintState,
 };
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, Default, Clone, Resource, MavericContext)]
@@ -164,13 +163,12 @@ impl DailyChallengeCompletion {
     }
 }
 
-pub fn track_level_completion<'c>(
+pub fn track_level_completion(
     mut sequence_completion: ResMut<SequenceCompletion>,
     mut daily_challenge_completion: ResMut<DailyChallengeCompletion>,
     mut tutorial_completion: ResMut<TutorialCompletion>,
     current_level: Res<CurrentLevel>,
     found_words: Res<FoundWordsState>,
-    mut hints_state: ResMut<HintState>,
     mut streak: ResMut<Streak>,
 ) {
     if !found_words.is_changed() || !found_words.is_level_complete() {
@@ -200,11 +198,6 @@ pub fn track_level_completion<'c>(
                         );
                     }
                 }
-
-                if number_complete <= sequence.level_count() {
-                    hints_state.hints_remaining += 1;
-                    hints_state.total_earned_hints += 1;
-                }
             }
         }
 
@@ -220,11 +213,6 @@ pub fn track_level_completion<'c>(
             completion.current_index = (completion.current_index + 1) % TUTORIAL_LEVEL_COUNT;
             if completion.total_complete < number_complete {
                 completion.total_complete = number_complete;
-
-                if number_complete <= TUTORIAL_LEVEL_COUNT {
-                    hints_state.hints_remaining += 1;
-                    hints_state.total_earned_hints += 1;
-                }
             }
         }
 
@@ -234,8 +222,6 @@ pub fn track_level_completion<'c>(
                     .total_completion
                     .grow(index.saturating_add(1));
                 daily_challenge_completion.total_completion.insert(*index);
-                hints_state.hints_remaining += 1;
-                hints_state.total_earned_hints += 1;
 
                 let index = DailyChallenges::get_today_index();
                 {

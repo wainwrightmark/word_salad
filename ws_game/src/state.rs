@@ -75,6 +75,7 @@ fn handle_change_level_event(
                 if let Either::Left(level) = current_level.level(daily_challenges.as_ref()) {
                     *time = LevelTime::default();
                     *found_words = FoundWordsState::new_from_level(level);
+                    *chosen = ChosenState::default();
                 }
 
                 return;
@@ -203,7 +204,6 @@ const INITIAL_HINTS: usize = 3;
 #[derive(Debug, Clone, Resource, Serialize, Deserialize, MavericContext, PartialEq)]
 pub struct HintState {
     pub hints_remaining: usize,
-    pub total_earned_hints: usize,
     pub total_bought_hints: usize,
 }
 
@@ -211,7 +211,6 @@ impl Default for HintState {
     fn default() -> Self {
         Self {
             hints_remaining: INITIAL_HINTS,
-            total_earned_hints: 0,
             total_bought_hints: 0,
         }
     }
@@ -887,7 +886,6 @@ pub mod tests {
         let mut found_words = FoundWordsState::new_from_level(&level);
         let mut hint_state = HintState {
             hints_remaining: 10,
-            total_earned_hints: 0,
             total_bought_hints: 0,
         };
         let mut chosen_state = ChosenState::default();

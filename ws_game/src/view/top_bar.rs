@@ -7,14 +7,14 @@ use ws_core::{font_icons, prelude::*};
 #[derive(Debug, NodeContext)]
 pub struct TopBarContext {
     pub window_size: MyWindowSize,
-    pub hint_state: HintState,
+    // pub hint_state: HintState,
     pub video_resource: VideoResource,
 }
 
 impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for TopBarContextWrapper<'w> {
     fn from(value: &'a ViewContextWrapper<'w>) -> Self {
         Self {
-            hint_state: Res::clone(&value.hint_state),
+            // hint_state: Res::clone(&value.hint_state),
             window_size: Res::clone(&value.window_size),
             video_resource: Res::clone(&value.video_resource),
         }
@@ -86,14 +86,14 @@ impl MavericNode for TopBar {
                     );
                 }
 
-                commands.add_child(
-                    "hints",
-                    HintsViewNode {
-                        hint_state: context.hint_state.clone(),
-                        selfie_mode: context.video_resource.selfie_mode(),
-                    },
-                    size,
-                );
+                // commands.add_child(
+                //     "hints",
+                //     HintsViewNode {
+                //         hint_state: context.hint_state.clone(),
+                //         selfie_mode: context.video_resource.selfie_mode(),
+                //     },
+                //     size,
+                // );
 
                 let logo_rect = size.get_rect(
                     &LayoutTopBar::WordSaladLogo,
