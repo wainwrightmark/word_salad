@@ -60,7 +60,7 @@ impl ExtractToShader for ButtonBoxShaderExtraction {
         ShaderBorder,
         ButtonInteraction,
     );
-    type ResourceParams<'w> = Res<'w, PressedButton>;
+    type ResourceParams<'w> = (Res<'w, PressedButton>, Res<'w, Time>);
 
     fn get_params(
         query_item: <Self::ParamsQuery<'_> as bevy::ecs::query::WorldQuery>::Item<'_>,
@@ -68,17 +68,17 @@ impl ExtractToShader for ButtonBoxShaderExtraction {
     ) -> <Self::Shader as ParameterizedShader>::Params {
         let (color, rounding, height, color2, shader_border, button_interaction) = query_item;
 
+        let (pressed_button, time) = resource;
 
-
-        if let Some(duration) = match resource.as_ref() {
+        if let Some(duration) = match pressed_button.as_ref() {
             PressedButton::None | PressedButton::NoInteractionPressed { .. } => None,
             PressedButton::Pressed {
                 interaction,
-                duration,
+                start_elapsed,
                 ..
             } => {
                 if interaction == button_interaction {
-                    Some(duration)
+                    Some(time.elapsed().saturating_sub(*start_elapsed))
                 } else {
                     None
                 }

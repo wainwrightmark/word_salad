@@ -248,7 +248,7 @@ impl ExtractToShader for WordButtonBoxShader {
         &'a ShaderProgress,
     );
     type ParamsBundle = (WordButtonCompletion, ShaderAspectRatio, ShaderProgress);
-    type ResourceParams<'w> = Res<'w, PressedButton>;
+    type ResourceParams<'w> = (Res<'w, PressedButton>, Res<'w, Time>);
 
     fn get_params(
         query_item: <Self::ParamsQuery<'_> as bevy::ecs::query::WorldQuery>::Item<'_>,
@@ -264,15 +264,17 @@ impl ExtractToShader for WordButtonBoxShader {
             ShaderProgress { progress },
         ) = query_item;
 
-        if let Some(pressed_duration) = match resource.as_ref() {
+        let (pressed_button, time) = resource;
+
+        if let Some(pressed_duration) = match pressed_button.as_ref() {
             PressedButton::None | PressedButton::NoInteractionPressed { .. } => None,
             PressedButton::Pressed {
                 interaction,
-                duration,
+                start_elapsed,
                 ..
             } => {
                 if interaction == &ButtonInteraction::WordButton(*tile) {
-                    Some(duration)
+                    Some(time.elapsed().saturating_sub(*start_elapsed))
                 } else {
                     None
                 }

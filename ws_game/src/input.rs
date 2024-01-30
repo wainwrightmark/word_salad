@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use crate::{
     menu_layout::{
         main_menu_back_button::MainMenuBackButton,
@@ -193,7 +191,10 @@ impl InteractionEntity {
                     return Some(back);
                 }
 
-                Some(Self::try_get_button::<MainMenuLayoutEntity>(position, size, &selfie_mode).unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)))
+                Some(
+                    Self::try_get_button::<MainMenuLayoutEntity>(position, size, &selfie_mode)
+                        .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
+                )
             }
             MenuState::ChooseLevelsPage => {
                 if let Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &())
@@ -201,7 +202,10 @@ impl InteractionEntity {
                     return Some(back);
                 }
 
-                Some(Self::try_get_button::<LevelsMenuLayoutEntity>(position, size, &selfie_mode).unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)))
+                Some(
+                    Self::try_get_button::<LevelsMenuLayoutEntity>(position, size, &selfie_mode)
+                        .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
+                )
             }
             MenuState::WordSaladLevels => {
                 if let Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &())
@@ -209,7 +213,10 @@ impl InteractionEntity {
                     return Some(back);
                 }
 
-                Some(Self::try_get_button::<WordSaladMenuLayoutEntity>(position, size, &selfie_mode).unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)))
+                Some(
+                    Self::try_get_button::<WordSaladMenuLayoutEntity>(position, size, &selfie_mode)
+                        .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
+                )
             }
             MenuState::LevelGroupPage(group) => {
                 if let Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &())
@@ -217,11 +224,14 @@ impl InteractionEntity {
                     return Some(back);
                 }
 
-                Some(Self::try_get_button::<LevelGroupLayoutEntity>(
-                    position,
-                    size,
-                    &(selfie_mode, *group),
-                ).unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)))
+                Some(
+                    Self::try_get_button::<LevelGroupLayoutEntity>(
+                        position,
+                        size,
+                        &(selfie_mode, *group),
+                    )
+                    .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
+                )
             }
         }
     }
@@ -243,6 +253,7 @@ impl InputType {
         daily_challenges: &DailyChallenges,
         event_writer: &mut EventWriter<ButtonActivated>,
         timer: &LevelTime,
+        time: &Time,
     ) {
         startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 
@@ -390,7 +401,7 @@ impl InputType {
                 if should_change {
                     *pressed_button.as_mut() = PressedButton::Pressed {
                         interaction: new_interaction,
-                        duration: Duration::ZERO,
+                        start_elapsed: time.elapsed(),
                         start_state: current_state,
                     };
 
@@ -447,6 +458,7 @@ pub fn handle_mouse_input(
     daily_challenges: Res<DailyChallenges>,
     timer: Res<LevelTime>,
     mut event_writer: EventWriter<ButtonActivated>,
+    time: Res<Time>,
 ) {
     let input_type = if mouse_input.just_released(MouseButton::Left) {
         let position_option = get_cursor_position(q_windows);
@@ -478,6 +490,7 @@ pub fn handle_mouse_input(
         &daily_challenges,
         &mut event_writer,
         &timer,
+        &time,
     );
 }
 
@@ -497,6 +510,7 @@ pub fn handle_touch_input(
     daily_challenges: Res<DailyChallenges>,
     timer: Res<LevelTime>,
     mut event_writer: EventWriter<ButtonActivated>,
+    time: Res<Time>,
 ) {
     for ev in touch_events.read() {
         let input_type: InputType = match ev.phase {
@@ -532,6 +546,7 @@ pub fn handle_touch_input(
             &daily_challenges,
             &mut event_writer,
             &timer,
+            &time,
         );
     }
 }

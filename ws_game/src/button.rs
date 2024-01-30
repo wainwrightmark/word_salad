@@ -48,36 +48,25 @@ fn track_held_button(
 
     let PressedButton::Pressed {
         interaction,
-        duration,
-        start_state,
+        start_elapsed,
+        ..
     } = pressed_button.as_ref()
     else {
         return;
     };
     startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     let interaction = *interaction;
-    let duration = *duration + time.delta();
+    let held_duration = time.elapsed().saturating_sub(*start_elapsed);
 
     //info!("{duration:?}");
 
     let ButtonPressType::OnHold(hold_duration) = interaction.button_press_type() else {
-        *pressed_button.as_mut() = PressedButton::Pressed {
-            interaction,
-            duration,
-            start_state: *start_state,
-        };
         return;
     };
 
-    if duration >= hold_duration {
+    if held_duration >= hold_duration {
         *pressed_button = PressedButton::PressedAfterActivated { interaction };
         event_writer.send(ButtonActivated(interaction));
-    } else {
-        *pressed_button.as_mut() = PressedButton::Pressed {
-            interaction,
-            duration,
-            start_state: *start_state,
-        };
     }
 }
 
@@ -138,7 +127,7 @@ pub enum PressedButton {
     },
     Pressed {
         interaction: ButtonInteraction,
-        duration: Duration, //todo change to start time
+        start_elapsed: Duration,
         start_state: StartPressState,
     },
     PressedAfterActivated {
