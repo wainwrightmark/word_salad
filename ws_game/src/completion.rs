@@ -107,7 +107,7 @@ impl SequenceCompletion {
             .current_index;
 
         if index >= sequence.level_count() {
-            return NextLevelResult::NoMoreLevels;
+            NextLevelResult::NoMoreLevels
         } else if index >= sequence.free_level_count()
             && !purchases.groups_purchased.contains(&sequence.group())
         {
@@ -186,7 +186,7 @@ pub fn track_level_completion(
                 .completions
                 .entry(*sequence)
                 .or_default();
-            completion.current_index = completion.current_index + 1;
+            completion.current_index += 1;
             if completion.total_complete < number_complete {
                 completion.total_complete = number_complete;
 

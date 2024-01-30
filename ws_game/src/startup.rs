@@ -6,7 +6,6 @@ use bevy::{log::LogPlugin, window::RequestRedraw};
 use nice_bevy_utils::{async_event_writer, window_size::WindowSizePlugin, CanRegisterAsyncEvent};
 use ws_core::layout::entities::*;
 
-
 pub fn go() {
     let mut app = App::new();
 
@@ -30,7 +29,6 @@ pub fn go() {
     };
 
     app.insert_resource(Msaa::Off)
-
         .add_plugins(
             DefaultPlugins
                 .set(window_plugin)
@@ -164,8 +162,6 @@ fn choose_level_on_game_load(
             if let Some(level) = crate::wasm::get_game_from_location() {
                 info!("Loaded custom level from path");
 
-
-
                 let custom_level = CurrentLevel::Custom {
                     name: level.clone().full_name().to_string(),
                 };
@@ -200,7 +196,7 @@ fn choose_level_on_game_load(
             }
         }
 
-        return None;
+        None
     }
 
     if let Some(level) = get_new_level(current_level, daily_challenge_completion, daily_challenges)

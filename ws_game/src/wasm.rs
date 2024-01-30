@@ -190,7 +190,6 @@ pub fn open_link(url: &str) {
     }
 }
 
-
 #[wasm_bindgen::prelude::wasm_bindgen()]
 extern "C" {
     #[wasm_bindgen(catch, final, js_namespace = ["Capacitor", "Plugins", "ScreenRecorder"], js_name="start" )]
@@ -199,7 +198,6 @@ extern "C" {
     #[wasm_bindgen(catch, final, js_namespace = ["Capacitor", "Plugins", "ScreenRecorder"], js_name="stop" )]
     pub fn stop_screen_record() -> Result<(), JsValue>;
 }
-
 
 #[wasm_bindgen::prelude::wasm_bindgen(module = "/video.js")]
 extern "C" {

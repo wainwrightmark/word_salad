@@ -3,17 +3,21 @@ pub mod asynchronous;
 pub mod button;
 pub mod button_node;
 pub mod chosen_state;
+pub mod clear_color;
 pub mod compatibility;
 pub mod completion;
 pub mod constants;
 pub mod current_level;
-pub mod haptics;
 pub mod grid_input;
+pub mod haptics;
 pub mod input;
 pub mod level_time;
 pub mod logging;
 pub mod menu_layout;
 pub mod motion_blur;
+#[cfg(any(feature = "ios", feature = "android"))]
+pub mod notifications;
+pub mod purchases;
 pub mod rounding;
 pub mod shapes;
 pub mod startup;
@@ -22,10 +26,6 @@ pub mod streak;
 pub mod test_res_mut;
 pub mod video;
 pub mod view;
-pub mod purchases;
-pub mod clear_color;
-#[cfg(any(feature = "ios", feature = "android"))]
-pub mod notifications;
 
 #[cfg(target_arch = "wasm32")]
 pub mod wasm;
@@ -51,8 +51,8 @@ pub mod prelude {
     pub use crate::constants::*;
     pub use crate::current_level::*;
     pub use crate::daily_challenge::*;
-    pub use crate::haptics::*;
     pub use crate::grid_input::*;
+    pub use crate::haptics::*;
     pub use crate::level_time::*;
     pub use crate::logging::*;
     pub use crate::menu_layout::*;

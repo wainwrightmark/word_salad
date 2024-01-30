@@ -121,7 +121,7 @@ impl MavericNode for CongratsView {
                     }
                     CurrentLevel::Tutorial { .. } => Data::None,
                     CurrentLevel::Fixed { sequence, .. } => {
-                        let complete = context.sequence_completion.get_number_complete(&sequence);
+                        let complete = context.sequence_completion.get_number_complete(sequence);
                         let total = sequence.level_count();
                         let remaining = total.saturating_sub(complete);
                         Data::Sequence {

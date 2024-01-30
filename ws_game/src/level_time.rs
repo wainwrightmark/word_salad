@@ -128,7 +128,7 @@ fn manage_timer(
 
     if menu_state.is_changed() {
         if menu_state.is_closed() {
-            if !found_words.is_level_complete(){
+            if !found_words.is_level_complete() {
                 timer.resume_timer();
             }
         } else {
@@ -161,7 +161,7 @@ fn count_down(
     time: Res<Time>,
     mut elapsed: Local<Duration>,
     current_level: Res<CurrentLevel>,
-    mut change_level_events: EventWriter<ChangeLevelEvent>
+    mut change_level_events: EventWriter<ChangeLevelEvent>,
 ) {
     let todays_index = match current_level.as_ref() {
         CurrentLevel::NonLevel(NonLevel::DailyChallengeCountdown { todays_index }) => todays_index,
@@ -186,7 +186,7 @@ fn count_down(
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone,  Component)]
+#[derive(Debug, PartialEq, Eq, Clone, Component)]
 pub struct TimeCounterMarker;
 
 pub fn format_seconds(total_seconds: u64) -> String {

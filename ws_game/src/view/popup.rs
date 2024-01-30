@@ -308,7 +308,6 @@ impl MavericRootChildren for PopupStateRoot {
                                     border_color: POPUP_BOX_BORDER.convert_color(),
                                     border: 0.01,
                                 },
-
                             );
 
                             commands.add_child("background", node, &())

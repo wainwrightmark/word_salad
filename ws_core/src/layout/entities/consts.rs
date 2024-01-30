@@ -43,12 +43,15 @@ pub const USED_HEIGHT_BASE: f32 = TOP_BAR_HEIGHT_BASE
 
 static_assertions::const_assert_eq!(USED_HEIGHT_BASE, IDEAL_HEIGHT);
 
-pub const GRID_MID_BASE: f32 =
-    TOP_BAR_HEIGHT_BASE + THEME_HEIGHT + THEME_INFO_HEIGHT + TIMER_HEIGHT + GRID_THEME_SPACER + (GRID_SIZE * 0.5);
+pub const GRID_MID_BASE: f32 = TOP_BAR_HEIGHT_BASE
+    + THEME_HEIGHT
+    + THEME_INFO_HEIGHT
+    + TIMER_HEIGHT
+    + GRID_THEME_SPACER
+    + (GRID_SIZE * 0.5);
 
 pub fn extra_top_bar_height(sizing: &LayoutSizing, selfie_mode: &SelfieMode) -> f32 {
-
-    if selfie_mode.is_selfie_mode{
+    if selfie_mode.is_selfie_mode {
         return 0.0;
     }
 
@@ -134,5 +137,3 @@ pub const MENU_BUTTON_FONT_SIZE_SMALL: f32 = 18f32;
 
 pub const TUTORIAL_TEXT_FONT_SIZE: f32 = 18f32;
 pub const HINTS_REMAINING_FONT_SIZE: f32 = 18f32;
-
-

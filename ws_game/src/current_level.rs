@@ -7,7 +7,9 @@ use ws_core::level_type::LevelType;
 use ws_levels::{all_levels::get_tutorial_level, level_sequence::LevelSequence};
 
 use crate::{
-    completion::{DailyChallengeCompletion, SequenceCompletion}, prelude::*, purchases::Purchases
+    completion::{DailyChallengeCompletion, SequenceCompletion},
+    prelude::*,
+    purchases::Purchases,
 };
 
 #[derive(Debug, Clone, Resource, PartialEq, Eq, Serialize, Deserialize, MavericContext, EnumIs)]
@@ -101,7 +103,7 @@ impl CurrentLevel {
         &self,
         daily_challenge_completion: &DailyChallengeCompletion,
         sequence_completion: &SequenceCompletion,
-        purchases: &Purchases
+        purchases: &Purchases,
     ) -> CurrentLevel {
         match self {
             CurrentLevel::Tutorial { index } => {
@@ -119,10 +121,9 @@ impl CurrentLevel {
             CurrentLevel::Fixed {
                 level_index: _,
                 sequence,
-            } => {
-
-                sequence_completion.get_next_level_index(*sequence, purchases).to_level(*sequence)
-            }
+            } => sequence_completion
+                .get_next_level_index(*sequence, purchases)
+                .to_level(*sequence),
             CurrentLevel::DailyChallenge { .. } => {
                 match daily_challenge_completion.get_next_incomplete_daily_challenge_from_today() {
                     Some(index) => CurrentLevel::DailyChallenge { index },

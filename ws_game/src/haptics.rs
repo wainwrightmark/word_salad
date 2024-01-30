@@ -1,4 +1,3 @@
-use capacitor_bindings::haptics::{ImpactOptions, ImpactStyle};
 use ws_core::layout::entities::SelfieMode;
 
 pub enum HapticEvent {
@@ -9,31 +8,33 @@ pub enum HapticEvent {
 
 impl HapticEvent {
     pub fn try_activate(&self, selfie_mode: SelfieMode) {
-        if selfie_mode.is_selfie_mode {
-            return;
-        }
+        if selfie_mode.is_selfie_mode {}
 
-        match self {
-            HapticEvent::UseHint => {
-                crate::logging::do_or_report_error(capacitor_bindings::haptics::Haptics::impact(
-                    ImpactOptions {
-                        style: capacitor_bindings::haptics::ImpactStyle::Light,
-                    },
-                ));
-            }
-            HapticEvent::FinishWord => {
-                crate::logging::do_or_report_error(capacitor_bindings::haptics::Haptics::impact(
-                    ImpactOptions {
-                        style: ImpactStyle::Light,
-                    },
-                ));
-            }
-            HapticEvent::FinishPuzzle => {
-                crate::logging::do_or_report_error( capacitor_bindings::haptics::Haptics::impact(
-                    ImpactOptions {
-                        style: ImpactStyle::Heavy,
-                    },
-                ));
+        #[cfg(any(feature = "android", feature = "ios", feature = "web"))]
+        {
+            use capacitor_bindings::haptics::{ImpactOptions, ImpactStyle};
+            match self {
+                HapticEvent::UseHint => {
+                    crate::logging::do_or_report_error(
+                        capacitor_bindings::haptics::Haptics::impact(ImpactOptions {
+                            style: capacitor_bindings::haptics::ImpactStyle::Light,
+                        }),
+                    );
+                }
+                HapticEvent::FinishWord => {
+                    crate::logging::do_or_report_error(
+                        capacitor_bindings::haptics::Haptics::impact(ImpactOptions {
+                            style: ImpactStyle::Light,
+                        }),
+                    );
+                }
+                HapticEvent::FinishPuzzle => {
+                    crate::logging::do_or_report_error(
+                        capacitor_bindings::haptics::Haptics::impact(ImpactOptions {
+                            style: ImpactStyle::Heavy,
+                        }),
+                    );
+                }
             }
         }
     }

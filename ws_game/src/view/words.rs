@@ -31,7 +31,7 @@ pub struct WordsContext {
     pub daily_challenges: DailyChallenges,
 }
 
-impl<'a, 'w : 'a> From<&'a ViewContextWrapper<'w>> for WordsContextWrapper<'w> {
+impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for WordsContextWrapper<'w> {
     fn from(value: &'a ViewContextWrapper<'w>) -> Self {
         Self {
             current_level: Res::clone(&value.current_level),
@@ -54,11 +54,7 @@ impl MavericNode for WordsNode {
         _previous: &Self,
         context: &<Self::Context as NodeContext>::Wrapper<'_>,
     ) -> bool {
-        if context.current_level.is_changed() {
-            true
-        } else {
-            false
-        }
+        context.current_level.is_changed()
     }
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
@@ -282,17 +278,17 @@ impl ExtractToShader for WordButtonBoxShader {
             PressedButton::PressedAfterActivated { .. } => None,
         } {
             let color = match completion {
-                Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color().into(),
+                Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color(),
                 Completion::ManualHinted(_) => palette::WORD_BACKGROUND_MANUAL_HINT.convert_color(),
-                Completion::Complete => palette::WORD_BACKGROUND_COMPLETE.convert_color().into(),
+                Completion::Complete => palette::WORD_BACKGROUND_COMPLETE.convert_color(),
             };
 
             let color2 = match completion {
-                Completion::Unstarted => palette::WORD_BACKGROUND_PROGRESS.convert_color().into(),
+                Completion::Unstarted => palette::WORD_BACKGROUND_PROGRESS.convert_color(),
                 Completion::ManualHinted(_) => {
                     palette::WORD_BACKGROUND_MANUAL_HINT2.convert_color()
                 }
-                Completion::Complete => palette::WORD_BACKGROUND_COMPLETE.convert_color().into(),
+                Completion::Complete => palette::WORD_BACKGROUND_COMPLETE.convert_color(),
             };
 
             let progress =
@@ -307,13 +303,13 @@ impl ExtractToShader for WordButtonBoxShader {
             }
         } else {
             let color = match completion {
-                Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color().into(),
+                Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color(),
                 Completion::ManualHinted(_) => palette::WORD_BACKGROUND_MANUAL_HINT.convert_color(),
                 Completion::Complete => {
                     if previous_completion.is_some_and(|x| x.is_manual_hinted()) {
                         palette::WORD_BACKGROUND_MANUAL_HINT.convert_color()
                     } else {
-                        palette::WORD_BACKGROUND_UNSTARTED.convert_color().into()
+                        palette::WORD_BACKGROUND_UNSTARTED.convert_color()
                     }
                 }
             };

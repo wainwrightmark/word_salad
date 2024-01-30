@@ -83,19 +83,17 @@ fn handle_change_level_event(
         };
 
         let previous_key = SavedLevelKey::try_from_current(&current_level);
-        let new_key = SavedLevelKey::try_from_current(&new_level);
+        let new_key = SavedLevelKey::try_from_current(new_level);
 
         if let Some(previous_key) = previous_key {
-            if found_words.is_level_started() {
-                if !found_words.is_level_complete() {
-                    let state = found_words.clone();
-                    let elapsed = time.total_elapsed();
-                    let saved_state = SavedState {
-                        found_words_state: state,
-                        elapsed,
-                    };
-                    saved_levels.insert(previous_key, saved_state);
-                }
+            if found_words.is_level_started() && !found_words.is_level_complete() {
+                let state = found_words.clone();
+                let elapsed = time.total_elapsed();
+                let saved_state = SavedState {
+                    found_words_state: state,
+                    elapsed,
+                };
+                saved_levels.insert(previous_key, saved_state);
             }
         }
 

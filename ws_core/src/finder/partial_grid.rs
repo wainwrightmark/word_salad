@@ -186,8 +186,7 @@ impl PartialGrid {
                 return GridSet::EMPTY;
             }
         };
-        
-        
+
         if allowed.is_empty() {
             return allowed;
         }

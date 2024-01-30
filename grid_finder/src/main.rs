@@ -455,13 +455,15 @@ fn do_finder(options: Options) {
             info!("Found {total_master_count} words on the master list. {new_master_count} will be treated as exclusions");
         }
 
-        let resume_grids: Vec<GridResult> = if options.resume{
+        let resume_grids: Vec<GridResult> = if options.resume {
             let resume_file_text = std::fs::read_to_string(write_path).unwrap_or_default();
-            let resume_grids: Vec<GridResult> =resume_file_text.lines().map(|line| GridResult::from_str(line).unwrap()).collect();
+            let resume_grids: Vec<GridResult> = resume_file_text
+                .lines()
+                .map(|line| GridResult::from_str(line).unwrap())
+                .collect();
             info!("Resuming with {} grids", resume_grids.len());
             resume_grids
-
-        }else{
+        } else {
             vec![]
         };
 
@@ -472,8 +474,6 @@ fn do_finder(options: Options) {
 
         let max_grids = (options.grids > 0).then_some(options.grids as usize);
 
-
-
         let mut grids: Vec<GridResult> = match word_map.len() {
             0..=64 => create_grids::<1>(
                 word_map,
@@ -481,7 +481,7 @@ fn do_finder(options: Options) {
                 grids_writer,
                 options.minimum,
                 max_grids,
-                resume_grids
+                resume_grids,
             ),
             65..=128 => create_grids::<2>(
                 word_map,
@@ -489,7 +489,7 @@ fn do_finder(options: Options) {
                 grids_writer,
                 options.minimum,
                 max_grids,
-                resume_grids
+                resume_grids,
             ),
             129..=192 => create_grids::<3>(
                 word_map,
@@ -497,7 +497,7 @@ fn do_finder(options: Options) {
                 grids_writer,
                 options.minimum,
                 max_grids,
-                resume_grids
+                resume_grids,
             ),
             193..=256 => create_grids::<4>(
                 word_map,
@@ -505,7 +505,7 @@ fn do_finder(options: Options) {
                 grids_writer,
                 options.minimum,
                 max_grids,
-                resume_grids
+                resume_grids,
             ),
             _ => panic!("Too many words to do grid creation"),
         };
@@ -566,7 +566,7 @@ fn create_grids<const W: usize>(
     mut file: BufWriter<File>,
     min_size: u32,
     max_grids: Option<usize>,
-    resume_grids: Vec<GridResult>
+    resume_grids: Vec<GridResult>,
 ) -> Vec<GridResult> {
     let word_letters: Vec<LetterCounts> = all_words.iter().map(|x| x.counts).collect();
     let mut possible_combinations: Vec<BitSet<W>> = get_combinations(word_letters.as_slice(), 16);
@@ -592,12 +592,17 @@ fn create_grids<const W: usize>(
             sg.sets.extend(group);
         });
 
-    let resume_grids : HashMap<BitSet<W>, GridResult> = resume_grids
-    .into_iter()
-    .map(|g| ( g.get_word_bitset(&all_words), g)).collect();
-    let min_resume_grid = resume_grids.keys().map(|x|x.count()).min();
-    if min_resume_grid.is_some(){
-        info!("Resuming with {} grids of size {} or above", resume_grids.len(), min_resume_grid.unwrap_or_default());
+    let resume_grids: HashMap<BitSet<W>, GridResult> = resume_grids
+        .into_iter()
+        .map(|g| (g.get_word_bitset(&all_words), g))
+        .collect();
+    let min_resume_grid = resume_grids.keys().map(|x| x.count()).min();
+    if min_resume_grid.is_some() {
+        info!(
+            "Resuming with {} grids of size {} or above",
+            resume_grids.len(),
+            min_resume_grid.unwrap_or_default()
+        );
     }
 
     while let Some((size, group)) = grouped_combinations.pop_last() {
@@ -616,58 +621,61 @@ fn create_grids<const W: usize>(
             .with_message(format!("Groups of size {size}"));
 
         let results: Vec<(WordCombination<W>, Option<GridResult>)> =
+            if min_resume_grid.is_some_and(|mrg| mrg >= size) {
+                group
+                    .sets
+                    .into_iter()
+                    .chain(group.extras.into_iter())
+                    .filter(|x| !all_solved_combinations.iter().any(|sol| sol.is_superset(x)))
+                    .flat_map(|set| {
+                        combinations::WordCombination::from_bit_set(set, word_letters.as_slice())
+                    })
+                    .map(|combination| {
+                        let result = resume_grids.get(&combination.word_indexes).cloned();
+                        (combination, result)
+                    })
+                    .collect()
+            } else {
+                group
+                    .sets
+                    .into_par_iter()
+                    .chain(group.extras.into_par_iter())
+                    .filter(|x| !all_solved_combinations.iter().any(|sol| sol.is_superset(x)))
+                    .flat_map(|set| {
+                        combinations::WordCombination::from_bit_set(set, word_letters.as_slice())
+                    })
+                    .map(|set: WordCombination<W>| {
+                        let mut counter = FakeCounter;
+                        let finder_words = set.get_single_words(all_words);
 
-        if min_resume_grid.is_some_and(|mrg| mrg >= size){
-            group.sets.into_iter().chain(group.extras.into_iter())
-            .filter(|x| !all_solved_combinations.iter().any(|sol| sol.is_superset(x)))
-            .flat_map(|set| {
-                combinations::WordCombination::from_bit_set(set, word_letters.as_slice())
-            })
-            .map(|combination|{
-                let result = resume_grids.get(&combination.word_indexes).cloned();
-                (combination, result)
-            })
-            .collect()
-        }
-        else{
-            group
-            .sets
-            .into_par_iter()
-            .chain(group.extras.into_par_iter())
-            .filter(|x| !all_solved_combinations.iter().any(|sol| sol.is_superset(x)))
-            .flat_map(|set| {
-                combinations::WordCombination::from_bit_set(set, word_letters.as_slice())
-            })
-            .map(|set: WordCombination<W>| {
-                let mut counter = FakeCounter;
-                let finder_words = set.get_single_words(all_words);
+                        let exclude_words = exclude_words
+                            .iter()
+                            .filter(|w| set.letter_counts.is_superset(&w.counts))
+                            .filter(|excluded_word| {
+                                !finder_words
+                                    .iter()
+                                    .any(|fw| excluded_word.is_strict_substring(fw))
+                            })
+                            .cloned()
+                            .collect_vec();
 
-                let exclude_words = exclude_words
-                    .iter()
-                    .filter(|w| set.letter_counts.is_superset(&w.counts))
-                    .filter(|excluded_word| !finder_words.iter().any(|fw| excluded_word.is_strict_substring(fw)))
-                    .cloned()
-                    .collect_vec();
+                        let mut result = None;
 
-                let mut result = None;
+                        ws_core::finder::node::try_make_grid_with_blank_filling(
+                            set.letter_counts,
+                            &finder_words,
+                            &exclude_words,
+                            Character::E,
+                            &mut counter,
+                            &mut result,
+                        );
 
-                ws_core::finder::node::try_make_grid_with_blank_filling(
-                    set.letter_counts,
-                    &finder_words,
-                    &exclude_words,
-                    Character::E,
-                    &mut counter,
-                    &mut result,
-                );
+                        pb.inc(1);
 
-                pb.inc(1);
-
-                (set, result)
-            })
-            .collect()
-        };
-
-
+                        (set, result)
+                    })
+                    .collect()
+            };
 
         let results_count = results.len();
 

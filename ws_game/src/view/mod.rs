@@ -53,8 +53,6 @@ impl MavericRootChildren for ViewRoot {
         context: &<Self::Context as NodeContext>::Wrapper<'_>,
         commands: &mut impl ChildCommands,
     ) {
-
-
         let selfie_mode = context.video_resource.selfie_mode();
         let is_level_complete = context.found_words_state.is_level_complete();
         let background_type = BackgroundType::from_resources(
@@ -66,16 +64,12 @@ impl MavericRootChildren for ViewRoot {
         commands.add_child("Top Bar", TopBar, &context.into());
 
         if !context.menu_state.is_closed() {
-            commands.add_child("menu", Menu{background_type}, &context.into());
+            commands.add_child("menu", Menu { background_type }, &context.into());
         }
-
-
 
         if context.menu_state.is_closed() {
             commands.add_child("cells", GridTiles { is_level_complete }, &context.into());
         }
-
-
 
         match context.current_level.level(&context.daily_challenges) {
             itertools::Either::Left(level) => {
@@ -119,7 +113,7 @@ impl MavericRootChildren for ViewRoot {
                             info: level.extra_info,
                             background_type,
                             selfie_mode,
-                            is_level_complete
+                            is_level_complete,
                         },
                         &context.window_size,
                     );

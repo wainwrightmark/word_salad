@@ -1,7 +1,8 @@
 use bevy::math::Vec2;
 use strum::{Display, EnumCount, EnumIs, EnumIter, IntoEnumIterator};
 use ws_core::{
-    font_icons, layout::entities::*, LayoutSizing, LayoutStructure, LayoutStructureWithFont, Spacing
+    font_icons, layout::entities::*, LayoutSizing, LayoutStructure, LayoutStructureWithFont,
+    Spacing,
 };
 use ws_levels::level_group::LevelGroup;
 

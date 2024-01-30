@@ -123,7 +123,7 @@ impl MavericNode for NonLevelView {
                     text_color,
                     fill_color,
                     clicked_fill_color: BUTTON_CLICK_FILL.convert_color(),
-                    border
+                    border,
                 },
                 &(),
             );

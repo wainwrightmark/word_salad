@@ -5,15 +5,13 @@ use ws_core::layout::entities::level_info_entity::{LevelInfoLayoutEntity, ThemeL
 use ws_core::layout::entities::SelfieMode;
 use ws_core::prelude::*;
 
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct ThemeView {
     pub full_name: Ustr,
     pub info: Option<Ustr>,
     pub background_type: BackgroundType,
     pub is_level_complete: bool,
-    pub selfie_mode: SelfieMode
-    // pub daily_challenge_number: Option<usize>,
+    pub selfie_mode: SelfieMode, // pub daily_challenge_number: Option<usize>,
 }
 
 impl MavericNode for ThemeView {
@@ -41,8 +39,8 @@ impl MavericNode for ThemeView {
                 BackgroundType::NonLevel => palette::THEME_TEXT_COLOR_SELFIE,
                 BackgroundType::Selfie => palette::THEME_TEXT_COLOR_COMPLETE_NORMAL,
                 BackgroundType::Normal => palette::THEME_TEXT_COLOR_INCOMPLETE_NORMAL,
-            }.convert_color();
-
+            }
+            .convert_color();
 
             commands.add_child(
                 "theme",
@@ -58,11 +56,7 @@ impl MavericNode for ThemeView {
                 }
                 .with_bundle(Transform::from_translation(
                     context
-
-                        .get_rect(
-                            &LevelInfoLayoutEntity::ThemeAndNumber,
-                            &node.selfie_mode,
-                        )
+                        .get_rect(&LevelInfoLayoutEntity::ThemeAndNumber, &node.selfie_mode)
                         .centre()
                         .extend(crate::z_indices::THEME),
                 )),
@@ -76,7 +70,7 @@ impl MavericNode for ThemeView {
                 },
             );
 
-            if let Some(info) = node.info{
+            if let Some(info) = node.info {
                 commands.add_child(
                     "info",
                     Text2DNode {
@@ -91,19 +85,13 @@ impl MavericNode for ThemeView {
                     }
                     .with_bundle((Transform::from_translation(
                         context
-
-                            .get_rect(
-                                &LevelInfoLayoutEntity::ThemeInfo,
-                                &node.selfie_mode,
-                            )
+                            .get_rect(&LevelInfoLayoutEntity::ThemeInfo, &node.selfie_mode)
                             .centre()
                             .extend(crate::z_indices::THEME),
                     ),)),
                     &(),
                 );
             }
-
-
 
             if !node.is_level_complete {
                 commands.add_child(
@@ -121,11 +109,7 @@ impl MavericNode for ThemeView {
                     .with_bundle((
                         Transform::from_translation(
                             context
-
-                                .get_rect(
-                                    &LevelInfoLayoutEntity::Timer,
-                                    &node.selfie_mode,
-                                )
+                                .get_rect(&LevelInfoLayoutEntity::Timer, &node.selfie_mode)
                                 .centre()
                                 .extend(crate::z_indices::THEME),
                         ),

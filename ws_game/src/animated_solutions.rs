@@ -42,9 +42,13 @@ pub fn animate_solutions(
     }
 }
 
-pub fn remove_animated_solutions_on_complete(found_words: Res<FoundWordsState>, mut commands: Commands, solutions: Query<Entity, With<AnimatedSolutionMarker>> ){
-    if found_words.is_changed() && found_words.is_level_complete(){
-        for entity in solutions.into_iter(){
+pub fn remove_animated_solutions_on_complete(
+    found_words: Res<FoundWordsState>,
+    mut commands: Commands,
+    solutions: Query<Entity, With<AnimatedSolutionMarker>>,
+) {
+    if found_words.is_changed() && found_words.is_level_complete() {
+        for entity in solutions.into_iter() {
             commands.entity(entity).despawn_recursive();
         }
     }
@@ -145,7 +149,7 @@ fn animate_solution(
                 ..Default::default()
             },
             transition,
-            AnimatedSolutionMarker
+            AnimatedSolutionMarker,
         );
 
         let parent_entity = commands.spawn(components).id();
@@ -169,7 +173,7 @@ fn animate_solution(
                     ..Default::default()
                 },
                 MotionBlur::new(frame_offset * 2, parent_entity),
-                AnimatedSolutionMarker
+                AnimatedSolutionMarker,
             ));
         }
     }

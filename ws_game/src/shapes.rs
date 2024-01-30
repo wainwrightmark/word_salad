@@ -285,13 +285,16 @@ pub struct ShaderBorder {
 }
 
 impl ShaderBorder {
-    pub const NONE: Self  = ShaderBorder{
+    pub const NONE: Self = ShaderBorder {
         border_color: Color::NONE,
         border: 0.0,
     };
 
-    pub fn from_color(color: Color)-> Self{
-        Self { border_color: color, border: 0.01 }
+    pub fn from_color(color: Color) -> Self {
+        Self {
+            border_color: color,
+            border: 0.01,
+        }
     }
 }
 
@@ -504,7 +507,7 @@ pub fn box_with_border_node(
     color: Color,
 
     rounding: f32,
-    border: ShaderBorder
+    border: ShaderBorder,
 ) -> impl MavericNode<Context = ()> {
     let scale = width;
     ShaderBundle::<BoxWithBorderShader> {

@@ -144,19 +144,21 @@ impl MavericNode for Menu {
                         1,
                         |x| {
                             x.get_text(
-                                &context.daily_challenge_completion.as_ref(),
-                                &context.sequence_completion.as_ref(),
+                                context.daily_challenge_completion.as_ref(),
+                                context.sequence_completion.as_ref(),
                                 context.daily_challenges.as_ref(),
                             )
                         },
                         |x| {
-                            x.is_complete(
+                            if x.is_complete(
                                 &context.daily_challenge_completion,
                                 &context.sequence_completion,
                                 context.daily_challenges.as_ref(),
-                            )
-                            .then(|| button_fill_color_complete)
-                            .unwrap_or(button_fill_color_incomplete)
+                            ) {
+                                button_fill_color_complete
+                            } else {
+                                button_fill_color_incomplete
+                            }
                         },
                         BUTTONS_FONT_PATH,
                         BUTTONS_FONT_PATH,
@@ -170,11 +172,13 @@ impl MavericNode for Menu {
                         commands,
                         size,
                         2,
-                        |x| x.get_text(&context.sequence_completion.as_ref(), group),
+                        |x| x.get_text(context.sequence_completion.as_ref(), group),
                         |x| {
-                            x.is_complete(&context.sequence_completion, group)
-                                .then(|| button_fill_color_complete)
-                                .unwrap_or(button_fill_color_incomplete)
+                            if x.is_complete(&context.sequence_completion, group) {
+                                button_fill_color_complete
+                            } else {
+                                button_fill_color_incomplete
+                            }
                         },
                         BUTTONS_FONT_PATH,
                         BUTTONS_FONT_PATH,
@@ -190,14 +194,16 @@ impl MavericNode for Menu {
                         5,
                         |x| {
                             x.get_text(
-                                &context.daily_challenge_completion.as_ref(),
+                                context.daily_challenge_completion.as_ref(),
                                 context.daily_challenges.as_ref(),
                             )
                         },
                         |x| {
-                            x.is_complete(&context.daily_challenge_completion)
-                                .then(|| button_fill_color_complete)
-                                .unwrap_or(button_fill_color_incomplete)
+                            if x.is_complete(&context.daily_challenge_completion) {
+                                button_fill_color_complete
+                            } else {
+                                button_fill_color_incomplete
+                            }
                         },
                         BUTTONS_FONT_PATH,
                         ICON_FONT_PATH,

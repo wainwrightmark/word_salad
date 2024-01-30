@@ -363,7 +363,7 @@ impl ButtonInteraction {
                         let sequence = level_group.get_level_sequence(*index);
 
                         let level = sequence_completion
-                            .get_next_level_index(sequence, &purchases)
+                            .get_next_level_index(sequence, purchases)
                             .to_level(sequence);
 
                         change_level_events.send(level.into());
@@ -416,7 +416,7 @@ impl ButtonInteraction {
                         NonLevel::LevelSequenceMustPurchaseGroup(sequence) => {
                             purchases.groups_purchased.insert(sequence.group());
                             let level: CurrentLevel = sequence_completion
-                                .get_next_level_index(sequence, &purchases)
+                                .get_next_level_index(sequence, purchases)
                                 .to_level(sequence);
 
                             change_level_events.send(level.into());
@@ -450,7 +450,7 @@ impl ButtonInteraction {
                         }
                         NonLevel::DailyChallengeFinished => {
                             let new_current_level = match sequence_completion
-                                .get_next_level_sequence(None, &purchases)
+                                .get_next_level_sequence(None, purchases)
                             {
                                 Some((sequence, level_index)) => CurrentLevel::Fixed {
                                     level_index,
@@ -463,7 +463,7 @@ impl ButtonInteraction {
                         }
                         NonLevel::LevelSequenceAllFinished(seq) => {
                             let new_current_level = match sequence_completion
-                                .get_next_level_sequence(Some(seq), &purchases)
+                                .get_next_level_sequence(Some(seq), purchases)
                             {
                                 Some((sequence, level_index)) => CurrentLevel::Fixed {
                                     level_index,
@@ -480,9 +480,9 @@ impl ButtonInteraction {
             ButtonInteraction::TopMenuItem(LayoutTopBar::WordSaladLogo) => menu_state.toggle(),
             ButtonInteraction::Congrats(CongratsButton::Next) => {
                 let next_level = current_level.get_next_level(
-                    &daily_challenge_completion,
-                    &sequence_completion,
-                    &purchases,
+                    daily_challenge_completion,
+                    sequence_completion,
+                    purchases,
                 );
                 change_level_events.send(next_level.into());
             }

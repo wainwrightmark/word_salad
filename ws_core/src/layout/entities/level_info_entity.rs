@@ -10,7 +10,7 @@ use super::{consts::*, GameLayoutEntity, SelfieMode};
 pub enum LevelInfoLayoutEntity {
     ThemeAndNumber,
     ThemeInfo,
-    Timer
+    Timer,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]

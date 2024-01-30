@@ -94,7 +94,7 @@ impl VideoResource {
 
 #[allow(unused_variables)]
 pub fn start_screen_record(video_resource: &mut ResMut<VideoResource>) {
-    #[cfg(all(target_arch = "wasm32", any(feature = "android", feature = "ios")) )]
+    #[cfg(all(target_arch = "wasm32", any(feature = "android", feature = "ios")))]
     {
         // info!("Starting screen record");
         match crate::wasm::start_screen_record() {
@@ -107,12 +107,11 @@ pub fn start_screen_record(video_resource: &mut ResMut<VideoResource>) {
             },
         }
     }
-
 }
 
 #[allow(unused_variables)]
 pub fn stop_screen_record(video_resource: &mut ResMut<VideoResource>) {
-    #[cfg(all(target_arch = "wasm32", any(feature = "android", feature = "ios")) )]
+    #[cfg(all(target_arch = "wasm32", any(feature = "android", feature = "ios")))]
     {
         match crate::wasm::stop_screen_record() {
             Ok(()) => {

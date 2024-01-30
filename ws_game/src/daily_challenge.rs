@@ -158,7 +158,7 @@ fn handle_daily_challenge_data_loaded(
     mut daily_challenges: ResMut<DailyChallenges>,
     mut ev: EventReader<DailyChallengeDataLoadedEvent>,
     current_level: Res<CurrentLevel>,
-    mut change_level_events: EventWriter<ChangeLevelEvent>
+    mut change_level_events: EventWriter<ChangeLevelEvent>,
 ) {
     for event in ev.read() {
         //info!("Daily challenge data loaded '{}'", event.data);

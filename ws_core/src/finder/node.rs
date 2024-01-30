@@ -21,13 +21,13 @@ pub struct GridResult {
     pub words: Vec<FinderSingleWord>,
 }
 
-impl GridResult{
-    pub fn get_word_bitset<const W: usize>(&self, all_words: &[FinderGroup])-> BitSet<W>{
-        let mut set : BitSet<W> = Default::default();
+impl GridResult {
+    pub fn get_word_bitset<const W: usize>(&self, all_words: &[FinderGroup]) -> BitSet<W> {
+        let mut set: BitSet<W> = Default::default();
         //todo perf
 
-        for (index, group) in all_words.iter().enumerate(){
-            if group.words.iter().all(|w| self.words.contains(w)){
+        for (index, group) in all_words.iter().enumerate() {
+            if group.words.iter().all(|w| self.words.contains(w)) {
                 set.set_bit(index, true);
             }
         }

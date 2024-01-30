@@ -59,13 +59,10 @@ pub mod palette {
     pub const HINTS_REMAINING_TEXT_COLOR_NORMAL: Color = MY_BLACK;
     pub const HINTS_REMAINING_TEXT_COLOR_SELFIE: Color = MY_WHITE;
 
-
     pub const CONGRATS_BUTTON_TEXT_SELFIE: Color = MY_WHITE.with_a(0.95);
     pub const CONGRATS_BUTTON_FILL_SELFIE: Color = GREEN_LIGHT.with_a(0.5);
 
     pub const CONGRATS_STATISTIC_TEXT_SELFIE: Color = LIGHT_GRAY.with_a(0.95);
-
-
 
     pub const ICON_BUTTON_BACKGROUND: Color = Color::NONE;
     pub const TEXT_BUTTON_BACKGROUND: Color = Color::WHITE;

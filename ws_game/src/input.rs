@@ -111,7 +111,7 @@ impl InteractionEntity {
             }
         }
 
-        let tbi = Self::try_get_button::<LayoutTopBar>(position, size, &selfie_mode);
+        let tbi = Self::try_get_button::<LayoutTopBar>(position, size, selfie_mode);
         if tbi.is_some() {
             return tbi;
         }
@@ -264,12 +264,10 @@ impl InputType {
                 StartPressState::Popup
             } else if !menu_state.is_closed() {
                 StartPressState::Menu
+            } else if found_words.is_level_complete() {
+                StartPressState::Congrats
             } else {
-                if found_words.is_level_complete() {
-                    StartPressState::Congrats
-                } else {
-                    StartPressState::Gameplay
-                }
+                StartPressState::Gameplay
             }
         };
 

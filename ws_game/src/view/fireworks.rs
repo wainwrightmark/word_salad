@@ -25,22 +25,19 @@ pub fn create_firework(
         &selfie_mode,
     );
 
-    let delay = delay_sec + if start_straight_after_delay {
-        0.0
-    } else {
-        rng.gen_range(0.0..(total_seconds - 1.0))
-    };
+    let delay = delay_sec
+        + if start_straight_after_delay {
+            0.0
+        } else {
+            rng.gen_range(0.0..(total_seconds - 1.0))
+        };
 
-    let color =
-    if selfie_mode.is_selfie_mode
-    {
+    let color = if selfie_mode.is_selfie_mode {
         Color::hsl(rng.gen_range(0.0..=360.0), 1.0, 0.75)
-    }
-    else{
+    } else {
         let hue = rng.gen_range(200.0..=440.0) % 360.0;
         Color::hsl(hue, 1.0, 0.75)
     };
-
 
     let position = rect.top_left
         + Vec2 {
