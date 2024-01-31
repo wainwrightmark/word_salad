@@ -1,7 +1,7 @@
 use glam::Vec2;
 use strum::{Display, EnumCount, EnumIter, IntoEnumIterator};
 
-use crate::{layout::entities::GameLayoutEntity, level_type::LevelType, prelude::*};
+use crate::{level_type::LevelType, prelude::*};
 
 use super::consts::*;
 
@@ -104,8 +104,8 @@ impl LayoutStructure for CongratsLayoutEntity {
         };
 
         let top_offset = if context.0.is_selfie_mode {
-            let word_list_top = GameLayoutEntity::WordList.location(&context.0, sizing).y;
-            word_list_top - (button_height + ((stat_size + CONGRATS_ENTITY_SPACING) * 2.0))
+
+            IDEAL_HEIGHT - (button_height + CONGRATS_BUTTON_GAP_SELFIE + ((stat_size + CONGRATS_ENTITY_SPACING) * 2.0))
         } else {
             TOP_BAR_HEIGHT_BASE
                 + extra_top_bar_height(sizing, &context.0)
@@ -142,7 +142,9 @@ impl LayoutStructure for CongratsLayoutEntity {
                 x: (IDEAL_WIDTH - button_width) * 0.5,
                 y: top_offset
                     + ((stat_size + CONGRATS_ENTITY_SPACING) * 2.0)
-                    + CONGRATS_BUTTON_GAP
+                    + if context.0.is_selfie_mode{
+                        CONGRATS_BUTTON_GAP_SELFIE
+                    }else{CONGRATS_BUTTON_GAP_NORMAL}
                     + Spacing::Centre.apply(
                         button_height,
                         CONGRATS_ENTITY_BUTTON_HEIGHT + MENU_BUTTON_SPACING,
