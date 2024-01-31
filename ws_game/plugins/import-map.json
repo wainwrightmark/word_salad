@@ -1,5 +1,6 @@
 {
   "imports": {
+    "@capacitor-community/admob": "./@capacitor-community/admob.js",
     "@capacitor/app": "./@capacitor/app.js",
     "@capacitor/core": "./@capacitor/core.js",
     "@capacitor/device": "./@capacitor/device.js",
