@@ -74,6 +74,8 @@ pub fn go() {
     app.add_plugins(crate::wasm::WasmPlugin);
     app.add_plugins(VideoPlugin);
 
+    app.add_plugins(AdsPlugin);
+
     app.add_systems(PostStartup, choose_level_on_game_load);
 
     #[cfg(not(target_arch = "wasm32"))]

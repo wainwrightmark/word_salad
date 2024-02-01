@@ -74,27 +74,27 @@ impl MavericRootChildren for ViewRoot {
         match context.current_level.level(&context.daily_challenges) {
             itertools::Either::Left(level) => {
                 if context.menu_state.is_closed() {
-                    let close_to_solution = context
-                        .chosen_state
-                        .is_close_to_a_solution(level, context.found_words_state.as_ref());
-
                     if context.found_words_state.is_level_complete() {
                         commands.add_child("congrats", CongratsView, &context.into());
                     } else {
-                        if !context.level_time.is_paused() {
-                            commands.add_child(
-                                "word_line",
-                                WordLine {
-                                    solution: context.chosen_state.solution.clone(),
-                                    should_hide: context.chosen_state.is_just_finished,
-                                    close_to_solution,
-                                    selfie_mode,
-                                },
-                                &context.window_size,
-                            );
-                        }
-
                         commands.add_child("words", WordsNode, &context.into());
+                    }
+
+                    if !context.level_time.is_paused() {
+                        let close_to_solution = context
+                            .chosen_state
+                            .is_close_to_a_solution(level, context.found_words_state.as_ref());
+
+                        commands.add_child(
+                            "word_line",
+                            WordLine {
+                                solution: context.chosen_state.solution.clone(),
+                                should_hide: context.chosen_state.is_just_finished,
+                                close_to_solution,
+                                selfie_mode,
+                            },
+                            &context.window_size,
+                        );
                     }
                 }
 

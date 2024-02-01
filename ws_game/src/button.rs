@@ -91,6 +91,7 @@ fn handle_button_activations(
     mut event_writers: (
         EventWriter<AnimateSolutionsEvent>,
         EventWriter<ChangeLevelEvent>,
+        EventWriter<AdRequestEvent>
     ),
 ) {
     for ev in events.read() {
@@ -111,6 +112,7 @@ fn handle_button_activations(
             &mut purchases,
             &mut event_writers.0,
             &mut event_writers.1,
+            &mut event_writers.2,
         )
     }
 }
@@ -262,6 +264,8 @@ impl ButtonInteraction {
         purchases: &mut ResMut<Purchases>,
         animate_solution_events: &mut EventWriter<AnimateSolutionsEvent>,
         change_level_events: &mut EventWriter<ChangeLevelEvent>,
+
+        ad_request_events: &mut EventWriter<AdRequestEvent>
     ) {
         match self {
             ButtonInteraction::None => {}
@@ -509,8 +513,11 @@ impl ButtonInteraction {
             }
 
             ButtonInteraction::Popup(PopupInteraction::HintsBuyMore) => {
-                hint_state.hints_remaining += 3; //TODO actually make them buy them!
-                hint_state.total_bought_hints += 3;
+
+                ad_request_events.send(AdRequestEvent::RequestReward);
+
+                // hint_state.hints_remaining += 3; //TODO actually make them buy them!
+                // hint_state.total_bought_hints += 3;
                 popup_state.0 = None;
             }
 
