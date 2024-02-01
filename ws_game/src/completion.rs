@@ -6,7 +6,9 @@ use serde::{Deserialize, Serialize};
 use ws_levels::{level_group::LevelGroup, level_sequence::LevelSequence};
 
 use crate::{
-    level_time::LevelTime, prelude::{CurrentLevel, DailyChallenges, FoundWordsState, NonLevel, Streak}, purchases::Purchases
+    level_time::LevelTime,
+    prelude::{CurrentLevel, DailyChallenges, FoundWordsState, NonLevel, Streak},
+    purchases::Purchases,
 };
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, Default, Clone, Resource, MavericContext)]
@@ -177,7 +179,7 @@ pub fn track_level_completion(
     current_level: Res<CurrentLevel>,
     found_words: Res<FoundWordsState>,
     mut streak: ResMut<Streak>,
-    level_time: Res<LevelTime>
+    level_time: Res<LevelTime>,
 ) {
     if !found_words.is_changed() || !found_words.is_level_complete() {
         return;
@@ -204,6 +206,12 @@ pub fn track_level_completion(
                         crate::logging::do_or_report_error(
                             capacitor_bindings::rate::Rate::request_review(),
                         );
+                    }
+                    #[cfg(feature = "web")]
+                    {
+                        crate::logging::do_or_report_error(capacitor_bindings::toast::Toast::show(
+                            "We would request app review here",
+                        ));
                     }
                 }
             }
@@ -244,6 +252,14 @@ pub fn track_level_completion(
                                 capacitor_bindings::rate::Rate::request_review(),
                             );
                         }
+                        #[cfg(feature = "web")]
+                        {
+                            crate::logging::do_or_report_error(
+                                capacitor_bindings::toast::Toast::show(
+                                    "We would request app review here",
+                                ),
+                            );
+                        }
                     } else {
                         info!("Streak set to one");
                         streak.current = 1;
@@ -253,7 +269,13 @@ pub fn track_level_completion(
                     streak.longest = streak.current.max(streak.longest);
                 }
             }
-            daily_challenge_completion.results.insert(*index, LevelResult { seconds: level_time.total_elapsed().as_secs() as u32, hints_used: found_words.hints_used as u32 });
+            daily_challenge_completion.results.insert(
+                *index,
+                LevelResult {
+                    seconds: level_time.total_elapsed().as_secs() as u32,
+                    hints_used: found_words.hints_used as u32,
+                },
+            );
         }
         CurrentLevel::NonLevel(..) => {}
     }
@@ -267,16 +289,39 @@ pub mod test {
     pub fn go() {
         let mut completion = DailyChallengeCompletion::default();
 
-
         assert_eq!(Some(3), completion.get_next_incomplete_daily_challenge(3));
 
-        completion.results.insert(3, LevelResult { seconds: 0, hints_used: 0 });
-        completion.results.insert(2, LevelResult { seconds: 0, hints_used: 0 });
+        completion.results.insert(
+            3,
+            LevelResult {
+                seconds: 0,
+                hints_used: 0,
+            },
+        );
+        completion.results.insert(
+            2,
+            LevelResult {
+                seconds: 0,
+                hints_used: 0,
+            },
+        );
 
         assert_eq!(Some(1), completion.get_next_incomplete_daily_challenge(3));
 
-        completion.results.insert(1, LevelResult { seconds: 0, hints_used: 0 });
-        completion.results.insert(0, LevelResult { seconds: 0, hints_used: 0 });
+        completion.results.insert(
+            1,
+            LevelResult {
+                seconds: 0,
+                hints_used: 0,
+            },
+        );
+        completion.results.insert(
+            0,
+            LevelResult {
+                seconds: 0,
+                hints_used: 0,
+            },
+        );
 
         assert_eq!(None, completion.get_next_incomplete_daily_challenge(3));
     }

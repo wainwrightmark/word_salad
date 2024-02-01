@@ -163,8 +163,54 @@ var RewardAdPluginEvents;
     RewardAdPluginEvents["Rewarded"] = "onRewardedVideoAdReward";
 })(RewardAdPluginEvents || (RewardAdPluginEvents = {}));
 
+/**
+ *  For more information:
+ *  https://developers.google.com/admob/unity/reference/namespace/google-mobile-ads/ump/api#consentstatus
+ *
+ * */
+var AdmobConsentStatus;
+(function (AdmobConsentStatus) {
+    /**
+     * User consent not required.
+     */
+    AdmobConsentStatus["NOT_REQUIRED"] = "NOT_REQUIRED";
+    /**
+     * User consent already obtained.
+     */
+    AdmobConsentStatus["OBTAINED"] = "OBTAINED";
+    /**
+     * User consent required but not yet obtained.
+     */
+    AdmobConsentStatus["REQUIRED"] = "REQUIRED";
+    /**
+     * Unknown consent status, AdsConsent.requestInfoUpdate needs to be called to update it.
+     */
+    AdmobConsentStatus["UNKNOWN"] = "UNKNOWN";
+})(AdmobConsentStatus || (AdmobConsentStatus = {}));
+
+/**
+ *  For more information:
+ *  https://developers.google.com/admob/unity/reference/namespace/google-mobile-ads/ump/api#debuggeography
+ *
+ * */
+var AdmobConsentDebugGeography;
+(function (AdmobConsentDebugGeography) {
+    /**
+     * Debug geography disabled.
+     */
+    AdmobConsentDebugGeography[AdmobConsentDebugGeography["DISABLED"] = 0] = "DISABLED";
+    /**
+     * Geography appears as in EEA for debug devices.
+     */
+    AdmobConsentDebugGeography[AdmobConsentDebugGeography["EEA"] = 1] = "EEA";
+    /**
+     * Geography appears as not in EEA for debug devices.
+     */
+    AdmobConsentDebugGeography[AdmobConsentDebugGeography["NOT_EEA"] = 2] = "NOT_EEA";
+})(AdmobConsentDebugGeography || (AdmobConsentDebugGeography = {}));
+
 const AdMob = registerPlugin('AdMob', {
-    web: () => import('../common/web-41748ef3.js').then(m => new m.AdMobWeb()),
+    web: () => import('../common/web-c8efcf99.js').then(m => new m.AdMobWeb()),
 });
 
-export { AdMob, BannerAdPluginEvents, BannerAdPosition, BannerAdSize, InterstitialAdPluginEvents, MaxAdContentRating, RewardAdPluginEvents };
+export { AdMob, AdmobConsentDebugGeography, AdmobConsentStatus, BannerAdPluginEvents, BannerAdPosition, BannerAdSize, InterstitialAdPluginEvents, MaxAdContentRating, RewardAdPluginEvents };

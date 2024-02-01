@@ -35,3 +35,7 @@ body {
   object-fit: contain;
   z-index: -1;
 }
+
+pwa-toast{
+  z-index: 100;
+}
