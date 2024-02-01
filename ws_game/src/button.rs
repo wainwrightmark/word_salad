@@ -82,7 +82,6 @@ fn handle_button_activations(
     mut daily_challenge_completion: ResMut<DailyChallengeCompletion>,
     mut purchases: ResMut<Purchases>,
     mut video_resource: ResMut<VideoResource>,
-    video_events: AsyncEventWriter<VideoEvent>,
 
     daily_challenges: Res<DailyChallenges>,
     mut level_time: ResMut<LevelTime>,
@@ -91,7 +90,8 @@ fn handle_button_activations(
     mut event_writers: (
         EventWriter<AnimateSolutionsEvent>,
         EventWriter<ChangeLevelEvent>,
-        EventWriter<AdRequestEvent>
+        EventWriter<AdRequestEvent>,
+        AsyncEventWriter<VideoEvent>,
     ),
 ) {
     for ev in events.read() {
@@ -105,7 +105,7 @@ fn handle_button_activations(
             &mut sequence_completion,
             &mut daily_challenge_completion,
             &mut video_resource,
-            &video_events,
+            &event_writers.3,
             daily_challenges.as_ref(),
             &mut level_time,
             &mut selfie_mode_history,
@@ -265,7 +265,7 @@ impl ButtonInteraction {
         animate_solution_events: &mut EventWriter<AnimateSolutionsEvent>,
         change_level_events: &mut EventWriter<ChangeLevelEvent>,
 
-        ad_request_events: &mut EventWriter<AdRequestEvent>
+        ad_request_events: &mut EventWriter<AdRequestEvent>,
     ) {
         match self {
             ButtonInteraction::None => {}
@@ -513,7 +513,6 @@ impl ButtonInteraction {
             }
 
             ButtonInteraction::Popup(PopupInteraction::HintsBuyMore) => {
-
                 ad_request_events.send(AdRequestEvent::RequestReward);
 
                 // hint_state.hints_remaining += 3; //TODO actually make them buy them!

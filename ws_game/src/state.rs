@@ -63,6 +63,8 @@ fn handle_change_level_event(
     mut saved_levels: ResMut<SavedLevelsState>,
 
     mut time: ResMut<LevelTime>,
+    mut interstitial_progress_state: ResMut<InterstitialProgressState>,
+    mut request_ad_events: EventWriter<AdRequestEvent>
 ) {
     for event in events.read() {
         let new_level = match event {
@@ -139,6 +141,15 @@ fn handle_change_level_event(
         time.resume_timer();
 
         *chosen = ChosenState::default();
+
+        if current_level.count_for_interstitial_ads(){
+            interstitial_progress_state.levels_without_interstitial += 1;
+
+            if interstitial_progress_state.levels_without_interstitial >= 2{
+                request_ad_events.send(AdRequestEvent::RequestInterstitial);
+            }
+
+        }
     }
 }
 

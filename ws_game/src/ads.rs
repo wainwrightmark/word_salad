@@ -12,6 +12,7 @@ impl Plugin for AdsPlugin {
         app.add_event::<AdRequestEvent>();
         app.add_systems(Startup, init_everything);
         app.init_resource::<AdState>();
+        app.init_resource::<InterstitialProgressState>();
 
         app.add_systems(
             Update,
@@ -28,19 +29,24 @@ impl Plugin for AdsPlugin {
 #[derive(Debug, Event)]
 pub enum AdRequestEvent {
     RequestReward,
+    RequestInterstitial,
 }
 
 #[derive(Debug, Default, Resource, MavericContext)]
 pub struct AdState {
     pub can_show_ads: Option<bool>,
-
-    // pub rewards_ads_set_up: Option<bool>,
     pub reward_ad: Option<AdLoadInfo>,
+    pub interstitial_ad: Option<AdLoadInfo>,
+}
+
+#[derive(Debug, Default, Resource, MavericContext)]
+pub struct InterstitialProgressState{
+    pub levels_without_interstitial: usize
 }
 
 fn handle_ad_requests(
     mut events: EventReader<AdRequestEvent>,
-    ad_state: Res<AdState>,
+    mut ad_state: ResMut<AdState>,
     writer: AsyncEventWriter<AdEvent>,
 ) {
     for event in events.read() {
@@ -48,12 +54,25 @@ fn handle_ad_requests(
             AdRequestEvent::RequestReward => {
                 if ad_state.can_show_ads == Some(true) {
                     if ad_state.reward_ad.is_some() {
+                        ad_state.reward_ad = None;
                         asynchronous::spawn_and_run(try_show_reward_ad(writer.clone()));
                     } else {
                         warn!("Cannot request reward with admob (no reward ad is loaded)")
                     }
                 } else {
-                    warn!("Cannot request reward with admob (rewards are not set up)")
+                    warn!("Cannot request reward with admob (ads are not set up)")
+                }
+            }
+            AdRequestEvent::RequestInterstitial => {
+                if ad_state.can_show_ads == Some(true) {
+                    if ad_state.interstitial_ad.is_some() {
+                        ad_state.interstitial_ad = None;
+                        asynchronous::spawn_and_run(try_show_interstitial_ad(writer.clone()));
+                    } else {
+                        warn!("Cannot request interstitial with admob (ads are not set up)")
+                    }
+                } else {
+                    warn!("Cannot request interstitial with admob (ads are not set up)")
                 }
             }
         }
@@ -65,6 +84,7 @@ fn handle_ad_events(
     mut ad_state: ResMut<AdState>,
     writer: AsyncEventWriter<AdEvent>,
     mut hints: ResMut<HintState>,
+    mut interstitial_state: ResMut<InterstitialProgressState>
 ) {
     for event in events.read() {
         match event {
@@ -73,21 +93,28 @@ fn handle_ad_events(
                 if ad_state.can_show_ads != Some(true) {
                     ad_state.can_show_ads = Some(true);
                     asynchronous::spawn_and_run(try_load_reward_ad(writer.clone()));
+                    asynchronous::spawn_and_run(try_load_interstitial_ad(writer.clone()));
+
                 }
             }
             AdEvent::AdsInitError(err) => {
                 ad_state.can_show_ads = Some(false);
                 bevy::log::error!(err);
             }
-            AdEvent::InterstitialLoaded(_) => {}
-            AdEvent::InterstitialFailedToLoad(err) => {
-                bevy::log::error!("{}", err.message);
+            AdEvent::InterstitialLoaded(i) => {
+                ad_state.interstitial_ad = Some(i.clone());
             }
-            AdEvent::InterstitialShowed => {}
-            AdEvent::InterstitialFailedToShow(err) => {
-                bevy::log::error!("{}", err.message);
+            AdEvent::FailedToLoadInterstitialAd(err) => {
+                bevy::log::error!("{}", err);
             }
-            AdEvent::InterstitialAdDismissed => {}
+            AdEvent::InterstitialShowed => {
+                interstitial_state.levels_without_interstitial = 0;
+                asynchronous::spawn_and_run(try_load_interstitial_ad(writer.clone()));
+            }
+            AdEvent::FailedToShowInterstitialAd(err) => {
+                bevy::log::error!("{}", err);
+                asynchronous::spawn_and_run(try_load_interstitial_ad(writer.clone()));
+            }
 
             AdEvent::RewardAdLoaded(ad) => {
                 info!("Admob reward ad loaded");
@@ -101,16 +128,6 @@ fn handle_ad_events(
 
                 asynchronous::spawn_and_run(try_load_reward_ad(writer.clone()));
             }
-            // AdEvent::RewardAdDismissed => {
-            //     ad_state.reward_ad = None;
-
-            // }
-            // AdEvent::RewardAdFailedToShow(err) => {
-            //     bevy::log::error!("{}", err.message);
-            // }
-            // AdEvent::RewardShowed => {
-            //     info!("Reward Showed");
-            // }
             AdEvent::FailedToLoadRewardAd(s) => {
                 bevy::log::error!("{s}");
             }
@@ -136,18 +153,13 @@ pub enum AdEvent {
     FailedToLoadRewardAd(String),
     FailedToShowRewardAd(String),
 
-    InterstitialLoaded(AdLoadInfo),
-    InterstitialFailedToLoad(AdMobError),
-    InterstitialShowed,
-    InterstitialFailedToShow(AdMobError),
-    InterstitialAdDismissed,
+    FailedToLoadInterstitialAd(String),
+    FailedToShowInterstitialAd(String),
 
-    // RewardFailedToLoad(AdMobError),
+    InterstitialLoaded(AdLoadInfo),
+    InterstitialShowed,
     RewardAdLoaded(AdLoadInfo),
     RewardAdRewarded(AdMobRewardItem),
-    // RewardAdDismissed,
-    // RewardAdFailedToShow(AdMobError),
-    // RewardShowed,
 }
 
 async fn init_everything_async(writer: AsyncEventWriter<AdEvent>) {
@@ -210,28 +222,64 @@ async fn try_init_ads_async() -> Result<(), String> {
         return Err(format!("Tracking info status {:?}", tracking_info.status));
     }
 
-    // let consent_info = admob::Admob::request_consent_info(AdmobConsentRequestOptions {
-    //     debug_geography: AdmobConsentDebugGeography::Disabled,
-    //     test_device_identifiers: vec![],
-    //     tag_for_under_age_of_consent: false,
-    // })
-    // .await
-    // .map_err(|x| x.to_string())?;
+    if false {
+        //todo fix
+        let consent_info = admob::Admob::request_consent_info(AdmobConsentRequestOptions {
+            debug_geography: AdmobConsentDebugGeography::Disabled,
+            test_device_identifiers: vec![],
+            tag_for_under_age_of_consent: false,
+        })
+        .await
+        .map_err(|x| x.to_string())?;
 
-    // if consent_info.is_consent_form_available
-    //     && consent_info.status == AdmobConsentStatus::Required
-    // {
-    //     let consent_info = admob::Admob::show_consent_form()
-    //         .await
-    //         .map_err(|x| x.to_string())?;
-    //     if consent_info.status == AdmobConsentStatus::Required {
-    //         return Err("Consent info still required".to_string());
-    //     } else if consent_info.status == AdmobConsentStatus::Unknown {
-    //         return Err("Consent info unknown".to_string());
-    //     }
-    // }
+        if consent_info.is_consent_form_available
+            && consent_info.status == AdmobConsentStatus::Required
+        {
+            let consent_info = admob::Admob::show_consent_form()
+                .await
+                .map_err(|x| x.to_string())?;
+            if consent_info.status == AdmobConsentStatus::Required {
+                return Err("Consent info still required".to_string());
+            } else if consent_info.status == AdmobConsentStatus::Unknown {
+                return Err("Consent info unknown".to_string());
+            }
+        }
+    }
 
     Ok(())
+}
+
+async fn try_load_interstitial_ad(writer: AsyncEventWriter<AdEvent>) {
+    let options: AdOptions = AdOptions {
+        ad_id: BETWEEN_LEVELS_INTERSTITIAL_AD_ID.to_string(),
+        is_testing: true,
+        margin: 0.0,
+        npa: false,
+    };
+
+    match Admob::prepare_interstitial(options).await {
+        Ok(load_info) => writer
+            .send_async(AdEvent::InterstitialLoaded(load_info))
+            .await
+            .unwrap(),
+        Err(err) => writer
+            .send_async(AdEvent::FailedToShowInterstitialAd(err.to_string()))
+            .await
+            .unwrap(),
+    }
+}
+
+async fn try_show_interstitial_ad(writer: AsyncEventWriter<AdEvent>) {
+    match Admob::show_interstitial().await {
+        Ok(()) => writer
+            .send_async(AdEvent::InterstitialShowed)
+            .await
+            .unwrap(),
+        Err(err) => writer
+            .send_async(AdEvent::FailedToShowInterstitialAd(err.to_string()))
+            .await
+            .unwrap(),
+    }
 }
 
 async fn try_load_reward_ad(writer: AsyncEventWriter<AdEvent>) {
@@ -239,7 +287,7 @@ async fn try_load_reward_ad(writer: AsyncEventWriter<AdEvent>) {
         ssv: None,
         ad_id: BUY_HINTS_REWARD_AD_ID.to_string(),
         is_testing: true,
-        margin: 10.0,
+        margin: 0.0,
         npa: false,
     };
 
