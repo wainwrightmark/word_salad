@@ -34,7 +34,7 @@ pub enum AdRequestEvent {
 pub struct AdState {
     pub can_show_ads: Option<bool>,
 
-    pub rewards_ads_set_up: Option<bool>,
+    // pub rewards_ads_set_up: Option<bool>,
     pub reward_ad: Option<AdLoadInfo>,
 }
 
@@ -47,17 +47,13 @@ fn handle_ad_requests(
         match event {
             AdRequestEvent::RequestReward => {
                 if ad_state.can_show_ads == Some(true) {
-                    if ad_state.rewards_ads_set_up == Some(true) {
-                        if ad_state.reward_ad.is_some() {
-                            asynchronous::spawn_and_run(try_show_reward_ad(writer.clone()));
-                        } else {
-                            warn!("Cannot request reward with admob (no reward ad is loaded)")
-                        }
+                    if ad_state.reward_ad.is_some() {
+                        asynchronous::spawn_and_run(try_show_reward_ad(writer.clone()));
                     } else {
-                        warn!("Cannot request reward with admob (rewards are not set up)")
+                        warn!("Cannot request reward with admob (no reward ad is loaded)")
                     }
                 } else {
-                    warn!("Cannot request reward with admob (app cannot show ads)")
+                    warn!("Cannot request reward with admob (rewards are not set up)")
                 }
             }
         }
@@ -76,30 +72,13 @@ fn handle_ad_events(
                 info!("Admob ads initialized");
                 if ad_state.can_show_ads != Some(true) {
                     ad_state.can_show_ads = Some(true);
-                    if ad_state.rewards_ads_set_up == Some(true) {
-                        asynchronous::spawn_and_run(try_load_reward_ad(writer.clone()));
-                    }
+                    asynchronous::spawn_and_run(try_load_reward_ad(writer.clone()));
                 }
             }
             AdEvent::AdsInitError(err) => {
                 ad_state.can_show_ads = Some(false);
                 bevy::log::error!(err);
             }
-
-            AdEvent::RewardEventsSetUp => {
-                info!("Admob reward events set up");
-                if ad_state.rewards_ads_set_up != Some(true) {
-                    ad_state.rewards_ads_set_up = Some(true);
-                    if ad_state.can_show_ads == Some(true) {
-                        asynchronous::spawn_and_run(try_load_reward_ad(writer.clone()));
-                    }
-                }
-            }
-            AdEvent::RewardEventsSetUpError(err) => {
-                ad_state.rewards_ads_set_up = Some(false);
-                bevy::log::error!(err);
-            }
-
             AdEvent::InterstitialLoaded(_) => {}
             AdEvent::InterstitialFailedToLoad(err) => {
                 bevy::log::error!("{}", err.message);
@@ -110,30 +89,34 @@ fn handle_ad_events(
             }
             AdEvent::InterstitialAdDismissed => {}
 
-            AdEvent::RewardFailedToLoad(err) => {
-                bevy::log::error!("{}", err.message);
-            }
             AdEvent::RewardAdLoaded(ad) => {
                 info!("Admob reward ad loaded");
                 ad_state.reward_ad = Some(ad.clone())
             }
             AdEvent::RewardAdRewarded(reward) => {
                 info!("admob Reward ad rewarded {reward:?}",);
-                hints.hints_remaining += 5;
-                hints.total_bought_hints += 5;
-            }
-            AdEvent::RewardAdDismissed => {
-                ad_state.reward_ad = None;
+
+                hints.hints_remaining += HINTS_REWARD_AMOUNT;
+                hints.total_bought_hints += HINTS_REWARD_AMOUNT;
+
                 asynchronous::spawn_and_run(try_load_reward_ad(writer.clone()));
             }
-            AdEvent::RewardAdFailedToShow(err) => {
-                bevy::log::error!("{}", err.message);
-            }
-            AdEvent::RewardShowed => {
-                info!("Reward Showed");
-            }
-            AdEvent::OtherError(s) => {
+            // AdEvent::RewardAdDismissed => {
+            //     ad_state.reward_ad = None;
+
+            // }
+            // AdEvent::RewardAdFailedToShow(err) => {
+            //     bevy::log::error!("{}", err.message);
+            // }
+            // AdEvent::RewardShowed => {
+            //     info!("Reward Showed");
+            // }
+            AdEvent::FailedToLoadRewardAd(s) => {
                 bevy::log::error!("{s}");
+            }
+            AdEvent::FailedToShowRewardAd(s) => {
+                bevy::log::error!("{s}");
+                asynchronous::spawn_and_run(try_load_reward_ad(writer.clone()));
             }
         }
     }
@@ -146,10 +129,12 @@ fn init_everything(writer: AsyncEventWriter<AdEvent>) {
 #[derive(Debug, Clone, PartialEq, Event, EnumIs)]
 pub enum AdEvent {
     AdsInit,
-    RewardEventsSetUp,
-    RewardEventsSetUpError(String),
+    // RewardEventsSetUp,
+    // RewardEventsSetUpError(String),
     AdsInitError(String),
-    OtherError(String),
+
+    FailedToLoadRewardAd(String),
+    FailedToShowRewardAd(String),
 
     InterstitialLoaded(AdLoadInfo),
     InterstitialFailedToLoad(AdMobError),
@@ -157,12 +142,12 @@ pub enum AdEvent {
     InterstitialFailedToShow(AdMobError),
     InterstitialAdDismissed,
 
-    RewardFailedToLoad(AdMobError),
+    // RewardFailedToLoad(AdMobError),
     RewardAdLoaded(AdLoadInfo),
     RewardAdRewarded(AdMobRewardItem),
-    RewardAdDismissed,
-    RewardAdFailedToShow(AdMobError),
-    RewardShowed,
+    // RewardAdDismissed,
+    // RewardAdFailedToShow(AdMobError),
+    // RewardShowed,
 }
 
 async fn init_everything_async(writer: AsyncEventWriter<AdEvent>) {
@@ -173,15 +158,15 @@ async fn init_everything_async(writer: AsyncEventWriter<AdEvent>) {
         Err(err) => writer.send_async(AdEvent::AdsInitError(err)).await.unwrap(),
     }
 
-    match set_up_reward_events(writer.clone()).await {
-        Ok(()) => {
-            writer.send_async(AdEvent::RewardEventsSetUp).await.unwrap();
-        }
-        Err(err) => writer
-            .send_async(AdEvent::RewardEventsSetUpError(err.to_string()))
-            .await
-            .unwrap(),
-    }
+    // match set_up_reward_events(writer.clone()).await {
+    //     Ok(()) => {
+    //         writer.send_async(AdEvent::RewardEventsSetUp).await.unwrap();
+    //     }
+    //     Err(err) => writer
+    //         .send_async(AdEvent::RewardEventsSetUpError(err.to_string()))
+    //         .await
+    //         .unwrap(),
+    // }
 }
 
 async fn try_init_ads_async() -> Result<(), String> {
@@ -249,113 +234,6 @@ async fn try_init_ads_async() -> Result<(), String> {
     Ok(())
 }
 
-async fn set_up_interstitial_events(
-    writer: AsyncEventWriter<AdEvent>,
-) -> Result<(), capacitor_bindings::error::Error> {
-    {
-        let writer = writer.clone();
-        Admob::add_interstitial_ad_dismissed_listener(move |_| {
-            writer
-                .send_blocking(AdEvent::InterstitialAdDismissed)
-                .unwrap()
-        })
-        .await?
-        .leak();
-    }
-    {
-        let writer = writer.clone();
-        Admob::add_interstitial_failed_to_load_listener(move |e| {
-            writer
-                .send_blocking(AdEvent::InterstitialFailedToLoad(e))
-                .unwrap()
-        })
-        .await?
-        .leak();
-    }
-    {
-        let writer = writer.clone();
-        Admob::add_interstitial_failed_to_show_listener(move |e| {
-            writer
-                .send_blocking(AdEvent::InterstitialFailedToShow(e))
-                .unwrap()
-        })
-        .await?
-        .leak();
-    }
-    {
-        let writer = writer.clone();
-        Admob::add_interstitial_showed_listener(move |_| {
-            writer.send_blocking(AdEvent::InterstitialShowed).unwrap()
-        })
-        .await?
-        .leak();
-    }
-    {
-        let writer = writer.clone();
-        Admob::add_interstitial_ad_loaded_listener(move |i| {
-            writer
-                .send_blocking(AdEvent::InterstitialLoaded(i))
-                .unwrap()
-        })
-        .await?
-        .leak();
-    }
-
-    Ok(())
-}
-
-async fn set_up_reward_events(
-    writer: AsyncEventWriter<AdEvent>,
-) -> Result<(), capacitor_bindings::error::Error> {
-    {
-        let writer = writer.clone();
-        Admob::add_reward_ad_dismissed_listener(move |_| {
-            writer.send_blocking(AdEvent::RewardAdDismissed).unwrap()
-        })
-        .await?
-        .leak();
-    }
-    {
-        let writer = writer.clone();
-        Admob::add_reward_ad_failed_to_show_listener(move |e| {
-            writer
-                .send_blocking(AdEvent::RewardAdFailedToShow(e))
-                .unwrap()
-        })
-        .await?
-        .leak();
-    }
-    {
-        let writer = writer.clone();
-        Admob::add_reward_ad_loaded_listener(move |e| {
-            writer.send_blocking(AdEvent::RewardAdLoaded(e)).unwrap()
-        })
-        .await?
-        .leak();
-    }
-    {
-        let writer = writer.clone();
-        Admob::add_reward_ad_rewarded_listener(move |i| {
-            info!("admob rewarded listener");
-            writer.send_blocking(AdEvent::RewardAdRewarded(i)).unwrap()
-        })
-        .await?
-        .leak();
-    }
-    {
-        let writer = writer.clone();
-        Admob::add_reward_failed_to_load_listener(move |e| {
-            writer
-                .send_blocking(AdEvent::RewardFailedToLoad(e))
-                .unwrap()
-        })
-        .await?
-        .leak();
-    }
-
-    Ok(())
-}
-
 async fn try_load_reward_ad(writer: AsyncEventWriter<AdEvent>) {
     let options = RewardAdOptions {
         ssv: None,
@@ -371,7 +249,7 @@ async fn try_load_reward_ad(writer: AsyncEventWriter<AdEvent>) {
             .await
             .unwrap(),
         Err(err) => writer
-            .send_async(AdEvent::OtherError(err.to_string()))
+            .send_async(AdEvent::FailedToLoadRewardAd(err.to_string()))
             .await
             .unwrap(),
     }
@@ -384,30 +262,13 @@ pub async fn try_show_reward_ad(writer: AsyncEventWriter<AdEvent>) {
             .await
             .unwrap(),
         Err(err) => writer
-            .send_async(AdEvent::OtherError(err.to_string()))
+            .send_async(AdEvent::FailedToShowRewardAd(err.to_string()))
             .await
             .unwrap(),
     };
 }
 
-// pub async fn load_between_levels_interstitial(){
-//     let load_options = Admob::prepare_interstitial(AdOptions {
-//         ad_id: BETWEEN_LEVELS_INTERSTITIAL_AD_ID.to_string(),
-//         is_testing: true,
-//         margin: 10.0,
-//         npa: false,
-//     })
-//     .await
-//     .map_err(|x| x.to_string())?;
-// }
-
-// pub async fn show_interstitial() -> Result<(), String> {
-//     Admob::show_interstitial()
-//         .await
-//         .map_err(|x| x.to_string())?;
-
-//     Ok(())
-// }
-
 const BETWEEN_LEVELS_INTERSTITIAL_AD_ID: &'static str = "ca-app-pub-5238923028364185/8193403915";
 const BUY_HINTS_REWARD_AD_ID: &'static str = "ca-app-pub-5238923028364185/7292181940";
+
+const HINTS_REWARD_AMOUNT: usize = 5;
