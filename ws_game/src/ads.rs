@@ -1,11 +1,10 @@
-use crate::{logging, prelude::*};
+#[cfg(any(feature = "ios", feature = "android"))]
+use crate::asynchronous;
+use crate::prelude::*;
 use bevy::prelude::*;
 use capacitor_bindings::admob::*;
 use nice_bevy_utils::{async_event_writer::AsyncEventWriter, CanRegisterAsyncEvent};
 use strum::EnumIs;
-#[cfg(any(feature = "ios", feature = "android"))]
-use crate::asynchronous;
-
 
 pub struct AdsPlugin;
 
@@ -62,7 +61,9 @@ fn handle_ad_requests(
                     if ad_state.can_show_ads == Some(true) {
                         if ad_state.reward_ad.is_some() {
                             ad_state.reward_ad = None;
-                            asynchronous::spawn_and_run(mobile_only::try_show_reward_ad(writer.clone()));
+                            asynchronous::spawn_and_run(mobile_only::try_show_reward_ad(
+                                writer.clone(),
+                            ));
                         } else {
                             warn!("Cannot request reward with admob (no reward ad is loaded)")
                         }
@@ -73,9 +74,15 @@ fn handle_ad_requests(
 
                 #[cfg(not(any(feature = "ios", feature = "android")))]
                 {
-
-                    logging::do_or_report_error(capacitor_bindings::toast::Toast::show("We would show a reward ad here"));
-                    writer.send_blocking(AdEvent::RewardAdRewarded(AdMobRewardItem { reward_type: "blah".to_string(), amount: 0 })).unwrap();
+                    crate::logging::do_or_report_error(capacitor_bindings::toast::Toast::show(
+                        "We would show a reward ad here",
+                    ));
+                    writer
+                        .send_blocking(AdEvent::RewardAdRewarded(AdMobRewardItem {
+                            reward_type: "blah".to_string(),
+                            amount: 0,
+                        }))
+                        .unwrap();
                 }
             }
             AdRequestEvent::RequestInterstitial => {
@@ -84,7 +91,9 @@ fn handle_ad_requests(
                     if ad_state.can_show_ads == Some(true) {
                         if ad_state.interstitial_ad.is_some() {
                             ad_state.interstitial_ad = None;
-                            asynchronous::spawn_and_run(mobile_only::try_show_interstitial_ad(writer.clone()));
+                            asynchronous::spawn_and_run(mobile_only::try_show_interstitial_ad(
+                                writer.clone(),
+                            ));
                         } else {
                             warn!("Cannot request interstitial with admob (ads are not set up)")
                         }
@@ -94,7 +103,9 @@ fn handle_ad_requests(
                 }
                 #[cfg(not(any(feature = "ios", feature = "android")))]
                 {
-                    logging::do_or_report_error(capacitor_bindings::toast::Toast::show("We would show an interstitial ad here"));
+                    crate::logging::do_or_report_error(capacitor_bindings::toast::Toast::show(
+                        "We would show an interstitial ad here",
+                    ));
                     writer.send_blocking(AdEvent::InterstitialShowed).unwrap();
                 }
             }
@@ -118,8 +129,12 @@ fn handle_ad_events(
                     ad_state.can_show_ads = Some(true);
                     #[cfg(any(feature = "ios", feature = "android"))]
                     {
-                        asynchronous::spawn_and_run(mobile_only::try_load_reward_ad(writer.clone()));
-                        asynchronous::spawn_and_run(mobile_only::try_load_interstitial_ad(writer.clone()));
+                        asynchronous::spawn_and_run(mobile_only::try_load_reward_ad(
+                            writer.clone(),
+                        ));
+                        asynchronous::spawn_and_run(mobile_only::try_load_interstitial_ad(
+                            writer.clone(),
+                        ));
                     }
                 }
             }
@@ -137,14 +152,18 @@ fn handle_ad_events(
                 interstitial_state.levels_without_interstitial = 0;
                 #[cfg(any(feature = "ios", feature = "android"))]
                 {
-                    asynchronous::spawn_and_run(mobile_only::try_load_interstitial_ad(writer.clone()));
+                    asynchronous::spawn_and_run(mobile_only::try_load_interstitial_ad(
+                        writer.clone(),
+                    ));
                 }
             }
             AdEvent::FailedToShowInterstitialAd(err) => {
                 bevy::log::error!("{}", err);
                 #[cfg(any(feature = "ios", feature = "android"))]
                 {
-                    asynchronous::spawn_and_run(mobile_only::try_load_interstitial_ad(writer.clone()));
+                    asynchronous::spawn_and_run(mobile_only::try_load_interstitial_ad(
+                        writer.clone(),
+                    ));
                 }
             }
 
