@@ -46,7 +46,7 @@ pub fn go() {
 
     app.add_plugins(WordlinePlugin);
     app.register_maveric::<ViewRoot>();
-    app.register_maveric::<HintsRemainingRoot>();
+    app.add_plugins(HintsRemainingPlugin);
     app.add_plugins(StatePlugin);
     app.add_plugins(LevelTimePlugin);
     app.add_plugins(ShapesPlugin);

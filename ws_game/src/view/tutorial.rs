@@ -368,7 +368,7 @@ impl TutorialText {
                     ),
                 },
                 3..=4 => Self {
-                    top: Some("Your remaining hints are shown\nIn the green circle"),
+                    top: Some("Hints are free in the tutorial"),
                     middle: None,
                     bottom: None,
                 },
