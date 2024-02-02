@@ -1,6 +1,6 @@
 use std::{num::NonZeroUsize, time::Duration};
 
-use crate::{completion::*, prelude::*};
+use crate::{completion::*, prelude::*, purchases::Purchases};
 use itertools::{Either, Itertools};
 use nice_bevy_utils::{CanInitTrackedResource, CanRegisterAsyncEvent, TrackableResource};
 use serde::{Deserialize, Serialize};
@@ -64,7 +64,8 @@ fn handle_change_level_event(
 
     mut time: ResMut<LevelTime>,
     mut interstitial_progress_state: ResMut<InterstitialProgressState>,
-    mut request_ad_events: EventWriter<AdRequestEvent>
+    mut request_ad_events: EventWriter<AdRequestEvent>,
+    purchases: Res<Purchases>
 ) {
     for event in events.read() {
         let new_level = match event {
@@ -142,7 +143,7 @@ fn handle_change_level_event(
 
         *chosen = ChosenState::default();
 
-        if current_level.count_for_interstitial_ads(){
+        if current_level.count_for_interstitial_ads(&purchases){
             interstitial_progress_state.levels_without_interstitial += 1;
 
             if interstitial_progress_state.levels_without_interstitial >= 2{

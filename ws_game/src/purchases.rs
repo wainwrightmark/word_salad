@@ -14,7 +14,10 @@ impl Plugin for PurchasesPlugin {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, MavericContext, Resource, Clone, Default)]
 pub struct Purchases {
+    /// Level groups which the user has purchased
     pub groups_purchased: HashSet<LevelGroup>,
+    /// True is the user has purchased the pack to avoid ads
+    pub avoid_ads_purchased: bool
 }
 
 impl TrackableResource for Purchases {

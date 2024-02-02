@@ -62,12 +62,17 @@ impl Default for CurrentLevel {
 pub static CUSTOM_LEVEL: OnceLock<DesignedLevel> = OnceLock::new();
 
 impl CurrentLevel {
-
     /// Whether this level should be counted to towards total interstitial ads
-    pub fn count_for_interstitial_ads(&self)-> bool{
-        match self{
+    pub fn count_for_interstitial_ads(&self, purchases: &Purchases) -> bool {
+        if purchases.avoid_ads_purchased {
+            return false;
+        }
+
+        match self {
             CurrentLevel::Tutorial { .. } => false,
-            CurrentLevel::Fixed { .. } => true, //todo not if purchased
+            CurrentLevel::Fixed { sequence, .. } => {
+                !purchases.groups_purchased.contains(&sequence.group())
+            }
             CurrentLevel::DailyChallenge { .. } => true,
             CurrentLevel::Custom { .. } => false,
             CurrentLevel::NonLevel(_) => false,
