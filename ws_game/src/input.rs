@@ -63,7 +63,7 @@ impl InteractionEntity {
         //info!("Try find input");
         if let Some(popup_type) = popup_state.0 {
             match popup_type {
-                PopupType::BuyMoreHints => {
+                PopupType::BuyMoreHints(_) => {
                     return match size.try_pick::<HintsPopupLayoutEntity>(*position, &()) {
                         Some(entity) => match entity {
                             HintsPopupLayoutEntity::Text => None,

@@ -23,6 +23,7 @@ impl Plugin for StatePlugin {
         app.init_tracked_resource::<SavedLevelsState>();
 
         app.add_event::<AnimateSolutionsEvent>();
+        app.add_event::<HintEvent>();
         app.register_async_event::<ChangeLevelEvent>();
 
         app.add_systems(Update, track_found_words);
@@ -39,6 +40,11 @@ impl Plugin for StatePlugin {
             PostUpdate,
             handle_change_level_event.run_if(|ev: EventReader<ChangeLevelEvent>| !ev.is_empty()),
         );
+
+        app.add_systems(
+            Update,
+            handle_hint_event.run_if(|ev: EventReader<HintEvent>| !ev.is_empty()),
+        );
     }
 }
 #[derive(Debug, Event)]
@@ -47,9 +53,40 @@ pub enum ChangeLevelEvent {
     Reset,
 }
 
+#[derive(Debug, Clone, Copy, Event, PartialEq)]
+pub struct HintEvent {
+    pub word_index: usize,
+}
+
 impl From<CurrentLevel> for ChangeLevelEvent {
     fn from(value: CurrentLevel) -> Self {
         Self::ChangeTo(value)
+    }
+}
+
+fn handle_hint_event(
+    mut events: EventReader<HintEvent>,
+    mut found_words: ResMut<FoundWordsState>,
+    mut hint_state: ResMut<HintState>,
+    current_level: Res<CurrentLevel>,
+    daily_challenges: Res<DailyChallenges>,
+    mut animate_solution_events: EventWriter<AnimateSolutionsEvent>,
+    mut chosen_state: ResMut<ChosenState>,
+    mut popup_state: ResMut<PopupState>,
+    video_resource: Res<VideoResource>,
+) {
+    for HintEvent { word_index } in events.read() {
+        if let Either::Left(level) = current_level.level(&daily_challenges) {
+            found_words.try_hint_word(
+                hint_state.as_mut(),
+                level,
+                *word_index,
+                chosen_state.as_mut(),
+                &mut animate_solution_events,
+                video_resource.selfie_mode(),
+                &mut popup_state,
+            );
+        }
     }
 }
 
@@ -65,7 +102,7 @@ fn handle_change_level_event(
     mut time: ResMut<LevelTime>,
     mut interstitial_progress_state: ResMut<InterstitialProgressState>,
     mut request_ad_events: EventWriter<AdRequestEvent>,
-    purchases: Res<Purchases>
+    purchases: Res<Purchases>,
 ) {
     for event in events.read() {
         let new_level = match event {
@@ -103,10 +140,13 @@ fn handle_change_level_event(
         }
 
         if let CurrentLevel::DailyChallenge { index } = new_level {
-            if let Either::Left(level) = new_level.level(&daily_challenges){
+            if let Either::Left(level) = new_level.level(&daily_challenges) {
                 if let Some(level_result) = daily_challenge_completions.results.get(index) {
                     *current_level = new_level.clone();
-                    *found_words = FoundWordsState::new_level_complete(level, level_result.hints_used as usize);
+                    *found_words = FoundWordsState::new_level_complete(
+                        level,
+                        level_result.hints_used as usize,
+                    );
                     *time = LevelTime::Paused {
                         elapsed: Duration::from_secs(level_result.seconds as u64),
                     };
@@ -116,7 +156,6 @@ fn handle_change_level_event(
                     return;
                 }
             }
-
         }
 
         let loaded_level = new_key
@@ -143,13 +182,12 @@ fn handle_change_level_event(
 
         *chosen = ChosenState::default();
 
-        if current_level.count_for_interstitial_ads(&purchases){
+        if current_level.count_for_interstitial_ads(&purchases) {
             interstitial_progress_state.levels_without_interstitial += 1;
 
-            if interstitial_progress_state.levels_without_interstitial >= 2{
+            if interstitial_progress_state.levels_without_interstitial >= 2 {
                 request_ad_events.send(AdRequestEvent::RequestInterstitial);
             }
-
         }
     }
 }
@@ -353,7 +391,7 @@ impl FoundWordsState {
             .unwrap_or(&Completion::Complete)
     }
 
-    pub fn try_hint_word(
+    fn try_hint_word(
         &mut self,
         hint_state: &mut HintState,
         level: &DesignedLevel,
@@ -361,8 +399,10 @@ impl FoundWordsState {
         chosen_state: &mut ChosenState,
         ew: &mut impl AnyEventWriter<AnimateSolutionsEvent>,
         selfie_mode: SelfieMode,
+        popup_state: &mut PopupState,
     ) -> bool {
         let Some(new_hints) = hint_state.hints_remaining.checked_sub(1) else {
+            popup_state.0 = Some(PopupType::BuyMoreHints(HintEvent { word_index }));
             return false;
         };
 
@@ -870,6 +910,7 @@ pub mod tests {
         chosen_state::ChosenState,
         prelude::{Completion, DesignedLevel, FoundWordsState, TestEventWriter},
         state::HintState,
+        view::PopupState,
     };
 
     #[test]
@@ -921,6 +962,7 @@ pub mod tests {
         .unwrap();
 
         let mut found_words = FoundWordsState::new_from_level(&level);
+        let mut popup_state = PopupState(None);
         let mut hint_state = HintState {
             hints_remaining: 10,
             total_bought_hints: 0,
@@ -938,6 +980,7 @@ pub mod tests {
             SelfieMode {
                 is_selfie_mode: true,
             },
+            &mut popup_state,
         );
 
         assert!(hinted);

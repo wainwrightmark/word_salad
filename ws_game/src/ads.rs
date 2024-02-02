@@ -30,7 +30,7 @@ impl Plugin for AdsPlugin {
 
 #[derive(Debug, Event)]
 pub enum AdRequestEvent {
-    RequestReward,
+    RequestReward(HintEvent),
     RequestInterstitial,
 }
 
@@ -39,6 +39,7 @@ pub struct AdState {
     pub can_show_ads: Option<bool>,
     pub reward_ad: Option<AdLoadInfo>,
     pub interstitial_ad: Option<AdLoadInfo>,
+    pub hint_wanted: Option<HintEvent>,
 }
 
 #[derive(Debug, Default, Resource, MavericContext)]
@@ -55,12 +56,13 @@ fn handle_ad_requests(
 ) {
     for event in events.read() {
         match event {
-            AdRequestEvent::RequestReward => {
+            AdRequestEvent::RequestReward(hint_event) => {
                 #[cfg(any(feature = "ios", feature = "android"))]
                 {
                     if ad_state.can_show_ads == Some(true) {
                         if ad_state.reward_ad.is_some() {
                             ad_state.reward_ad = None;
+                            ad_state.hint_wanted = Some(*hint_event);
                             asynchronous::spawn_and_run(mobile_only::try_show_reward_ad(
                                 writer.clone(),
                             ));
@@ -74,9 +76,8 @@ fn handle_ad_requests(
 
                 #[cfg(not(any(feature = "ios", feature = "android")))]
                 {
-                    crate::logging::do_or_report_error(capacitor_bindings::toast::Toast::show(
-                        "We would show a reward ad here",
-                    ));
+                    ad_state.hint_wanted = Some(*hint_event);
+                    crate::platform_specific::show_toast_on_web("We would show a reward ad here");
                     writer
                         .send_blocking(AdEvent::RewardAdRewarded(AdMobRewardItem {
                             reward_type: "blah".to_string(),
@@ -120,6 +121,7 @@ fn handle_ad_events(
     writer: AsyncEventWriter<AdEvent>,
     mut hints: ResMut<HintState>,
     mut interstitial_state: ResMut<InterstitialProgressState>,
+    mut hint_events: EventWriter<HintEvent>,
 ) {
     for event in events.read() {
         match event {
@@ -181,12 +183,17 @@ fn handle_ad_events(
                 {
                     asynchronous::spawn_and_run(mobile_only::try_load_reward_ad(writer.clone()));
                 }
+                if let Some(hint_event) = ad_state.hint_wanted.take() {
+                    hint_events.send(hint_event);
+                }
             }
             AdEvent::FailedToLoadRewardAd(s) => {
                 bevy::log::error!("{s}");
             }
             AdEvent::FailedToShowRewardAd(s) => {
                 bevy::log::error!("{s}");
+
+                ad_state.hint_wanted = None;
 
                 #[cfg(any(feature = "ios", feature = "android"))]
                 {

@@ -36,18 +36,21 @@ fn track_purchase_events(
     mut hints: ResMut<HintState>,
     sequence_completion: Res<SequenceCompletion>,
     mut change_level_events: EventWriter<ChangeLevelEvent>,
+    mut hint_events: EventWriter<HintEvent>
 ) {
     for event in ev.read() {
         match event {
-            PurchaseEvent::BuyHintsPack1 => {
+            PurchaseEvent::BuyHintsPack1(hint_event) => {
                 hints.hints_remaining += 100;
                 hints.total_bought_hints += 100;
                 show_toast_on_web("In the real app you would pay money");
+                hint_events.send(*hint_event);
             }
-            PurchaseEvent::BuyHintsPack2 => {
+            PurchaseEvent::BuyHintsPack2(hint_event) => {
                 hints.hints_remaining += 1000;
                 hints.total_bought_hints += 1000;
                 show_toast_on_web("In the real app you would pay money");
+                hint_events.send(*hint_event);
             }
             PurchaseEvent::BuyLevelGroup(sequence) => {
                 purchases.groups_purchased.insert(sequence.group());
@@ -69,8 +72,8 @@ fn track_purchase_events(
 
 #[derive(Debug, Event, Clone, PartialEq)]
 pub enum PurchaseEvent {
-    BuyHintsPack1,
-    BuyHintsPack2,
+    BuyHintsPack1(HintEvent),
+    BuyHintsPack2(HintEvent),
     BuyLevelGroup(LevelSequence),
     BuyAvoidAds,
 }

@@ -21,12 +21,12 @@ impl Plugin for PopupPlugin {
     }
 }
 
-#[derive(Debug, Clone, Copy, Resource, MavericContext, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, Resource, MavericContext, PartialEq,  Default)]
 pub struct PopupState(pub Option<PopupType>);
 
-#[derive(Debug, Clone, Copy, Resource, MavericContext, PartialEq, Eq, EnumIs)]
+#[derive(Debug, Clone, Copy, Resource, MavericContext, PartialEq,  EnumIs)]
 pub enum PopupType {
-    BuyMoreHints,
+    BuyMoreHints(HintEvent),
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, Eq, MavericRoot)]
@@ -67,7 +67,7 @@ impl MavericRootChildren for PopupStateRoot {
         );
 
         match popup_type {
-            PopupType::BuyMoreHints => {
+            PopupType::BuyMoreHints(_) => {
                 for item in HintsPopupLayoutEntity::iter() {
                     let font_size = size.font_size::<HintsPopupLayoutEntity>(&item, &());
                     let rect: LayoutRectangle = size.get_rect(&item, &());

@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use itertools::Either;
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
 use std::time::Duration;
 use strum::EnumIs;
@@ -72,11 +71,9 @@ fn track_held_button(
 
 fn handle_button_activations(
     mut events: EventReader<ButtonActivated>,
-    mut current_level: Res<CurrentLevel>,
+    current_level: Res<CurrentLevel>,
+    found_words: Res<FoundWordsState>,
     mut menu_state: ResMut<MenuState>,
-    mut chosen_state: ResMut<ChosenState>,
-    mut found_words: ResMut<FoundWordsState>,
-    mut hint_state: ResMut<HintState>,
     mut popup_state: ResMut<PopupState>,
     mut sequence_completion: ResMut<SequenceCompletion>,
     mut daily_challenge_completion: ResMut<DailyChallengeCompletion>,
@@ -87,32 +84,30 @@ fn handle_button_activations(
     mut level_time: ResMut<LevelTime>,
 
     mut event_writers: (
-        EventWriter<AnimateSolutionsEvent>,
         EventWriter<ChangeLevelEvent>,
         EventWriter<AdRequestEvent>,
-        AsyncEventWriter<VideoEvent>,
         EventWriter<PurchaseEvent>,
+        EventWriter<HintEvent>,
+        AsyncEventWriter<VideoEvent>,
     ),
 ) {
     for ev in events.read() {
         ev.0.on_activated(
-            &mut current_level,
+            &current_level,
+            &found_words,
             &mut menu_state,
-            &mut chosen_state,
-            &mut found_words,
-            &mut hint_state,
             &mut popup_state,
             &mut sequence_completion,
             &mut daily_challenge_completion,
             &mut video_resource,
-            &event_writers.3,
+            &event_writers.4,
             daily_challenges.as_ref(),
             &mut level_time,
             &purchases,
             &mut event_writers.0,
             &mut event_writers.1,
             &mut event_writers.2,
-            &mut event_writers.4,
+            &mut event_writers.3,
         )
     }
 }
@@ -248,10 +243,8 @@ impl ButtonInteraction {
     fn on_activated(
         &self,
         current_level: &CurrentLevel,
+        _found_words: &FoundWordsState, //needed for share
         menu_state: &mut ResMut<MenuState>,
-        chosen_state: &mut ResMut<ChosenState>,
-        found_words: &mut ResMut<FoundWordsState>,
-        hint_state: &mut ResMut<HintState>,
         popup_state: &mut ResMut<PopupState>,
 
         sequence_completion: &mut ResMut<SequenceCompletion>,
@@ -261,10 +254,11 @@ impl ButtonInteraction {
         daily_challenges: &DailyChallenges,
         level_time: &mut ResMut<LevelTime>,
         purchases: &Purchases,
-        animate_solution_events: &mut EventWriter<AnimateSolutionsEvent>,
+
         change_level_events: &mut EventWriter<ChangeLevelEvent>,
         ad_request_events: &mut EventWriter<AdRequestEvent>,
         purchase_events: &mut EventWriter<PurchaseEvent>,
+        hint_events: &mut EventWriter<HintEvent>,
     ) {
         match self {
             ButtonInteraction::None => {}
@@ -376,18 +370,7 @@ impl ButtonInteraction {
                 }
             },
             ButtonInteraction::WordButton(word) => {
-                if hint_state.hints_remaining == 0 {
-                    popup_state.0 = Some(PopupType::BuyMoreHints);
-                } else if let Either::Left(level) = current_level.level(daily_challenges) {
-                    found_words.try_hint_word(
-                        hint_state,
-                        level,
-                        word.0,
-                        chosen_state,
-                        animate_solution_events,
-                        video_resource.selfie_mode(),
-                    );
-                }
+                hint_events.send(HintEvent { word_index: word.0 });
             }
 
             ButtonInteraction::TopMenuItem(LayoutTopBar::ToggleRecordingButton) => {
@@ -494,7 +477,7 @@ impl ButtonInteraction {
                 if let Some(share_text) = try_generate_share_text(
                     current_level,
                     level_time.as_ref(),
-                    found_words.as_ref(),
+                    _found_words,
                     daily_challenges,
                 ) {
                     crate::wasm::share(share_text);
@@ -507,18 +490,21 @@ impl ButtonInteraction {
             }
 
             ButtonInteraction::Popup(PopupInteraction::ClickWatchAd) => {
-                ad_request_events.send(AdRequestEvent::RequestReward);
-                popup_state.0 = None;
+                if let Some(PopupType::BuyMoreHints(he)) = popup_state.0.take() {
+                    ad_request_events.send(AdRequestEvent::RequestReward(he))
+                }
             }
 
             ButtonInteraction::Popup(PopupInteraction::ClickBuyPack1) => {
-                purchase_events.send(PurchaseEvent::BuyHintsPack1);
-                popup_state.0 = None;
+                if let Some(PopupType::BuyMoreHints(he)) = popup_state.0.take() {
+                    purchase_events.send(PurchaseEvent::BuyHintsPack1(he))
+                }
             }
 
             ButtonInteraction::Popup(PopupInteraction::ClickBuyPack2) => {
-                purchase_events.send(PurchaseEvent::BuyHintsPack2);
-                popup_state.0 = None;
+                if let Some(PopupType::BuyMoreHints(he)) = popup_state.0.take() {
+                    purchase_events.send(PurchaseEvent::BuyHintsPack2(he))
+                }
             }
         }
     }
