@@ -189,6 +189,10 @@ impl MavericNode for WordNode {
                 Completion::Complete => 1.0 / animated_solutions::TOTAL_SECONDS,
             };
 
+            let height = node.rect.extents.y.abs();
+            let width = node.rect.extents.x.abs();
+            let scale = height.max(width);
+
             commands.add_child(
                 "shape_fill",
                 (
@@ -199,12 +203,15 @@ impl MavericNode for WordNode {
                                 tile: node.tile,
                                 previous_completion: args.previous.map(|x| x.completion),
                             },
-                            (node.rect.extents.y.abs() / node.rect.extents.x.abs()).into(),
+                            ShaderProportions {
+                                width: width / scale,
+                                height: height / scale,
+                            },
                             ShaderProgress { progress },
                         ),
                         transform: Transform {
                             translation: shape_translation,
-                            scale: Vec3::ONE * node.rect.extents.x.abs() * 0.5,
+                            scale: Vec3::ONE * scale * 0.5,
                             ..Default::default()
                         },
                         ..default()
@@ -240,10 +247,10 @@ impl ExtractToShader for WordButtonBoxShader {
     type Shader = Self;
     type ParamsQuery<'a> = (
         &'a WordButtonCompletion,
-        &'a ShaderAspectRatio,
+        &'a ShaderProportions,
         &'a ShaderProgress,
     );
-    type ParamsBundle = (WordButtonCompletion, ShaderAspectRatio, ShaderProgress);
+    type ParamsBundle = (WordButtonCompletion, ShaderProportions, ShaderProgress);
     type ResourceParams<'w> = (Res<'w, PressedButton>, Res<'w, Time>);
 
     fn get_params(
@@ -256,7 +263,7 @@ impl ExtractToShader for WordButtonBoxShader {
                 tile,
                 previous_completion,
             },
-            ShaderAspectRatio { height },
+            ShaderProportions { height, width },
             ShaderProgress { progress },
         ) = query_item;
 
@@ -297,6 +304,7 @@ impl ExtractToShader for WordButtonBoxShader {
             HorizontalGradientBoxShaderParams {
                 color: color.into(),
                 height: *height,
+                width: *width,
                 progress,
                 color2: color2.into(),
                 rounding: crate::rounding::WORD_BUTTON_NORMAL,
@@ -323,6 +331,7 @@ impl ExtractToShader for WordButtonBoxShader {
             HorizontalGradientBoxShaderParams {
                 color: color.into(),
                 height: *height,
+                width: *width,
                 progress: *progress,
                 color2: color2.into(),
                 rounding: crate::rounding::WORD_BUTTON_NORMAL,
@@ -336,7 +345,7 @@ impl ParameterizedShader for WordButtonBoxShader {
 
     fn fragment_body() -> impl Into<String> {
         SDFColorCall {
-            sdf: "shaders::box::sdf(in.pos, in.height, in.rounding)",
+            sdf: "shaders::box::sdf(in.pos, in.width, in.height, in.rounding)",
             fill_color:
                 "fill::horizontal_gradient::fill(d, in.color, in.pos, in.progress, in.color2)",
         }

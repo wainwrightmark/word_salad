@@ -67,20 +67,23 @@ impl InteractionEntity {
                     return match size.try_pick::<HintsPopupLayoutEntity>(*position, &()) {
                         Some(entity) => match entity {
                             HintsPopupLayoutEntity::Text => None,
-                            HintsPopupLayoutEntity::BuyMoreButton => {
-                                Some(InteractionEntity::Button(ButtonInteraction::Popup(
-                                    PopupInteraction::HintsBuyMore,
-                                )))
-                            }
+                            // HintsPopupLayoutEntity::BuyMoreButton => {
+                            //     Some(InteractionEntity::Button(ButtonInteraction::Popup(
+                            //         PopupInteraction::HintsBuyMore,
+                            //     )))
+                            // }
                             HintsPopupLayoutEntity::SufferAloneButton => {
                                 Some(InteractionEntity::Button(ButtonInteraction::Popup(
                                     PopupInteraction::ClickClose,
                                 )))
                             }
                             HintsPopupLayoutEntity::PopupBox => None,
+                            HintsPopupLayoutEntity::WatchAdButton => Some(InteractionEntity::Button(ButtonInteraction::Popup(PopupInteraction::ClickWatchAd))),
+                            HintsPopupLayoutEntity::BuyPack1Button => Some(InteractionEntity::Button(ButtonInteraction::Popup(PopupInteraction::ClickBuyPack1))),
+                            HintsPopupLayoutEntity::BuyPack2Button => Some(InteractionEntity::Button(ButtonInteraction::Popup(PopupInteraction::ClickBuyPack2 ))),
                         },
                         None => Some(InteractionEntity::Button(ButtonInteraction::Popup(
-                            PopupInteraction::ClickGreyedOut,
+                            PopupInteraction::ClickSufferAlone,
                         ))),
                     }
                 }

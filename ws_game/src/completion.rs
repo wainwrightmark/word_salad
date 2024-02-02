@@ -201,18 +201,7 @@ pub fn track_level_completion(
                 completion.total_complete = number_complete;
 
                 if completion.total_complete % 5 == 0 {
-                    #[cfg(any(feature = "android", feature = "ios"))]
-                    {
-                        crate::logging::do_or_report_error(
-                            capacitor_bindings::rate::Rate::request_review(),
-                        );
-                    }
-                    #[cfg(feature = "web")]
-                    {
-                        crate::logging::do_or_report_error(capacitor_bindings::toast::Toast::show(
-                            "We would request app review here",
-                        ));
-                    }
+                    crate::platform_specific::request_review();
                 }
             }
         }
@@ -246,20 +235,7 @@ pub fn track_level_completion(
                         info!("Streak increased by one");
                         streak.current += 1;
 
-                        #[cfg(any(feature = "android", feature = "ios"))]
-                        {
-                            crate::logging::do_or_report_error(
-                                capacitor_bindings::rate::Rate::request_review(),
-                            );
-                        }
-                        #[cfg(feature = "web")]
-                        {
-                            crate::logging::do_or_report_error(
-                                capacitor_bindings::toast::Toast::show(
-                                    "We would request app review here",
-                                ),
-                            );
-                        }
+                        crate::platform_specific::request_review();
                     } else {
                         info!("Streak set to one");
                         streak.current = 1;

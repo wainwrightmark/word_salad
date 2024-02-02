@@ -24,6 +24,7 @@ pub mod shapes;
 pub mod startup;
 pub mod state;
 pub mod streak;
+pub mod platform_specific;
 pub mod test_res_mut;
 pub mod video;
 pub mod view;
@@ -65,6 +66,7 @@ pub mod prelude {
     pub use crate::streak::*;
     pub use crate::test_res_mut::*;
     pub use crate::video::*;
+    pub use crate::platform_specific::*;
     pub use crate::view::*;
 
     pub use std::array;

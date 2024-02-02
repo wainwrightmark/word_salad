@@ -13,3 +13,5 @@
 - end selfie mode / recording when resuming app
 - Way to retry loading daily puzzles
 - Make sure words have enough height -check recent colors puzzle
+- move record button on larger devices
+- watching ad or buying hints should give you hint immediately

@@ -1,6 +1,6 @@
 #define_import_path shaders::box
-fn sdf(p: vec2<f32>, height: f32, rounding: f32) -> f32 {
-    return sd_rounded_box(p, vec2<f32>(1.0, height), vec4<f32>(rounding * height));
+fn sdf(p: vec2<f32>, width: f32, height: f32, rounding: f32) -> f32 {
+    return sd_rounded_box(p, vec2<f32>(width, height), vec4<f32>(rounding * min(width, height)));
 }
 
 fn sd_rounded_box(p: vec2<f32>, b: vec2<f32>, r: vec4<f32>) -> f32 {

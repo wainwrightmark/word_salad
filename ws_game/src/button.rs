@@ -13,7 +13,7 @@ use crate::menu_layout::word_salad_menu_layout::WordSaladMenuLayoutEntity;
 use crate::prelude::level_group_layout::LevelGroupLayoutEntity;
 use crate::prelude::levels_menu_layout::LevelsMenuLayoutEntity;
 use crate::prelude::main_menu_layout::MainMenuLayoutEntity;
-use crate::purchases::Purchases;
+use crate::purchases::{PurchaseEvent, Purchases};
 use crate::{input, prelude::*, startup};
 
 pub struct ButtonPlugin;
@@ -80,7 +80,7 @@ fn handle_button_activations(
     mut popup_state: ResMut<PopupState>,
     mut sequence_completion: ResMut<SequenceCompletion>,
     mut daily_challenge_completion: ResMut<DailyChallengeCompletion>,
-    mut purchases: ResMut<Purchases>,
+    purchases: Res<Purchases>,
     mut video_resource: ResMut<VideoResource>,
 
     daily_challenges: Res<DailyChallenges>,
@@ -91,6 +91,7 @@ fn handle_button_activations(
         EventWriter<ChangeLevelEvent>,
         EventWriter<AdRequestEvent>,
         AsyncEventWriter<VideoEvent>,
+        EventWriter<PurchaseEvent>,
     ),
 ) {
     for ev in events.read() {
@@ -107,10 +108,11 @@ fn handle_button_activations(
             &event_writers.3,
             daily_challenges.as_ref(),
             &mut level_time,
-            &mut purchases,
+            &purchases,
             &mut event_writers.0,
             &mut event_writers.1,
             &mut event_writers.2,
+            &mut event_writers.4,
         )
     }
 }
@@ -152,9 +154,11 @@ pub enum ButtonPressType {
 
 #[derive(Debug, Clone, Copy, PartialEq, Component, EnumIs)]
 pub enum PopupInteraction {
-    ClickGreyedOut,
+    ClickSufferAlone,
     ClickClose,
-    HintsBuyMore,
+    ClickWatchAd,
+    ClickBuyPack1,
+    ClickBuyPack2,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Component, EnumIs, Default)]
@@ -256,11 +260,11 @@ impl ButtonInteraction {
         video_events: &AsyncEventWriter<VideoEvent>,
         daily_challenges: &DailyChallenges,
         level_time: &mut ResMut<LevelTime>,
-        purchases: &mut ResMut<Purchases>,
+        purchases: &Purchases,
         animate_solution_events: &mut EventWriter<AnimateSolutionsEvent>,
         change_level_events: &mut EventWriter<ChangeLevelEvent>,
-
         ad_request_events: &mut EventWriter<AdRequestEvent>,
+        purchase_events: &mut EventWriter<PurchaseEvent>,
     ) {
         match self {
             ButtonInteraction::None => {}
@@ -413,12 +417,7 @@ impl ButtonInteraction {
                             }
                         }
                         NonLevel::LevelSequenceMustPurchaseGroup(sequence) => {
-                            purchases.groups_purchased.insert(sequence.group());
-                            let level: CurrentLevel = sequence_completion
-                                .get_next_level_index(sequence, purchases)
-                                .to_level(sequence);
-
-                            change_level_events.send(level.into());
+                            purchase_events.send(PurchaseEvent::BuyLevelGroup(sequence));
                         }
                         NonLevel::DailyChallengeReset => {
                             daily_challenge_completion.reset_daily_challenge_completion();
@@ -502,16 +501,23 @@ impl ButtonInteraction {
                 }
             }
             ButtonInteraction::Popup(
-                PopupInteraction::ClickClose | PopupInteraction::ClickGreyedOut,
+                PopupInteraction::ClickClose | PopupInteraction::ClickSufferAlone,
             ) => {
                 popup_state.0 = None;
             }
 
-            ButtonInteraction::Popup(PopupInteraction::HintsBuyMore) => {
+            ButtonInteraction::Popup(PopupInteraction::ClickWatchAd) => {
                 ad_request_events.send(AdRequestEvent::RequestReward);
+                popup_state.0 = None;
+            }
 
-                // hint_state.hints_remaining += 3; //TODO actually make them buy them!
-                // hint_state.total_bought_hints += 3;
+            ButtonInteraction::Popup(PopupInteraction::ClickBuyPack1) => {
+                purchase_events.send(PurchaseEvent::BuyHintsPack1);
+                popup_state.0 = None;
+            }
+
+            ButtonInteraction::Popup(PopupInteraction::ClickBuyPack2) => {
+                purchase_events.send(PurchaseEvent::BuyHintsPack2);
                 popup_state.0 = None;
             }
         }
