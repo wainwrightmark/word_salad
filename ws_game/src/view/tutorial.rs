@@ -329,8 +329,7 @@ impl TutorialText {
                         middle: Some(
                             "\
                             You completed your first Word Salad\n\
-                            You've earned a hint\n\
-                            Spend a hint to reveal a letter",
+                            The next puzzle is about Planets",
                         ),
                         bottom: None,
                     }
@@ -371,12 +370,7 @@ impl TutorialText {
                 3..=4 => Self {
                     top: Some("Your remaining hints are shown\nIn the green circle"),
                     middle: None,
-                    bottom: Some(
-                        "\
-                        \n\
-                    You earn hints by completing levels\n\
-                    Don't be afraid to spend them!",
-                    ),
+                    bottom: None,
                 },
                 5 => Self {
                     top: Some("One planet to go!"),
@@ -389,7 +383,7 @@ impl TutorialText {
                         top: None,
                         middle: Some(
                             "\
-                        Tap 'Word Salad' for today's puzzle\n\
+                        Tap 'Next' for today's puzzle\n\
                         Open the menu for extra puzzles\n\
                         Why not try out Selfie Mode?",
                         ),
