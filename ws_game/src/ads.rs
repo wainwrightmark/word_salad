@@ -259,10 +259,10 @@ mod mobile_only {
             .await
             .map_err(|x| x.to_string())?;
 
-        let tracking_info = match tracking_info.status {
-            TrackingAuthorizationStatus::Authorized => tracking_info,
+        match tracking_info.status {
+            TrackingAuthorizationStatus::Authorized => {}
             TrackingAuthorizationStatus::Denied => {
-                return Err("Tracking info status Denied".to_string());
+                // return Err("Tracking info status Denied".to_string());
             }
             TrackingAuthorizationStatus::NotDetermined => {
                 #[allow(deprecated)]
@@ -270,14 +270,12 @@ mod mobile_only {
                     .await
                     .map_err(|x| x.to_string())?;
 
-                let tracking_info = Admob::tracking_authorization_status()
+                Admob::tracking_authorization_status()
                     .await
                     .map_err(|x| x.to_string())?;
-
-                tracking_info
             }
             TrackingAuthorizationStatus::Restricted => {
-                return Err("Tracking info status Restricted".to_string());
+                // return Err("Tracking info status Restricted".to_string());
             }
         };
 

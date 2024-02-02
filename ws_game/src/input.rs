@@ -84,30 +84,6 @@ impl InteractionEntity {
                         ))),
                     }
                 }
-                PopupType::SelfieModeHelp => {
-                    return match size.try_pick::<SelfiePopupLayoutEntity>(*position, &()) {
-                        Some(entity) => match entity {
-                            SelfiePopupLayoutEntity::Text => None,
-                            SelfiePopupLayoutEntity::MoreInformationButton => {
-                                Some(InteractionEntity::Button(ButtonInteraction::Popup(
-                                    PopupInteraction::SelfieInformation,
-                                )))
-                            }
-                            SelfiePopupLayoutEntity::DontShowAgainButton => {
-                                Some(InteractionEntity::Button(ButtonInteraction::Popup(
-                                    PopupInteraction::SelfieDontShowAgain,
-                                )))
-                            }
-                            SelfiePopupLayoutEntity::OkButton => Some(InteractionEntity::Button(
-                                ButtonInteraction::Popup(PopupInteraction::ClickClose),
-                            )),
-                            SelfiePopupLayoutEntity::PopupBox => None,
-                        },
-                        None => Some(InteractionEntity::Button(ButtonInteraction::Popup(
-                            PopupInteraction::ClickGreyedOut,
-                        ))),
-                    }
-                }
             }
         }
 

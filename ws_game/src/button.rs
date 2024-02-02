@@ -85,7 +85,6 @@ fn handle_button_activations(
 
     daily_challenges: Res<DailyChallenges>,
     mut level_time: ResMut<LevelTime>,
-    mut selfie_mode_history: ResMut<SelfieModeHistory>,
 
     mut event_writers: (
         EventWriter<AnimateSolutionsEvent>,
@@ -108,7 +107,6 @@ fn handle_button_activations(
             &event_writers.3,
             daily_challenges.as_ref(),
             &mut level_time,
-            &mut selfie_mode_history,
             &mut purchases,
             &mut event_writers.0,
             &mut event_writers.1,
@@ -157,8 +155,6 @@ pub enum PopupInteraction {
     ClickGreyedOut,
     ClickClose,
     HintsBuyMore,
-    SelfieInformation,
-    SelfieDontShowAgain,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Component, EnumIs, Default)]
@@ -260,7 +256,6 @@ impl ButtonInteraction {
         video_events: &AsyncEventWriter<VideoEvent>,
         daily_challenges: &DailyChallenges,
         level_time: &mut ResMut<LevelTime>,
-        selfie_mode_history: &mut ResMut<SelfieModeHistory>,
         purchases: &mut ResMut<Purchases>,
         animate_solution_events: &mut EventWriter<AnimateSolutionsEvent>,
         change_level_events: &mut EventWriter<ChangeLevelEvent>,
@@ -517,25 +512,6 @@ impl ButtonInteraction {
 
                 // hint_state.hints_remaining += 3; //TODO actually make them buy them!
                 // hint_state.total_bought_hints += 3;
-                popup_state.0 = None;
-            }
-
-            ButtonInteraction::Popup(PopupInteraction::SelfieInformation) => {
-                #[cfg(target_arch = "wasm32")]
-                {
-                    let url = match Platform::CURRENT{
-                        Platform::IOs => "https://support.apple.com/en-gb/HT207935#:~:text=Go%20to%20Settings%20%3E%20Control%20Centre,iPhone%2C%20or%20on%20your%20iPad.&text=%2C%20then%20wait%20for%20the%203%2Dsecond%20countdown",
-                        Platform::Android => "https://support.google.com/android/answer/9075928?hl=en-GB",
-                        Platform::Web => "https://support.apple.com/en-gb/HT207935#:~:text=Go%20to%20Settings%20%3E%20Control%20Centre,iPhone%2C%20or%20on%20your%20iPad.&text=%2C%20then%20wait%20for%20the%203%2Dsecond%20countdown", // todo look at device type
-                        Platform::Other => "https://support.apple.com/en-gb/HT207935#:~:text=Go%20to%20Settings%20%3E%20Control%20Centre,iPhone%2C%20or%20on%20your%20iPad.&text=%2C%20then%20wait%20for%20the%203%2Dsecond%20countdown", //todo better links
-                    };
-
-                    crate::wasm::open_link(url);
-                }
-            }
-
-            ButtonInteraction::Popup(PopupInteraction::SelfieDontShowAgain) => {
-                selfie_mode_history.do_not_show_selfie_mode_tutorial = true;
                 popup_state.0 = None;
             }
         }

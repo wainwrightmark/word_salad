@@ -1,20 +1,16 @@
 use bevy::prelude::*;
 use maveric::helpers::MavericContext;
-use nice_bevy_utils::{
-    async_event_writer::AsyncEventWriter, CanInitTrackedResource, CanRegisterAsyncEvent,
-    TrackableResource,
-};
-use serde::{Deserialize, Serialize};
+use nice_bevy_utils::{async_event_writer::AsyncEventWriter, CanRegisterAsyncEvent};
+
 use ws_core::layout::entities::SelfieMode;
 
-use crate::{prelude::PopupState, startup};
+use crate::startup;
 
 pub struct VideoPlugin;
 
 impl Plugin for VideoPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(VideoResource::default());
-        app.init_tracked_resource::<SelfieModeHistory>();
 
         app.register_async_event::<VideoEvent>();
         app.add_systems(Update, handle_video_event);
@@ -44,31 +40,13 @@ impl VideoResource {
     }
 }
 
-#[derive(Default, Resource, Clone, PartialEq, Serialize, Deserialize, MavericContext)]
-pub struct SelfieModeHistory {
-    pub do_not_show_selfie_mode_tutorial: bool,
-}
-
-impl TrackableResource for SelfieModeHistory {
-    const KEY: &'static str = "SelfieModeHistory";
-}
-
 // #[allow(unused_variables)]
 // #[allow(dead_code)]
-fn handle_video_event(
-    mut res: ResMut<VideoResource>,
-    history: Res<SelfieModeHistory>,
-    mut events: EventReader<VideoEvent>,
-    mut popup_state: ResMut<PopupState>,
-) {
+fn handle_video_event(mut res: ResMut<VideoResource>, mut events: EventReader<VideoEvent>) {
     for ev in events.read() {
         match ev {
             VideoEvent::SelfieModeStarted => {
                 res.is_selfie_mode = true;
-
-                if !history.do_not_show_selfie_mode_tutorial {
-                    popup_state.0 = Some(crate::prelude::PopupType::SelfieModeHelp);
-                }
             }
             VideoEvent::SelfieModeStopped => res.is_selfie_mode = false,
             _ => {}
