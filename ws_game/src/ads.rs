@@ -104,9 +104,7 @@ fn handle_ad_requests(
                 }
                 #[cfg(not(any(feature = "ios", feature = "android")))]
                 {
-                    crate::logging::do_or_report_error(capacitor_bindings::toast::Toast::show(
-                        "We would show an interstitial ad here",
-                    ));
+                    crate::platform_specific::show_toast_on_web("We would show an interstitial ad here");
                     writer.send_blocking(AdEvent::InterstitialShowed).unwrap();
                 }
             }

@@ -85,6 +85,7 @@ fn handle_hint_event(
                 &mut animate_solution_events,
                 video_resource.selfie_mode(),
                 &mut popup_state,
+                current_level.should_spend_hints()
             );
         }
     }
@@ -400,11 +401,17 @@ impl FoundWordsState {
         ew: &mut impl AnyEventWriter<AnimateSolutionsEvent>,
         selfie_mode: SelfieMode,
         popup_state: &mut PopupState,
+        should_spend_hints: bool,
     ) -> bool {
-        let Some(new_hints) = hint_state.hints_remaining.checked_sub(1) else {
-            popup_state.0 = Some(PopupType::BuyMoreHints(HintEvent { word_index }));
-            return false;
-        };
+
+
+        let new_hints = if should_spend_hints {
+            let Some(new_hints) = hint_state.hints_remaining.checked_sub(1) else {
+                popup_state.0 = Some(PopupType::BuyMoreHints(HintEvent { word_index }));
+                return false;
+            };
+            Some(new_hints)
+        } else{ None};
 
         let Some(word) = level.words.get(word_index) else {
             return false;
@@ -420,11 +427,18 @@ impl FoundWordsState {
             return false;
         };
 
+
+
         let new_count = match completion {
             Completion::Unstarted => {
+
+
                 *completion = Completion::ManualHinted(min_hint_count);
                 self.hints_used += 1;
-                hint_state.hints_remaining = new_hints;
+                if let Some(new_hints) = new_hints{
+                    hint_state.hints_remaining = new_hints;
+                }
+
 
                 min_hint_count.get()
             }
@@ -432,6 +446,10 @@ impl FoundWordsState {
                 if hints.get() >= word.characters.len() {
                     return false;
                 }
+                if let Some(new_hints) = new_hints{
+                    hint_state.hints_remaining = new_hints;
+                }
+
                 *hints = hints.saturating_add(1);
 
                 if min_hint_count > *hints {
@@ -439,7 +457,6 @@ impl FoundWordsState {
                 }
 
                 self.hints_used += 1;
-                hint_state.hints_remaining = new_hints;
 
                 hints.get()
             }
@@ -981,6 +998,7 @@ pub mod tests {
                 is_selfie_mode: true,
             },
             &mut popup_state,
+            true
         );
 
         assert!(hinted);

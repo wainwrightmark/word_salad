@@ -62,6 +62,18 @@ impl Default for CurrentLevel {
 pub static CUSTOM_LEVEL: OnceLock<DesignedLevel> = OnceLock::new();
 
 impl CurrentLevel {
+
+    /// Returns true if hints used on this level should be deducted from the users remaining hints
+    pub fn should_spend_hints(&self)-> bool{
+        match self{
+            CurrentLevel::Tutorial { .. } => false,
+            CurrentLevel::Fixed { .. } => true,
+            CurrentLevel::DailyChallenge { .. } => true,
+            CurrentLevel::Custom { .. } => true,
+            CurrentLevel::NonLevel(_) => false,
+        }
+    }
+
     /// Whether this level should be counted to towards total interstitial ads
     pub fn count_for_interstitial_ads(&self, purchases: &Purchases) -> bool {
         if purchases.avoid_ads_purchased {

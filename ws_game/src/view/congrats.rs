@@ -139,7 +139,7 @@ impl MavericNode for CongratsView {
                     Vec3::ONE
                 };
                 let transition = TransitionBuilder::default()
-                    .then_wait(Duration::from_secs_f32(TRANSITION_WAIT_SECS))
+                    .then_wait(Duration::from_secs_f32(TRANSITION_WAIT_SECS + TRANSITION_SECS))
                     .then_set_value(Vec3::ONE)
                     //.then_ease(Vec3::ONE, (1.0 / TRANSITION_SECS).into(), Ease::CubicOut)
                     .build();
