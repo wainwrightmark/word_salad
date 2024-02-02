@@ -281,10 +281,6 @@ mod mobile_only {
             }
         };
 
-        if tracking_info.status != TrackingAuthorizationStatus::Authorized {
-            return Err(format!("Tracking info status {:?}", tracking_info.status));
-        }
-
         if false {
             //todo fix
             let consent_info = Admob::request_consent_info(AdmobConsentRequestOptions {
