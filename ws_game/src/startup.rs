@@ -1,7 +1,7 @@
 use std::sync::atomic::AtomicUsize;
 
 pub use crate::prelude::*;
-use crate::{input::InputPlugin, motion_blur::MotionBlurPlugin, purchases::PurchasesPlugin};
+use crate::{achievements::AchievementsPlugin, input::InputPlugin, motion_blur::MotionBlurPlugin, purchases::PurchasesPlugin};
 use bevy::{log::LogPlugin, window::RequestRedraw};
 use nice_bevy_utils::{async_event_writer, window_size::WindowSizePlugin, CanRegisterAsyncEvent};
 use ws_core::layout::entities::*;
@@ -57,6 +57,7 @@ pub fn go() {
     app.add_plugins(MotionBlurPlugin);
     app.add_plugins(WordsPlugin);
     app.add_plugins(PurchasesPlugin);
+    app.add_plugins(AchievementsPlugin);
     #[cfg(any(feature = "ios", feature = "android"))]
     app.add_plugins(NotificationPlugin);
 

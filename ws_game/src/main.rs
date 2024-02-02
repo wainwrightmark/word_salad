@@ -1,5 +1,6 @@
 pub mod animated_solutions;
 pub mod ads;
+pub mod achievements;
 pub mod asynchronous;
 pub mod button;
 pub mod button_node;

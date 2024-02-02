@@ -22,7 +22,7 @@ impl Plugin for StatePlugin {
         app.init_tracked_resource::<HintState>();
         app.init_tracked_resource::<SavedLevelsState>();
 
-        app.add_event::<AnimateSolutionsEvent>();
+        app.add_event::<WordFoundEvent>();
         app.add_event::<HintEvent>();
         app.register_async_event::<ChangeLevelEvent>();
 
@@ -70,7 +70,7 @@ fn handle_hint_event(
     mut hint_state: ResMut<HintState>,
     current_level: Res<CurrentLevel>,
     daily_challenges: Res<DailyChallenges>,
-    mut animate_solution_events: EventWriter<AnimateSolutionsEvent>,
+    mut animate_solution_events: EventWriter<WordFoundEvent>,
     mut chosen_state: ResMut<ChosenState>,
     mut popup_state: ResMut<PopupState>,
     video_resource: Res<VideoResource>,
@@ -398,7 +398,7 @@ impl FoundWordsState {
         level: &DesignedLevel,
         word_index: usize,
         chosen_state: &mut ChosenState,
-        ew: &mut impl AnyEventWriter<AnimateSolutionsEvent>,
+        ew: &mut impl AnyEventWriter<WordFoundEvent>,
         selfie_mode: SelfieMode,
         popup_state: &mut PopupState,
         should_spend_hints: bool,
@@ -475,9 +475,10 @@ impl FoundWordsState {
                 *completion = Completion::Complete;
                 self.update_unneeded_tiles(level);
 
-                ew.send(AnimateSolutionsEvent {
+                ew.send(WordFoundEvent {
                     solution,
                     is_first_time: true,
+                    was_hinted: true,
                     word: word.clone(),
                     level: level.clone(),
                 });
@@ -534,7 +535,7 @@ fn track_found_words(
     current_level: Res<CurrentLevel>,
     mut found_words: ResMut<FoundWordsState>,
     daily_challenges: Res<DailyChallenges>,
-    mut ew: EventWriter<AnimateSolutionsEvent>,
+    mut ew: EventWriter<WordFoundEvent>,
     video: Res<VideoResource>,
 ) {
     if !chosen.is_changed() || chosen.is_just_finished {
@@ -559,6 +560,8 @@ fn track_found_words(
         return;
     };
 
+    let was_hinted = !completion.is_unstarted();
+
     let is_first_time = !completion.is_complete();
     if is_first_time {
         found_words.word_completions[word_index] = Completion::Complete;
@@ -573,9 +576,10 @@ fn track_found_words(
         }
     }
 
-    ew.send(AnimateSolutionsEvent {
+    ew.send(WordFoundEvent {
         solution: chosen.solution.clone(),
         is_first_time,
+        was_hinted,
         word: word.clone(),
         level: level.clone(),
     });

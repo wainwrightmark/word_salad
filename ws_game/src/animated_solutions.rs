@@ -14,16 +14,17 @@ const STEP_ONE_TRANSLATION_SECONDS: f32 = 1.5;
 pub const TOTAL_SECONDS: f32 = STEP_ONE_TRANSLATION_SECONDS;
 
 #[derive(Debug, Event)]
-pub struct AnimateSolutionsEvent {
+pub struct WordFoundEvent {
     pub solution: Solution,
     pub is_first_time: bool,
+    pub was_hinted: bool,
     pub word: DisplayWord,
     pub level: DesignedLevel,
 }
 
 pub fn animate_solutions(
     mut commands: Commands,
-    mut events: EventReader<AnimateSolutionsEvent>,
+    mut events: EventReader<WordFoundEvent>,
     asset_server: Res<AssetServer>,
     size: Res<Size>,
     video: Res<VideoResource>,
