@@ -155,6 +155,37 @@ fn track_level_completion_achievements(
             }
         }
     }
+
+    if was_completed_alphabetically(&found_words){
+        maybe_unlock(&mut achievements, Achievement::AlphabetCity);
+    }
+    else if was_completed_reverse_alphabetically(&found_words){
+        maybe_unlock(&mut achievements, Achievement::BackToFront);
+    }
+}
+
+fn was_completed_alphabetically(state: &FoundWordsState)-> bool{
+
+    for (expected, completion) in state.word_completions.iter().enumerate(){
+        let Completion::Complete { index } = completion else {return  false};
+        if expected != *index as usize{
+            return false;
+        }
+    }
+
+    true
+}
+
+fn was_completed_reverse_alphabetically(state: &FoundWordsState)-> bool{
+
+    for (expected, completion) in state.word_completions.iter().rev().enumerate(){
+        let Completion::Complete { index } = completion else {return  false};
+        if expected != *index as usize{
+            return false;
+        }
+    }
+
+    true
 }
 
 fn track_found_words(

@@ -85,7 +85,7 @@ fn handle_hint_event(
                 &mut animate_solution_events,
                 video_resource.selfie_mode(),
                 &mut popup_state,
-                current_level.should_spend_hints()
+                current_level.should_spend_hints(),
             );
         }
     }
@@ -313,7 +313,7 @@ impl FoundWordsState {
     pub fn new_level_complete(level: &DesignedLevel, hints_used: usize) -> Self {
         Self {
             unneeded_tiles: GridSet::ALL,
-            word_completions: vec![Completion::Complete; level.words.len()],
+            word_completions: vec![Completion::Complete{index: 0}; level.words.len()],
             hints_used,
         }
     }
@@ -389,7 +389,7 @@ impl FoundWordsState {
         *self
             .word_completions
             .get(word_index)
-            .unwrap_or(&Completion::Complete)
+            .unwrap_or(&Completion::Complete{index: 0})
     }
 
     fn try_hint_word(
@@ -403,15 +403,15 @@ impl FoundWordsState {
         popup_state: &mut PopupState,
         should_spend_hints: bool,
     ) -> bool {
-
-
         let new_hints = if should_spend_hints {
             let Some(new_hints) = hint_state.hints_remaining.checked_sub(1) else {
                 popup_state.0 = Some(PopupType::BuyMoreHints(HintEvent { word_index }));
                 return false;
             };
             Some(new_hints)
-        } else{ None};
+        } else {
+            None
+        };
 
         let Some(word) = level.words.get(word_index) else {
             return false;
@@ -423,22 +423,18 @@ impl FoundWordsState {
             chosen_state,
         ));
 
+        let completion_index = self.word_completions.iter().filter(|x|x.is_complete()).count() as u8;
         let Some(completion) = self.word_completions.get_mut(word_index) else {
             return false;
         };
 
-
-
         let new_count = match completion {
             Completion::Unstarted => {
-
-
                 *completion = Completion::ManualHinted(min_hint_count);
                 self.hints_used += 1;
-                if let Some(new_hints) = new_hints{
+                if let Some(new_hints) = new_hints {
                     hint_state.hints_remaining = new_hints;
                 }
-
 
                 min_hint_count.get()
             }
@@ -446,7 +442,7 @@ impl FoundWordsState {
                 if hints.get() >= word.characters.len() {
                     return false;
                 }
-                if let Some(new_hints) = new_hints{
+                if let Some(new_hints) = new_hints {
                     hint_state.hints_remaining = new_hints;
                 }
 
@@ -460,7 +456,7 @@ impl FoundWordsState {
 
                 hints.get()
             }
-            Completion::Complete => return false,
+            Completion::Complete{..} => return false,
         };
 
         if let Some(solution) = word.find_solution_with_tiles(&level.grid, self.unneeded_tiles) {
@@ -472,7 +468,8 @@ impl FoundWordsState {
                 chosen_state.is_just_finished = false;
             } else {
                 //do not select the full word - let the user do that
-                *completion = Completion::Complete;
+
+                *completion = Completion::Complete{index: completion_index};
                 self.update_unneeded_tiles(level);
 
                 ew.send(WordFoundEvent {
@@ -501,7 +498,10 @@ pub enum Completion {
     Unstarted,
     // AutoHinted(NonZeroUsize),
     ManualHinted(NonZeroUsize),
-    Complete,
+    Complete {
+        /// the number of previously completed words
+        index: u8,
+    },
 }
 
 impl Completion {
@@ -513,14 +513,14 @@ impl Completion {
         match self {
             Completion::Unstarted => UNSTARTED,
             Completion::ManualHinted(_) => MANUAL,
-            Completion::Complete => COMPLETE,
+            Completion::Complete{..} => COMPLETE,
         }
     }
 
     pub fn known_characters<'w>(&self, word: &'w DisplayWord) -> Option<&'w [Character]> {
         match self {
             Completion::Unstarted => None,
-            Completion::Complete => Some(&word.characters),
+            Completion::Complete{..} => Some(&word.characters),
             Completion::ManualHinted(hints) => Some(
                 word.characters
                     .split_at(hints.get().min(word.characters.len()))
@@ -564,7 +564,8 @@ fn track_found_words(
 
     let is_first_time = !completion.is_complete();
     if is_first_time {
-        found_words.word_completions[word_index] = Completion::Complete;
+        let index = found_words.word_completions.iter().filter(|x|x.is_complete()).count() as u8;
+        found_words.word_completions[word_index] = Completion::Complete{index};
 
         found_words.update_unneeded_tiles(level);
         let selfie_mode = video.selfie_mode();
@@ -750,7 +751,7 @@ impl FoundWordsState {
             let prefix_characters = match completion {
                 Completion::Unstarted => 0,
                 Completion::ManualHinted(a) => a.get(),
-                Completion::Complete => return 0,
+                Completion::Complete{..} => return 0,
             };
 
             let preceder: &[Character] = self
@@ -963,7 +964,7 @@ pub mod tests {
 
         for (index, completion) in found_words.word_completions.iter_mut().enumerate() {
             if index != 1 {
-                *completion = Completion::Complete;
+                *completion = Completion::Complete{index: 0};
             }
         }
 
@@ -1002,7 +1003,7 @@ pub mod tests {
                 is_selfie_mode: true,
             },
             &mut popup_state,
-            true
+            true,
         );
 
         assert!(hinted);

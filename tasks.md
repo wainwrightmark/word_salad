@@ -14,6 +14,5 @@
 - Way to retry loading daily puzzles
 - Make sure words have enough height -check recent colors puzzle
 - move record button on larger devices
-- watching ad or buying hints should give you hint immediately
-- don't use up hints in tutorial
-- don't show hints left in tutorial
+
+- make new daily puzzles
