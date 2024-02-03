@@ -1,6 +1,7 @@
 use aws_lambda_events::encodings::Body;
 use aws_lambda_events::event::apigw::{ApiGatewayProxyRequest, ApiGatewayProxyResponse};
 use aws_lambda_events::http::{HeaderMap, HeaderValue};
+use base64::Engine;
 use lambda_runtime::{service_fn, Error, LambdaEvent};
 use resvg::usvg::*;
 use ws_core::{DesignedLevel, Grid, Tile};
@@ -30,9 +31,15 @@ async fn image_request_handler(
     let mut headers = HeaderMap::new();
     headers.insert("Content-Type", HeaderValue::from_static("image/png"));
 
-    let daily: u32 = get_parameter(&lambda_event, "daily")
+    let daily: Option<DesignedLevel> = get_parameter(&lambda_event, "daily")
         .and_then(|x| x.parse().ok())
-        .expect("Could not parse daily index");
+        .map(|i| level_from_daily_index(i));
+
+    let game: Option<DesignedLevel> = get_parameter(&lambda_event, "game")
+        .and_then(|data| base64::engine::general_purpose::URL_SAFE.decode(data).ok())
+        .and_then(|data| String::from_utf8(data).ok())
+        .map(|data| DesignedLevel::from_tsv_line(&data.trim()).expect("Could not parse level"));
+
     let width: u32 = get_parameter(&lambda_event, "width")
         .and_then(|x| x.parse().ok())
         .unwrap_or(512);
@@ -40,7 +47,9 @@ async fn image_request_handler(
         .and_then(|x| x.parse().ok())
         .unwrap_or(512);
 
-    let data = draw_image(daily, width, height);
+    let level = daily.or(game).expect("No Daily or Game was found");
+
+    let data = draw_image(level, width, height);
 
     let resp = ApiGatewayProxyResponse {
         status_code: 200,
@@ -53,19 +62,23 @@ async fn image_request_handler(
     Ok(resp)
 }
 
-fn draw_image(daily_index: u32, width: u32, height: u32) -> Vec<u8> {
-    let opt: resvg::usvg::Options = Default::default();
-
-    let bytes: &'static [u8] = include_bytes!("template_square.svg");
-
-    let mut tree: Tree = Tree::from_data(bytes, &opt).expect("Could not parse template");
-    let daily_index = daily_index.saturating_sub(1);
+fn level_from_daily_index(index: usize) -> DesignedLevel {
+    let daily_index = index.saturating_sub(1);
 
     let level = include_str!("../../../../ws_game/daily.tsv")
         .lines()
         .nth(daily_index as usize)
         .map(|line| DesignedLevel::from_tsv_line(line).expect("Could not parse level"))
         .expect("Could not get level");
+    level
+}
+
+fn draw_image(level: DesignedLevel, width: u32, height: u32) -> Vec<u8> {
+    let opt: resvg::usvg::Options = Default::default();
+
+    let bytes: &'static [u8] = include_bytes!("template_square.svg");
+
+    let mut tree: Tree = Tree::from_data(bytes, &opt).expect("Could not parse template");
 
     loop_nodes(&mut tree.root, &level.grid);
 
@@ -136,10 +149,32 @@ mod tests {
     #[test_case(1, 512, 512)]
     #[test_case(2, 512, 512)]
     #[test_case(3, 512, 512)]
-    fn test_image(daily: u32, width: u32, height: u32) {
-        let data = draw_image(daily, width, height);
+    fn test_image(daily: usize, width: u32, height: u32) {
+
+        let level = level_from_daily_index(daily);
+        let data = draw_image(level, width, height);
         let len = data.len();
         let path = format!("image_{daily}_{width}x{height}.png");
+        std::fs::write(path, data.as_slice()).unwrap();
+
+        let hash = calculate_hash(&data);
+        insta::assert_debug_snapshot!(hash);
+
+        assert!(len < 300000, "Image is too big - {len} bytes");
+    }
+
+    #[test_case("Sk5FSU1BTFpSWUlaVFRESwlCZW5uZXQgU2lzdGVycwlKYW5lCUtpdHR5CUxpenppZQlMeWRpYQlNYXJ5", 512, 512)]
+    fn test_game_image(game: &str, width: u32, height: u32) {
+
+        let level = base64::engine::general_purpose::URL_SAFE.decode(game).unwrap();
+        let level = String::from_utf8(level).unwrap();
+        let level = DesignedLevel::from_tsv_line(&level.trim()).expect("Could not parse level");
+        
+
+        
+        let data = draw_image(level, width, height);
+        let len = data.len();
+        let path = format!("image_{game}_{width}x{height}.png");
         std::fs::write(path, data.as_slice()).unwrap();
 
         let hash = calculate_hash(&data);

@@ -2691,6 +2691,7 @@ name = "image"
 version = "0.1.0"
 dependencies = [
  "aws_lambda_events",
+ "base64",
  "insta",
  "lambda_runtime",
  "ntest",
