@@ -3,7 +3,7 @@ use aws_lambda_events::event::apigw::{ApiGatewayProxyRequest, ApiGatewayProxyRes
 use aws_lambda_events::http::{HeaderMap, HeaderValue};
 use lambda_runtime::{service_fn, Error, LambdaEvent};
 use resvg::usvg::*;
-use ws_core::DesignedLevel;
+use ws_core::{DesignedLevel, Grid, Tile};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -58,7 +58,7 @@ fn draw_image(daily_index: u32, width: u32, height: u32) -> Vec<u8> {
 
     let bytes: &'static [u8] = include_bytes!("template_square.svg");
 
-    let mut tree = Tree::from_data(bytes, &opt).expect("Could not parse template");
+    let mut tree: Tree = Tree::from_data(bytes, &opt).expect("Could not parse template");
     let daily_index = daily_index.saturating_sub(1);
 
     let level = include_str!("../../../../ws_game/daily.tsv")
@@ -67,29 +67,7 @@ fn draw_image(daily_index: u32, width: u32, height: u32) -> Vec<u8> {
         .map(|line| DesignedLevel::from_tsv_line(line).expect("Could not parse level"))
         .expect("Could not get level");
 
-    for (index, character) in level.grid.into_iter().enumerate() {
-        let text_id = format!("text{index}",);
-        let text_node = tree
-            .node_by_id(text_id.as_str())
-            .expect("Could not find text node by id");
-
-        if character.is_blank() {
-            text_node.detach();
-            let square_id = format!("square{index}");
-            let square_node = tree
-                .node_by_id(&square_id.as_str())
-                .expect("Could not find square node by id");
-
-            square_node.detach();
-        } else {
-            if let NodeKind::Text(ref mut text) = *text_node.borrow_mut() {
-                text.chunks[0].text = character.to_string();
-            } else {
-                panic!("Node was not a text node")
-            };
-        }
-        //todo blank characters
-    }
+    loop_nodes(&mut tree.root, &level.grid);
 
     let font_data: Vec<u8> =
         include_bytes!("../../../../assets/fonts/Montserrat-Bold.ttf").to_vec();
@@ -97,7 +75,7 @@ fn draw_image(daily_index: u32, width: u32, height: u32) -> Vec<u8> {
     let mut font_database: fontdb::Database = fontdb::Database::new();
     font_database.load_font_data(font_data);
 
-    tree.convert_text(&font_database);
+    tree.postprocess(PostProcessingSteps::default(), &font_database);
 
     let x_scale = width as f32 / tree.size.width();
     let y_scale = height as f32 / tree.size.height();
@@ -108,13 +86,45 @@ fn draw_image(daily_index: u32, width: u32, height: u32) -> Vec<u8> {
     let transform = resvg::tiny_skia::Transform::from_scale(scale, scale).post_translate(tx, ty);
 
     let mut pixmap = resvg::tiny_skia::Pixmap::new(width, height).expect("Could not create Pixmap");
-    resvg::Tree::render(
-        &resvg::Tree::from_usvg(&tree),
-        transform,
-        &mut pixmap.as_mut(),
-    );
+
+    resvg::render(&tree, transform, &mut pixmap.as_mut());
 
     pixmap.encode_png().unwrap()
+}
+
+fn loop_nodes(root: &mut Group, grid: &Grid) {
+    let mut index = 0;
+    while let Some(node) = root.children.get_mut(index) {
+        match node {
+            Node::Group(ref mut group) => {
+                if group.id.starts_with("group") {
+                    if let Ok(i) = group.id[5..].parse::<u8>() {
+                        if let Some(tile) = Tile::try_from_inner(i) {
+                            let char = grid[tile];
+                            if char.is_blank() {
+                                root.children.remove(index);
+                                continue;
+                            }
+                        }
+                    }
+                }
+                loop_nodes(group, grid);
+            }
+            Node::Path(_) => {}
+            Node::Image(_) => {}
+            Node::Text(text) => {
+                if text.id.starts_with("text") {
+                    if let Ok(i) = text.id[4..].parse::<u8>() {
+                        if let Some(tile) = Tile::try_from_inner(i) {
+                            let char = grid[tile];
+                            text.chunks[0].text = char.to_string();
+                        }
+                    }
+                }
+            }
+        }
+        index += 1;
+    }
 }
 
 #[cfg(test)]

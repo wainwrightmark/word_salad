@@ -9,7 +9,7 @@ version = "0.1.0"
 aws_lambda_events = {version= "0.13", default-features=false, features=["apigw"]}
 lambda_runtime = {version= "*", default-features=false}
 tokio = {version= "*", default-features=false}
-resvg = { version = "0.37", default-features = false, features=["text"] }
+resvg = { version = "0.38", default-features = false, features=["text"] }
 ws_core = { path = "../../../ws_core" }
 
 [dev-dependencies]

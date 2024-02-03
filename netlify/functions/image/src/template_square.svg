@@ -3,29 +3,29 @@
    style="line-height:1;-inkscape-font-specification:'Montserrat, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center">
    <path d="M0 0h512v512H0z" fill="#f7f5f0" stroke="#a1a9b0" stroke-width="8" />
 
-   <g transform="translate(41 41)">
-      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square0" />
+   <g transform="translate(41 41)" id="group0">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" />
       <text x="50" y="73"  text-anchor="middle" id="text0">
          A
       </text>
    </g>
 
-   <g transform="translate(151 41)">
-      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square1" />
+   <g transform="translate(151 41)" id="group1">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z"  />
       <text x="50" y="73"  text-anchor="middle" id="text1">
          B
       </text>
    </g>
 
-   <g transform="translate(262 41)">
-      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square2" />
+   <g transform="translate(262 41)" id="group2">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z"  />
       <text x="50" y="73"  text-anchor="middle" id="text2">
          C
       </text>
    </g>
 
-   <g transform="translate(373 41)">
-      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square3" />
+   <g transform="translate(373 41)" id="group3">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z"  />
       <text x="50" y="73"  text-anchor="middle" id="text3">
          D
       </text>
@@ -33,29 +33,29 @@
 
 
 
-   <g transform="translate(41 151)">
-      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square4" />
+   <g transform="translate(41 151)" id="group4">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z"  />
       <text x="50" y="73"  text-anchor="middle" id="text4">
          E
       </text>
    </g>
 
-   <g transform="translate(151 151)">
-      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square5" />
+   <g transform="translate(151 151)" id="group5">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z"  />
       <text x="50" y="73"  text-anchor="middle" id="text5">
          F
       </text>
    </g>
 
-   <g transform="translate(262 151)">
-      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square6" />
+   <g transform="translate(262 151)" id="group6">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z"  />
       <text x="50" y="73"  text-anchor="middle" id="text6">
          G
       </text>
    </g>
 
-   <g transform="translate(373 151)">
-      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square7" />
+   <g transform="translate(373 151)" id="group7">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z"  />
       <text x="50" y="73"  text-anchor="middle" id="text7">
          H
       </text>
@@ -63,58 +63,58 @@
 
 
 
-   <g transform="translate(41 262)">
-      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square8" />
+   <g transform="translate(41 262)" id="group8">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z"  />
       <text x="50" y="73"  text-anchor="middle" id="text8">
          I
       </text>
    </g>
 
-   <g transform="translate(151 262)">
-      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square9" />
+   <g transform="translate(151 262)" id="group9">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z"  />
       <text x="50" y="73"  text-anchor="middle" id="text9">
          J
       </text>
    </g>
 
-   <g transform="translate(262 262)">
-      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square10" />
+   <g transform="translate(262 262)" id="group10">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z"  />
       <text x="50" y="73"  text-anchor="middle" id="text10">
          K
       </text>
    </g>
 
-   <g transform="translate(373 262)">
-      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square11" />
+   <g transform="translate(373 262)" id="group11">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z"  />
       <text x="50" y="73"  text-anchor="middle" id="text11">
          L
       </text>
    </g>
 
 
-   <g transform="translate(41 373)">
-      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square12" />
+   <g transform="translate(41 373)" id="group12">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z"  />
       <text x="50" y="73"  text-anchor="middle" id="text12">
          M
       </text>
    </g>
 
-   <g transform="translate(151 373)">
-      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square13" />
+   <g transform="translate(151 373)" id="group13">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z"  />
       <text x="50" y="73"  text-anchor="middle" id="text13">
          N
       </text>
    </g>
 
-   <g transform="translate(262 373)">
-      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square14" />
+   <g transform="translate(262 373)" id="group14">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z"  />
       <text x="50" y="73"  text-anchor="middle" id="text14">
          O
       </text>
    </g>
 
-   <g transform="translate(373 373)">
-      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z" id="square15" />
+   <g transform="translate(373 373)" id="group15">
+      <path fill="#e8e3e3" stroke="none" d="M0 0h100v100H0z"  />
       <text x="50" y="73"  text-anchor="middle" id="text15">
          P
       </text>
