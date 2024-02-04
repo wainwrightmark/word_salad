@@ -19,7 +19,7 @@ pub fn do_search(search: &str) {
     let paths: Vec<_> = folder.collect();
 
     let pb: ProgressBar = ProgressBar::new(paths.len() as u64)
-        .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:2}/{len:2}").unwrap())
+        .with_style(ProgressStyle::with_template("{msg} {bar} {pos:2}/{len:2}").unwrap())
         .with_message("Grid files");
 
     let mut total_solutions = 0usize;

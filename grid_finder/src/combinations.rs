@@ -13,7 +13,7 @@ pub fn get_combinations<const W: usize>(
     let pb = category.map(|category| {
         ProgressBar::new(possible_words.len() as u64)
             .with_style(
-                ProgressStyle::with_template("{prefix} {msg} {pos:3}/{len:3} {elapsed} {wide_bar}")
+                ProgressStyle::with_template("{prefix} {msg} {pos:3}/{len:3} {elapsed} {bar}")
                     .unwrap(),
             )
             .with_prefix(category.clone())

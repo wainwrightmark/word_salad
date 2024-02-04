@@ -87,7 +87,7 @@ pub fn create_grids<const W: usize>(
         let pb = ProgressBar::new((group.sets.len() + group.extras.len()) as u64)
             .with_style(
                 ProgressStyle::with_template(
-                    "{prefix} {msg} {elapsed:6} {human_pos:11}/{human_len:11} {wide_bar}",
+                    "{prefix} {msg} {elapsed:6} {human_pos:11}/{human_len:11} {bar}",
                 )
                 .unwrap(),
             )
@@ -95,7 +95,7 @@ pub fn create_grids<const W: usize>(
 
         let results: Vec<(WordCombination<W>, Option<GridResult>)> =
             if min_resume_grid.is_some_and(|mrg| mrg <= size) {
-                pb.set_message(format!("resuming"));
+                pb.set_message(format!("{:<16}", "resuming"));
                 group
                     .sets
                     .into_par_iter()
@@ -111,7 +111,7 @@ pub fn create_grids<const W: usize>(
                     })
                     .collect()
             } else {
-                pb.set_message(format!("finding"));
+                pb.set_message(format!("{:<16}", "finding"));
                 group
                     .sets
                     .into_par_iter()
@@ -153,7 +153,7 @@ pub fn create_grids<const W: usize>(
                     .collect()
             };
 
-        pb.set_message(format!("finishing"));
+        pb.set_message(format!("{:<16}", "finishing"));
 
         let _results_count = results.len();
 
@@ -161,6 +161,9 @@ pub fn create_grids<const W: usize>(
         let next_group = grouped_combinations
             .entry(size.saturating_sub(1))
             .or_default();
+
+        pb.set_length(results.len() as u64);
+        pb.set_position(0);
 
         for (combination, result) in results.into_iter() {
             if let Some(mut solution) = result {
@@ -172,6 +175,7 @@ pub fn create_grids<const W: usize>(
                     .extras
                     .extend(combinations::shrink_bit_sets(&combination.word_indexes));
             }
+            pb.inc(1);
         }
 
         if !solutions.is_empty() {
