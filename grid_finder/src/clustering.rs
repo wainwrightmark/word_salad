@@ -150,9 +150,11 @@ impl std::fmt::Display for Cluster {
             .dedup()
             .count();
 
+        let mean_util = (self.grids.iter().map(|g| g.words.iter().map(|w|w.array.len()).sum::<usize>()).sum::<usize>() as f32) / (16 * self.grids.len()) as f32;
+
         write!(
             f,
-            "Grids: {l:2}\tMax overlap: {max_overlap:2}\tMean overlap: {average_overlap:2.2}\tMean items: {mean_items:2.2}\tDistinct items: {distinct_items:3}\tMax adjacent {max_adj:2}\tMean adjacent {mean_adj:2.2}\n{grid_words}",
+            "Grids: {l:2}\tMax overlap: {max_overlap:2}\tMean overlap: {average_overlap:2.2}\tMean items: {mean_items:2.2}\tDistinct items: {distinct_items:3}\tMax adjacent {max_adj:2}\tMean adjacent {mean_adj:2.2}\tMean utilization {mean_util:1.2}\n{grid_words}",
             l = self.grids.len(),
             max_overlap = self.score.max_overlap.0,
             mean_items = self.score.total_element_items as f32 / self.grids.len() as f32,

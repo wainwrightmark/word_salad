@@ -4,8 +4,12 @@ to = "/index.html"
 status = 200
 
 [[edge_functions]]
-function = "og-param-proxy"
+function = "og-param-proxy-daily"
 path = "/daily/*"
+
+[[edge_functions]]
+function = "og-param-proxy-game"
+path = "/game/*"
 
 [build]
 publish = "ws_game/dist"

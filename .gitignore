@@ -20,3 +20,4 @@ package-lock.json
 package.json
 ws_game/saves/bevy_pkv.redb
 netlify/functions/image/*.png
+achievement_icons/*.png
