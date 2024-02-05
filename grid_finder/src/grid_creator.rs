@@ -100,7 +100,7 @@ pub fn create_grids<const W: usize>(
                     .sets
                     .into_par_iter()
                     .chain(group.extras.into_par_iter())
-                    .filter(|x| !all_solved_combinations.iter().any(|sol| sol.is_superset(x)))
+                    //.filter(|x| !all_solved_combinations.iter().any(|sol| sol.is_superset(x)))
                     .flat_map(|set| {
                         combinations::WordCombination::from_bit_set(set, word_letters.as_slice())
                     })
@@ -116,7 +116,7 @@ pub fn create_grids<const W: usize>(
                     .sets
                     .into_par_iter()
                     .chain(group.extras.into_par_iter())
-                    .filter(|x| !all_solved_combinations.iter().any(|sol| sol.is_superset(x)))
+                    //.filter(|x| !all_solved_combinations.iter().any(|sol| sol.is_superset(x)))
                     .flat_map(|set| {
                         combinations::WordCombination::from_bit_set(set, word_letters.as_slice())
                     })
@@ -185,6 +185,23 @@ pub fn create_grids<const W: usize>(
                 .join("\n");
             file.write_all((lines + "\n").as_bytes()).unwrap();
             file.flush().expect("Could not flush to file");
+        }
+
+        if size > min_size {
+            for c in all_solved_combinations.iter() {
+                if c.count() == size {
+                    //faster way to iter subsets
+                    for element in c.into_iter() {
+                        let mut subset = c.clone();
+                        subset.set_bit(element, false);
+                        next_group.extras.remove(&subset);
+                    }
+                } else {
+                    for subset in c.iter_subsets(size - 1) {
+                        next_group.extras.remove(&WordSet(subset));
+                    }
+                }
+            }
         }
 
         let solution_count = solutions.len();
