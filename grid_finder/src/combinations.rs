@@ -82,7 +82,7 @@ fn get_combinations_inner<const W: usize>(
 
         let Some(new_combination) = current_combination.try_add_word(word, possible_words.len())
         else {
-            panic!("Could not add word to multiplicities");
+            continue;
         };
 
         if new_combination.total_letters <= max_size {
