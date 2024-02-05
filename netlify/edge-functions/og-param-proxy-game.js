@@ -10,7 +10,7 @@ export default async (request, context) => {
 
     page = page.replace(
       `https://wordsalad.online/images/og_image.png`,
-      `https://wordsalad.online/.netlify/functions/image?game=${game}&width=512&height=512`
+      `https://wordsalad.online/.netlify/functions/image?game=${game}&width=1080&height=1080`
     );
 
     page = page.replace(
