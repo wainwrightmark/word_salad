@@ -15,4 +15,4 @@
 - Make sure words have enough height -check recent colors puzzle
 - move record button on larger devices
 
-- make new daily puzzles
+- landscape open graph image

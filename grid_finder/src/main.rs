@@ -39,7 +39,7 @@ struct Options {
     pub minimum: u32,
 
     /// Maximum number of grids to return
-    #[arg(short, long, default_value = "10000")]
+    #[arg(short, long, default_value = "0")]
     pub grids: u32,
     /// search all found grids for a particular word or list of words
     #[arg(long)]
@@ -60,7 +60,7 @@ struct Options {
     #[arg(long, default_value = "false")]
     pub remove_duplicates: bool,
 
-    #[arg(long, default_value = "50")]
+    #[arg(long, default_value = "100")]
     pub max_clusters: u32,
 
     /// Whether to resume execution
@@ -264,9 +264,9 @@ fn cluster_files(options: &Options) {
 
     let paths: Vec<_> = folder.collect();
 
-    let pb: ProgressBar = ProgressBar::new(paths.len() as u64)
-        .with_style(ProgressStyle::with_template("{msg:50} {bar} {pos:2}/{len:2}").unwrap())
-        .with_message("Data files");
+    // let pb: ProgressBar = ProgressBar::new(paths.len() as u64)
+    //     .with_style(ProgressStyle::with_template("{msg:50} {bar} {pos:2}/{len:2}").unwrap())
+    //     .with_message("Data files");
 
     let _ = std::fs::create_dir("clusters");
 
@@ -274,7 +274,8 @@ fn cluster_files(options: &Options) {
         let grid_path = path.as_ref().unwrap().path();
         let file_name = grid_path.file_name().unwrap().to_string_lossy();
 
-        pb.set_message(file_name.to_string());
+        let category = grid_path.file_stem().unwrap().to_string_lossy();
+        // pb.set_message(file_name.to_string());
 
         let grid_file_text = std::fs::read_to_string(grid_path.clone()).unwrap();
 
@@ -284,6 +285,7 @@ fn cluster_files(options: &Options) {
             enough: usize,
             filter_below: &mut usize,
         ) -> bool {
+
             if grid.words.len() < *filter_below {
                 return false;
             }
@@ -295,27 +297,32 @@ fn cluster_files(options: &Options) {
         }
         let mut count = 0;
         let mut filter_below = 0;
+        let mut taboo_grids = 0;
 
         let grids = grid_file_text
             .lines()
             .map(|l| GridResult::from_str(l).unwrap())
             .filter(|x| x.words.len() >= options.minimum as usize)
             .filter(|grid| {
-                if let Some(taboo) = orientation::find_taboo_word(&grid.grid) {
-                    warn!(
-                        "Grid \n{} contains taboo word {} and will not be clustered",
-                        grid.grid,
-                        taboo.iter().join("")
-                    );
+                if let Some(..) = orientation::find_taboo_word(&grid.grid) {
+                    taboo_grids += 1;
                     false
                 } else {
                     true
                 }
             })
             .filter(|x| {
-                filter_enough_grids(x, &mut count, options.grids as usize, &mut filter_below)
+                if options.grids == 0{
+                    true
+                }else{
+                    filter_enough_grids(x, &mut count, options.grids as usize, &mut filter_below)
+                }
+
+
             })
             .collect_vec();
+
+
 
         let all_words = grids
             .iter()
@@ -325,17 +332,41 @@ fn cluster_files(options: &Options) {
             .dedup()
             .collect_vec();
 
-        info!(
-            "{file_name} found {:6} grids with {:3} different words",
-            grids.len(),
-            all_words.len()
-        );
+        // info!(
+        //     "{file_name} found {:6} grids with {:3} different words",
+        //     grids.len(),
+        //     all_words.len()
+        // );
+
+        if taboo_grids > 0 {
+            warn!("{taboo_grids} Grids contain taboo words and will not be clustered in category {category}",);
+        }
 
         let clusters = match all_words.len() {
-            0..=64 => cluster_words::<1>(grids, &all_words, options.max_clusters as usize),
-            65..=128 => cluster_words::<2>(grids, &all_words, options.max_clusters as usize),
-            129..=192 => cluster_words::<3>(grids, &all_words, options.max_clusters as usize),
-            193..=256 => cluster_words::<4>(grids, &all_words, options.max_clusters as usize),
+            0..=64 => cluster_words::<1>(
+                grids,
+                &all_words,
+                options.max_clusters as usize,
+                Some(category.to_string()),
+            ),
+            65..=128 => cluster_words::<2>(
+                grids,
+                &all_words,
+                options.max_clusters as usize,
+                Some(category.to_string()),
+            ),
+            129..=192 => cluster_words::<3>(
+                grids,
+                &all_words,
+                options.max_clusters as usize,
+                Some(category.to_string()),
+            ),
+            193..=256 => cluster_words::<4>(
+                grids,
+                &all_words,
+                options.max_clusters as usize,
+                Some(category.to_string()),
+            ),
             _ => panic!("Too many words to do clustering"),
         };
 
@@ -344,10 +375,10 @@ fn cluster_files(options: &Options) {
         let clusters_text = clusters.into_iter().map(|x| x.to_string()).join("\n\n");
         std::fs::write(clusters_write_path, clusters_text).unwrap();
 
-        pb.inc(1);
+        //pb.inc(1);
     }
 
-    pb.finish();
+    //pb.finish();
 }
 
 struct FinderCase {
@@ -506,18 +537,21 @@ fn do_finder(options: Options) {
             _ => panic!("Too many words to do grid creation"),
         };
 
+        let mut taboo_grids = 0;
+
         grids.retain(|grid| {
-            if let Some(taboo) = orientation::find_taboo_word(&grid.grid) {
-                warn!(
-                    "Grid \n{} contains taboo word {} and will not be clustered",
-                    grid.grid,
-                    taboo.iter().join("")
-                );
+            if let Some(..) = orientation::find_taboo_word(&grid.grid) {
+                taboo_grids += 1;
+
                 false
             } else {
                 true
             }
         });
+
+        if taboo_grids > 0 {
+            warn!("{taboo_grids} Grids contain taboo words and will not be clustered in category {stem}",);
+        }
 
         let all_words = grids
             .iter()
@@ -528,10 +562,30 @@ fn do_finder(options: Options) {
             .collect_vec();
 
         let clusters: Vec<clustering::Cluster> = match all_words.len() {
-            0..=64 => cluster_words::<1>(grids, &all_words, options.max_clusters as usize),
-            65..=128 => cluster_words::<2>(grids, &all_words, options.max_clusters as usize),
-            129..=192 => cluster_words::<3>(grids, &all_words, options.max_clusters as usize),
-            193..=256 => cluster_words::<4>(grids, &all_words, options.max_clusters as usize),
+            0..=64 => cluster_words::<1>(
+                grids,
+                &all_words,
+                options.max_clusters as usize,
+                Some(stem.clone()),
+            ),
+            65..=128 => cluster_words::<2>(
+                grids,
+                &all_words,
+                options.max_clusters as usize,
+                Some(stem.clone()),
+            ),
+            129..=192 => cluster_words::<3>(
+                grids,
+                &all_words,
+                options.max_clusters as usize,
+                Some(stem.clone()),
+            ),
+            193..=256 => cluster_words::<4>(
+                grids,
+                &all_words,
+                options.max_clusters as usize,
+                Some(stem.clone()),
+            ),
             _ => panic!("Too many words to do clustering"),
         };
 

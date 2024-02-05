@@ -1,3 +1,4 @@
+#[allow(unused_variables)]
 pub fn show_toast_on_web(options: impl Into<capacitor_bindings::toast::ShowOptions> + 'static) {
     #[cfg(feature = "web")]
     {
