@@ -411,9 +411,7 @@ fn do_finder(options: Options) {
         } = finder_case;
 
         info!("Found {} Words", word_map.len());
-        for word in word_map.iter().map(|x| x.text).sorted() {
-            info!("{word}",)
-        }
+        info!("{}", word_map.iter().map(|x| x.text).sorted().join(", "));
 
         for (a, b) in word_map
             .iter()

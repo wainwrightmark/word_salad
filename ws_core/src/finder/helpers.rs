@@ -9,18 +9,29 @@ use ustr::ustr;
 pub type LetterCounts = PrimeBag128<Character>;
 
 pub fn make_finder_group_vec_from_file(text: &str) -> Vec<FinderGroup> {
-    text.lines()
+
+    let mut errors: Vec<(&str, &str)> = vec![];
+    let result = text.lines()
+    .filter(|x|!x.is_empty())
         //.flat_map(|x| x.split(','))
         .flat_map(|s| match FinderGroup::from_str(s) {
             Ok(word) => Some(word),
             Err(err) => {
-                log::warn!("Word '{s}' is invalid: {err}");
+                errors.push((err, s ));
+                //log::warn!("Word '{s}' is invalid: {err}");
                 None
             }
         })
         .sorted_by_key(|x| x.counts)
         .dedup()
-        .collect_vec()
+        .collect_vec();
+    errors.sort();
+    for (error, words) in errors.into_iter().group_by(|(err,_)| err.to_string()).into_iter(){
+        let words = words.map(|(_, word)|word).join(", ");
+        log::warn!("{error}: {words}")
+    }
+
+    result
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
