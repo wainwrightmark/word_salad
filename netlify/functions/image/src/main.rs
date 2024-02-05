@@ -1,33 +1,33 @@
 use base64::Engine;
-use lambda_http::{run, service_fn, Body, Error, Request, RequestExt, Response};
+use aws_lambda_events::encodings::Body;
+use aws_lambda_events::event::apigw::{ApiGatewayProxyRequest, ApiGatewayProxyResponse};
+use aws_lambda_events::http::{HeaderMap, HeaderValue};
+use lambda_runtime::{service_fn, Error, LambdaEvent};
 use resvg::usvg::*;
-use tracing_subscriber::filter::{EnvFilter, LevelFilter};
 use ws_core::{DesignedLevel, Grid, Tile};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    tracing_subscriber::fmt()
-        .with_env_filter(
-            EnvFilter::builder()
-                .with_default_directive(LevelFilter::INFO.into())
-                .from_env_lossy(),
-        )
-        // disable printing the name of the module in every log line.
-        .with_target(false)
-        // disabling time is handy because CloudWatch will add the ingestion time.
-        .without_time()
-        .init();
-
-    run(service_fn(image_request_handler)).await
+    let f = service_fn(image_request_handler);
+    lambda_runtime::run(f).await?;
+    Ok(())
 }
 
-fn get_parameter<'a>(e: &'a Request, name: &'static str) -> Option<&'a str> {
-    e.query_string_parameters_ref().and_then(|x| x.first(name))
+fn get_parameter<'a>(
+    e: &'a LambdaEvent<ApiGatewayProxyRequest>,
+    name: &'static str,
+) -> Option<&'a str> {
+    e.payload
+        .query_string_parameters
+        .iter()
+        .filter(|x| x.0.eq_ignore_ascii_case(name))
+        .map(|x| x.1)
+        .next()
 }
 
 async fn image_request_handler(
-    lambda_event: Request,
-) -> Result<Response<Body>, Error> {
+    lambda_event: LambdaEvent<ApiGatewayProxyRequest>,
+) -> Result<ApiGatewayProxyResponse, Error> {
 
     let daily: Option<DesignedLevel> = get_parameter(&lambda_event, "daily")
         .and_then(|x| x.parse().ok())
@@ -40,20 +40,25 @@ async fn image_request_handler(
 
     let width: u32 = get_parameter(&lambda_event, "width")
         .and_then(|x| x.parse().ok())
-        .unwrap_or(512);
+        .unwrap_or(1080);
     let height: u32 = get_parameter(&lambda_event, "height")
         .and_then(|x| x.parse().ok())
-        .unwrap_or(512);
+        .unwrap_or(1080);
 
     let level = daily.or(game).unwrap_or_else(|| DesignedLevel::unknown());
 
     let data = draw_image(level, width, height);
 
-    let resp = Response::builder()
-        .status(200)
-        .header("content-type", "image/png")
-        .body(Body::Binary(data))
-        .map_err(Box::new)?;
+    let mut headers = HeaderMap::new();
+    headers.insert("Content-Type", HeaderValue::from_static("image/png"));
+    let resp = ApiGatewayProxyResponse {
+        status_code: 200,
+        headers,
+        multi_value_headers: HeaderMap::new(),
+        body: Some(Body::Binary(data)),
+        is_base64_encoded: true,
+    };
+
     Ok(resp)
 }
 
