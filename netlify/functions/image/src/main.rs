@@ -1,35 +1,33 @@
-use aws_lambda_events::encodings::Body;
-use aws_lambda_events::event::apigw::{ApiGatewayProxyRequest, ApiGatewayProxyResponse};
-use aws_lambda_events::http::{HeaderMap, HeaderValue};
 use base64::Engine;
-use lambda_runtime::{service_fn, Error, LambdaEvent};
+use lambda_http::{run, service_fn, Body, Error, Request, RequestExt, Response};
 use resvg::usvg::*;
+use tracing_subscriber::filter::{EnvFilter, LevelFilter};
 use ws_core::{DesignedLevel, Grid, Tile};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    let f = service_fn(image_request_handler);
-    lambda_runtime::run(f).await?;
-    Ok(())
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            EnvFilter::builder()
+                .with_default_directive(LevelFilter::INFO.into())
+                .from_env_lossy(),
+        )
+        // disable printing the name of the module in every log line.
+        .with_target(false)
+        // disabling time is handy because CloudWatch will add the ingestion time.
+        .without_time()
+        .init();
+
+    run(service_fn(image_request_handler)).await
 }
 
-fn get_parameter<'a>(
-    e: &'a LambdaEvent<ApiGatewayProxyRequest>,
-    name: &'static str,
-) -> Option<&'a str> {
-    e.payload
-        .query_string_parameters
-        .iter()
-        .filter(|x| x.0.eq_ignore_ascii_case(name))
-        .map(|x| x.1)
-        .next()
+fn get_parameter<'a>(e: &'a Request, name: &'static str) -> Option<&'a str> {
+    e.query_string_parameters_ref().and_then(|x| x.first(name))
 }
 
 async fn image_request_handler(
-    lambda_event: LambdaEvent<ApiGatewayProxyRequest>,
-) -> Result<ApiGatewayProxyResponse, Error> {
-    let mut headers = HeaderMap::new();
-    headers.insert("Content-Type", HeaderValue::from_static("image/png"));
+    lambda_event: Request,
+) -> Result<Response<Body>, Error> {
 
     let daily: Option<DesignedLevel> = get_parameter(&lambda_event, "daily")
         .and_then(|x| x.parse().ok())
@@ -47,18 +45,15 @@ async fn image_request_handler(
         .and_then(|x| x.parse().ok())
         .unwrap_or(512);
 
-    let level = daily.or(game).expect("No Daily or Game was found");
+    let level = daily.or(game).unwrap_or_else(|| DesignedLevel::unknown());
 
     let data = draw_image(level, width, height);
 
-    let resp = ApiGatewayProxyResponse {
-        status_code: 200,
-        headers,
-        multi_value_headers: HeaderMap::new(),
-        body: Some(Body::Binary(data)),
-        is_base64_encoded: true,
-    };
-
+    let resp = Response::builder()
+        .status(200)
+        .header("content-type", "image/png")
+        .body(Body::Binary(data))
+        .map_err(Box::new)?;
     Ok(resp)
 }
 
@@ -150,7 +145,6 @@ mod tests {
     #[test_case(2, 512, 512)]
     #[test_case(3, 512, 512)]
     fn test_image(daily: usize, width: u32, height: u32) {
-
         let level = level_from_daily_index(daily);
         let data = draw_image(level, width, height);
         let len = data.len();
@@ -163,15 +157,18 @@ mod tests {
         assert!(len < 300000, "Image is too big - {len} bytes");
     }
 
-    #[test_case("Sk5FSU1BTFpSWUlaVFRESwlCZW5uZXQgU2lzdGVycwlKYW5lCUtpdHR5CUxpenppZQlMeWRpYQlNYXJ5", 512, 512)]
+    #[test_case(
+        "Sk5FSU1BTFpSWUlaVFRESwlCZW5uZXQgU2lzdGVycwlKYW5lCUtpdHR5CUxpenppZQlMeWRpYQlNYXJ5",
+        512,
+        512
+    )]
     fn test_game_image(game: &str, width: u32, height: u32) {
-
-        let level = base64::engine::general_purpose::URL_SAFE.decode(game).unwrap();
+        let level = base64::engine::general_purpose::URL_SAFE
+            .decode(game)
+            .unwrap();
         let level = String::from_utf8(level).unwrap();
         let level = DesignedLevel::from_tsv_line(&level.trim()).expect("Could not parse level");
-        
 
-        
         let data = draw_image(level, width, height);
         let len = data.len();
         let path = format!("image_{game}_{width}x{height}.png");

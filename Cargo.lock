@@ -2690,13 +2690,15 @@ dependencies = [
 name = "image"
 version = "0.1.0"
 dependencies = [
- "aws_lambda_events",
  "base64",
  "insta",
+ "lambda_http",
  "lambda_runtime",
  "ntest",
  "resvg 0.38.0",
  "tokio",
+ "tracing",
+ "tracing-subscriber",
  "ws_core",
 ]
 
@@ -2872,6 +2874,33 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bd85a5776cd9500c2e2059c8c76c3b01528566b7fcbaf8098b55a33fc298849b"
 dependencies = [
  "arrayvec",
+]
+
+[[package]]
+name = "lambda_http"
+version = "0.9.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dacbb68e7ae5264884f114f79d4e0de33c66cb5a8f363ac93de7112f624d233d"
+dependencies = [
+ "aws_lambda_events",
+ "base64",
+ "bytes",
+ "encoding_rs",
+ "futures",
+ "futures-util",
+ "http 1.0.0",
+ "http-body 1.0.0",
+ "http-body-util",
+ "hyper 1.1.0",
+ "lambda_runtime",
+ "mime",
+ "percent-encoding",
+ "pin-project-lite",
+ "serde",
+ "serde_json",
+ "serde_urlencoded",
+ "tokio-stream",
+ "url",
 ]
 
 [[package]]
