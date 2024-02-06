@@ -1,9 +1,10 @@
 use bevy::prelude::*;
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
+use ws_core::layout::entities::recording_button::ToggleRecordingButton;
 use std::time::Duration;
 use strum::EnumIs;
 use ws_core::layout::entities::{
-    CongratsButton, CongratsLayoutEntity, LayoutTopBar, LayoutWordTile,
+    CongratsButton, CongratsLayoutEntity, WordSaladLogo, LayoutWordTile,
 };
 
 use crate::completion::*;
@@ -165,7 +166,8 @@ pub enum ButtonInteraction {
     LevelGroupMenu(LevelGroupLayoutEntity),
     WordSaladMenu(WordSaladMenuLayoutEntity),
     WordButton(LayoutWordTile),
-    TopMenuItem(LayoutTopBar),
+    WordSaladLogo,
+    ToggleRecordingButton,
     Congrats(CongratsButton),
     Popup(PopupInteraction),
     MenuBackButton,
@@ -209,9 +211,14 @@ impl From<LayoutWordTile> for ButtonInteraction {
         ButtonInteraction::WordButton(val)
     }
 }
-impl From<LayoutTopBar> for ButtonInteraction {
-    fn from(val: LayoutTopBar) -> Self {
-        ButtonInteraction::TopMenuItem(val)
+impl From<WordSaladLogo> for ButtonInteraction {
+    fn from(_: WordSaladLogo) -> Self {
+        ButtonInteraction::WordSaladLogo
+    }
+}
+impl From<ToggleRecordingButton> for ButtonInteraction {
+    fn from(_: ToggleRecordingButton) -> Self {
+        ButtonInteraction::ToggleRecordingButton
     }
 }
 
@@ -373,7 +380,7 @@ impl ButtonInteraction {
                 hint_events.send(HintEvent { word_index: word.0 });
             }
 
-            ButtonInteraction::TopMenuItem(LayoutTopBar::ToggleRecordingButton) => {
+            ButtonInteraction::ToggleRecordingButton => {
                 if video_resource.is_selfie_mode {
                     if video_resource.is_recording {
                         crate::video::stop_screen_record(video_resource);
@@ -458,7 +465,7 @@ impl ButtonInteraction {
                     }
                 }
             }
-            ButtonInteraction::TopMenuItem(LayoutTopBar::WordSaladLogo) => menu_state.toggle(),
+            ButtonInteraction::WordSaladLogo => menu_state.toggle(),
             ButtonInteraction::Congrats(CongratsButton::Next) => {
                 let next_level = current_level.get_next_level(
                     daily_challenge_completion,

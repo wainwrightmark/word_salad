@@ -41,11 +41,9 @@ pub mod palette {
     pub const ANIMATED_SOLUTION_NEW: Color = GREEN_LIGHT;
     pub const ANIMATED_SOLUTION_OLD: Color = GOLD;
 
-    pub const TOP_BAR_BURGER_NORMAL: Color = MY_BLACK;
-    pub const TOP_BAR_LOGO_NORMAL: Color = MY_BLACK;
-    pub const TOP_BAR_LOGO_CIRCLE: Color = MY_WHITE;
 
-    pub const TOP_BAR_BURGER_SELFIE: Color = MY_WHITE;
+
+
     pub const TOP_BAR_LOGO_SELFIE: Color = MY_WHITE;
 
     pub const THEME_TEXT_COLOR_INCOMPLETE_NORMAL: Color = MEDIUM_GRAY;
@@ -106,6 +104,10 @@ pub mod palette {
     pub const CLEAR_COLOR_NON_LEVEL: Color = GREEN_LIGHT;
     pub const CLEAR_COLOR_CONGRATS: Color = GREEN_LIGHT;
 
+    pub const RECORDING_BUTTON_SELFIE: Color = MY_WHITE;
+    pub const RECORDING_BUTTON_NORMAL: Color = MY_BLACK;
+    pub const RECORDING_BUTTON_RECORDING: Color = Color::rgba(1.0, 0.14, 0.09, 1.0);
+
     const MY_BLACK: Color = Color::rgba(0.12, 0., 0., 1.);
     const MY_WHITE: Color = Color::rgba(1.0, 1.0, 1.0, 1.);
 
@@ -122,4 +124,7 @@ pub mod palette {
     const GOLD: Color = Color::rgba(1., 0.94, 0.62, 1.);
     #[allow(dead_code)]
     pub const TRANSPARENT: Color = Color::rgba(0., 0., 0., 0.);
+
+
+
 }

@@ -33,7 +33,7 @@ mod tests {
         };
 
         test_picking::<GameLayoutEntity>(&selfie_mode, &sizing);
-        test_picking::<LayoutTopBar>(&selfie_mode, &sizing);
+        test_picking::<WordSaladLogo>(&selfie_mode, &sizing);
         // test_picking::<LayoutPuzzleTheme>(&());
         test_picking::<LayoutGridTile>(&selfie_mode, &sizing);
         //test_picking::<LayoutWordTile>(&()); //TODO test this

@@ -7,10 +7,11 @@ pub mod non_level;
 pub mod popup;
 pub mod theme_view;
 pub mod timer;
-pub mod top_bar;
+pub mod logo;
 pub mod tutorial;
 pub mod wordline;
 pub mod words;
+pub mod recording_button;
 
 pub use congrats::*;
 pub use game_grid::*;
@@ -19,10 +20,11 @@ pub use menu::*;
 pub use non_level::*;
 pub use popup::*;
 pub use theme_view::*;
-pub use top_bar::*;
+pub use logo::*;
 pub use tutorial::*;
 pub use wordline::*;
 pub use words::*;
+pub use recording_button::*;
 
 use crate::{completion::*, prelude::*};
 use maveric::prelude::*;
@@ -61,7 +63,12 @@ impl MavericRootChildren for ViewRoot {
             &context.found_words_state,
         );
 
-        commands.add_child("Top Bar", TopBar, &context.into());
+        commands.add_child("Logo", WordSaladLogoNode, &context.into());
+
+        if context.video_resource.show_recording_button(){
+            commands.add_child("Recording Button", RecordingButtonNode, &context.into());
+        }
+
 
         if !context.menu_state.is_closed() {
             commands.add_child("menu", Menu { background_type }, &context.into());

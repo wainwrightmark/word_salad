@@ -7,7 +7,7 @@ pub const IDEAL_HEIGHT: f32 = 568.;
 pub const IDEAL_RATIO: f32 = IDEAL_WIDTH as f32 / IDEAL_HEIGHT as f32;
 
 pub const TOP_BAR_HEIGHT_BASE: f32 = 60.;
-pub const TOP_BAR_ICON_WIDTH: f32 = 25.;
+pub const RECORDING_BUTTON_MIN_SIZE: f32 = 20.0;
 //pub const WORD_SALAD_LOGO_WIDTH: f32 = 160.;
 
 pub const THEME_HEIGHT: f32 = 24.;
@@ -61,6 +61,13 @@ pub fn extra_top_bar_height(sizing: &LayoutSizing, selfie_mode: &SelfieMode) -> 
     let result = bottom_padding.min(mid - (GRID_MID_BASE));
     //log::info!("bottom padding: {bottom_padding} total height: {total_height} mid: {mid} result: {result} ");
     result
+}
+
+pub fn extra_bottom_space(sizing: &LayoutSizing, selfie_mode: &SelfieMode) -> f32 {
+    let bottom_padding = sizing.bottom_pad / sizing.size_ratio;
+    let x = extra_top_bar_height(sizing, selfie_mode);
+
+    bottom_padding - x
 }
 
 /// Extra top offset while streaming

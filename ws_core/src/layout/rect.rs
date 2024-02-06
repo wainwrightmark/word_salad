@@ -37,6 +37,13 @@ impl LayoutRectangle {
         }
     }
 
+    pub fn bottom_left(&self) -> Vec2 {
+        Vec2 {
+            x: self.top_left.x,
+            y: self.top_left.y + self.extents.y,
+        }
+    }
+
     pub fn width(&self) -> f32 {
         self.extents.x.abs()
     }

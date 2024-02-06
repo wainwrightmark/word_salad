@@ -11,7 +11,7 @@ use crate::{
 };
 use bevy::{prelude::*, window::PrimaryWindow};
 use strum::EnumIs;
-use ws_core::layout::entities::*;
+use ws_core::layout::entities::{recording_button::ToggleRecordingButton, *};
 pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
@@ -90,7 +90,7 @@ impl InteractionEntity {
             }
         }
 
-        let tbi = Self::try_get_button::<LayoutTopBar>(position, size, selfie_mode);
+        let tbi = Self::try_get_button::<WordSaladLogo>(position, size, selfie_mode);
         if tbi.is_some() {
             return tbi;
         }
@@ -110,6 +110,13 @@ impl InteractionEntity {
                         );
                     }
 
+                    if video_resource.show_recording_button(){
+                        if let Some(..) = size.try_pick::<ToggleRecordingButton>(*position, &selfie_mode){
+                            return Some(InteractionEntity::Button(ButtonInteraction::ToggleRecordingButton));
+                        }
+                    }
+
+
                     let Some(layout_entity) =
                         size.try_pick::<GameLayoutEntity>(*position, &selfie_mode)
                     else {
@@ -122,7 +129,7 @@ impl InteractionEntity {
 
                     match layout_entity {
                         GameLayoutEntity::TopBar => {
-                            Self::try_get_button::<LayoutTopBar>(position, size, &selfie_mode)
+                            Self::try_get_button::<WordSaladLogo>(position, size, &selfie_mode)
                         }
 
                         GameLayoutEntity::Grid => match grid_tolerance {

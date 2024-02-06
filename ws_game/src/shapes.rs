@@ -22,7 +22,7 @@ impl Plugin for ShapesPlugin {
         app.add_plugins(ExtractToShaderPlugin::<BasicBoxShaderExtraction>::default());
         app.add_plugins(ExtractToShaderPlugin::<ButtonBoxShaderExtraction>::default());
         app.add_plugins(ExtractToShaderPlugin::<BoxWithBorderShader>::default());
-        app.add_plugins(ExtractToShaderPlugin::<CircleShader>::default());
+        //app.add_plugins(ExtractToShaderPlugin::<CircleShader>::default());
         app.add_plugins(ExtractToShaderPlugin::<SparkleShader>::default());
         app.add_plugins(ExtractToShaderPlugin::<
             crate::prelude::fireworks::FireworksShader,
@@ -115,7 +115,7 @@ impl ExtractToShader for ButtonBoxShaderExtraction {
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
-struct BasicBoxShaderExtraction;
+pub struct BasicBoxShaderExtraction;
 
 impl ExtractToShader for BasicBoxShaderExtraction {
     type Shader = BoxShader;
@@ -204,7 +204,7 @@ impl From<Color> for ShaderSecondColor {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Component, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Component)]
 pub struct ShaderRounding {
     pub rounding: f32,
 }
@@ -214,14 +214,25 @@ impl From<f32> for ShaderRounding {
         Self { rounding }
     }
 }
+impl Default for ShaderRounding{
+    fn default() -> Self {
+        Self { rounding: 0.0 }
+    }
+}
 
 /// height / width
-#[derive(Debug, Clone, Copy, PartialEq, Component, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Component)]
 pub struct ShaderProportions {
     /// width in range 0..=1.0
     pub width: f32,
     /// height in range 0..=1.0
     pub height: f32,
+}
+
+impl Default for ShaderProportions {
+    fn default() -> Self {
+        Self { width: 1.0, height: 1.0 }
+    }
 }
 
 impl From<Vec2> for ShaderProportions {
@@ -330,42 +341,42 @@ impl From<f32> for ShaderProgress {
     }
 }
 
-#[derive(Debug, TypeUuid, Default, PartialEq, Clone, Copy)]
-#[uuid = "6d310234-5019-4cd4-9f60-ebabd7dca30b"]
-pub struct CircleShader;
+// #[derive(Debug, TypeUuid, Default, PartialEq, Clone, Copy)]
+// #[uuid = "6d310234-5019-4cd4-9f60-ebabd7dca30b"]
+// pub struct CircleShader;
 
-impl ExtractToShader for CircleShader {
-    type Shader = Self;
-    type ParamsQuery<'a> = &'a ShaderColor;
-    type ParamsBundle = ShaderColor;
-    type ResourceParams<'w> = ();
+// impl ExtractToShader for CircleShader {
+//     type Shader = Self;
+//     type ParamsQuery<'a> = &'a ShaderColor;
+//     type ParamsBundle = ShaderColor;
+//     type ResourceParams<'w> = ();
 
-    fn get_params(
-        query_item: <Self::ParamsQuery<'_> as bevy::ecs::query::WorldQuery>::Item<'_>,
-        _resource: &<Self::ResourceParams<'_> as bevy::ecs::system::SystemParam>::Item<'_, '_>,
-    ) -> <Self::Shader as ParameterizedShader>::Params {
-        ColorParams {
-            color: query_item.color.into(),
-        }
-    }
-}
+//     fn get_params(
+//         query_item: <Self::ParamsQuery<'_> as bevy::ecs::query::WorldQuery>::Item<'_>,
+//         _resource: &<Self::ResourceParams<'_> as bevy::ecs::system::SystemParam>::Item<'_, '_>,
+//     ) -> <Self::Shader as ParameterizedShader>::Params {
+//         ColorParams {
+//             color: query_item.color.into(),
+//         }
+//     }
+// }
 
-impl ParameterizedShader for CircleShader {
-    type Params = ColorParams;
+// impl ParameterizedShader for CircleShader {
+//     type Params = ColorParams;
 
-    fn fragment_body() -> impl Into<String> {
-        SDFColorCall {
-            sdf: "sdf::circle::sdf(in.pos)",
-            fill_color: "fill::simple::fill(d, in.color, in.pos)",
-        }
-    }
+//     fn fragment_body() -> impl Into<String> {
+//         SDFColorCall {
+//             sdf: "sdf::circle::sdf(in.pos)",
+//             fill_color: "fill::simple::fill(d, in.color, in.pos)",
+//         }
+//     }
 
-    fn imports() -> impl Iterator<Item = FragmentImport> {
-        [SIMPLE_FILL_IMPORT, CIRCLE_IMPORT].into_iter()
-    }
+//     fn imports() -> impl Iterator<Item = FragmentImport> {
+//         [SIMPLE_FILL_IMPORT, CIRCLE_IMPORT].into_iter()
+//     }
 
-    const FRAME: Frame = Frame::square(1.0);
-}
+//     const FRAME: Frame = Frame::square(1.0);
+// }
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Default, Reflect, bytemuck::Pod, bytemuck::Zeroable)]
