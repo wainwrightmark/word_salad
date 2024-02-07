@@ -134,18 +134,20 @@ impl MavericNode for TutorialPopupNode {
             let font_size = context.font_size(&TutorialTextLayoutEntity(*entity), &());
             let text_rect = context.get_rect(&TutorialTextLayoutEntity(*entity), &());
 
+            const OPACITY: f32 = 0.6;
+
             let background = crate::shapes::box_with_border_node(
                 rect.width(),
                 rect.height(),
                 Vec2::ZERO.extend(crate::z_indices::TUTORIAL_POPUP_BOX_BACKGROUND),
                 ws_core::palette::POPUP_BOX_BACKGROUND
                     .convert_color()
-                    .with_a(0.8),
+                    .with_a(OPACITY),
                 0.1,
                 ShaderBorder {
                     border_color: ws_core::palette::POPUP_BOX_BORDER
                         .convert_color()
-                        .with_a(0.8),
+                        .with_a(OPACITY),
                     border: 0.01,
                 },
             );

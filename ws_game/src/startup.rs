@@ -159,7 +159,7 @@ fn choose_level_on_game_load(
                     if let Some(level) = new_level.level(&daily_challenges).left() {
                         return Some(new_level);
                     } else {
-                        return Some(CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished));
+                        return Some(CurrentLevel::NonLevel(NonLevel::DailyChallengeNotLoaded));
                     }
                 }
             }

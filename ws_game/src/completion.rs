@@ -181,7 +181,7 @@ pub fn track_level_completion(
     mut streak: ResMut<Streak>,
     level_time: Res<LevelTime>,
 ) {
-    if !found_words.is_changed() || !found_words.is_level_complete() {
+    if !found_words.is_changed() || !found_words.is_level_complete() || found_words.word_completions.is_empty() {
         return;
     }
 

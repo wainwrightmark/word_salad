@@ -11,10 +11,7 @@
 
 - Change steks menu button
 - integrate ads
-- fireworks performance
-- end selfie mode / recording when resuming app
 - Way to retry loading daily puzzles
-- Make sure words have enough height -check recent colors puzzle
-- move record button on larger devices
+
 
 - landscape open graph image

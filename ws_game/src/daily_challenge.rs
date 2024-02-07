@@ -1,6 +1,6 @@
 use std::ops::Add;
 
-use crate::{asynchronous, prelude::*};
+use crate::{asynchronous, prelude::*, startup};
 use bevy::prelude::*;
 use chrono::{Datelike, Duration, Timelike};
 use itertools::Itertools;
@@ -52,21 +52,15 @@ impl TrackableResource for DailyChallenges {
         for (index, level) in self.levels.iter_mut().enumerate() {
             level.numbering = Some(Numbering::WordSaladNumber(index + 1));
         }
-
-        //let elapsed = chrono::Utc::now().signed_duration_since(now).num_microseconds().unwrap_or_default();
-        //info!("Elapsed: {elapsed}microseconds");
-        //TODO think about performance of this
     }
 }
 
 pub const DAYS_OFFSET: i32 = 738865;
 
-#[derive(Debug, PartialEq, Event)]
+#[derive(Debug, PartialEq, Event, Clone)]
 pub struct DailyChallengeDataLoadedEvent {
     pub data: String,
 }
-
-
 
 impl DailyChallenges {
     const OFFSET_HOURS: i64 = -5;
@@ -121,10 +115,10 @@ fn load_levels(writer: AsyncEventWriter<DailyChallengeDataLoadedEvent>, dc: Res<
         return;
     }
 
-    asynchronous::spawn_and_run(load_levels_async(writer));
+    asynchronous::spawn_and_run(load_levels_async(writer, false));
 }
 
-async fn load_levels_async(writer: AsyncEventWriter<DailyChallengeDataLoadedEvent>) {
+pub async fn load_levels_async( writer: AsyncEventWriter<DailyChallengeDataLoadedEvent>, user_requested: bool,) {
     info!("Loading levels");
     let url = "https://wordsalad.online/daily.tsv".to_string();
 
@@ -132,6 +126,10 @@ async fn load_levels_async(writer: AsyncEventWriter<DailyChallengeDataLoadedEven
     let data = match res {
         Ok(response) => response.text().await,
         Err(err) => {
+            if user_requested{
+                crate::platform_specific::show_toast_async("Could not load daily challenges").await;
+            }
+
             error!("{err}");
             return;
         }
@@ -140,10 +138,16 @@ async fn load_levels_async(writer: AsyncEventWriter<DailyChallengeDataLoadedEven
     let data = match data {
         Ok(data) => data,
         Err(err) => {
+            if user_requested{
+                crate::platform_specific::show_toast_async("Could not load daily challenges").await;
+            }
+
             error!("{err}");
             return;
         }
     };
+
+    startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 
     match writer
         .send_async(DailyChallengeDataLoadedEvent { data })
@@ -184,7 +188,16 @@ fn handle_daily_challenge_data_loaded(
             daily_challenges.level_data = event.data.clone();
             daily_challenges.levels = levels;
 
-            if *current_level == CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished) {
+            let should_change = match current_level.as_ref() {
+                CurrentLevel::NonLevel(
+                    NonLevel::DailyChallengeFinished
+                    | NonLevel::DailyChallengeLoading
+                    | NonLevel::DailyChallengeNotLoaded,
+                ) => true,
+                _ => false,
+            };
+
+            if should_change {
                 let index = DailyChallenges::get_today_index();
 
                 let new_current_level = CurrentLevel::DailyChallenge { index };

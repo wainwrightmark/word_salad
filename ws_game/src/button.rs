@@ -1,19 +1,19 @@
 use bevy::prelude::*;
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
-use ws_core::layout::entities::recording_button::ToggleRecordingButton;
 use std::time::Duration;
 use strum::EnumIs;
+use ws_core::layout::entities::recording_button::ToggleRecordingButton;
 use ws_core::layout::entities::{
-    CongratsButton, CongratsLayoutEntity, WordSaladLogo, LayoutWordTile,
+    CongratsButton, CongratsLayoutEntity, LayoutWordTile, WordSaladLogo,
 };
 
-use crate::{asynchronous, completion::*};
 use crate::menu_layout::main_menu_back_button::MainMenuBackButton;
 use crate::menu_layout::word_salad_menu_layout::WordSaladMenuLayoutEntity;
 use crate::prelude::level_group_layout::LevelGroupLayoutEntity;
 use crate::prelude::levels_menu_layout::LevelsMenuLayoutEntity;
 use crate::prelude::main_menu_layout::MainMenuLayoutEntity;
 use crate::purchases::{PurchaseEvent, Purchases};
+use crate::{asynchronous, completion::*};
 use crate::{input, prelude::*, startup};
 
 pub struct ButtonPlugin;
@@ -90,6 +90,7 @@ fn handle_button_activations(
         EventWriter<PurchaseEvent>,
         EventWriter<HintEvent>,
         AsyncEventWriter<VideoEvent>,
+        AsyncEventWriter<DailyChallengeDataLoadedEvent>
     ),
 ) {
     for ev in events.read() {
@@ -101,7 +102,7 @@ fn handle_button_activations(
             &mut sequence_completion,
             &mut daily_challenge_completion,
             &mut video_resource,
-            &event_writers.4,
+
             daily_challenges.as_ref(),
             &mut level_time,
             &purchases,
@@ -109,6 +110,8 @@ fn handle_button_activations(
             &mut event_writers.1,
             &mut event_writers.2,
             &mut event_writers.3,
+            &event_writers.4,
+            &mut event_writers.5
         )
     }
 }
@@ -257,7 +260,7 @@ impl ButtonInteraction {
         sequence_completion: &mut ResMut<SequenceCompletion>,
         daily_challenge_completion: &mut ResMut<DailyChallengeCompletion>,
         video_resource: &mut ResMut<VideoResource>,
-        video_events: &AsyncEventWriter<VideoEvent>,
+
         daily_challenges: &DailyChallenges,
         level_time: &mut ResMut<LevelTime>,
         purchases: &Purchases,
@@ -266,6 +269,8 @@ impl ButtonInteraction {
         ad_request_events: &mut EventWriter<AdRequestEvent>,
         purchase_events: &mut EventWriter<PurchaseEvent>,
         hint_events: &mut EventWriter<HintEvent>,
+        video_events: &AsyncEventWriter<VideoEvent>,
+        daily_challenge_events: &AsyncEventWriter<DailyChallengeDataLoadedEvent>,
     ) {
         match self {
             ButtonInteraction::None => {}
@@ -383,9 +388,13 @@ impl ButtonInteraction {
             ButtonInteraction::ToggleRecordingButton => {
                 if video_resource.is_selfie_mode {
                     if video_resource.is_recording {
-                        asynchronous::spawn_and_run(crate::video::stop_screen_record(video_events.clone()));
+                        asynchronous::spawn_and_run(crate::video::stop_screen_record(
+                            video_events.clone(),
+                        ));
                     } else {
-                        asynchronous::spawn_and_run(crate::video::start_screen_record(video_events.clone()));
+                        asynchronous::spawn_and_run(crate::video::start_screen_record(
+                            video_events.clone(),
+                        ));
                     }
                 }
             }
@@ -461,6 +470,14 @@ impl ButtonInteraction {
                             };
 
                             change_level_events.send(new_current_level.into());
+                        }
+                        NonLevel::DailyChallengeNotLoaded => {
+                            asynchronous::spawn_and_run(load_levels_async( daily_challenge_events.clone(), true));
+                            change_level_events
+                                .send(CurrentLevel::NonLevel(NonLevel::DailyChallengeLoading).into());
+                        }
+                        NonLevel::DailyChallengeLoading => {
+                            //This button should not exist
                         }
                     }
                 }
@@ -547,5 +564,5 @@ fn try_generate_share_text(
         }
     };
 
-    Some(format!("{first_lines}\n{second_line}\n{url}"))
+    Some(format!("{url}\n{first_lines}\n{second_line}"))
 }
