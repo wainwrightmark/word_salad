@@ -6,9 +6,8 @@ use ws_core::layout::entities::recording_button::ToggleRecordingButton;
 pub struct RecordingButtonContext {
     pub window_size: MyWindowSize,
     pub video_resource: VideoResource,
-    pub pressed_button: PressedButton
+    pub pressed_button: PressedButton,
 }
-
 
 #[derive(Debug, PartialEq, Clone, Copy, MavericRoot)]
 pub struct RecordingButtonRoot;
@@ -20,8 +19,7 @@ impl MavericRootChildren for RecordingButtonRoot {
         context: &<Self::Context as NodeContext>::Wrapper<'_>,
         commands: &mut impl ChildCommands,
     ) {
-
-        if !context.video_resource.show_recording_button(){
+        if !context.video_resource.show_recording_button() {
             return;
         }
 
@@ -32,10 +30,12 @@ impl MavericRootChildren for RecordingButtonRoot {
             &context.video_resource.selfie_mode(),
         );
 
-        let pressed_multiplier = match context.pressed_button.as_ref(){
-
-            PressedButton::Pressed { interaction: ButtonInteraction::ToggleRecordingButton , .. } => 1.1,
-            _=> 1.0
+        let pressed_multiplier = match context.pressed_button.as_ref() {
+            PressedButton::Pressed {
+                interaction: ButtonInteraction::ToggleRecordingButton,
+                ..
+            } => 1.1,
+            _ => 1.0,
         };
 
         let inner_color: Color;

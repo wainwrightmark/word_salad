@@ -4,58 +4,47 @@ use ws_core::layout::entities::*;
 #[derive(Debug, NodeContext)]
 pub struct LogoContext {
     pub window_size: MyWindowSize,
-    // pub hint_state: HintState,
     pub video_resource: VideoResource,
+    pub pressed_button: PressedButton
 }
 
-impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for LogoContextWrapper<'w> {
-    fn from(value: &'a ViewContextWrapper<'w>) -> Self {
-        Self {
-            // hint_state: Res::clone(&value.hint_state),
-            window_size: Res::clone(&value.window_size),
-            video_resource: Res::clone(&value.video_resource),
-        }
-    }
-}
 
-#[derive(Debug, PartialEq, Clone, Copy)]
-pub struct WordSaladLogoNode;
+#[derive(Debug, PartialEq, Clone, Copy, MavericRoot)]
+pub struct WordSaladLogoRoot;
 
-impl MavericNode for WordSaladLogoNode {
+impl MavericRootChildren for WordSaladLogoRoot {
     type Context = LogoContext;
 
-    fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
-        commands
-            .ignore_context()
-            .ignore_node()
-            .insert(SpatialBundle::default())
-            .finish()
-    }
+    fn set_children(
+        context: &<Self::Context as NodeContext>::Wrapper<'_>,
+        commands: &mut impl ChildCommands,
+    ) {
+        let size = &context.window_size;
 
-    fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
-        commands
-            .ignore_node()
-            .unordered_children_with_context(|context, commands| {
-                let size = &context.window_size;
+        let logo_rect = size.get_rect(&WordSaladLogo, &context.video_resource.selfie_mode());
 
-                let logo_rect =
-                    size.get_rect(&WordSaladLogo, &context.video_resource.selfie_mode());
+        let pressed_multiplier = match context.pressed_button.as_ref() {
+            PressedButton::Pressed {
+                interaction: ButtonInteraction::WordSaladLogo,
+                ..
+            } => 1.1,
+            _ => 1.0,
+        };
 
-                commands.add_child(
-                    "Word Salad Icon",
-                    SpriteNode {
-                        texture_path: r#"images/logo1024.png"#,
-                        sprite: Sprite {
-                            custom_size: Some(logo_rect.extents.abs()),
-                            ..Default::default()
-                        },
-                    }
-                    .with_bundle((Transform::from_translation(
-                        logo_rect.centre().extend(crate::z_indices::TOP_BAR_BUTTON),
-                    ),)),
-                    &(),
-                );
-            });
+        commands.add_child(
+            "Word Salad Icon",
+            SpriteNode {
+                texture_path: r#"images/logo1024.png"#,
+                sprite: Sprite {
+                    custom_size: Some(logo_rect.extents.abs() * pressed_multiplier),
+                    ..Default::default()
+                },
+            }
+            .with_bundle((Transform::from_translation(
+                logo_rect.centre().extend(crate::z_indices::TOP_BAR_BUTTON),
+            ),)),
+            &(),
+        );
     }
 }
 

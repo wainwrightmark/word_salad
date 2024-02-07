@@ -47,6 +47,7 @@ pub fn go() {
     app.add_plugins(WordlinePlugin);
     app.register_maveric::<ViewRoot>();
     app.register_maveric::<RecordingButtonRoot>();
+    app.register_maveric::<WordSaladLogoRoot>();
     app.add_plugins(HintsRemainingPlugin);
     app.add_plugins(StatePlugin);
     app.add_plugins(LevelTimePlugin);

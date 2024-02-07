@@ -63,8 +63,6 @@ impl MavericRootChildren for ViewRoot {
             &context.found_words_state,
         );
 
-        commands.add_child("Logo", WordSaladLogoNode, &context.into());
-
 
         if !context.menu_state.is_closed() {
             commands.add_child("menu", Menu { background_type }, &context.into());
