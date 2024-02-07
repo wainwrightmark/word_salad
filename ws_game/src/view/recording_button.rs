@@ -6,99 +6,100 @@ use ws_core::layout::entities::recording_button::ToggleRecordingButton;
 pub struct RecordingButtonContext {
     pub window_size: MyWindowSize,
     pub video_resource: VideoResource,
+    pub pressed_button: PressedButton
 }
 
-impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for RecordingButtonContextWrapper<'w> {
-    fn from(value: &'a ViewContextWrapper<'w>) -> Self {
-        Self {
-            window_size: Res::clone(&value.window_size),
-            video_resource: Res::clone(&value.video_resource),
-        }
-    }
-}
 
-#[derive(Debug, PartialEq, Clone, Copy)]
-pub struct RecordingButtonNode;
+#[derive(Debug, PartialEq, Clone, Copy, MavericRoot)]
+pub struct RecordingButtonRoot;
 
-impl MavericNode for RecordingButtonNode {
+impl MavericRootChildren for RecordingButtonRoot {
     type Context = RecordingButtonContext;
 
-    fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
-        commands
-            .ignore_context()
-            .ignore_node()
-            .insert(SpatialBundle::default())
-            .finish()
-    }
+    fn set_children(
+        context: &<Self::Context as NodeContext>::Wrapper<'_>,
+        commands: &mut impl ChildCommands,
+    ) {
 
-    fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
-        commands
-            .ignore_node()
-            .unordered_children_with_context(|context, commands| {
-                let size = &context.window_size;
+        if !context.video_resource.show_recording_button(){
+            return;
+        }
 
-                let rect = size.get_rect(
-                    &ToggleRecordingButton,
-                    &context.video_resource.selfie_mode(),
-                );
+        let size = &context.window_size;
 
-                let inner_color: Color;
-                let outer_color: Color = if context.video_resource.is_selfie_mode {
-                    palette::RECORDING_BUTTON_SELFIE.convert_color()
-                } else {
-                    palette::RECORDING_BUTTON_NORMAL.convert_color()
-                };
-                let inner_rounding: f32;
+        let rect = size.get_rect(
+            &ToggleRecordingButton,
+            &context.video_resource.selfie_mode(),
+        );
 
-                if context.video_resource.is_recording {
-                    inner_color = palette::RECORDING_BUTTON_RECORDING.convert_color();
-                    inner_rounding = 0.0;
-                } else {
-                    inner_color = outer_color;
-                    inner_rounding = 1.0;
-                }
+        let pressed_multiplier = match context.pressed_button.as_ref(){
 
-                commands.add_child(
-                    "OuterCircle",
-                    ShaderBundle::<BoxWithBorderShader> {
-                        parameters: (
-                            Color::NONE.into(),
-                            ShaderRounding { rounding: 1.0 },
-                            ShaderProportions::default(),
-                            ShaderBorder {
-                                border_color: outer_color,
-                                border: 0.1,
-                            },
-                        ),
-                        transform: Transform::from_translation(
-                            rect.centre_left().extend(crate::z_indices::TOP_BAR_BUTTON),
-                        )
-                        .with_scale(Vec3::ONE * rect.width()),
+            PressedButton::Pressed { interaction: ButtonInteraction::ToggleRecordingButton , .. } => 1.1,
+            _=> 1.0
+        };
 
-                        ..Default::default()
+        let inner_color: Color;
+        let outer_color: Color = if context.video_resource.is_selfie_mode {
+            palette::RECORDING_BUTTON_SELFIE.convert_color()
+        } else {
+            palette::RECORDING_BUTTON_NORMAL.convert_color()
+        };
+        let inner_rounding: f32;
+
+        if context.video_resource.is_recording {
+            inner_color = palette::RECORDING_BUTTON_RECORDING.convert_color();
+            inner_rounding = 0.1;
+        } else {
+            inner_color = outer_color;
+            inner_rounding = 0.9;
+        }
+
+        commands.add_child(
+            "OuterCircle",
+            (
+                ShaderBundle::<BoxWithBorderShader> {
+                    parameters: (
+                        Color::NONE.into(),
+                        ShaderRounding { rounding: 1.0 },
+                        ShaderProportions::default(),
+                        ShaderBorder {
+                            border_color: outer_color,
+                            border: 0.1,
+                        },
+                    ),
+                    transform: Transform::from_translation(
+                        rect.centre().extend(crate::z_indices::TOP_BAR_BUTTON),
+                    )
+                    .with_scale(Vec3::ONE * rect.width() * 0.5),
+
+                    ..Default::default()
+                },
+                ButtonInteraction::ToggleRecordingButton,
+            ),
+            &(),
+        );
+
+        let inner_scale = Vec3::ONE * rect.width() * 0.25 * pressed_multiplier;
+
+        commands.add_child(
+            "InnerShape",
+            ShaderBundle::<BasicBoxShaderExtraction> {
+                parameters: (
+                    inner_color.into(),
+                    ShaderRounding {
+                        rounding: inner_rounding,
                     },
-                    &(),
-                );
+                    ShaderProportions::default(),
+                ),
+                transform: Transform::from_translation(
+                    rect.centre().extend(crate::z_indices::TOP_BAR_BUTTON),
+                )
+                .with_scale(inner_scale),
 
-                commands.add_child(
-                    "InnerShape",
-                    ShaderBundle::<BasicBoxShaderExtraction> {
-                        parameters: (
-                            inner_color.into(),
-                            ShaderRounding {
-                                rounding: inner_rounding,
-                            },
-                            ShaderProportions::default(),
-                        ),
-                        transform: Transform::from_translation(
-                            rect.centre_left().extend(crate::z_indices::TOP_BAR_BUTTON),
-                        )
-                        .with_scale(Vec3::ONE * rect.width() * 0.5),
-
-                        ..Default::default()
-                    },
-                    &(),
-                );
-            });
+                ..Default::default()
+            }
+            .with_transition_to::<RoundingLens>(inner_rounding, 5.0.into(), None),
+            &(),
+        );
     }
 }

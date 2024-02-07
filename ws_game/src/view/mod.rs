@@ -65,10 +65,6 @@ impl MavericRootChildren for ViewRoot {
 
         commands.add_child("Logo", WordSaladLogoNode, &context.into());
 
-        if context.video_resource.show_recording_button(){
-            commands.add_child("Recording Button", RecordingButtonNode, &context.into());
-        }
-
 
         if !context.menu_state.is_closed() {
             commands.add_child("menu", Menu { background_type }, &context.into());

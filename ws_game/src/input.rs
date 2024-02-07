@@ -67,20 +67,27 @@ impl InteractionEntity {
                     return match size.try_pick::<HintsPopupLayoutEntity>(*position, &()) {
                         Some(entity) => match entity {
                             HintsPopupLayoutEntity::Text => None,
-                            // HintsPopupLayoutEntity::BuyMoreButton => {
-                            //     Some(InteractionEntity::Button(ButtonInteraction::Popup(
-                            //         PopupInteraction::HintsBuyMore,
-                            //     )))
-                            // }
                             HintsPopupLayoutEntity::SufferAloneButton => {
                                 Some(InteractionEntity::Button(ButtonInteraction::Popup(
                                     PopupInteraction::ClickClose,
                                 )))
                             }
                             HintsPopupLayoutEntity::PopupBox => None,
-                            HintsPopupLayoutEntity::WatchAdButton => Some(InteractionEntity::Button(ButtonInteraction::Popup(PopupInteraction::ClickWatchAd))),
-                            HintsPopupLayoutEntity::BuyPack1Button => Some(InteractionEntity::Button(ButtonInteraction::Popup(PopupInteraction::ClickBuyPack1))),
-                            HintsPopupLayoutEntity::BuyPack2Button => Some(InteractionEntity::Button(ButtonInteraction::Popup(PopupInteraction::ClickBuyPack2 ))),
+                            HintsPopupLayoutEntity::WatchAdButton => {
+                                Some(InteractionEntity::Button(ButtonInteraction::Popup(
+                                    PopupInteraction::ClickWatchAd,
+                                )))
+                            }
+                            HintsPopupLayoutEntity::BuyPack1Button => {
+                                Some(InteractionEntity::Button(ButtonInteraction::Popup(
+                                    PopupInteraction::ClickBuyPack1,
+                                )))
+                            }
+                            HintsPopupLayoutEntity::BuyPack2Button => {
+                                Some(InteractionEntity::Button(ButtonInteraction::Popup(
+                                    PopupInteraction::ClickBuyPack2,
+                                )))
+                            }
                         },
                         None => Some(InteractionEntity::Button(ButtonInteraction::Popup(
                             PopupInteraction::ClickSufferAlone,
@@ -99,6 +106,14 @@ impl InteractionEntity {
             is_selfie_mode: video_resource.is_selfie_mode,
         };
 
+        if video_resource.show_recording_button() {
+            if let Some(..) = size.try_pick::<ToggleRecordingButton>(*position, &selfie_mode) {
+                return Some(InteractionEntity::Button(
+                    ButtonInteraction::ToggleRecordingButton,
+                ));
+            }
+        }
+
         match menu_state {
             MenuState::Closed => match current_level.level(daily_challenges) {
                 itertools::Either::Left(level) => {
@@ -109,13 +124,6 @@ impl InteractionEntity {
                             &(selfie_mode, current_level.level_type()),
                         );
                     }
-
-                    if video_resource.show_recording_button(){
-                        if let Some(..) = size.try_pick::<ToggleRecordingButton>(*position, &selfie_mode){
-                            return Some(InteractionEntity::Button(ButtonInteraction::ToggleRecordingButton));
-                        }
-                    }
-
 
                     let Some(layout_entity) =
                         size.try_pick::<GameLayoutEntity>(*position, &selfie_mode)

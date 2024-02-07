@@ -7,7 +7,7 @@ use ws_core::layout::entities::{
     CongratsButton, CongratsLayoutEntity, WordSaladLogo, LayoutWordTile,
 };
 
-use crate::completion::*;
+use crate::{asynchronous, completion::*};
 use crate::menu_layout::main_menu_back_button::MainMenuBackButton;
 use crate::menu_layout::word_salad_menu_layout::WordSaladMenuLayoutEntity;
 use crate::prelude::level_group_layout::LevelGroupLayoutEntity;
@@ -383,9 +383,9 @@ impl ButtonInteraction {
             ButtonInteraction::ToggleRecordingButton => {
                 if video_resource.is_selfie_mode {
                     if video_resource.is_recording {
-                        crate::video::stop_screen_record(video_resource);
+                        asynchronous::spawn_and_run(crate::video::stop_screen_record(video_events.clone()));
                     } else {
-                        crate::video::start_screen_record(video_resource);
+                        asynchronous::spawn_and_run(crate::video::start_screen_record(video_events.clone()));
                     }
                 }
             }

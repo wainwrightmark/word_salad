@@ -469,10 +469,10 @@ const SPARKLE_IMPORT: FragmentImport = FragmentImport {
     import_path: "fill::sparkle",
 };
 
-const CIRCLE_IMPORT: FragmentImport = FragmentImport {
-    path: "shaders/sdf/circle.wgsl",
-    import_path: "sdf::circle",
-};
+// const CIRCLE_IMPORT: FragmentImport = FragmentImport {
+//     path: "shaders/sdf/circle.wgsl",
+//     import_path: "sdf::circle",
+// };
 
 pub fn basic_box_node1(
     width: f32,

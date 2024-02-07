@@ -7,7 +7,7 @@ pub const IDEAL_HEIGHT: f32 = 568.;
 pub const IDEAL_RATIO: f32 = IDEAL_WIDTH as f32 / IDEAL_HEIGHT as f32;
 
 pub const TOP_BAR_HEIGHT_BASE: f32 = 60.;
-pub const RECORDING_BUTTON_MIN_SIZE: f32 = 20.0;
+pub const RECORDING_BUTTON_MIN_SIZE: f32 = 25.0;
 //pub const WORD_SALAD_LOGO_WIDTH: f32 = 160.;
 
 pub const THEME_HEIGHT: f32 = 24.;
@@ -128,12 +128,6 @@ pub const THEME_FONT_SIZE: f32 = 22f32;
 pub const THEME_FONT_SIZE_SMALL: f32 = 18f32;
 pub const THEME_INFO_FONT_SIZE: f32 = 18f32;
 pub const TIMER_FONT_SIZE: f32 = 18f32;
-
-pub const BURGER_FONT_SIZE: f32 = 22f32;
-pub const LOGO_FONT_SIZE: f32 = 22f32;
-pub const HINT_COUNTER_FONT_SIZE: f32 = 22f32;
-pub const HINT_COUNTER_FONT_SIZE_SMALL: f32 = 18f32;
-pub const HINT_COUNTER_FONT_SIZE_TINY: f32 = 14f32;
 
 pub const WORD_TILE_FONT_SIZE: f32 = 18f32;
 
