@@ -15,7 +15,7 @@ impl Plugin for NotificationPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         #[cfg(any(feature = "ios", feature = "android"))]
         {
-            app.add_systems(Startup, setup);
+            app.add_systems(Startup, setup); //TODO setup at a different time
         }
     }
 }
@@ -38,7 +38,7 @@ async fn setup_notifications_async(
         .large_icon("notification_icon")
         .icon_color("#86AEEA")
 
-        .schedule(ScheduleOn::builder().hour(7).build())
+        .schedule(ScheduleOn::builder().hour(6).build())
         .auto_cancel(true)
         .build();
 

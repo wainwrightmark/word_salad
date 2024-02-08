@@ -4,6 +4,7 @@
     <string name="title_activity_main">Word Salad</string>
     <string name="package_name">com.wordsalad.app</string>
     <string name="custom_url_scheme">com.wordsalad.app</string>
+    <string translatable="false"  name="game_services_project_id">188317213726</string>
 
     <string name="admob_app_id">ca-app-pub-5238923028364185~1227652260</string>
 
