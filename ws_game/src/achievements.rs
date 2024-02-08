@@ -1,14 +1,22 @@
-use crate::{platform_specific, prelude::*};
+use crate::prelude::*;
 use bevy::{prelude::*, utils::HashSet};
-use nice_bevy_utils::{CanInitTrackedResource, TrackableResource};
+use nice_bevy_utils::{
+    async_event_writer::AsyncEventWriter, CanInitTrackedResource, CanRegisterAsyncEvent,
+    TrackableResource,
+};
 use serde::{Deserialize, Serialize};
 use serde_repr::*;
-use strum::AsRefStr;
+use strum::{AsRefStr, Display};
 
 pub struct AchievementsPlugin;
 
 impl Plugin for AchievementsPlugin {
     fn build(&self, app: &mut App) {
+        app.add_systems(Startup, sign_in_user);
+        app.init_resource::<UserSignedIn>();
+        app.register_async_event::<SignInEvent>();
+        app.add_systems(Update, check_for_sign_in);
+
         app.init_tracked_resource::<AchievementsState>();
         app.init_tracked_resource::<WordsFoundCountState>();
         app.add_systems(
@@ -39,12 +47,62 @@ impl Plugin for AchievementsPlugin {
     }
 }
 
+#[derive(Debug, Resource, Default, Clone, PartialEq, Eq, MavericContext)]
+pub struct UserSignedIn {
+    pub is_signed_in: bool,
+}
+
+#[derive(Debug, Event, Clone, Copy, Eq, PartialEq)]
+pub struct SignInEvent;
+
+fn check_for_sign_in(
+    mut ev: EventReader<SignInEvent>,
+    mut signed_in: ResMut<UserSignedIn>,
+    achievements: Res<AchievementsState>,
+) {
+    for _ in ev.read() {
+        signed_in.is_signed_in = true;
+        achievements.resync();
+    }
+}
+
+#[allow(unused_variables)]
+fn sign_in_user(writer: AsyncEventWriter<SignInEvent>) {
+    #[cfg(any(feature = "android", feature = "ios"))]
+    {
+        async fn sign_in_async(
+            writer: AsyncEventWriter<SignInEvent>,
+        ) -> Result<(), capacitor_bindings::error::Error> {
+            let user = capacitor_bindings::game_connect::GameConnect::sign_in().await?;
+            info!("User signed in: {user:?}");
+            let _ = writer.send_async(SignInEvent).await;
+
+            Ok(())
+        }
+
+        spawn_and_run(async move {
+            match sign_in_async(writer).await {
+                Ok(()) => {}
+                Err(err) => error!("{err}"),
+            }
+        });
+    }
+}
+
+pub fn show_achievements() {
+    #[cfg(any(feature = "android", feature = "ios"))]
+    {
+        info!("Showing achievements");
+        use capacitor_bindings::game_connect::*;
+        do_or_report_error(GameConnect::show_achievements());
+    }
+}
+
 fn track_hint_achievements(
     mut achievements: ResMut<AchievementsState>,
     mut events: EventReader<HintEvent>,
     current_level: Res<CurrentLevel>,
 ) {
-
     for _ in events.read() {
         if current_level.should_spend_hints() {
             maybe_unlock(&mut achievements, Achievement::QAndA);
@@ -236,14 +294,48 @@ struct AchievementsState {
     pub unlocked: HashSet<Achievement>,
 }
 
+impl AchievementsState {
+    pub fn resync(&self) {
+        for achievement in self.unlocked.iter() {
+            Self::unlock_achievement(*achievement);
+        }
+    }
+
+    /// Unlock the achievement in the connected game service
+    pub fn unlock_achievement(achievement: Achievement) {
+        info!("Achievement Unlocked: {achievement}");
+
+        #[cfg(any(feature = "android", feature = "ios"))]
+        {
+            use capacitor_bindings::game_connect::*;
+            crate::logging::do_or_report_error(GameConnect::unlock_achievement(
+                UnlockAchievementOptions {
+                    achievement_id: achievement.android_id().to_string(),
+                },
+            ));
+        }
+
+        #[cfg(feature = "web")]
+        {
+            spawn_and_run(async move {
+                let _ = capacitor_bindings::toast::Toast::show(
+                    capacitor_bindings::toast::ShowOptions {
+                        text: format!("Achievement Unlocked: {a}", a = achievement.as_ref()),
+                        duration: capacitor_bindings::toast::ToastDuration::Long,
+                        position: capacitor_bindings::toast::ToastPosition::Top,
+                    },
+                )
+                .await;
+            });
+        }
+    }
+}
+
 fn maybe_unlock(state: &mut ResMut<AchievementsState>, achievement: Achievement) {
     if state.bypass_change_detection().unlocked.insert(achievement) {
         state.set_changed();
 
-        platform_specific::show_toast_on_web(format!(
-            "Achievement Unlocked: {}",
-            achievement.as_ref()
-        ))
+        AchievementsState::unlock_achievement(achievement);
     }
 }
 
@@ -260,7 +352,9 @@ impl TrackableResource for WordsFoundCountState {
     const KEY: &'static str = "WordsFoundCount";
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize_repr, Deserialize_repr, AsRefStr)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize_repr, Deserialize_repr, AsRefStr, Display,
+)]
 #[repr(u8)]
 pub enum Achievement {
     /// Alphabet City - solve a puzzle in alphabetical order
@@ -341,4 +435,40 @@ pub enum Achievement {
     /// Zed's dead, baby - find a word that contains a Z
     #[strum(serialize = "Zed's dead, baby")]
     ZedDeadBaby,
+}
+
+impl Achievement {
+    pub fn android_id(&self) -> &'static str {
+        use Achievement::*;
+        //spellchecker:disable
+        match self {
+            AlphabetCity => "CgkInsjSxL0FEAIQAQ",
+            BackToFront => "CgkInsjSxL0FEAIQAg",
+            CaesarSalad => "CgkInsjSxL0FEAIQAw",
+            Dectet => "CgkInsjSxL0FEAIQBA",
+            ExtraExtra => "CgkInsjSxL0FEAIQBQ",
+            FilmStar => "CgkInsjSxL0FEAIQBg",
+            GreekSalad => "CgkInsjSxL0FEAIQBw",
+            HelloWorld => "CgkInsjSxL0FEAIQCA",
+            InsalataCaprese => "CgkInsjSxL0FEAIQCQ",
+            JelloSalad => "CgkInsjSxL0FEAIQCg",
+            KathmanduToKarlsbad => "CgkInsjSxL0FEAIQCw",
+            LinnaeusCarl => "CgkInsjSxL0FEAIQDA",
+            MirrorMirror => "CgkInsjSxL0FEAIQDQ",
+            Nonet => "CgkInsjSxL0FEAIQDg",
+            Octet => "CgkInsjSxL0FEAIQDw",
+            Pow => "CgkInsjSxL0FEAIQEA",
+            QAndA => "CgkInsjSxL0FEAIQEQ",
+            RightInOne => "CgkInsjSxL0FEAIQEg",
+            SamuelJohnson => "CgkInsjSxL0FEAIQEw",
+            TripleDigits => "CgkInsjSxL0FEAIQFA",
+            Undectet => "CgkInsjSxL0FEAIQFQ",
+            Vroom => "CgkInsjSxL0FEAIQFg",
+            Whoosh => "CgkInsjSxL0FEAIQFw",
+            XMarksTheSpot => "CgkInsjSxL0FEAIQGA",
+            YouGoGlenCoco => "CgkInsjSxL0FEAIQGQ",
+            ZedDeadBaby => "CgkInsjSxL0FEAIQGg",
+        }
+        //spellchecker:enable
+    }
 }
