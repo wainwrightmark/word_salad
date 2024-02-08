@@ -285,28 +285,34 @@ mod mobile_only {
                 // return Err("Tracking info status Restricted".to_string());
             }
         };
-        let consent_info = Admob::request_consent_info(AdmobConsentRequestOptions {
-            debug_geography: AdmobConsentDebugGeography::Disabled,
-            test_device_identifiers: vec!["806EEBB5152549F81255DD01CDA931D9".to_string()],
-            tag_for_under_age_of_consent: false,
-        })
-        .await
-        .map_err(|x| x.to_string())?;
 
-        info!("Consent Info {consent_info:?}");
 
-        if consent_info.is_consent_form_available
-            && consent_info.status == AdmobConsentStatus::Required
+        #[cfg(any(feature = "ios"))]
         {
-            let consent_info = Admob::show_consent_form()
-                .await
-                .map_err(|x| x.to_string())?;
-            if consent_info.status == AdmobConsentStatus::Required {
-                return Err("Consent info still required".to_string());
-            } else if consent_info.status == AdmobConsentStatus::Unknown {
-                return Err("Consent info unknown".to_string());
+            let consent_info = Admob::request_consent_info(AdmobConsentRequestOptions {
+                debug_geography: AdmobConsentDebugGeography::Disabled,
+                test_device_identifiers: vec!["806EEBB5152549F81255DD01CDA931D9".to_string()],
+                tag_for_under_age_of_consent: false,
+            })
+            .await
+            .map_err(|x| x.to_string())?;
+    
+            info!("Consent Info {consent_info:?}");
+    
+            if consent_info.is_consent_form_available
+                && consent_info.status == AdmobConsentStatus::Required
+            {
+                let consent_info = Admob::show_consent_form()
+                    .await
+                    .map_err(|x| x.to_string())?;
+                if consent_info.status == AdmobConsentStatus::Required {
+                    return Err("Consent info still required".to_string());
+                } else if consent_info.status == AdmobConsentStatus::Unknown {
+                    return Err("Consent info unknown".to_string());
+                }
             }
         }
+        
 
         Ok(())
     }
