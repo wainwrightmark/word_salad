@@ -12,6 +12,8 @@ use crate::{
 use bevy::{prelude::*, window::PrimaryWindow};
 use strum::EnumIs;
 use ws_core::layout::entities::{recording_button::ToggleRecordingButton, *};
+
+use self::{hints_menu_layout::HintsLayoutEntity, store_menu_layout::StoreLayoutEntity};
 pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
@@ -178,6 +180,30 @@ impl InteractionEntity {
                     }
                 }
             },
+
+            MenuState::HintsStorePage => {
+                if let Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &())
+                {
+                    return Some(back);
+                }
+
+                Some(
+                    Self::try_get_button::<HintsLayoutEntity>(position, size, &selfie_mode)
+                        .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
+                )
+            }
+
+            MenuState::MainStorePage => {
+                if let Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &())
+                {
+                    return Some(back);
+                }
+
+                Some(
+                    Self::try_get_button::<StoreLayoutEntity>(position, size, &selfie_mode)
+                        .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
+                )
+            }
 
             MenuState::ShowMainMenu => {
                 if let Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &())

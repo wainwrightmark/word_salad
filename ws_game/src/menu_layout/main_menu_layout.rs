@@ -1,7 +1,8 @@
 use bevy::math::Vec2;
 use strum::{Display, EnumCount, EnumIter, IntoEnumIterator};
 use ws_core::{
-    layout::entities::*, LayoutSizing, LayoutStructure, LayoutStructureWithFont, LayoutStructureWithTextOrImage, Spacing
+    layout::entities::*, LayoutSizing, LayoutStructure, LayoutStructureWithFont,
+    LayoutStructureWithTextOrImage, Spacing,
 };
 
 use super::{MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
@@ -25,10 +26,9 @@ pub enum MainMenuLayoutEntity {
 )]
 pub enum MainMenuLayoutEntity {
     Puzzles = 0,
-    Store = 1,
-    SelfieMode = 2,
-    Tutorial = 3,
-    ResetPuzzle = 4,
+    SelfieMode = 1,
+    Tutorial = 2,
+    ResetPuzzle = 3,
 }
 
 //#[cfg_attr(target_arch = "wasm32", derive( Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter, EnumCount, Display,))]
@@ -67,7 +67,7 @@ impl LayoutStructure for MainMenuLayoutEntity {
     }
 }
 
-impl LayoutStructureWithFont for MainMenuLayoutEntity{
+impl LayoutStructureWithFont for MainMenuLayoutEntity {
     type FontContext = ();
 
     fn font_size(&self, _context: &Self::FontContext) -> f32 {
@@ -80,27 +80,23 @@ impl LayoutStructureWithTextOrImage for MainMenuLayoutEntity {
         use MainMenuLayoutEntity::*;
 
         match self {
-            Puzzles => ws_core::TextOrImage::Text {
-                text: "Puzzles",
-            },
-            Store => ws_core::TextOrImage::Text {
-                text: "Store",
-            },
+            Puzzles => ws_core::TextOrImage::Text { text: "Puzzles" },
+
             SelfieMode => ws_core::TextOrImage::Text {
                 text: "Selfie Mode",
             },
-            Tutorial => ws_core::TextOrImage::Text {
-                text: "Tutorial",
-            },
+            Tutorial => ws_core::TextOrImage::Text { text: "Tutorial" },
             ResetPuzzle => ws_core::TextOrImage::Text {
                 text: "Reset Puzzle",
             },
+            #[cfg(target_arch = "wasm32")]
+            Store => ws_core::TextOrImage::Text { text: "Store" },
             #[cfg(target_arch = "wasm32")]
             PlaySteks => ws_core::TextOrImage::Image {
                 path: "images/steks_button.png",
                 color: ws_core::BasicColor::rgba(0.53, 0.68, 0.92, 1.0),
                 pressed_color: ws_core::BasicColor::rgba(0.36, 0.55, 0.88, 1.0),
-                aspect_ratio: 7168.0 / 1024.0
+                aspect_ratio: 7168.0 / 1024.0,
             },
         }
     }

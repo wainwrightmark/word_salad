@@ -16,6 +16,9 @@ use crate::purchases::{PurchaseEvent, Purchases};
 use crate::{asynchronous, completion::*};
 use crate::{input, prelude::*, startup};
 
+use self::hints_menu_layout::HintsLayoutEntity;
+use self::store_menu_layout::StoreLayoutEntity;
+
 pub struct ButtonPlugin;
 
 impl Plugin for ButtonPlugin {
@@ -167,6 +170,8 @@ pub enum ButtonInteraction {
     LevelsMenu(LevelsMenuLayoutEntity),
     LevelGroupMenu(LevelGroupLayoutEntity),
     WordSaladMenu(WordSaladMenuLayoutEntity),
+    MainStoreMenu(StoreLayoutEntity),
+    HintsMenu(HintsLayoutEntity),
     WordButton(LayoutWordTile),
     WordSaladLogo,
     ToggleRecordingButton,
@@ -185,6 +190,18 @@ impl ButtonInteraction {
         } else {
             ButtonPressType::OnEnd
         }
+    }
+}
+
+impl From<HintsLayoutEntity> for ButtonInteraction{
+    fn from(value: HintsLayoutEntity) -> Self {
+        ButtonInteraction::HintsMenu(value)
+    }
+}
+
+impl From<StoreLayoutEntity> for ButtonInteraction{
+    fn from(value: StoreLayoutEntity) -> Self {
+        ButtonInteraction::MainStoreMenu(value)
     }
 }
 
@@ -289,8 +306,9 @@ impl ButtonInteraction {
             ButtonInteraction::MainMenu(MainMenuLayoutEntity::Puzzles) => {
                 *menu_state.as_mut() = MenuState::ChooseLevelsPage;
             }
+            #[cfg(target_arch = "wasm32")]
             ButtonInteraction::MainMenu(MainMenuLayoutEntity::Store) => {
-                //todo do something
+                *menu_state.as_mut() = MenuState::MainStorePage;
             }
             ButtonInteraction::MainMenu(MainMenuLayoutEntity::SelfieMode) => {
                 video_resource.toggle_selfie_mode(video_events.clone());
@@ -489,6 +507,20 @@ impl ButtonInteraction {
                     }
                 }
             }
+            ButtonInteraction::MainStoreMenu(m)=>{
+                match m{ //TODO!
+                    StoreLayoutEntity::RemoveAds => {},
+                    StoreLayoutEntity::BuyHints => {
+                        *menu_state.as_mut() = MenuState::HintsStorePage;
+                    },
+                    StoreLayoutEntity::BuyLevelGroup(_) => {},
+                }
+            }
+            ButtonInteraction::HintsMenu(_)=>{
+                //TODO!
+            }
+
+
             ButtonInteraction::WordSaladLogo => menu_state.toggle(),
             ButtonInteraction::Congrats(CongratsButton::Next) => {
                 let next_level = current_level.get_next_level(

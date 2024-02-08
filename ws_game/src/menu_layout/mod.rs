@@ -5,6 +5,8 @@ pub mod levels_menu_layout;
 pub mod main_menu_back_button;
 pub mod main_menu_layout;
 pub mod word_salad_menu_layout;
+pub mod store_menu_layout;
+pub mod hints_menu_layout;
 
 pub const MENU_BUTTON_HEIGHT: f32 = 35.0;
 

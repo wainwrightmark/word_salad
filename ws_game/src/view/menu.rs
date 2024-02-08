@@ -34,6 +34,8 @@ pub enum MenuState {
     ChooseLevelsPage,
     LevelGroupPage(LevelGroup),
     WordSaladLevels,
+    MainStorePage,
+    HintsStorePage,
 }
 
 impl MenuState {
@@ -57,6 +59,8 @@ impl MenuState {
             ChooseLevelsPage => ShowMainMenu,
             LevelGroupPage(_) => ChooseLevelsPage,
             WordSaladLevels => ChooseLevelsPage,
+            MainStorePage => ShowMainMenu,
+            HintsStorePage => MainStorePage,
         }
     }
 }
@@ -136,6 +140,28 @@ impl MavericNode for Menu {
                         border,
                     );
                 }
+                MenuState::MainStorePage => {
+                    add_menu_items::<R, store_menu_layout::StoreLayoutEntity>(
+                        &context.video_resource.selfie_mode(),
+                        commands,
+                        size,
+                        0,
+                        palette::MENU_BUTTON_FILL.convert_color(),
+                        palette::MENU_BUTTON_TEXT_REGULAR.convert_color(),
+                        border,
+                    );
+                }
+                MenuState::HintsStorePage => {
+                    add_menu_items::<R, hints_menu_layout::HintsLayoutEntity>(
+                        &context.video_resource.selfie_mode(),
+                        commands,
+                        size,
+                        0,
+                        palette::MENU_BUTTON_FILL.convert_color(),
+                        palette::MENU_BUTTON_TEXT_REGULAR.convert_color(),
+                        border,
+                    );
+                }
                 MenuState::ChooseLevelsPage => {
                     add_double_text_menu_items::<R, LevelsMenuLayoutEntity>(
                         &context.video_resource.selfie_mode(),
@@ -199,7 +225,10 @@ impl MavericNode for Menu {
                             )
                         },
                         |x| {
-                            if x.is_complete(&context.daily_challenge_completion, &context.daily_challenges) {
+                            if x.is_complete(
+                                &context.daily_challenge_completion,
+                                &context.daily_challenges,
+                            ) {
                                 button_fill_color_complete
                             } else {
                                 button_fill_color_incomplete
@@ -243,9 +272,7 @@ fn add_menu_items<
     for (index, entity) in L::iter_all(context).enumerate() {
         let rect = size.get_rect(&entity, context);
         match entity.text_or_image(context) {
-            TextOrImage::Text{
-                text,
-            } => {
+            TextOrImage::Text { text } => {
                 let font_size = size.font_size::<L>(&entity, &());
 
                 commands.add_child(
@@ -263,21 +290,25 @@ fn add_menu_items<
                     &(),
                 );
             }
-            TextOrImage::Image { path,color,pressed_color, aspect_ratio } => {
+            TextOrImage::Image {
+                path,
+                color,
+                pressed_color,
+                aspect_ratio,
+            } => {
                 commands.add_child(
                     (index as u16, page),
                     WsImageButtonNode {
                         rect,
                         image_path: path,
                         interaction: entity.into(),
-                        fill_color:color.convert_color(),
-                        clicked_fill_color:pressed_color.convert_color(),
+                        fill_color: color.convert_color(),
+                        clicked_fill_color: pressed_color.convert_color(),
                         image_aspect_ratio: aspect_ratio,
                         border,
                     },
                     &(),
                 );
-
             }
         }
     }
