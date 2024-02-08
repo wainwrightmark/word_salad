@@ -303,9 +303,13 @@ pub mod test {
     use crate::prelude::*;
 
     #[test]
-    pub fn go() {
+    pub fn test_daily_challenge_completion() {
         let mut completion = DailyChallengeCompletion::default();
-        let daily_challenges = DailyChallenges::default();
+        let mut daily_challenges = DailyChallenges::default();
+        daily_challenges.levels.push(DesignedLevel::unknown());
+        daily_challenges.levels.push(DesignedLevel::unknown());
+        daily_challenges.levels.push(DesignedLevel::unknown());
+        daily_challenges.levels.push(DesignedLevel::unknown());
 
         assert_eq!(NextDailyChallengeResult::Level1(3), completion.get_next_incomplete_daily_challenge(3, &daily_challenges));
 
