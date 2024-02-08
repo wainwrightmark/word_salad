@@ -6,7 +6,6 @@ pub mod menu;
 pub mod non_level;
 pub mod popup;
 pub mod theme_view;
-pub mod timer;
 pub mod logo;
 pub mod tutorial;
 pub mod wordline;

@@ -1,7 +1,7 @@
 use bevy::math::Vec2;
 use strum::{Display, EnumCount, EnumIter, IntoEnumIterator};
 use ws_core::{
-    layout::entities::*, BasicColor, LayoutSizing, LayoutStructure, LayoutStructureWithFont, LayoutStructureWithTextOrImage, Spacing
+    layout::entities::*, LayoutSizing, LayoutStructure, LayoutStructureWithFont, LayoutStructureWithTextOrImage, Spacing
 };
 
 use super::{MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
@@ -98,8 +98,8 @@ impl LayoutStructureWithTextOrImage for MainMenuLayoutEntity {
             #[cfg(target_arch = "wasm32")]
             PlaySteks => ws_core::TextOrImage::Image {
                 path: "images/steks_button.png",
-                color: BasicColor::rgba(0.53, 0.68, 0.92, 1.0),
-                pressed_color: BasicColor::rgba(0.36, 0.55, 0.88, 1.0),
+                color: ws_core::BasicColor::rgba(0.53, 0.68, 0.92, 1.0),
+                pressed_color: ws_core::BasicColor::rgba(0.36, 0.55, 0.88, 1.0),
                 aspect_ratio: 7168.0 / 1024.0
             },
         }
