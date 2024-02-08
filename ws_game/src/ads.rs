@@ -287,7 +287,7 @@ mod mobile_only {
         };
 
 
-        #[cfg(any(feature = "ios"))]
+        #[cfg(any(feature = "android"))]
         {
             let consent_info = Admob::request_consent_info(AdmobConsentRequestOptions {
                 debug_geography: AdmobConsentDebugGeography::Disabled,
