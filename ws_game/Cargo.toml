@@ -22,6 +22,11 @@ geometrid = { git = "https://github.com/wainwrightmark/geometrid", features = [
   "serde",
 ] }
 serde_with = "3"
+capacitor_bindings = {  git = "https://github.com/wainwrightmark/capacitor_bindings", features = [
+  "game_plugin",
+  "rate_plugin",
+  "admob_plugin"
+] }
 # bevy_embedded_assets = "0.8"
 lazy_static = "1.4"
 serde_yaml = "0.9"
@@ -45,10 +50,6 @@ num-traits = "0.2"
 bevy_param_shaders = { git = "https://github.com/wainwrightmark/bevy_param_shaders/" }
 bitfield-struct = "0.5.5"
 reqwest = { version = "0.11", default-features = false, features = ["json"] }
-capacitor_bindings = { version = "0.10.0", features = [
-  "game_plugin",
-  "rate_plugin",
-] }
 fixedbitset = { version = "0.4.2", features = ["serde"] }
 fmtastic = "0.2.0"
 bytemuck = { version = "1.14.0", features = ["derive"] }
@@ -57,11 +58,11 @@ bevy = { version = "0.12", default_features = false, features = [
   "bevy_render",        # Rendering framework core
   "bevy_core_pipeline", # Higher-level rendering abstractions
   "bevy_sprite",        # 2D (sprites) rendering
-  "bevy_text", # Text/font rendering
+  "bevy_text",          # Text/font rendering
   # "bevy_ui",            # UI toolkit
   "webgl2",
   # "bevy_gizmos",
-  "png"
+  "png",
 ] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
@@ -93,12 +94,12 @@ bevy = { version = "0.12", default_features = false, features = [
   "bevy_render",        # Rendering framework core
   "bevy_core_pipeline", # Higher-level rendering abstractions
   "bevy_sprite",        # 2D (sprites) rendering
-  "bevy_text", # Text/font rendering
+  "bevy_text",          # Text/font rendering
   # "bevy_ui",            # UI toolkit
   "webgl2",
   "x11",
   # "bevy_gizmos",
-  "png"
+  "png",
 ] }
 
 [features]

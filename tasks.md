@@ -1,27 +1,11 @@
-- Make Logo
-
-- use ustr in a bunch more places
-- Change hint tracking
-
-- reorder level sequence
+# tasks
 
 - Build a tool to reorder grids based on distance from a given list of grids
 
 - Credits
-- Achievements
+- Correctly integrate achievements
 - Fun Facts
 
-- timer on end screen
-- Change steks menu button
 - integrate ads
-- fireworks performance
-- end selfie mode / recording when resuming app
-- S & E asian countries
 
-
-- New Look
-- use word salad logo
-- change theme info alignment and font color
-- change button roundedness
-- new end of level screen
-- new end of level screen in selfie mode
+- landscape open graph image

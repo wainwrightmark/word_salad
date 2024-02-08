@@ -14,16 +14,17 @@ const STEP_ONE_TRANSLATION_SECONDS: f32 = 1.5;
 pub const TOTAL_SECONDS: f32 = STEP_ONE_TRANSLATION_SECONDS;
 
 #[derive(Debug, Event)]
-pub struct AnimateSolutionsEvent {
+pub struct WordFoundEvent {
     pub solution: Solution,
     pub is_first_time: bool,
+    pub was_hinted: bool,
     pub word: DisplayWord,
     pub level: DesignedLevel,
 }
 
 pub fn animate_solutions(
     mut commands: Commands,
-    mut events: EventReader<AnimateSolutionsEvent>,
+    mut events: EventReader<WordFoundEvent>,
     asset_server: Res<AssetServer>,
     size: Res<Size>,
     video: Res<VideoResource>,
@@ -41,6 +42,21 @@ pub fn animate_solutions(
         );
     }
 }
+
+pub fn remove_animated_solutions_on_complete(
+    found_words: Res<FoundWordsState>,
+    mut commands: Commands,
+    solutions: Query<Entity, With<AnimatedSolutionMarker>>,
+) {
+    if found_words.is_changed() && found_words.is_level_complete() {
+        for entity in solutions.into_iter() {
+            commands.entity(entity).despawn_recursive();
+        }
+    }
+}
+
+#[derive(Debug, Component, Clone, Copy, PartialEq)]
+pub struct AnimatedSolutionMarker;
 
 fn animate_solution(
     commands: &mut Commands,
@@ -134,6 +150,7 @@ fn animate_solution(
                 ..Default::default()
             },
             transition,
+            AnimatedSolutionMarker,
         );
 
         let parent_entity = commands.spawn(components).id();
@@ -157,6 +174,7 @@ fn animate_solution(
                     ..Default::default()
                 },
                 MotionBlur::new(frame_offset * 2, parent_entity),
+                AnimatedSolutionMarker,
             ));
         }
     }

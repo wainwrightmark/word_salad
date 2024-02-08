@@ -1,8 +1,10 @@
 pub mod cluster_ordering;
 pub mod clustering;
 pub mod combinations;
+pub mod grid_creator;
 pub mod search;
 pub mod word_layout;
+pub mod word_set;
 
 use clap::Parser;
 use const_sized_bit_set::BitSet;
@@ -10,32 +12,20 @@ use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use indicatif_log_bridge::LogWrapper;
 use itertools::Itertools;
 use log::{info, warn};
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use std::{
-    collections::{BTreeMap, HashSet},
-    fs::{DirEntry, File},
-    io::{self, BufWriter, Write},
+    collections::HashSet,
+    fs::DirEntry,
+    io::{self, BufWriter},
     path::{Path, PathBuf},
     str::FromStr,
 };
-use ws_core::{
-    finder::{
-        counter::FakeCounter,
-        helpers::*,
-        node::GridResult,
-        orientation::{self, *},
-    },
-    prelude::*,
+use ws_core::finder::{
+    helpers::*,
+    node::GridResult,
+    orientation::{self, *},
 };
 
-use hashbrown::hash_set::HashSet as MySet;
-
-use crate::{
-    clustering::cluster_words,
-    combinations::{get_combinations, WordCombination},
-};
-
-//const BIT_SET_WORDS: usize = 2;
+use crate::clustering::cluster_words;
 
 #[derive(Parser, Debug)]
 #[command()]
@@ -49,7 +39,7 @@ struct Options {
     pub minimum: u32,
 
     /// Maximum number of grids to return
-    #[arg(short, long, default_value = "10000")]
+    #[arg(short, long, default_value = "0")]
     pub grids: u32,
     /// search all found grids for a particular word or list of words
     #[arg(long)]
@@ -70,8 +60,12 @@ struct Options {
     #[arg(long, default_value = "false")]
     pub remove_duplicates: bool,
 
-    #[arg(long, default_value = "50")]
+    #[arg(long, default_value = "100")]
     pub max_clusters: u32,
+
+    /// Whether to resume execution
+    #[arg(long, default_value = "false")]
+    pub resume: bool,
 }
 
 fn main() {
@@ -122,7 +116,7 @@ fn remove_duplicate_grids(_options: &Options) {
     let paths: Vec<_> = folder.collect();
 
     let pb: ProgressBar = ProgressBar::new(paths.len() as u64)
-        .with_style(ProgressStyle::with_template("{msg:50} {wide_bar} {pos:2}/{len:2}").unwrap())
+        .with_style(ProgressStyle::with_template("{msg:50} {bar} {pos:2}/{len:2}").unwrap())
         .with_message("Data files");
 
     let _ = std::fs::create_dir("clusters");
@@ -203,7 +197,7 @@ fn reorient_grids(_options: &Options) {
     let paths: Vec<_> = folder.collect();
 
     let pb: ProgressBar = ProgressBar::new(paths.len() as u64)
-        .with_style(ProgressStyle::with_template("{msg:50} {wide_bar} {pos:2}/{len:2}").unwrap())
+        .with_style(ProgressStyle::with_template("{msg:50} {bar} {pos:2}/{len:2}").unwrap())
         .with_message("Data files");
 
     for path in paths.iter() {
@@ -270,9 +264,9 @@ fn cluster_files(options: &Options) {
 
     let paths: Vec<_> = folder.collect();
 
-    let pb: ProgressBar = ProgressBar::new(paths.len() as u64)
-        .with_style(ProgressStyle::with_template("{msg:50} {wide_bar} {pos:2}/{len:2}").unwrap())
-        .with_message("Data files");
+    // let pb: ProgressBar = ProgressBar::new(paths.len() as u64)
+    //     .with_style(ProgressStyle::with_template("{msg:50} {bar} {pos:2}/{len:2}").unwrap())
+    //     .with_message("Data files");
 
     let _ = std::fs::create_dir("clusters");
 
@@ -280,7 +274,8 @@ fn cluster_files(options: &Options) {
         let grid_path = path.as_ref().unwrap().path();
         let file_name = grid_path.file_name().unwrap().to_string_lossy();
 
-        pb.set_message(file_name.to_string());
+        let category = grid_path.file_stem().unwrap().to_string_lossy();
+        // pb.set_message(file_name.to_string());
 
         let grid_file_text = std::fs::read_to_string(grid_path.clone()).unwrap();
 
@@ -290,6 +285,7 @@ fn cluster_files(options: &Options) {
             enough: usize,
             filter_below: &mut usize,
         ) -> bool {
+
             if grid.words.len() < *filter_below {
                 return false;
             }
@@ -301,27 +297,32 @@ fn cluster_files(options: &Options) {
         }
         let mut count = 0;
         let mut filter_below = 0;
+        let mut taboo_grids = 0;
 
         let grids = grid_file_text
             .lines()
             .map(|l| GridResult::from_str(l).unwrap())
             .filter(|x| x.words.len() >= options.minimum as usize)
             .filter(|grid| {
-                if let Some(taboo) = orientation::find_taboo_word(&grid.grid) {
-                    warn!(
-                        "Grid \n{} contains taboo word {} and will not be clustered",
-                        grid.grid,
-                        taboo.iter().join("")
-                    );
+                if let Some(..) = orientation::find_taboo_word(&grid.grid) {
+                    taboo_grids += 1;
                     false
                 } else {
                     true
                 }
             })
             .filter(|x| {
-                filter_enough_grids(x, &mut count, options.grids as usize, &mut filter_below)
+                if options.grids == 0{
+                    true
+                }else{
+                    filter_enough_grids(x, &mut count, options.grids as usize, &mut filter_below)
+                }
+
+
             })
             .collect_vec();
+
+
 
         let all_words = grids
             .iter()
@@ -331,17 +332,41 @@ fn cluster_files(options: &Options) {
             .dedup()
             .collect_vec();
 
-        info!(
-            "{file_name} found {:6} grids with {:3} different words",
-            grids.len(),
-            all_words.len()
-        );
+        // info!(
+        //     "{file_name} found {:6} grids with {:3} different words",
+        //     grids.len(),
+        //     all_words.len()
+        // );
+
+        if taboo_grids > 0 {
+            warn!("{taboo_grids} Grids contain taboo words and will not be clustered in category {category}",);
+        }
 
         let clusters = match all_words.len() {
-            0..=64 => cluster_words::<1>(grids, &all_words, options.max_clusters as usize),
-            65..=128 => cluster_words::<2>(grids, &all_words, options.max_clusters as usize),
-            129..=192 => cluster_words::<3>(grids, &all_words, options.max_clusters as usize),
-            193..=256 => cluster_words::<4>(grids, &all_words, options.max_clusters as usize),
+            0..=64 => cluster_words::<1>(
+                grids,
+                &all_words,
+                options.max_clusters as usize,
+                Some(category.to_string()),
+            ),
+            65..=128 => cluster_words::<2>(
+                grids,
+                &all_words,
+                options.max_clusters as usize,
+                Some(category.to_string()),
+            ),
+            129..=192 => cluster_words::<3>(
+                grids,
+                &all_words,
+                options.max_clusters as usize,
+                Some(category.to_string()),
+            ),
+            193..=256 => cluster_words::<4>(
+                grids,
+                &all_words,
+                options.max_clusters as usize,
+                Some(category.to_string()),
+            ),
             _ => panic!("Too many words to do clustering"),
         };
 
@@ -350,10 +375,10 @@ fn cluster_files(options: &Options) {
         let clusters_text = clusters.into_iter().map(|x| x.to_string()).join("\n\n");
         std::fs::write(clusters_write_path, clusters_text).unwrap();
 
-        pb.inc(1);
+        //pb.inc(1);
     }
 
-    pb.finish();
+    //pb.finish();
 }
 
 struct FinderCase {
@@ -362,11 +387,13 @@ struct FinderCase {
     data_file_text: String,
     file_name: String,
     write_path: String,
+    stem: String,
 }
 
 impl FinderCase {
     fn new_from_path(dir_entry: DirEntry) -> Self {
         let data_path = dir_entry.path();
+        let stem = data_path.file_stem().unwrap().to_string_lossy().to_string();
         let file_name = data_path.file_name().unwrap().to_string_lossy().to_string();
         let write_path = format!("grids/{file_name}",);
         info!("{}", write_path);
@@ -380,6 +407,7 @@ impl FinderCase {
             file_name,
             data_file_text,
             write_path,
+            stem,
         }
     }
 }
@@ -396,7 +424,7 @@ fn do_finder(options: Options) {
         .collect();
 
     let pb: ProgressBar = ProgressBar::new(paths.len() as u64)
-        .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:2}/{len:2}").unwrap())
+        .with_style(ProgressStyle::with_template("{msg} {bar} {pos:2}/{len:2}").unwrap())
         .with_message("Data files");
 
     let _ = std::fs::create_dir("grids");
@@ -410,12 +438,11 @@ fn do_finder(options: Options) {
             file_name,
             write_path,
             data_file_text,
+            stem,
         } = finder_case;
 
         info!("Found {} Words", word_map.len());
-        for word in word_map.iter().map(|x| x.text).sorted() {
-            info!("{word}",)
-        }
+        info!("{}", word_map.iter().map(|x| x.text).sorted().join(", "));
 
         for (a, b) in word_map
             .iter()
@@ -449,28 +476,19 @@ fn do_finder(options: Options) {
             let new_master_count = master_words.len();
 
             info!("Found {total_master_count} words on the master list. {new_master_count} will be treated as exclusions");
-
-            // if !master_words.is_empty() { //TODO remove
-            //     let mut bad_master_words: HashSet<FinderSingleWord> = Default::default();
-            //     for word in word_map.iter().flat_map(|x| x.words.iter()) {
-            //         for master_word in master_words.iter() {
-            //             if master_word.is_strict_substring(word) {
-            //                 warn!(
-            //                     "{} is a superstring of {} so will be impossible",
-            //                     word.text, master_word.text
-            //                 );
-            //                 bad_master_words.insert(master_word.clone());
-            //             }
-            //         }
-            //     }
-            //     for bad in bad_master_words.drain() {
-            //         if let Some((index, word)) = master_words.iter().find_position(|x| **x == bad) {
-            //             info!("Removed '{}' from master words", word.text);
-            //             master_words.remove(index);
-            //         }
-            //     }
-            // }
         }
+
+        let resume_grids: Vec<GridResult> = if options.resume {
+            let resume_file_text = std::fs::read_to_string(write_path).unwrap_or_default();
+            let resume_grids: Vec<GridResult> = resume_file_text
+                .lines()
+                .map(|line| GridResult::from_str(line).unwrap())
+                .collect();
+            info!("Resuming with {} grids", resume_grids.len());
+            resume_grids
+        } else {
+            vec![]
+        };
 
         let grids_write_path = Path::new(write_path.as_str());
         let grids_file =
@@ -480,49 +498,60 @@ fn do_finder(options: Options) {
         let max_grids = (options.grids > 0).then_some(options.grids as usize);
 
         let mut grids: Vec<GridResult> = match word_map.len() {
-            0..=64 => create_grids::<1>(
+            0..=64 => grid_creator::create_grids::<1>(
+                &stem,
                 word_map,
                 &master_words,
                 grids_writer,
                 options.minimum,
                 max_grids,
+                resume_grids,
             ),
-            65..=128 => create_grids::<2>(
+            65..=128 => grid_creator::create_grids::<2>(
+                &stem,
                 word_map,
                 &master_words,
                 grids_writer,
                 options.minimum,
                 max_grids,
+                resume_grids,
             ),
-            129..=192 => create_grids::<3>(
+            129..=192 => grid_creator::create_grids::<3>(
+                &stem,
                 word_map,
                 &master_words,
                 grids_writer,
                 options.minimum,
                 max_grids,
+                resume_grids,
             ),
-            193..=256 => create_grids::<4>(
+            193..=256 => grid_creator::create_grids::<4>(
+                &stem,
                 word_map,
                 &master_words,
                 grids_writer,
                 options.minimum,
                 max_grids,
+                resume_grids,
             ),
             _ => panic!("Too many words to do grid creation"),
         };
 
+        let mut taboo_grids = 0;
+
         grids.retain(|grid| {
-            if let Some(taboo) = orientation::find_taboo_word(&grid.grid) {
-                warn!(
-                    "Grid \n{} contains taboo word {} and will not be clustered",
-                    grid.grid,
-                    taboo.iter().join("")
-                );
+            if let Some(..) = orientation::find_taboo_word(&grid.grid) {
+                taboo_grids += 1;
+
                 false
             } else {
                 true
             }
         });
+
+        if taboo_grids > 0 {
+            warn!("{taboo_grids} Grids contain taboo words and will not be clustered in category {stem}",);
+        }
 
         let all_words = grids
             .iter()
@@ -533,10 +562,30 @@ fn do_finder(options: Options) {
             .collect_vec();
 
         let clusters: Vec<clustering::Cluster> = match all_words.len() {
-            0..=64 => cluster_words::<1>(grids, &all_words, options.max_clusters as usize),
-            65..=128 => cluster_words::<2>(grids, &all_words, options.max_clusters as usize),
-            129..=192 => cluster_words::<3>(grids, &all_words, options.max_clusters as usize),
-            193..=256 => cluster_words::<4>(grids, &all_words, options.max_clusters as usize),
+            0..=64 => cluster_words::<1>(
+                grids,
+                &all_words,
+                options.max_clusters as usize,
+                Some(stem.clone()),
+            ),
+            65..=128 => cluster_words::<2>(
+                grids,
+                &all_words,
+                options.max_clusters as usize,
+                Some(stem.clone()),
+            ),
+            129..=192 => cluster_words::<3>(
+                grids,
+                &all_words,
+                options.max_clusters as usize,
+                Some(stem.clone()),
+            ),
+            193..=256 => cluster_words::<4>(
+                grids,
+                &all_words,
+                options.max_clusters as usize,
+                Some(stem.clone()),
+            ),
             _ => panic!("Too many words to do clustering"),
         };
 
@@ -553,137 +602,4 @@ fn do_finder(options: Options) {
 
         pb.inc(1);
     }
-}
-
-#[derive(Debug, Default)]
-struct SolutionGroup<const W: usize> {
-    sets: Vec<BitSet<W>>,
-    extras: MySet<BitSet<W>>,
-}
-
-fn create_grids<const W: usize>(
-    all_words: &Vec<FinderGroup>,
-    exclude_words: &Vec<FinderSingleWord>,
-    mut file: BufWriter<File>,
-    min_size: u32,
-    max_grids: Option<usize>,
-) -> Vec<GridResult> {
-    let word_letters: Vec<LetterCounts> = all_words.iter().map(|x| x.counts).collect();
-    let mut possible_combinations: Vec<BitSet<W>> = get_combinations(word_letters.as_slice(), 16);
-
-    info!(
-        "{c} possible combinations founds",
-        c = possible_combinations.len()
-    );
-
-    possible_combinations.sort_unstable_by_key(|x| std::cmp::Reverse(x.count()));
-
-    let mut all_solutions: Vec<GridResult> = vec![];
-    let mut all_solved_combinations: Vec<BitSet<W>> = vec![];
-
-    let mut grouped_combinations: BTreeMap<u32, SolutionGroup<W>> = Default::default();
-
-    possible_combinations
-        .into_iter()
-        .group_by(|x| x.count())
-        .into_iter()
-        .for_each(|(count, group)| {
-            let sg = grouped_combinations.entry(count).or_default();
-            sg.sets.extend(group);
-        });
-
-    while let Some((size, group)) = grouped_combinations.pop_last() {
-        if size < min_size {
-            info!(
-                "Skipping {} of size {size}",
-                group.sets.len() + group.extras.len()
-            );
-            break;
-        }
-
-        let now = std::time::Instant::now();
-
-        let pb = ProgressBar::new((group.sets.len() + group.extras.len()) as u64)
-            .with_style(ProgressStyle::with_template("{msg} {wide_bar} {pos:7}/{len:7}").unwrap())
-            .with_message(format!("Groups of size {size}"));
-
-        let results: Vec<(WordCombination<W>, Option<GridResult>)> = group
-            .sets
-            .into_par_iter()
-            .chain(group.extras.into_par_iter())
-            .filter(|x| !all_solved_combinations.iter().any(|sol| sol.is_superset(x)))
-            .flat_map(|set| {
-                combinations::WordCombination::from_bit_set(set, word_letters.as_slice())
-            })
-            .map(|set| {
-                let mut counter = FakeCounter;
-                let finder_words = set.get_single_words(all_words);
-
-                let exclude_words = exclude_words
-                    .iter()
-                    .filter(|w| set.letter_counts.is_superset(&w.counts))
-                    .filter(|excluded_word| !finder_words.iter().any(|fw| excluded_word.is_strict_substring(fw)))
-                    .cloned()
-                    .collect_vec();
-
-                let mut result = None;
-
-                ws_core::finder::node::try_make_grid_with_blank_filling(
-                    set.letter_counts,
-                    &finder_words,
-                    &exclude_words,
-                    Character::E,
-                    &mut counter,
-                    &mut result,
-                );
-
-                pb.inc(1);
-
-                (set, result)
-            })
-            .collect();
-
-        let results_count = results.len();
-
-        let mut solutions: Vec<GridResult> = vec![];
-        let next_group = grouped_combinations
-            .entry(size.saturating_sub(1))
-            .or_default();
-
-        for (combination, result) in results.into_iter() {
-            if let Some(mut solution) = result {
-                let _ = ws_core::finder::orientation::try_optimize_orientation(&mut solution);
-                solutions.push(solution);
-                all_solved_combinations.push(combination.word_indexes);
-            } else {
-                next_group
-                    .extras
-                    .extend(combinations::shrink_bit_sets(&combination.word_indexes));
-            }
-        }
-
-        if !solutions.is_empty() {
-            let lines = solutions
-                .iter()
-                .sorted_by_cached_key(|x| x.words.iter().sorted().join(""))
-                .join("\n");
-            file.write_all((lines + "\n").as_bytes()).unwrap();
-            file.flush().expect("Could not flush to file");
-        }
-
-        let solution_count = solutions.len();
-        let impossible_count = results_count - solution_count;
-        let elapsed = now.elapsed().as_secs_f32();
-        pb.finish_with_message(format!(
-            "{size:2} words: {solution_count:6} Solutions {impossible_count:9} Impossible {elapsed:4.3}s"
-        ));
-
-        all_solutions.extend(solutions);
-
-        if max_grids.is_some_and(|mg| mg < all_solutions.len()) {
-            return all_solutions;
-        }
-    }
-
-    all_solutions
 }

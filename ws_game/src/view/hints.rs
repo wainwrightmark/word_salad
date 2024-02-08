@@ -1,203 +1,154 @@
 use std::time::Duration;
 
-use crate::motion_blur::MotionBlur;
-use crate::prelude::*;
-use bevy::sprite::Anchor;
 use bevy::text::Text2dBounds;
-use bevy_param_shaders::ShaderBundle;
-use maveric::transition::speed::calculate_speed;
-use maveric::widgets::text2d_node::Text2DNode;
-use maveric::with_bundle::CanWithBundle;
-pub use maveric::*;
-use ws_core::layout::entities::*;
-use ws_core::prelude::*;
+use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
+use strum::EnumIs;
+use ws_core::layout::entities::HintsRemainingLayout;
 
-#[derive(Debug, PartialEq)]
-pub struct HintsViewNode {
-    pub hint_state: HintState,
-    pub selfie_mode: SelfieMode,
+use crate::{prelude::*, z_indices};
+
+pub struct HintsRemainingPlugin;
+impl Plugin for HintsRemainingPlugin {
+    fn build(&self, app: &mut App) {
+        app.init_resource::<HintsRemainingLinger>();
+
+        app.register_maveric::<HintsRemainingRoot>();
+
+        app.add_systems(
+            Update,
+            watch_hints_remaining_linger.run_if(
+                |(p, l): (Res<PressedButton>, Res<HintsRemainingLinger>)| {
+                    p.is_changed() || l.is_linger()
+                },
+            ),
+        );
+    }
 }
 
-const CIRCLE_SCALE: f32 = 0.6;
+const LINGER_SECONDS: f32 = 3.0;
 
-const ANIMATE_SECONDS: f32 = 2.0;
+#[derive(Debug, Default, Resource, MavericContext, EnumIs)]
+enum HintsRemainingLinger {
+    #[default]
+    None,
+    Pressed,
+    Linger {
+        until: Duration,
+    },
+}
 
-impl MavericNode for HintsViewNode {
-    type Context = MyWindowSize;
+fn watch_hints_remaining_linger(
+    pressed: Res<PressedButton>,
+    mut linger: ResMut<HintsRemainingLinger>,
+    time: Res<Time>,
+) {
+    if pressed.is_changed() {
+        if is_word_button_pressed(&pressed) {
+            *linger = HintsRemainingLinger::Pressed;
+        } else if linger.is_pressed() {
+            *linger = HintsRemainingLinger::Linger {
+                until: time.elapsed() + Duration::from_secs_f32(LINGER_SECONDS),
+            };
+        }
+    } else {
+        if let HintsRemainingLinger::Linger { until } = linger.as_ref() {
+            if time.elapsed() >= *until {
+                *linger = HintsRemainingLinger::None;
+            }
+        }
+    }
+}
 
-    fn on_changed(
-        &self,
-        previous: &Self,
+#[derive(MavericRoot)]
+struct HintsRemainingRoot;
+
+#[allow(dead_code)]
+#[derive(Debug, NodeContext)]
+struct HintsRemainingContext {
+    pub hints: HintState,
+    pub window_size: MyWindowSize,
+    pub video_resource: VideoResource,
+    pub current_level: CurrentLevel,
+    pub linger: HintsRemainingLinger,
+    pub menu: MenuState,
+}
+
+fn is_word_button_pressed(b: &PressedButton) -> bool {
+    matches!(
+        b,
+        PressedButton::Pressed {
+            interaction: ButtonInteraction::WordButton(..),
+            ..
+        } | PressedButton::PressedAfterActivated {
+            interaction: ButtonInteraction::WordButton(..),
+        },
+    )
+}
+
+impl MavericRootChildren for HintsRemainingRoot {
+    type Context = HintsRemainingContext;
+
+    fn set_children(
         context: &<Self::Context as NodeContext>::Wrapper<'_>,
-        world: &World,
-        entity_commands: &mut bevy::ecs::system::EntityCommands,
+        commands: &mut impl ChildCommands,
     ) {
-        if previous.hint_state.total_earned_hints >= self.hint_state.total_earned_hints {
+        if !context.menu.is_closed() {
             return;
         }
 
-        let size = context.as_ref();
-        let hints_rect = size.get_rect(&LayoutTopBar::HintCounter, &self.selfie_mode);
-
-        let final_translation =
-            (hints_rect.centre()).extend(crate::z_indices::TOP_BAR_BUTTON - 1.0);
-        let initial_translation = Vec2::ZERO.extend(crate::z_indices::TOP_BAR_BUTTON - 1.0);
-        let speed = calculate_speed(
-            &initial_translation,
-            &final_translation,
-            Duration::from_secs_f32(ANIMATE_SECONDS),
-        );
-
-        let circle_transform = Transform {
-            translation: initial_translation,
-            scale: Vec3::ONE * hints_rect.width() * CIRCLE_SCALE,
-            rotation: Default::default(),
-        };
-
-        // let Some(asset_server) = world.get_resource::<AssetServer>() else {
-        //     return;
-        // };
-        // let font = asset_server.load(BUTTONS_FONT_PATH);
-
-        let circle_bundle = ShaderBundle::<CircleShader> {
-            transform: circle_transform,
-            parameters: ShaderColor {
-                color: palette::HINT_COUNTER_COLOR.convert_color(),
-            },
-            ..default()
-        };
-
-        let transition = TransitionBuilder::<TransformTranslationLens>::default()
-            .then_ease(final_translation, speed, Ease::CubicInOut)
-            .build();
-
-        let circle_bundle = (
-            circle_bundle,
-            ScheduledForDeletion {
-                remaining: Duration::from_secs_f32(ANIMATE_SECONDS),
-            },
-            transition.clone(),
-        );
-
-        let mut circle_entity = Entity::PLACEHOLDER;
-
-        entity_commands.with_children(|cb| {
-            circle_entity = cb.spawn(circle_bundle).id();
-            // cb.spawn(text_bundle);
-        });
-
-        let mut scale = 0.9;
-        let mut a = 0.9;
-        for frame_offset in 1..=3 {
-            a *= 0.8;
-            scale *= 0.8;
-
-            entity_commands.commands().spawn((
-                ShaderBundle::<CircleShader> {
-                    transform: circle_transform
-                        .with_scale(Vec3::ONE * scale * circle_transform.scale),
-                    parameters: ShaderColor {
-                        color: palette::HINT_COUNTER_COLOR.convert_color().with_a(a),
-                    },
-                    ..default()
-                },
-                MotionBlur::new(frame_offset * 2, circle_entity),
-            ));
+        if !context.current_level.should_spend_hints() {
+            return;
         }
 
-        //Schedule the change to the number
-        if let Some(children) = world.get::<Children>(entity_commands.id()) {
-            for child in children {
-                if let Some(text) = world.get::<Text>(*child) {
-                    let mut new_text = text.clone();
+        if context.linger.is_none() {
+            return;
+        }
 
-                    if let Some(t) = new_text.sections.get_mut(0) {
-                        t.value = self.hint_state.hints_remaining.to_string();
-                    }
+        let text = match context.hints.hints_remaining {
+            0 => "No Hints Left".to_string(),
+            1 => " 1 Hint  Left".to_string(),
+            n => format!("{n:>2} Hints Left"),
+        };
 
-                    entity_commands
-                        .commands()
-                        .entity(*child)
-                        .insert(ScheduledChange {
-                            remaining: Duration::from_secs_f32(ANIMATE_SECONDS),
-                            boxed_change: Box::new(|ec| {
-                                ec.insert(new_text);
-                            }),
-                        });
-                    break;
-                }
+        let font_size = context.window_size.font_size(&HintsRemainingLayout, &());
+        let color = if context.video_resource.is_selfie_mode {
+            palette::HINTS_REMAINING_TEXT_COLOR_SELFIE
+        } else {
+            palette::HINTS_REMAINING_TEXT_COLOR_NORMAL
+        }
+        .convert_color();
+
+        let rect = context
+            .window_size
+            .get_rect(&HintsRemainingLayout, &context.video_resource.selfie_mode());
+
+        let color = if context.linger.is_pressed() {
+            color
+        } else {
+            color.with_a(0.0)
+        };
+
+        commands.add_child(
+            "text",
+            Text2DNode {
+                text,
+                font: THEME_FONT_PATH,
+                font_size,
+                color,
+                alignment: TextAlignment::Center,
+                linebreak_behavior: bevy::text::BreakLineOn::AnyCharacter,
+                text_anchor: bevy::sprite::Anchor::Center,
+                text_2d_bounds: Text2dBounds::UNBOUNDED,
             }
-        }
-
-        //entity_commands.commands().entity(entity)
-    }
-
-    fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
-        commands
-            .ignore_context()
-            .ignore_node()
-            .insert(SpatialBundle::default())
-            .finish()
-    }
-
-    fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
-        {
-            commands.unordered(|a, commands| {
-                let node = a.node;
-                let context = a.context;
-
-                let size = context.as_ref();
-                let hints_rect = size.get_rect(&LayoutTopBar::HintCounter, &node.selfie_mode);
-                let hint_font_size = size.font_size::<LayoutTopBar>(
-                    &LayoutTopBar::HintCounter,
-                    &HintCount {
-                        count: node.hint_state.hints_remaining,
-                    },
-                );
-
-                let text: String = if let Some(prev) = a.previous.filter(|p| {
-                    p.hint_state.total_earned_hints < node.hint_state.total_earned_hints
-                }) {
-                    prev.hint_state.hints_remaining.to_string()
-                } else {
-                    node.hint_state.hints_remaining.to_string()
-                };
-
-                commands.add_child(
-                    "hints",
-                    Text2DNode {
-                        text,
-                        font_size: hint_font_size,
-                        color: palette::HINT_TEXT_COLOR.convert_color(),
-                        font: BUTTONS_FONT_PATH,
-                        alignment: TextAlignment::Center,
-                        linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                        text_anchor: Anchor::Center,
-                        text_2d_bounds: Text2dBounds::default(),
-                    }
-                    .with_bundle((Transform::from_translation(
-                        hints_rect.centre().extend(crate::z_indices::TOP_BAR_BUTTON),
-                    ),)),
-                    &(),
-                );
-
-                commands.add_child(
-                    "hints_box",
-                    ShaderBundle::<CircleShader> {
-                        transform: Transform {
-                            translation: (hints_rect.centre() + (Vec2::X * hint_font_size * 0.03))
-                                .extend(crate::z_indices::TOP_BAR_BUTTON - 1.0),
-                            scale: Vec3::ONE * hints_rect.width() * CIRCLE_SCALE,
-                            rotation: Default::default(),
-                        },
-                        parameters: ShaderColor {
-                            color: palette::HINT_COUNTER_COLOR.convert_color(),
-                        },
-                        ..default()
-                    },
-                    &(),
-                );
-            })
-        }
+            .with_bundle(Transform::from_translation(
+                rect.centre().extend(z_indices::HINTS_REMAINING),
+            ))
+            .with_transition_to::<TextColorLens<0>>(
+                color,
+                (1.0 / LINGER_SECONDS).into(),
+                None,
+            ),
+            &(),
+        );
     }
 }

@@ -1,10 +1,11 @@
 use std::{num::NonZeroUsize, time::Duration};
 
-use crate::{completion::*, prelude::*};
+use crate::{completion::*, prelude::*, purchases::Purchases};
 use itertools::{Either, Itertools};
 use nice_bevy_utils::{CanInitTrackedResource, CanRegisterAsyncEvent, TrackableResource};
 use serde::{Deserialize, Serialize};
 use strum::EnumIs;
+use ws_core::layout::entities::SelfieMode;
 use ws_levels::level_sequence::LevelSequence;
 
 pub struct StatePlugin;
@@ -21,17 +22,28 @@ impl Plugin for StatePlugin {
         app.init_tracked_resource::<HintState>();
         app.init_tracked_resource::<SavedLevelsState>();
 
-        app.add_event::<AnimateSolutionsEvent>();
+        app.add_event::<WordFoundEvent>();
+        app.add_event::<HintEvent>();
         app.register_async_event::<ChangeLevelEvent>();
 
         app.add_systems(Update, track_found_words);
         app.add_systems(Update, track_level_completion);
 
         app.add_systems(Update, animate_solutions.after(track_found_words));
+        app.add_systems(
+            Update,
+            remove_animated_solutions_on_complete
+                .run_if(|f: Res<FoundWordsState>| f.is_changed() && f.is_level_complete()),
+        );
 
         app.add_systems(
             PostUpdate,
             handle_change_level_event.run_if(|ev: EventReader<ChangeLevelEvent>| !ev.is_empty()),
+        );
+
+        app.add_systems(
+            Update,
+            handle_hint_event.run_if(|ev: EventReader<HintEvent>| !ev.is_empty()),
         );
     }
 }
@@ -41,9 +53,41 @@ pub enum ChangeLevelEvent {
     Reset,
 }
 
+#[derive(Debug, Clone, Copy, Event, PartialEq)]
+pub struct HintEvent {
+    pub word_index: usize,
+}
+
 impl From<CurrentLevel> for ChangeLevelEvent {
     fn from(value: CurrentLevel) -> Self {
         Self::ChangeTo(value)
+    }
+}
+
+fn handle_hint_event(
+    mut events: EventReader<HintEvent>,
+    mut found_words: ResMut<FoundWordsState>,
+    mut hint_state: ResMut<HintState>,
+    current_level: Res<CurrentLevel>,
+    daily_challenges: Res<DailyChallenges>,
+    mut animate_solution_events: EventWriter<WordFoundEvent>,
+    mut chosen_state: ResMut<ChosenState>,
+    mut popup_state: ResMut<PopupState>,
+    video_resource: Res<VideoResource>,
+) {
+    for HintEvent { word_index } in events.read() {
+        if let Either::Left(level) = current_level.level(&daily_challenges) {
+            found_words.try_hint_word(
+                hint_state.as_mut(),
+                level,
+                *word_index,
+                chosen_state.as_mut(),
+                &mut animate_solution_events,
+                video_resource.selfie_mode(),
+                &mut popup_state,
+                current_level.should_spend_hints(),
+            );
+        }
     }
 }
 
@@ -51,11 +95,15 @@ fn handle_change_level_event(
     mut events: EventReader<ChangeLevelEvent>,
     mut current_level: ResMut<CurrentLevel>,
     daily_challenges: Res<DailyChallenges>,
+    daily_challenge_completions: Res<DailyChallengeCompletion>,
     mut found_words: ResMut<FoundWordsState>,
     mut chosen: ResMut<ChosenState>,
     mut saved_levels: ResMut<SavedLevelsState>,
 
     mut time: ResMut<LevelTime>,
+    mut interstitial_progress_state: ResMut<InterstitialProgressState>,
+    mut request_ad_events: EventWriter<AdRequestEvent>,
+    purchases: Res<Purchases>,
 ) {
     for event in events.read() {
         let new_level = match event {
@@ -69,6 +117,7 @@ fn handle_change_level_event(
                 if let Either::Left(level) = current_level.level(daily_challenges.as_ref()) {
                     *time = LevelTime::default();
                     *found_words = FoundWordsState::new_from_level(level);
+                    *chosen = ChosenState::default();
                 }
 
                 return;
@@ -76,18 +125,36 @@ fn handle_change_level_event(
         };
 
         let previous_key = SavedLevelKey::try_from_current(&current_level);
-        let new_key = SavedLevelKey::try_from_current(&new_level);
+        let new_key = SavedLevelKey::try_from_current(new_level);
 
         if let Some(previous_key) = previous_key {
-            if found_words.is_level_started() {
-                if !found_words.is_level_complete() {
-                    let state = found_words.clone();
-                    let elapsed = time.total_elapsed();
-                    let saved_state = SavedState {
-                        found_words_state: state,
-                        elapsed,
+            // Save the current progress
+            if found_words.is_level_started() && !found_words.is_level_complete() {
+                let state = found_words.clone();
+                let elapsed = time.total_elapsed();
+                let saved_state = SavedState {
+                    found_words_state: state,
+                    elapsed,
+                };
+                saved_levels.insert(previous_key, saved_state);
+            }
+        }
+
+        if let CurrentLevel::DailyChallenge { index } = new_level {
+            if let Either::Left(level) = new_level.level(&daily_challenges) {
+                if let Some(level_result) = daily_challenge_completions.results.get(index) {
+                    *current_level = new_level.clone();
+                    *found_words = FoundWordsState::new_level_complete(
+                        level,
+                        level_result.hints_used as usize,
+                    );
+                    *time = LevelTime::Paused {
+                        elapsed: Duration::from_secs(level_result.seconds as u64),
                     };
-                    saved_levels.insert(previous_key, saved_state);
+                    time.resume_timer();
+
+                    *chosen = ChosenState::default();
+                    return;
                 }
             }
         }
@@ -115,6 +182,14 @@ fn handle_change_level_event(
         time.resume_timer();
 
         *chosen = ChosenState::default();
+
+        if current_level.count_for_interstitial_ads(&purchases) {
+            interstitial_progress_state.levels_without_interstitial += 1;
+
+            if interstitial_progress_state.levels_without_interstitial >= 2 {
+                request_ad_events.send(AdRequestEvent::RequestInterstitial);
+            }
+        }
     }
 }
 
@@ -197,7 +272,6 @@ const INITIAL_HINTS: usize = 3;
 #[derive(Debug, Clone, Resource, Serialize, Deserialize, MavericContext, PartialEq)]
 pub struct HintState {
     pub hints_remaining: usize,
-    pub total_earned_hints: usize,
     pub total_bought_hints: usize,
 }
 
@@ -205,7 +279,6 @@ impl Default for HintState {
     fn default() -> Self {
         Self {
             hints_remaining: INITIAL_HINTS,
-            total_earned_hints: 0,
             total_bought_hints: 0,
         }
     }
@@ -234,6 +307,14 @@ impl FoundWordsState {
             unneeded_tiles: GridSet::EMPTY,
             word_completions: vec![Completion::Unstarted; level.words.len()],
             hints_used: 0,
+        }
+    }
+
+    pub fn new_level_complete(level: &DesignedLevel, hints_used: usize) -> Self {
+        Self {
+            unneeded_tiles: GridSet::ALL,
+            word_completions: vec![Completion::Complete{index: 0}; level.words.len()],
+            hints_used,
         }
     }
 
@@ -308,19 +389,28 @@ impl FoundWordsState {
         *self
             .word_completions
             .get(word_index)
-            .unwrap_or(&Completion::Complete)
+            .unwrap_or(&Completion::Complete{index: 0})
     }
 
-    pub fn try_hint_word(
+    fn try_hint_word(
         &mut self,
         hint_state: &mut HintState,
         level: &DesignedLevel,
         word_index: usize,
         chosen_state: &mut ChosenState,
-        ew: &mut impl AnyEventWriter<AnimateSolutionsEvent>,
+        ew: &mut impl AnyEventWriter<WordFoundEvent>,
+        selfie_mode: SelfieMode,
+        popup_state: &mut PopupState,
+        should_spend_hints: bool,
     ) -> bool {
-        let Some(new_hints) = hint_state.hints_remaining.checked_sub(1) else {
-            return false;
+        let new_hints = if should_spend_hints {
+            let Some(new_hints) = hint_state.hints_remaining.checked_sub(1) else {
+                popup_state.0 = Some(PopupType::BuyMoreHints(HintEvent { word_index }));
+                return false;
+            };
+            Some(new_hints)
+        } else {
+            None
         };
 
         let Some(word) = level.words.get(word_index) else {
@@ -333,6 +423,7 @@ impl FoundWordsState {
             chosen_state,
         ));
 
+        let completion_index = self.word_completions.iter().filter(|x|x.is_complete()).count() as u8;
         let Some(completion) = self.word_completions.get_mut(word_index) else {
             return false;
         };
@@ -341,7 +432,9 @@ impl FoundWordsState {
             Completion::Unstarted => {
                 *completion = Completion::ManualHinted(min_hint_count);
                 self.hints_used += 1;
-                hint_state.hints_remaining = new_hints;
+                if let Some(new_hints) = new_hints {
+                    hint_state.hints_remaining = new_hints;
+                }
 
                 min_hint_count.get()
             }
@@ -349,6 +442,10 @@ impl FoundWordsState {
                 if hints.get() >= word.characters.len() {
                     return false;
                 }
+                if let Some(new_hints) = new_hints {
+                    hint_state.hints_remaining = new_hints;
+                }
+
                 *hints = hints.saturating_add(1);
 
                 if min_hint_count > *hints {
@@ -356,11 +453,10 @@ impl FoundWordsState {
                 }
 
                 self.hints_used += 1;
-                hint_state.hints_remaining = new_hints;
 
                 hints.get()
             }
-            Completion::Complete => return false,
+            Completion::Complete{..} => return false,
         };
 
         if let Some(solution) = word.find_solution_with_tiles(&level.grid, self.unneeded_tiles) {
@@ -372,12 +468,14 @@ impl FoundWordsState {
                 chosen_state.is_just_finished = false;
             } else {
                 //do not select the full word - let the user do that
-                *completion = Completion::Complete;
+
+                *completion = Completion::Complete{index: completion_index};
                 self.update_unneeded_tiles(level);
 
-                ew.send(AnimateSolutionsEvent {
+                ew.send(WordFoundEvent {
                     solution,
                     is_first_time: true,
+                    was_hinted: true,
                     word: word.clone(),
                     level: level.clone(),
                 });
@@ -387,6 +485,8 @@ impl FoundWordsState {
         } else {
             warn!("Could not find solution during hint");
         }
+
+        crate::haptics::HapticEvent::UseHint.try_activate(selfie_mode);
 
         true
     }
@@ -398,7 +498,10 @@ pub enum Completion {
     Unstarted,
     // AutoHinted(NonZeroUsize),
     ManualHinted(NonZeroUsize),
-    Complete,
+    Complete {
+        /// the number of previously completed words
+        index: u8,
+    },
 }
 
 impl Completion {
@@ -410,14 +513,14 @@ impl Completion {
         match self {
             Completion::Unstarted => UNSTARTED,
             Completion::ManualHinted(_) => MANUAL,
-            Completion::Complete => COMPLETE,
+            Completion::Complete{..} => COMPLETE,
         }
     }
 
     pub fn known_characters<'w>(&self, word: &'w DisplayWord) -> Option<&'w [Character]> {
         match self {
             Completion::Unstarted => None,
-            Completion::Complete => Some(&word.characters),
+            Completion::Complete{..} => Some(&word.characters),
             Completion::ManualHinted(hints) => Some(
                 word.characters
                     .split_at(hints.get().min(word.characters.len()))
@@ -432,7 +535,8 @@ fn track_found_words(
     current_level: Res<CurrentLevel>,
     mut found_words: ResMut<FoundWordsState>,
     daily_challenges: Res<DailyChallenges>,
-    mut ew: EventWriter<AnimateSolutionsEvent>,
+    mut ew: EventWriter<WordFoundEvent>,
+    video: Res<VideoResource>,
 ) {
     if !chosen.is_changed() || chosen.is_just_finished {
         return;
@@ -456,16 +560,27 @@ fn track_found_words(
         return;
     };
 
+    let was_hinted = !completion.is_unstarted();
+
     let is_first_time = !completion.is_complete();
     if is_first_time {
-        found_words.word_completions[word_index] = Completion::Complete;
+        let index = found_words.word_completions.iter().filter(|x|x.is_complete()).count() as u8;
+        found_words.word_completions[word_index] = Completion::Complete{index};
 
         found_words.update_unneeded_tiles(level);
+        let selfie_mode = video.selfie_mode();
+
+        crate::haptics::HapticEvent::FinishWord.try_activate(selfie_mode);
+
+        if found_words.is_level_complete() {
+            crate::haptics::HapticEvent::FinishPuzzle.try_activate(selfie_mode);
+        }
     }
 
-    ew.send(AnimateSolutionsEvent {
+    ew.send(WordFoundEvent {
         solution: chosen.solution.clone(),
         is_first_time,
+        was_hinted,
         word: word.clone(),
         level: level.clone(),
     });
@@ -636,7 +751,7 @@ impl FoundWordsState {
             let prefix_characters = match completion {
                 Completion::Unstarted => 0,
                 Completion::ManualHinted(a) => a.get(),
-                Completion::Complete => return 0,
+                Completion::Complete{..} => return 0,
             };
 
             let preceder: &[Character] = self
@@ -811,10 +926,13 @@ fn count_hints(
 pub mod tests {
     use std::num::NonZeroUsize;
 
+    use ws_core::layout::entities::SelfieMode;
+
     use crate::{
         chosen_state::ChosenState,
         prelude::{Completion, DesignedLevel, FoundWordsState, TestEventWriter},
         state::HintState,
+        view::PopupState,
     };
 
     #[test]
@@ -846,7 +964,7 @@ pub mod tests {
 
         for (index, completion) in found_words.word_completions.iter_mut().enumerate() {
             if index != 1 {
-                *completion = Completion::Complete;
+                *completion = Completion::Complete{index: 0};
             }
         }
 
@@ -866,9 +984,9 @@ pub mod tests {
         .unwrap();
 
         let mut found_words = FoundWordsState::new_from_level(&level);
+        let mut popup_state = PopupState(None);
         let mut hint_state = HintState {
             hints_remaining: 10,
-            total_earned_hints: 0,
             total_bought_hints: 0,
         };
         let mut chosen_state = ChosenState::default();
@@ -881,6 +999,11 @@ pub mod tests {
             4,
             &mut chosen_state,
             &mut event_writer,
+            SelfieMode {
+                is_selfie_mode: true,
+            },
+            &mut popup_state,
+            true,
         );
 
         assert!(hinted);

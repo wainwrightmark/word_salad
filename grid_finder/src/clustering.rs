@@ -3,6 +3,7 @@ use std::{
     collections::{BTreeMap, HashSet},
 };
 
+use indicatif::{ProgressBar, ProgressStyle};
 use itertools::Itertools;
 use ws_core::{
     finder::{helpers::FinderSingleWord, node::GridResult},
@@ -150,9 +151,16 @@ impl std::fmt::Display for Cluster {
             .dedup()
             .count();
 
+        let mean_util = (self
+            .grids
+            .iter()
+            .map(|g| g.words.iter().map(|w| w.array.len()).sum::<usize>())
+            .sum::<usize>() as f32)
+            / (16 * self.grids.len()) as f32;
+
         write!(
             f,
-            "Grids: {l:2}\tMax overlap: {max_overlap:2}\tMean overlap: {average_overlap:2.2}\tMean items: {mean_items:2.2}\tDistinct items: {distinct_items:3}\tMax adjacent {max_adj:2}\tMean adjacent {mean_adj:2.2}\n{grid_words}",
+            "Grids: {l:2}\tMax overlap: {max_overlap:2}\tMean overlap: {average_overlap:2.2}\tMean items: {mean_items:2.2}\tDistinct items: {distinct_items:3}\tMax adjacent {max_adj:2}\tMean adjacent {mean_adj:2.2}\tMean utilization {mean_util:1.2}\n{grid_words}",
             l = self.grids.len(),
             max_overlap = self.score.max_overlap.0,
             mean_items = self.score.total_element_items as f32 / self.grids.len() as f32,
@@ -166,10 +174,27 @@ pub fn cluster_words<const W: usize>(
     groups: Vec<GridResult>,
     all_words: &Vec<FinderSingleWord>,
     max_clusters: usize,
+    category: Option<String>,
 ) -> Vec<Cluster> {
+    let clusters = max_clusters.min(groups.len());
+    let pb = category.map(|category| {
+        ProgressBar::new(clusters as u64)
+            .with_style(
+                ProgressStyle::with_template("{prefix} {msg:35} {pos:3}/{len:3} {elapsed} {bar}")
+                    .unwrap(),
+            )
+            .with_prefix(format!(
+                "{category:35}: {:7} grids {:3} words",
+                groups.len(),
+                all_words.len()
+            ))
+            .with_message("Clustering: Processing Grids")
+    });
+
+    pb.iter().for_each(|x| x.tick());
+
     let mut results: Vec<Cluster> = Default::default();
 
-    let clusters = max_clusters.min(groups.len());
     let map: BTreeMap<BitSet<W>, GridResult> = groups
         .into_iter()
         .map(|grid_result| {
@@ -186,22 +211,28 @@ pub fn cluster_words<const W: usize>(
         })
         .collect();
 
-    let all_points = map.keys().cloned().collect_vec();
+    pb.iter()
+        .for_each(|x| x.set_message("Clustering: Finding First Points"));
 
-    let Some((point1, point2)) = all_points
-        .iter()
+    let all_points = map
+        .keys()
         .cloned()
-        .tuple_combinations()
-        .max_by_key(|(a, b)| ClusterScore::calculate(&[*a, *b]))
-    else {
+        .sorted_by_key(|x| std::cmp::Reverse(x.count()))
+        .collect_vec();
+
+    let Some((point1, point2)) = find_best_pair(&all_points) else {
         println!("Must be at least two groups to find clusters");
         return results;
     };
+
+    pb.iter()
+        .for_each(|x| x.set_message("Clustering: Finding larger clusters"));
 
     let mut chosen_points: Vec<BitSet<W>> = vec![point1, point2];
     results.push(Cluster::new(chosen_points.clone(), &map));
 
     while chosen_points.len() < clusters {
+        pb.iter().for_each(|x| x.inc(1));
         let point_to_add = find_best_point_to_add(chosen_points.as_slice(), all_points.as_slice());
         chosen_points.push(point_to_add);
         //let mut swaps = 0;
@@ -233,6 +264,18 @@ pub fn cluster_words<const W: usize>(
         results.push(Cluster::new(chosen_points.clone(), &map));
     }
 
+    if let Some(final_adjacency) = results.last().map(|x| x.adjacency_score) {
+        pb.iter().for_each(|x| {
+            x.set_message(format!(
+                "Finished: adjacency max {:2} mean {:2.3}",
+                final_adjacency.max_adjacent, final_adjacency.mean_adjacency
+            ))
+        });
+    } else {
+        pb.iter().for_each(|x| x.set_message("Could not cluster"));
+    }
+
+    pb.iter().for_each(|x| x.finish());
     results
 }
 
@@ -255,6 +298,70 @@ fn find_best_point_to_add<const W: usize>(
         .filter(|p| !chosen_points.contains(p))
         .max_by_key(|point| original_score.increment(chosen_points, point))
         .unwrap()
+}
+
+fn find_best_pair<const W: usize>(all_points: &[BitSet<W>]) -> Option<(BitSet<W>, BitSet<W>)> {
+    let mut min_intersection = all_points.first()?.count();
+    let mut best = None;
+
+    let ranges = segment_into_ranges(all_points);
+
+    let combined_sizes = ranges
+        .into_iter()
+        .combinations_with_replacement(2)
+        .map(|v| v.into_iter().next_tuple::<(_, _)>().unwrap())
+        .sorted_by_key(|((a, _), (b, _))| std::cmp::Reverse(a + b))
+        .collect_vec();
+
+    for ((size_1, elements_1), (size_2, elements_2)) in combined_sizes {
+        if size_1 == size_2 {
+            for (set1, set2) in elements_1.iter().tuple_combinations() {
+                let intersection = set1.intersect(set2).count();
+                if intersection < min_intersection {
+                    best = Some((set1.clone(), set2.clone()));
+                    if intersection == 0 {
+                        return best;
+                    }
+                    min_intersection = intersection;
+                }
+            }
+        } else {
+            for (set1, set2) in elements_1.iter().cartesian_product(elements_2.iter()) {
+                let intersection = set1.intersect(set2).count();
+                if intersection < min_intersection {
+                    best = Some((set1.clone(), set2.clone()));
+                    if intersection == 0 {
+                        return best;
+                    }
+                    min_intersection = intersection;
+                }
+            }
+        }
+    }
+
+    best
+}
+
+fn segment_into_ranges<const W: usize>(all_points: &[BitSet<W>]) -> Vec<(u32, &[BitSet<W>])> {
+    let mut result = vec![];
+    let Some(first_count) = all_points.first().map(|x| x.count()) else {
+        return result;
+    };
+    let mut current_count = first_count;
+    let mut remaining = all_points;
+
+    while let Some((index, set)) = remaining
+        .iter()
+        .find_position(|x| x.count() != current_count)
+    {
+        let (current, remainder) = remaining.split_at(index);
+        result.push((current_count, current));
+        current_count = set.count();
+        remaining = remainder;
+    }
+    result.push((current_count, remaining));
+
+    result
 }
 
 #[cfg(test)]
@@ -290,7 +397,7 @@ pub mod test {
             })
             .collect_vec();
 
-        let clusters = cluster_words::<1>(grs, &all_words, 10);
+        let clusters = cluster_words::<1>(grs, &all_words, 10, None);
 
         assert_eq!(clusters.len(), 9);
         let text = clusters.into_iter().join("\n");

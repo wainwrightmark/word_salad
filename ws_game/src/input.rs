@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use crate::{
     menu_layout::{
         main_menu_back_button::MainMenuBackButton,
@@ -13,7 +11,9 @@ use crate::{
 };
 use bevy::{prelude::*, window::PrimaryWindow};
 use strum::EnumIs;
-use ws_core::layout::entities::*;
+use ws_core::layout::entities::{recording_button::ToggleRecordingButton, *};
+
+use self::{hints_menu_layout::HintsLayoutEntity, store_menu_layout::StoreLayoutEntity};
 pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
@@ -65,55 +65,41 @@ impl InteractionEntity {
         //info!("Try find input");
         if let Some(popup_type) = popup_state.0 {
             match popup_type {
-                PopupType::BuyMoreHints => {
+                PopupType::BuyMoreHints(_) => {
                     return match size.try_pick::<HintsPopupLayoutEntity>(*position, &()) {
                         Some(entity) => match entity {
                             HintsPopupLayoutEntity::Text => None,
-                            HintsPopupLayoutEntity::BuyMoreButton => {
-                                Some(InteractionEntity::Button(ButtonInteraction::Popup(
-                                    PopupInteraction::HintsBuyMore,
-                                )))
-                            }
                             HintsPopupLayoutEntity::SufferAloneButton => {
                                 Some(InteractionEntity::Button(ButtonInteraction::Popup(
                                     PopupInteraction::ClickClose,
                                 )))
                             }
                             HintsPopupLayoutEntity::PopupBox => None,
-                        },
-                        None => Some(InteractionEntity::Button(ButtonInteraction::Popup(
-                            PopupInteraction::ClickGreyedOut,
-                        ))),
-                    }
-                }
-                PopupType::SelfieModeHelp => {
-                    return match size.try_pick::<SelfiePopupLayoutEntity>(*position, &()) {
-                        Some(entity) => match entity {
-                            SelfiePopupLayoutEntity::Text => None,
-                            SelfiePopupLayoutEntity::MoreInformationButton => {
+                            HintsPopupLayoutEntity::WatchAdButton => {
                                 Some(InteractionEntity::Button(ButtonInteraction::Popup(
-                                    PopupInteraction::SelfieInformation,
+                                    PopupInteraction::ClickWatchAd,
                                 )))
                             }
-                            SelfiePopupLayoutEntity::DontShowAgainButton => {
+                            HintsPopupLayoutEntity::BuyPack1Button => {
                                 Some(InteractionEntity::Button(ButtonInteraction::Popup(
-                                    PopupInteraction::SelfieDontShowAgain,
+                                    PopupInteraction::ClickBuyPack1,
                                 )))
                             }
-                            SelfiePopupLayoutEntity::OkButton => Some(InteractionEntity::Button(
-                                ButtonInteraction::Popup(PopupInteraction::ClickClose),
-                            )),
-                            SelfiePopupLayoutEntity::PopupBox => None,
+                            HintsPopupLayoutEntity::BuyPack2Button => {
+                                Some(InteractionEntity::Button(ButtonInteraction::Popup(
+                                    PopupInteraction::ClickBuyPack2,
+                                )))
+                            }
                         },
                         None => Some(InteractionEntity::Button(ButtonInteraction::Popup(
-                            PopupInteraction::ClickGreyedOut,
+                            PopupInteraction::ClickSufferAlone,
                         ))),
                     }
                 }
             }
         }
 
-        let tbi = Self::try_get_button::<LayoutTopBar>(position, size, &selfie_mode);
+        let tbi = Self::try_get_button::<WordSaladLogo>(position, size, selfie_mode);
         if tbi.is_some() {
             return tbi;
         }
@@ -121,6 +107,14 @@ impl InteractionEntity {
         let selfie_mode = SelfieMode {
             is_selfie_mode: video_resource.is_selfie_mode,
         };
+
+        if video_resource.show_recording_button() {
+            if let Some(..) = size.try_pick::<ToggleRecordingButton>(*position, &selfie_mode) {
+                return Some(InteractionEntity::Button(
+                    ButtonInteraction::ToggleRecordingButton,
+                ));
+            }
+        }
 
         match menu_state {
             MenuState::Closed => match current_level.level(daily_challenges) {
@@ -145,7 +139,7 @@ impl InteractionEntity {
 
                     match layout_entity {
                         GameLayoutEntity::TopBar => {
-                            Self::try_get_button::<LayoutTopBar>(position, size, &selfie_mode)
+                            Self::try_get_button::<WordSaladLogo>(position, size, &selfie_mode)
                         }
 
                         GameLayoutEntity::Grid => match grid_tolerance {
@@ -187,13 +181,40 @@ impl InteractionEntity {
                 }
             },
 
+            MenuState::HintsStorePage => {
+                if let Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &())
+                {
+                    return Some(back);
+                }
+
+                Some(
+                    Self::try_get_button::<HintsLayoutEntity>(position, size, &selfie_mode)
+                        .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
+                )
+            }
+
+            MenuState::MainStorePage => {
+                if let Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &())
+                {
+                    return Some(back);
+                }
+
+                Some(
+                    Self::try_get_button::<StoreLayoutEntity>(position, size, &selfie_mode)
+                        .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
+                )
+            }
+
             MenuState::ShowMainMenu => {
                 if let Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &())
                 {
                     return Some(back);
                 }
 
-                Some(Self::try_get_button::<MainMenuLayoutEntity>(position, size, &selfie_mode).unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)))
+                Some(
+                    Self::try_get_button::<MainMenuLayoutEntity>(position, size, &selfie_mode)
+                        .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
+                )
             }
             MenuState::ChooseLevelsPage => {
                 if let Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &())
@@ -201,7 +222,10 @@ impl InteractionEntity {
                     return Some(back);
                 }
 
-                Some(Self::try_get_button::<LevelsMenuLayoutEntity>(position, size, &selfie_mode).unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)))
+                Some(
+                    Self::try_get_button::<LevelsMenuLayoutEntity>(position, size, &selfie_mode)
+                        .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
+                )
             }
             MenuState::WordSaladLevels => {
                 if let Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &())
@@ -209,7 +233,10 @@ impl InteractionEntity {
                     return Some(back);
                 }
 
-                Some(Self::try_get_button::<WordSaladMenuLayoutEntity>(position, size, &selfie_mode).unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)))
+                Some(
+                    Self::try_get_button::<WordSaladMenuLayoutEntity>(position, size, &selfie_mode)
+                        .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
+                )
             }
             MenuState::LevelGroupPage(group) => {
                 if let Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &())
@@ -217,11 +244,14 @@ impl InteractionEntity {
                     return Some(back);
                 }
 
-                Some(Self::try_get_button::<LevelGroupLayoutEntity>(
-                    position,
-                    size,
-                    &(selfie_mode, *group),
-                ).unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)))
+                Some(
+                    Self::try_get_button::<LevelGroupLayoutEntity>(
+                        position,
+                        size,
+                        &(selfie_mode, *group),
+                    )
+                    .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
+                )
             }
         }
     }
@@ -243,6 +273,7 @@ impl InputType {
         daily_challenges: &DailyChallenges,
         event_writer: &mut EventWriter<ButtonActivated>,
         timer: &LevelTime,
+        time: &Time,
     ) {
         startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 
@@ -253,12 +284,10 @@ impl InputType {
                 StartPressState::Popup
             } else if !menu_state.is_closed() {
                 StartPressState::Menu
+            } else if found_words.is_level_complete() {
+                StartPressState::Congrats
             } else {
-                if found_words.is_level_complete() {
-                    StartPressState::Congrats
-                } else {
-                    StartPressState::Gameplay
-                }
+                StartPressState::Gameplay
             }
         };
 
@@ -381,15 +410,16 @@ impl InputType {
                         current_state == *start_state
                     }
                     PressedButton::Pressed { interaction, .. } => *interaction != new_interaction,
-                    PressedButton::PressedAfterActivated { interaction } => {
-                        *interaction != new_interaction
+                    PressedButton::PressedAfterActivated { .. } => {
+                        false
+                        // *interaction != new_interaction
                     }
                 };
 
                 if should_change {
                     *pressed_button.as_mut() = PressedButton::Pressed {
                         interaction: new_interaction,
-                        duration: Duration::ZERO,
+                        start_elapsed: time.elapsed(),
                         start_state: current_state,
                     };
 
@@ -446,6 +476,7 @@ pub fn handle_mouse_input(
     daily_challenges: Res<DailyChallenges>,
     timer: Res<LevelTime>,
     mut event_writer: EventWriter<ButtonActivated>,
+    time: Res<Time>,
 ) {
     let input_type = if mouse_input.just_released(MouseButton::Left) {
         let position_option = get_cursor_position(q_windows);
@@ -477,6 +508,7 @@ pub fn handle_mouse_input(
         &daily_challenges,
         &mut event_writer,
         &timer,
+        &time,
     );
 }
 
@@ -496,6 +528,7 @@ pub fn handle_touch_input(
     daily_challenges: Res<DailyChallenges>,
     timer: Res<LevelTime>,
     mut event_writer: EventWriter<ButtonActivated>,
+    time: Res<Time>,
 ) {
     for ev in touch_events.read() {
         let input_type: InputType = match ev.phase {
@@ -531,6 +564,7 @@ pub fn handle_touch_input(
             &daily_challenges,
             &mut event_writer,
             &timer,
+            &time,
         );
     }
 }

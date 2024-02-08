@@ -1,7 +1,8 @@
 use bevy::math::Vec2;
 use strum::{Display, EnumCount, EnumIs, EnumIter, IntoEnumIterator};
 use ws_core::{
-    font_icons, layout::entities::*, LayoutSizing, LayoutStructure, LayoutStructureWithFont, Spacing
+    font_icons, layout::entities::*, LayoutSizing, LayoutStructure, LayoutStructureWithFont,
+    Spacing,
 };
 use ws_levels::level_group::LevelGroup;
 
@@ -46,7 +47,7 @@ impl WordSaladMenuLayoutEntity {
         (s1.to_string(), "\u{f096}".to_string())
     }
 
-    pub fn is_complete(&self, completion: &DailyChallengeCompletion) -> bool {
+    pub fn is_complete(&self, completion: &DailyChallengeCompletion, daily_challenges: &DailyChallenges) -> bool {
         let today_index = DailyChallenges::get_today_index();
 
         let index = match self {
@@ -55,7 +56,7 @@ impl WordSaladMenuLayoutEntity {
             WordSaladMenuLayoutEntity::EreYesterdayPuzzle => today_index.checked_sub(2),
             WordSaladMenuLayoutEntity::NextPuzzle => today_index
                 .checked_sub(3)
-                .and_then(|x| completion.get_next_incomplete_daily_challenge(x)),
+                .and_then(|x| completion.get_next_incomplete_daily_challenge(x, daily_challenges).level_index()),
         };
 
         let Some(index) = index else {
@@ -77,7 +78,7 @@ impl WordSaladMenuLayoutEntity {
             WordSaladMenuLayoutEntity::YesterdayPuzzle => today_index.checked_sub(1)?,
             WordSaladMenuLayoutEntity::EreYesterdayPuzzle => today_index.checked_sub(2)?,
             WordSaladMenuLayoutEntity::NextPuzzle => {
-                completion.get_next_incomplete_daily_challenge(today_index.checked_sub(3)?)?
+                completion.get_next_incomplete_daily_challenge(today_index.checked_sub(3)?, daily_challenges).level_index()?
             }
         };
 

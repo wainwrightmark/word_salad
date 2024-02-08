@@ -2,7 +2,7 @@ use std::fmt::Debug;
 
 use glam::Vec2;
 
-use crate::{LayoutRectangle, LayoutSizing};
+use crate::{BasicColor, LayoutRectangle, LayoutSizing};
 
 pub trait LayoutStructure: Sized + PartialEq + Debug {
     //TODO rename to positioning
@@ -32,6 +32,19 @@ pub trait LayoutStructureWithFont {
     fn font_size(&self, context: &Self::FontContext) -> f32;
 }
 
-pub trait LayoutStructureWithStaticText: LayoutStructure {
-    fn text(&self, context: &Self::Context<'_>) -> &'static str;
+pub enum TextOrImage{
+    Text{
+        text: &'static str,
+    },
+    Image{
+        path: &'static str,
+        color: BasicColor,
+        pressed_color: BasicColor,
+        aspect_ratio:f32//width / height,
+    }
+}
+
+pub trait LayoutStructureWithTextOrImage : LayoutStructure + LayoutStructureWithFont {
+    fn text_or_image(&self, context: &Self::Context<'_>) -> TextOrImage;
+
 }

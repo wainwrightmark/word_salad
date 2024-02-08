@@ -134,18 +134,22 @@ impl MavericNode for TutorialPopupNode {
             let font_size = context.font_size(&TutorialTextLayoutEntity(*entity), &());
             let text_rect = context.get_rect(&TutorialTextLayoutEntity(*entity), &());
 
+            const OPACITY: f32 = 0.6;
+
             let background = crate::shapes::box_with_border_node(
                 rect.width(),
                 rect.height(),
                 Vec2::ZERO.extend(crate::z_indices::TUTORIAL_POPUP_BOX_BACKGROUND),
                 ws_core::palette::POPUP_BOX_BACKGROUND
                     .convert_color()
-                    .with_a(0.8),
-                ws_core::palette::POPUP_BOX_BORDER
-                    .convert_color()
-                    .with_a(0.8),
+                    .with_a(OPACITY),
                 0.1,
-                0.01,
+                ShaderBorder {
+                    border_color: ws_core::palette::POPUP_BOX_BORDER
+                        .convert_color()
+                        .with_a(OPACITY),
+                    border: 0.01,
+                },
             );
 
             commands.add_child("background", background, &());
@@ -327,8 +331,7 @@ impl TutorialText {
                         middle: Some(
                             "\
                             You completed your first Word Salad\n\
-                            You've earned a hint\n\
-                            Spend a hint to reveal a letter",
+                            The next puzzle is about Planets",
                         ),
                         bottom: None,
                     }
@@ -367,14 +370,9 @@ impl TutorialText {
                     ),
                 },
                 3..=4 => Self {
-                    top: Some("Your remaining hints are shown\nIn the green circle"),
+                    top: Some("Hints are free in the tutorial"),
                     middle: None,
-                    bottom: Some(
-                        "\
-                        \n\
-                    You earn hints by completing levels\n\
-                    Don't be afraid to spend them!",
-                    ),
+                    bottom: None,
                 },
                 5 => Self {
                     top: Some("One planet to go!"),
@@ -387,7 +385,7 @@ impl TutorialText {
                         top: None,
                         middle: Some(
                             "\
-                        Tap 'Word Salad' for today's puzzle\n\
+                        Tap 'Next' for today's puzzle\n\
                         Open the menu for extra puzzles\n\
                         Why not try out Selfie Mode?",
                         ),

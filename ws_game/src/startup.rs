@@ -1,19 +1,13 @@
 use std::sync::atomic::AtomicUsize;
 
 pub use crate::prelude::*;
-use crate::{input::InputPlugin, motion_blur::MotionBlurPlugin, purchases::PurchasesPlugin};
+use crate::{
+    achievements::AchievementsPlugin, input::InputPlugin, motion_blur::MotionBlurPlugin,
+    purchases::PurchasesPlugin,
+};
 use bevy::{log::LogPlugin, window::RequestRedraw};
 use nice_bevy_utils::{async_event_writer, window_size::WindowSizePlugin, CanRegisterAsyncEvent};
 use ws_core::layout::entities::*;
-
-const CLEAR_COLOR: Color = {
-    //Color::NONE
-    if cfg!(target_arch = "wasm32") {
-        Color::NONE
-    } else {
-        Color::WHITE
-    }
-};
 
 pub fn go() {
     let mut app = App::new();
@@ -38,7 +32,6 @@ pub fn go() {
     };
 
     app.insert_resource(Msaa::Off)
-        .insert_resource(ClearColor(CLEAR_COLOR))
         .add_plugins(
             DefaultPlugins
                 .set(window_plugin)
@@ -52,8 +45,13 @@ pub fn go() {
         )
         .add_systems(Startup, setup_system);
 
+    app.add_plugins(ClearColorPlugin);
+
     app.add_plugins(WordlinePlugin);
     app.register_maveric::<ViewRoot>();
+    app.register_maveric::<RecordingButtonRoot>();
+    app.register_maveric::<WordSaladLogoRoot>();
+    app.add_plugins(HintsRemainingPlugin);
     app.add_plugins(StatePlugin);
     app.add_plugins(LevelTimePlugin);
     app.add_plugins(ShapesPlugin);
@@ -64,6 +62,7 @@ pub fn go() {
     app.add_plugins(MotionBlurPlugin);
     app.add_plugins(WordsPlugin);
     app.add_plugins(PurchasesPlugin);
+    app.add_plugins(AchievementsPlugin);
     #[cfg(any(feature = "ios", feature = "android"))]
     app.add_plugins(NotificationPlugin);
 
@@ -80,6 +79,8 @@ pub fn go() {
     #[cfg(target_arch = "wasm32")]
     app.add_plugins(crate::wasm::WasmPlugin);
     app.add_plugins(VideoPlugin);
+
+    app.add_plugins(AdsPlugin);
 
     app.add_systems(PostStartup, choose_level_on_game_load);
 
@@ -161,15 +162,13 @@ fn choose_level_on_game_load(
                     if let Some(level) = new_level.level(&daily_challenges).left() {
                         return Some(new_level);
                     } else {
-                        return Some(CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished));
+                        return Some(CurrentLevel::NonLevel(NonLevel::DailyChallengeNotLoaded));
                     }
                 }
             }
 
             if let Some(level) = crate::wasm::get_game_from_location() {
                 info!("Loaded custom level from path");
-
-
 
                 let custom_level = CurrentLevel::Custom {
                     name: level.clone().full_name().to_string(),
@@ -192,20 +191,11 @@ fn choose_level_on_game_load(
             _ => {}
         }
 
-        if let Some(index) =
-            daily_challenge_completion.get_next_incomplete_daily_challenge_from_today()
-        {
-            let today_level = CurrentLevel::DailyChallenge { index };
-            if today_level.level(&daily_challenges).is_left() {
-                //Only change to this level if we have loaded it already
+        let nl: CurrentLevel = daily_challenge_completion
+            .get_next_incomplete_daily_challenge_from_today(&daily_challenges)
+            .into();
 
-                return Some(today_level);
-            } else {
-                return Some(CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished));
-            }
-        }
-
-        return None;
+        Some(nl)
     }
 
     if let Some(level) = get_new_level(current_level, daily_challenge_completion, daily_challenges)
@@ -230,7 +220,7 @@ fn set_status_bar() {
 
         do_or_report_error(StatusBar::set_style(Style::Dark));
         #[cfg(feature = "android")]
-        do_or_report_error(StatusBar::set_background_color("#76d998"));
+        do_or_report_error(StatusBar::set_background_color("#2bb559"));
     }
 }
 

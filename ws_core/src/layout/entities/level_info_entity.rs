@@ -9,8 +9,8 @@ use super::{consts::*, GameLayoutEntity, SelfieMode};
 )]
 pub enum LevelInfoLayoutEntity {
     ThemeAndNumber,
-
-    ThemeInfoAndTimer,
+    ThemeInfo,
+    Timer,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -29,7 +29,11 @@ impl LayoutStructure for LevelInfoLayoutEntity {
                 x: GRID_SIZE,
                 y: THEME_HEIGHT,
             },
-            LevelInfoLayoutEntity::ThemeInfoAndTimer => Vec2 {
+            LevelInfoLayoutEntity::ThemeInfo => Vec2 {
+                x: GRID_SIZE,
+                y: THEME_INFO_HEIGHT,
+            },
+            LevelInfoLayoutEntity::Timer => Vec2 {
                 x: GRID_SIZE,
                 y: THEME_INFO_HEIGHT,
             },
@@ -45,9 +49,14 @@ impl LayoutStructure for LevelInfoLayoutEntity {
                 y: base_location.y,
             },
 
-            LevelInfoLayoutEntity::ThemeInfoAndTimer => Vec2 {
+            LevelInfoLayoutEntity::ThemeInfo => Vec2 {
                 x: base_location.x,
                 y: base_location.y + THEME_HEIGHT,
+            },
+
+            LevelInfoLayoutEntity::Timer => Vec2 {
+                x: base_location.x,
+                y: base_location.y + THEME_HEIGHT + THEME_INFO_HEIGHT,
             },
         }
     }
@@ -70,7 +79,7 @@ impl LayoutStructureWithFont for LevelInfoLayoutEntity {
                     THEME_FONT_SIZE_SMALL
                 }
             }
-            LevelInfoLayoutEntity::ThemeInfoAndTimer => THEME_INFO_FONT_SIZE,
+            LevelInfoLayoutEntity::ThemeInfo | LevelInfoLayoutEntity::Timer => THEME_INFO_FONT_SIZE,
         }
     }
 }

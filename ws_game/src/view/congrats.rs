@@ -23,6 +23,7 @@ pub struct CongratsContext {
     pub video_resource: VideoResource,
     pub streak: Streak,
     pub level_time: LevelTime,
+    pub daily_challenges: DailyChallenges
 }
 
 impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for CongratsContextWrapper<'w> {
@@ -36,6 +37,8 @@ impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for CongratsContextWrapper<'w>
             video_resource: Res::clone(&value.video_resource),
             streak: Res::clone(&value.streak),
             level_time: Res::clone(&value.level_time),
+            daily_challenges: Res::clone(&value.daily_challenges),
+
         }
     }
 }
@@ -57,25 +60,28 @@ impl MavericNode for CongratsView {
             return;
         }
 
-        //SHOW FIREWORKS
-        let size = &context.window_size;
+        //SHOW FIREWORKS - only in Selfie mode
+        if context.video_resource.is_selfie_mode {
+            let size = &context.window_size;
 
-        const SECONDS: f32 = 5.0;
-        const NUM_FIREWORKS: usize = 25;
+            const SECONDS: f32 = 5.0;
+            const NUM_FIREWORKS: usize = 25;
 
-        entity_commands.with_children(|cb| {
-            let mut rng = ThreadRng::default();
-            for i in 0..NUM_FIREWORKS {
-                fireworks::create_firework(
-                    cb,
-                    &mut rng,
-                    SECONDS,
-                    size.as_ref(),
-                    i <= 1,
-                    context.video_resource.selfie_mode(),
-                );
-            }
-        });
+            entity_commands.with_children(|cb| {
+                let mut rng = ThreadRng::default();
+                for i in 0..NUM_FIREWORKS {
+                    fireworks::create_firework(
+                        cb,
+                        &mut rng,
+                        SECONDS,
+                        size.as_ref(),
+                        TILE_LINGER_SECONDS,
+                        i <= 1,
+                        context.video_resource.selfie_mode(),
+                    );
+                }
+            });
+        }
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
@@ -118,7 +124,7 @@ impl MavericNode for CongratsView {
                     }
                     CurrentLevel::Tutorial { .. } => Data::None,
                     CurrentLevel::Fixed { sequence, .. } => {
-                        let complete = context.sequence_completion.get_number_complete(&sequence);
+                        let complete = context.sequence_completion.get_number_complete(sequence);
                         let total = sequence.level_count();
                         let remaining = total.saturating_sub(complete);
                         Data::Sequence {
@@ -136,8 +142,9 @@ impl MavericNode for CongratsView {
                     Vec3::ONE
                 };
                 let transition = TransitionBuilder::default()
-                    .then_wait(Duration::from_secs_f32(TRANSITION_WAIT_SECS))
-                    .then_ease(Vec3::ONE, (1.0 / TRANSITION_SECS).into(), Ease::CubicOut)
+                    .then_wait(Duration::from_secs_f32(TRANSITION_WAIT_SECS + TRANSITION_SECS))
+                    .then_set_value(Vec3::ONE)
+                    //.then_ease(Vec3::ONE, (1.0 / TRANSITION_SECS).into(), Ease::CubicOut)
                     .build();
 
                 let stat_text_color = if selfie_mode.is_selfie_mode {
@@ -147,7 +154,7 @@ impl MavericNode for CongratsView {
                 }
                 .convert_color();
 
-                {
+                if !context.current_level.is_tutorial() {
                     let rect = size.get_rect(&CongratsLayoutEntity::Time, &congrats_context);
 
                     commands.add_child(
@@ -227,6 +234,22 @@ impl MavericNode for CongratsView {
 
                 let button_count = CongratsLayoutEntity::get_button_count(&congrats_context);
 
+                let button_text_color = if selfie_mode.is_selfie_mode {
+                    palette::CONGRATS_BUTTON_TEXT_SELFIE
+                } else {
+                    palette::CONGRATS_BUTTON_TEXT_NORMAL
+                }
+                .convert_color();
+
+                let (button_fill_color, border) = if selfie_mode.is_selfie_mode {
+                    (
+                        palette::CONGRATS_BUTTON_FILL_SELFIE.convert_color(),
+                        ShaderBorder::NONE,
+                    )
+                } else {
+                    (Color::NONE, ShaderBorder::from_color(button_text_color))
+                };
+
                 for (index, button) in CongratsButton::iter().enumerate().take(button_count) {
                     let text = match button {
                         CongratsButton::Next => match context.current_level.level_type() {
@@ -236,6 +259,7 @@ impl MavericNode for CongratsView {
                                     &context.daily_challenge_completion,
                                     &context.sequence_completion,
                                     &Purchases::default(), //don't actually worry about purchases here :)
+                                    &context.daily_challenges
                                 );
 
                                 match next_level {
@@ -270,20 +294,6 @@ impl MavericNode for CongratsView {
                         CongratsButton::Share => "Share".to_string(),
                     };
 
-                    let text_color = if selfie_mode.is_selfie_mode {
-                        palette::CONGRATS_BUTTON_TEXT_SELFIE
-                    } else {
-                        palette::CONGRATS_BUTTON_TEXT_NORMAL
-                    }
-                    .convert_color();
-
-                    let fill_color = if selfie_mode.is_selfie_mode {
-                        palette::CONGRATS_BUTTON_FILL_SELFIE
-                    } else {
-                        palette::CONGRATS_BUTTON_FILL_NORMAL
-                    }
-                    .convert_color();
-
                     commands.add_child(
                         (1u16, index as u16),
                         WSButtonNode {
@@ -292,9 +302,10 @@ impl MavericNode for CongratsView {
                             rect: size
                                 .get_rect(&CongratsLayoutEntity::Button(button), &congrats_context),
                             interaction: ButtonInteraction::Congrats(button),
-                            text_color,
-                            fill_color,
+                            text_color: button_text_color,
+                            fill_color: button_fill_color,
                             clicked_fill_color: BUTTON_CLICK_FILL.convert_color(),
+                            border,
                         }
                         .with_transition::<TransformScaleLens, ()>(
                             initial_scale,
@@ -379,18 +390,6 @@ impl MavericNode for StatisticNode {
                 })),
                 &(),
             );
-
-            // commands.add_child(
-            //     "box",
-            //     basic_box_node1(
-            //         rect.width(),
-            //         rect.height(),
-            //         Vec3::ZERO,
-            //         *background_color,
-            //         crate::rounding::OTHER_BUTTON_NORMAL,
-            //     ),
-            //     &(),
-            // );
         });
     }
 }
@@ -440,18 +439,6 @@ impl MavericNode for TimerNode {
                 })),
                 &(),
             );
-
-            // commands.add_child(
-            //     "box",
-            //     basic_box_node1(
-            //         rect.width(),
-            //         rect.height(),
-            //         Vec3::ZERO,
-            //         *background_color,
-            //         crate::rounding::OTHER_BUTTON_NORMAL,
-            //     ),
-            //     &(),
-            // );
         });
     }
 }

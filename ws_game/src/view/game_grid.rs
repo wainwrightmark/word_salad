@@ -6,8 +6,10 @@ use maveric::transition::speed::LinearSpeed;
 use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
 use strum::EnumIs;
 use ws_core::layout::entities::*;
-use ws_core::{font_icons, prelude::*};
 use ws_core::Tile;
+use ws_core::{font_icons, prelude::*};
+
+pub const TILE_LINGER_SECONDS: f32 = 1.0;
 
 #[derive(Debug, Clone, Copy, PartialEq, EnumIs)]
 pub enum Selectability {
@@ -65,7 +67,7 @@ impl HintStatus {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct GridTiles {
-    pub level_complete: bool,
+    pub is_level_complete: bool,
 }
 
 const TILE_SCALE_SPEED: LinearSpeed = LinearSpeed {
@@ -110,7 +112,7 @@ impl MavericNode for GridTiles {
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.ordered_children_with_node_and_context(|node, context, commands| {
-            if node.level_complete {
+            if node.is_level_complete {
                 return;
             }
             let solution = context.chosen_state.current_solution();
@@ -175,14 +177,19 @@ impl MavericNode for GridTiles {
                         text: font_icons::PLAY,
                         font: ICON_FONT_PATH,
                         font_size: PlayButtonLayoutStructure.font_size(&()),
-                        color: if selfie_mode.is_selfie_mode {palette::GRID_LETTER_SELFIE.convert_color()} else{palette::GRID_LETTER_NORMAL.convert_color()} ,
+                        color: if selfie_mode.is_selfie_mode {
+                            palette::GRID_LETTER_SELFIE.convert_color()
+                        } else {
+                            palette::GRID_LETTER_NORMAL.convert_color()
+                        },
                         alignment: TextAlignment::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         text_anchor: bevy::sprite::Anchor::Center,
                         text_2d_bounds: Text2dBounds::UNBOUNDED,
                     }
                     .with_bundle(Transform::from_translation(
-                        size.get_rect(&PlayButtonLayoutStructure, &selfie_mode).centre()
+                        size.get_rect(&PlayButtonLayoutStructure, &selfie_mode)
+                            .centre()
                             .extend(crate::z_indices::TILE_TEXT),
                     )),
                     &(),
@@ -306,7 +313,7 @@ impl MavericNode for GridTile {
 
     fn on_deleted(&self, commands: &mut ComponentCommands) -> DeletionPolicy {
         let transition = TransitionBuilder::<TransformScaleLens>::default()
-            .then_ease(Vec3::ZERO, TILE_SCALE_SPEED, Ease::BackIn)
+            .then_ease(Vec3::ZERO, TILE_SCALE_SPEED, Ease::CircIn)
             .build();
 
         commands.insert(transition);
@@ -330,14 +337,14 @@ impl MavericNode for GridTile {
 
         //info!("Grid Tile on deleted {found_children:?} children found");
 
-        DeletionPolicy::Linger(std::time::Duration::from_secs(1))
+        DeletionPolicy::Linger(std::time::Duration::from_secs_f32(TILE_LINGER_SECONDS))
     }
 }
 
 #[derive(Debug, PartialEq)]
 pub struct PlayButtonLayoutStructure;
 
-impl LayoutStructure for PlayButtonLayoutStructure{
+impl LayoutStructure for PlayButtonLayoutStructure {
     type Context<'a> = SelfieMode;
 
     fn size(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
@@ -353,7 +360,7 @@ impl LayoutStructure for PlayButtonLayoutStructure{
     }
 }
 
-impl LayoutStructureWithFont for PlayButtonLayoutStructure{
+impl LayoutStructureWithFont for PlayButtonLayoutStructure {
     type FontContext = ();
 
     fn font_size(&self, _context: &Self::FontContext) -> f32 {

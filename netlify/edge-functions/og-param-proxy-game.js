@@ -6,16 +6,16 @@ export default async (request, context) => {
   let page = await response.text();
 
   try {
-    const daily = url.pathname.substring(7);
+    const game = url.pathname.substring(6);
 
     page = page.replace(
       `https://wordsalad.online/images/og_image.png`,
-      `https://wordsalad.online/.netlify/functions/image?daily=${daily}&width=512&height=512`
+      `https://wordsalad.online/.netlify/functions/image?game=${game}&width=1080&height=1080`
     );
 
     page = page.replace(
       `<meta property="og:url" content="https://wordsalad.online/" >`,
-      `<meta property="og:url" content="https://wordsalad.online/daily/${daily}" >`
+      `<meta property="og:url" content="https://wordsalad.online/game/${game}" >`
     );
 
     return new Response(page, response);

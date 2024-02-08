@@ -128,7 +128,7 @@ fn manage_timer(
 
     if menu_state.is_changed() {
         if menu_state.is_closed() {
-            if !found_words.is_level_complete(){
+            if !found_words.is_level_complete() {
                 timer.resume_timer();
             }
         } else {
@@ -145,13 +145,13 @@ fn manage_timer(
     }
 }
 
-fn count_up(mut query: Query<(&mut Text, &TimeCounterMarker),>, timer: Res<LevelTime>) {
+fn count_up(mut query: Query<&mut Text, With<TimeCounterMarker>>, timer: Res<LevelTime>) {
     let elapsed = timer.total_elapsed();
 
-    for (mut text, marker) in query.iter_mut() {
+    for mut text in query.iter_mut() {
         if let Some(section) = text.sections.first_mut() {
             let total_seconds = elapsed.as_secs();
-            section.value = format!("{theme_info} {time}",theme_info = marker.theme_info, time= format_seconds(total_seconds)) ;
+            section.value = format_seconds(total_seconds);
         }
     }
 }
@@ -161,7 +161,7 @@ fn count_down(
     time: Res<Time>,
     mut elapsed: Local<Duration>,
     current_level: Res<CurrentLevel>,
-    mut change_level_events: EventWriter<ChangeLevelEvent>
+    mut change_level_events: EventWriter<ChangeLevelEvent>,
 ) {
     let todays_index = match current_level.as_ref() {
         CurrentLevel::NonLevel(NonLevel::DailyChallengeCountdown { todays_index }) => todays_index,
@@ -186,20 +186,19 @@ fn count_down(
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone,  Component)]
-pub struct TimeCounterMarker{
-    pub theme_info: Ustr
-}
+#[derive(Debug, PartialEq, Eq, Clone, Component)]
+pub struct TimeCounterMarker;
 
 pub fn format_seconds(total_seconds: u64) -> String {
-    if total_seconds >= 3600 {
-        "60:00".to_string()
+    let hh = total_seconds / 3600;
+    let mm = (total_seconds / 60) % 60;
+    let ss = total_seconds % 60;
+
+    let time_str = if hh > 0 {
+        format!("{hh:02}:{mm:02}:{ss:02}")
     } else {
-        let mm = (total_seconds / 60) % 60;
-        let ss = total_seconds % 60;
+        format!("{mm:02}:{ss:02}")
+    };
 
-        let time_str = format!("{mm:02}:{ss:02}");
-
-        time_str
-    }
+    time_str
 }

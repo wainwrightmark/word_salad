@@ -7,7 +7,9 @@ use ws_core::level_type::LevelType;
 use ws_levels::{all_levels::get_tutorial_level, level_sequence::LevelSequence};
 
 use crate::{
-    completion::{DailyChallengeCompletion, SequenceCompletion}, prelude::*, purchases::Purchases
+    completion::{DailyChallengeCompletion, SequenceCompletion},
+    prelude::*,
+    purchases::Purchases,
 };
 
 #[derive(Debug, Clone, Resource, PartialEq, Eq, Serialize, Deserialize, MavericContext, EnumIs)]
@@ -33,6 +35,8 @@ pub enum NonLevel {
     BeforeTutorial,
     AfterCustomLevel,
     DailyChallengeFinished,
+    DailyChallengeNotLoaded,
+    DailyChallengeLoading,
     DailyChallengeReset,
     DailyChallengeCountdown { todays_index: usize },
 
@@ -60,6 +64,34 @@ impl Default for CurrentLevel {
 pub static CUSTOM_LEVEL: OnceLock<DesignedLevel> = OnceLock::new();
 
 impl CurrentLevel {
+    /// Returns true if hints used on this level should be deducted from the users remaining hints
+    pub fn should_spend_hints(&self) -> bool {
+        match self {
+            CurrentLevel::Tutorial { .. } => false,
+            CurrentLevel::Fixed { .. } => true,
+            CurrentLevel::DailyChallenge { .. } => true,
+            CurrentLevel::Custom { .. } => true,
+            CurrentLevel::NonLevel(_) => false,
+        }
+    }
+
+    /// Whether this level should be counted to towards total interstitial ads
+    pub fn count_for_interstitial_ads(&self, purchases: &Purchases) -> bool {
+        if purchases.avoid_ads_purchased {
+            return false;
+        }
+
+        match self {
+            CurrentLevel::Tutorial { .. } => false,
+            CurrentLevel::Fixed { sequence, .. } => {
+                !purchases.groups_purchased.contains(&sequence.group())
+            }
+            CurrentLevel::DailyChallenge { .. } => true,
+            CurrentLevel::Custom { .. } => false,
+            CurrentLevel::NonLevel(_) => false,
+        }
+    }
+
     pub fn level_type(&self) -> LevelType {
         match self {
             CurrentLevel::Tutorial { .. } => LevelType::Tutorial,
@@ -91,7 +123,7 @@ impl CurrentLevel {
             },
             CurrentLevel::DailyChallenge { index } => match daily_challenges.levels.get(*index) {
                 Some(cl) => Either::Left(cl),
-                None => Either::Right(NonLevel::DailyChallengeFinished),
+                None => Either::Right(NonLevel::DailyChallengeNotLoaded),
             },
             CurrentLevel::NonLevel(nl) => Either::Right(*nl),
         }
@@ -101,34 +133,28 @@ impl CurrentLevel {
         &self,
         daily_challenge_completion: &DailyChallengeCompletion,
         sequence_completion: &SequenceCompletion,
-        purchases: &Purchases
+        purchases: &Purchases,
+        daily_challenges: &DailyChallenges,
     ) -> CurrentLevel {
         match self {
             CurrentLevel::Tutorial { index } => {
                 let index = index.saturating_add(1);
                 match get_tutorial_level(index) {
                     Some(_) => CurrentLevel::Tutorial { index },
-                    None => match daily_challenge_completion
-                        .get_next_incomplete_daily_challenge_from_today()
-                    {
-                        Some(index) => CurrentLevel::DailyChallenge { index },
-                        None => CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished),
-                    },
+                    None => daily_challenge_completion
+                        .get_next_incomplete_daily_challenge_from_today(daily_challenges)
+                        .into(),
                 }
             }
             CurrentLevel::Fixed {
                 level_index: _,
                 sequence,
-            } => {
-
-                sequence_completion.get_next_level_index(*sequence, purchases).to_level(*sequence)
-            }
-            CurrentLevel::DailyChallenge { .. } => {
-                match daily_challenge_completion.get_next_incomplete_daily_challenge_from_today() {
-                    Some(index) => CurrentLevel::DailyChallenge { index },
-                    None => CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished),
-                }
-            }
+            } => sequence_completion
+                .get_next_level_index(*sequence, purchases)
+                .to_level(*sequence),
+            CurrentLevel::DailyChallenge { .. } => daily_challenge_completion
+                .get_next_incomplete_daily_challenge_from_today(daily_challenges)
+                .into(),
             CurrentLevel::Custom { .. } => NonLevel::AfterCustomLevel.into(),
             CurrentLevel::NonLevel(x) => (*x).into(), //No change
         }

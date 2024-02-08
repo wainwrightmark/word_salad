@@ -75,7 +75,7 @@ impl LevelsMenuLayoutEntity {
 
     fn name(&self) -> &'static str {
         match self {
-            LevelsMenuLayoutEntity::WordSalad => "Word Salad",
+            LevelsMenuLayoutEntity::WordSalad => "Daily Word Salad",
             LevelsMenuLayoutEntity::AdditionalLevel(levels) => levels.name(),
         }
     }

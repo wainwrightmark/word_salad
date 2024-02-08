@@ -153,7 +153,6 @@ pub mod tests {
     pub fn get_all_levels() -> Vec<DesignedLevel> {
         [
             TUTORIAL.iter(),
-
             US_STATES.iter(),
             EUROPEAN_COUNTRIES.iter(),
             EUROPEAN_CAPITALS.iter(),
@@ -161,16 +160,13 @@ pub mod tests {
             MIDDLE_EASTERN_COUNTRIES.iter(),
             SOUTH_AND_EAST_ASIAN_CAPITALS.iter(),
             MIDDLE_EASTERN_CAPITALS.iter(),
-
-
-
             INSECTS.iter(),
             FRUIT.iter(),
             GEMSTONES.iter(),
             VEGETABLES.iter(),
             ELEMENTS.iter(),
             MAMMALS.iter(),
-            BIRDS.iter()
+            BIRDS.iter(),
         ]
         .iter()
         .cloned()

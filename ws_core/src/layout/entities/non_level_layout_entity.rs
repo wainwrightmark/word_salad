@@ -36,7 +36,8 @@ impl LayoutStructure for NonLevelLayoutEntity {
     }
 
     fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
-        let top_offset = GRID_TILE_SIZE + (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, context));
+        let top_offset =
+            GRID_TILE_SIZE + (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, context));
 
         match self {
             NonLevelLayoutEntity::Text => Vec2 {

@@ -31,7 +31,7 @@ pub struct WordsContext {
     pub daily_challenges: DailyChallenges,
 }
 
-impl<'a, 'w : 'a> From<&'a ViewContextWrapper<'w>> for WordsContextWrapper<'w> {
+impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for WordsContextWrapper<'w> {
     fn from(value: &'a ViewContextWrapper<'w>) -> Self {
         Self {
             current_level: Res::clone(&value.current_level),
@@ -54,11 +54,7 @@ impl MavericNode for WordsNode {
         _previous: &Self,
         context: &<Self::Context as NodeContext>::Wrapper<'_>,
     ) -> bool {
-        if context.current_level.is_changed() {
-            true
-        } else {
-            false
-        }
+        context.current_level.is_changed()
     }
 
     fn set_components(commands: SetComponentCommands<Self, Self::Context>) {
@@ -138,7 +134,7 @@ impl MavericNode for WordNode {
                 Completion::Unstarted => node.word.hidden_text.to_string(),
                 Completion::ManualHinted(hints) => node.word.hinted_text(hints).to_uppercase(),
 
-                Completion::Complete => node.word.text.to_uppercase().to_string(),
+                Completion::Complete{..} => node.word.text.to_uppercase().to_string(),
             };
 
             let completion = node.completion;
@@ -146,7 +142,7 @@ impl MavericNode for WordNode {
             let progress = match completion {
                 Completion::Unstarted => 0.0,
                 Completion::ManualHinted(_) => 0.0,
-                Completion::Complete => 1.0,
+                Completion::Complete{..} => 1.0,
             };
 
             let centre = node.rect.centre();
@@ -155,7 +151,7 @@ impl MavericNode for WordNode {
 
             let text_color = match completion {
                 Completion::Unstarted => palette::WORD_TEXT_NUMBER,
-                Completion::ManualHinted(_) | Completion::Complete => palette::WORD_TEXT_LETTERS,
+                Completion::ManualHinted(_) | Completion::Complete{..} => palette::WORD_TEXT_LETTERS,
             }
             .convert_color();
 
@@ -190,8 +186,12 @@ impl MavericNode for WordNode {
             let transition_speed = match completion {
                 Completion::Unstarted => f32::MAX,
                 Completion::ManualHinted(_) => f32::MAX,
-                Completion::Complete => 1.0 / animated_solutions::TOTAL_SECONDS,
+                Completion::Complete{..} => 1.0 / animated_solutions::TOTAL_SECONDS,
             };
+
+            let height = node.rect.extents.y.abs();
+            let width = node.rect.extents.x.abs();
+            let scale = height.max(width);
 
             commands.add_child(
                 "shape_fill",
@@ -203,12 +203,15 @@ impl MavericNode for WordNode {
                                 tile: node.tile,
                                 previous_completion: args.previous.map(|x| x.completion),
                             },
-                            (node.rect.extents.y.abs() / node.rect.extents.x.abs()).into(),
+                            ShaderProportions {
+                                width: width / scale,
+                                height: height / scale,
+                            },
                             ShaderProgress { progress },
                         ),
                         transform: Transform {
                             translation: shape_translation,
-                            scale: Vec3::ONE * node.rect.extents.x.abs() * 0.5,
+                            scale: Vec3::ONE * scale * 0.5,
                             ..Default::default()
                         },
                         ..default()
@@ -233,7 +236,7 @@ pub struct WordButtonCompletion {
     pub tile: LayoutWordTile,
 }
 
-pub const WORD_BUTTON_HOLD_SECONDS: f32 = 0.4;
+pub const WORD_BUTTON_HOLD_SECONDS: f32 = 0.3;
 
 #[repr(C)]
 #[derive(Debug, Reflect, Clone, Copy, TypeUuid, Default, PartialEq)]
@@ -244,11 +247,11 @@ impl ExtractToShader for WordButtonBoxShader {
     type Shader = Self;
     type ParamsQuery<'a> = (
         &'a WordButtonCompletion,
-        &'a ShaderAspectRatio,
+        &'a ShaderProportions,
         &'a ShaderProgress,
     );
-    type ParamsBundle = (WordButtonCompletion, ShaderAspectRatio, ShaderProgress);
-    type ResourceParams<'w> = Res<'w, PressedButton>;
+    type ParamsBundle = (WordButtonCompletion, ShaderProportions, ShaderProgress);
+    type ResourceParams<'w> = (Res<'w, PressedButton>, Res<'w, Time>);
 
     fn get_params(
         query_item: <Self::ParamsQuery<'_> as bevy::ecs::query::WorldQuery>::Item<'_>,
@@ -260,19 +263,21 @@ impl ExtractToShader for WordButtonBoxShader {
                 tile,
                 previous_completion,
             },
-            ShaderAspectRatio { height },
+            ShaderProportions { height, width },
             ShaderProgress { progress },
         ) = query_item;
 
-        if let Some(pressed_duration) = match resource.as_ref() {
+        let (pressed_button, time) = resource;
+
+        if let Some(pressed_duration) = match pressed_button.as_ref() {
             PressedButton::None | PressedButton::NoInteractionPressed { .. } => None,
             PressedButton::Pressed {
                 interaction,
-                duration,
+                start_elapsed,
                 ..
             } => {
                 if interaction == &ButtonInteraction::WordButton(*tile) {
-                    Some(duration)
+                    Some(time.elapsed().saturating_sub(*start_elapsed))
                 } else {
                     None
                 }
@@ -280,17 +285,17 @@ impl ExtractToShader for WordButtonBoxShader {
             PressedButton::PressedAfterActivated { .. } => None,
         } {
             let color = match completion {
-                Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color().into(),
+                Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color(),
                 Completion::ManualHinted(_) => palette::WORD_BACKGROUND_MANUAL_HINT.convert_color(),
-                Completion::Complete => palette::WORD_BACKGROUND_COMPLETE.convert_color().into(),
+                Completion::Complete{..} => palette::WORD_BACKGROUND_COMPLETE.convert_color(),
             };
 
             let color2 = match completion {
-                Completion::Unstarted => palette::WORD_BACKGROUND_PROGRESS.convert_color().into(),
+                Completion::Unstarted => palette::WORD_BACKGROUND_PROGRESS.convert_color(),
                 Completion::ManualHinted(_) => {
                     palette::WORD_BACKGROUND_MANUAL_HINT2.convert_color()
                 }
-                Completion::Complete => palette::WORD_BACKGROUND_COMPLETE.convert_color().into(),
+                Completion::Complete{..} => palette::WORD_BACKGROUND_COMPLETE.convert_color(),
             };
 
             let progress =
@@ -299,19 +304,20 @@ impl ExtractToShader for WordButtonBoxShader {
             HorizontalGradientBoxShaderParams {
                 color: color.into(),
                 height: *height,
+                width: *width,
                 progress,
                 color2: color2.into(),
                 rounding: crate::rounding::WORD_BUTTON_NORMAL,
             }
         } else {
             let color = match completion {
-                Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color().into(),
+                Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color(),
                 Completion::ManualHinted(_) => palette::WORD_BACKGROUND_MANUAL_HINT.convert_color(),
-                Completion::Complete => {
+                Completion::Complete{..} => {
                     if previous_completion.is_some_and(|x| x.is_manual_hinted()) {
                         palette::WORD_BACKGROUND_MANUAL_HINT.convert_color()
                     } else {
-                        palette::WORD_BACKGROUND_UNSTARTED.convert_color().into()
+                        palette::WORD_BACKGROUND_UNSTARTED.convert_color()
                     }
                 }
             };
@@ -319,12 +325,13 @@ impl ExtractToShader for WordButtonBoxShader {
             let color2 = match completion {
                 Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color(),
                 Completion::ManualHinted(_) => palette::WORD_BACKGROUND_MANUAL_HINT.convert_color(),
-                Completion::Complete => palette::WORD_BACKGROUND_COMPLETE.convert_color(),
+                Completion::Complete{..} => palette::WORD_BACKGROUND_COMPLETE.convert_color(),
             };
 
             HorizontalGradientBoxShaderParams {
                 color: color.into(),
                 height: *height,
+                width: *width,
                 progress: *progress,
                 color2: color2.into(),
                 rounding: crate::rounding::WORD_BUTTON_NORMAL,
@@ -338,7 +345,7 @@ impl ParameterizedShader for WordButtonBoxShader {
 
     fn fragment_body() -> impl Into<String> {
         SDFColorCall {
-            sdf: "shaders::box::sdf(in.pos, in.height, in.rounding)",
+            sdf: "shaders::box::sdf(in.pos, in.width, in.height, in.rounding)",
             fill_color:
                 "fill::horizontal_gradient::fill(d, in.color, in.pos, in.progress, in.color2)",
         }

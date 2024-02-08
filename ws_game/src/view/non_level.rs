@@ -52,6 +52,12 @@ impl MavericNode for NonLevelView {
                         ls.group().total_count()
                     )
                 }
+                NonLevel::DailyChallengeNotLoaded => {
+                    format!("Could not load Daily Challenge")
+                }
+                NonLevel::DailyChallengeLoading => {
+                    format!("Loading Daily Challenges")
+                }
             };
 
             let text_color = if selfie_mode.is_selfie_mode {
@@ -90,40 +96,48 @@ impl MavericNode for NonLevelView {
             );
 
             let interaction_text = match node.non_level {
-                NonLevel::BeforeTutorial => "Ok".to_string(),
-                NonLevel::AfterCustomLevel => "Restart".to_string(),
-                NonLevel::DailyChallengeFinished => "Next".to_string(),
+                NonLevel::BeforeTutorial => Some("Ok".to_string()),
+                NonLevel::AfterCustomLevel => Some("Restart".to_string()),
+                NonLevel::DailyChallengeFinished => Some("Next".to_string()),
+                NonLevel::DailyChallengeNotLoaded => Some("Retry".to_string()),
                 NonLevel::DailyChallengeReset | NonLevel::LevelSequenceReset(_) => {
-                    "Reset".to_string()
+                    Some("Reset".to_string())
                 }
-                NonLevel::LevelSequenceAllFinished(_) => "Next".to_string(),
+                NonLevel::LevelSequenceAllFinished(_) => Some("Next".to_string()),
                 NonLevel::DailyChallengeCountdown { todays_index } => {
-                    format!("Replay #{}", todays_index + 1)
+                    Some(format!("Replay #{}", todays_index + 1))
                 }
-                NonLevel::LevelSequenceMustPurchaseGroup(_) => "Purchase".to_string(),
+                NonLevel::LevelSequenceMustPurchaseGroup(_) => Some("Purchase".to_string()),
+                NonLevel::DailyChallengeLoading => None,
             };
 
-            let fill_color = if selfie_mode.is_selfie_mode {
-                palette::CONGRATS_BUTTON_FILL_SELFIE
+            let (fill_color, border) = if selfie_mode.is_selfie_mode {
+                (
+                    palette::CONGRATS_BUTTON_FILL_SELFIE.convert_color(),
+                    ShaderBorder::NONE,
+                )
             } else {
-                palette::CONGRATS_BUTTON_FILL_NORMAL
-            }
-            .convert_color();
+                (Color::NONE, ShaderBorder::from_color(text_color))
+            };
 
-            commands.add_child(
-                "interaction",
-                WSButtonNode {
-                    text: interaction_text,
-                    font_size: size
-                        .font_size(&NonLevelLayoutEntity::InteractButton, &non_level_type),
-                    rect: size.get_rect(&NonLevelLayoutEntity::InteractButton, &node.selfie_mode),
-                    interaction: ButtonInteraction::NonLevelInteractionButton,
-                    text_color,
-                    fill_color,
-                    clicked_fill_color: BUTTON_CLICK_FILL.convert_color(),
-                },
-                &(),
-            );
+            if let Some(interaction_text) = interaction_text {
+                commands.add_child(
+                    "interaction",
+                    WSButtonNode {
+                        text: interaction_text,
+                        font_size: size
+                            .font_size(&NonLevelLayoutEntity::InteractButton, &non_level_type),
+                        rect: size
+                            .get_rect(&NonLevelLayoutEntity::InteractButton, &node.selfie_mode),
+                        interaction: ButtonInteraction::NonLevelInteractionButton,
+                        text_color,
+                        fill_color,
+                        clicked_fill_color: BUTTON_CLICK_FILL.convert_color(),
+                        border,
+                    },
+                    &(),
+                );
+            }
         });
     }
 }

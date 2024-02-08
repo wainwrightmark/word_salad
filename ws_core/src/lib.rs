@@ -3,10 +3,10 @@ pub mod colors;
 pub mod designed_level;
 pub mod display_word;
 pub mod finder;
+pub mod font_icons;
 pub mod layout;
 pub mod level_type;
 pub mod word;
-pub mod font_icons;
 pub use crate::prelude::*;
 
 pub mod prelude {
@@ -15,8 +15,8 @@ pub mod prelude {
     pub use crate::colors::*;
     pub use crate::designed_level::*;
     pub use crate::display_word::*;
-    pub use crate::word::*;
     pub use crate::font_icons::*;
+    pub use crate::word::*;
 
     pub use arrayvec::ArrayVec;
     pub use geometrid::prelude::HasCenter;
@@ -31,7 +31,6 @@ pub mod prelude {
     pub type CharsArray = ArrayVec<Character, 16>;
     pub type Grid = geometrid::tile_map::TileMap<Character, 4, 4, 16>;
     pub type GridSet = geometrid::tile_set::TileSet16<4, 4, 16>;
-    // pub type Vertex = geometrid::vertex::Vertex<4, 4>;
     pub type Solution = ArrayVec<Tile, 16>;
 
     pub fn try_make_grid(text: &str) -> Option<Grid> {

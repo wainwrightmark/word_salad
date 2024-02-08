@@ -1,5 +1,6 @@
 {
   "imports": {
+    "@capacitor-community/admob": "./@capacitor-community/admob.js",
     "@capacitor/app": "./@capacitor/app.js",
     "@capacitor/core": "./@capacitor/core.js",
     "@capacitor/device": "./@capacitor/device.js",
@@ -8,6 +9,7 @@
     "@capacitor/share": "./@capacitor/share.js",
     "@capacitor/splash-screen": "./@capacitor/splash-screen.js",
     "@capacitor/status-bar": "./@capacitor/status-bar.js",
+    "@capacitor/toast": "./@capacitor/toast.js",
     "@capgo/capacitor-screen-recorder": "./@capgo/capacitor-screen-recorder.js",
     "@openforge/capacitor-game-connect": "./@openforge/capacitor-game-connect.js",
     "capacitor-rate-app": "./capacitor-rate-app.js"

@@ -1,0 +1,11 @@
+[
+    {
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.wordsalad.app",
+        "sha256_cert_fingerprints":
+          ["52:44:08:DC:DD:B9:53:1C:19:AE:C6:01:95:D1:A1:04:47:09:D1:5E:2A:A1:88:F6:A1:C8:9F:6B:E3:17:BF:BF"]
+      }
+    }
+  ]

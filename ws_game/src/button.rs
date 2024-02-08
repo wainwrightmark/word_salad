@@ -1,20 +1,23 @@
 use bevy::prelude::*;
-use itertools::Either;
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
 use std::time::Duration;
 use strum::EnumIs;
+use ws_core::layout::entities::recording_button::ToggleRecordingButton;
 use ws_core::layout::entities::{
-    CongratsButton, CongratsLayoutEntity, LayoutTopBar, LayoutWordTile,
+    CongratsButton, CongratsLayoutEntity, LayoutWordTile, WordSaladLogo,
 };
 
-use crate::completion::*;
 use crate::menu_layout::main_menu_back_button::MainMenuBackButton;
 use crate::menu_layout::word_salad_menu_layout::WordSaladMenuLayoutEntity;
 use crate::prelude::level_group_layout::LevelGroupLayoutEntity;
 use crate::prelude::levels_menu_layout::LevelsMenuLayoutEntity;
 use crate::prelude::main_menu_layout::MainMenuLayoutEntity;
-use crate::purchases::Purchases;
+use crate::purchases::{PurchaseEvent, Purchases};
+use crate::{asynchronous, completion::*};
 use crate::{input, prelude::*, startup};
+
+use self::hints_menu_layout::HintsLayoutEntity;
+use self::store_menu_layout::StoreLayoutEntity;
 
 pub struct ButtonPlugin;
 
@@ -29,7 +32,7 @@ impl Plugin for ButtonPlugin {
         app.add_systems(
             Update,
             handle_button_activations
-            .run_if(|ev: EventReader<ButtonActivated>| !ev.is_empty())
+                .run_if(|ev: EventReader<ButtonActivated>| !ev.is_empty())
                 .after(input::handle_mouse_input)
                 .after(input::handle_touch_input)
                 .after(track_held_button),
@@ -48,77 +51,69 @@ fn track_held_button(
 
     let PressedButton::Pressed {
         interaction,
-        duration,
-        start_state,
+        start_elapsed,
+        ..
     } = pressed_button.as_ref()
     else {
         return;
     };
     startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     let interaction = *interaction;
-    let duration = *duration + time.delta();
+    let held_duration = time.elapsed().saturating_sub(*start_elapsed);
 
     //info!("{duration:?}");
 
     let ButtonPressType::OnHold(hold_duration) = interaction.button_press_type() else {
-        *pressed_button.as_mut() = PressedButton::Pressed {
-            interaction,
-            duration,
-            start_state: *start_state,
-        };
         return;
     };
 
-    if duration >= hold_duration {
+    if held_duration >= hold_duration {
         *pressed_button = PressedButton::PressedAfterActivated { interaction };
         event_writer.send(ButtonActivated(interaction));
-    } else {
-        *pressed_button.as_mut() = PressedButton::Pressed {
-            interaction,
-            duration,
-            start_state: *start_state,
-        };
     }
 }
 
 fn handle_button_activations(
     mut events: EventReader<ButtonActivated>,
-    mut current_level: Res<CurrentLevel>,
+    current_level: Res<CurrentLevel>,
+    found_words: Res<FoundWordsState>,
     mut menu_state: ResMut<MenuState>,
-    mut chosen_state: ResMut<ChosenState>,
-    mut found_words: ResMut<FoundWordsState>,
-    mut hint_state: ResMut<HintState>,
     mut popup_state: ResMut<PopupState>,
     mut sequence_completion: ResMut<SequenceCompletion>,
     mut daily_challenge_completion: ResMut<DailyChallengeCompletion>,
-    mut purchases: ResMut<Purchases>,
+    purchases: Res<Purchases>,
     mut video_resource: ResMut<VideoResource>,
-    video_events: AsyncEventWriter<VideoEvent>,
 
     daily_challenges: Res<DailyChallenges>,
     mut level_time: ResMut<LevelTime>,
-    mut selfie_mode_history: ResMut<SelfieModeHistory>,
 
-    mut event_writers:(EventWriter<AnimateSolutionsEvent>, EventWriter<ChangeLevelEvent>) ,
+    mut event_writers: (
+        EventWriter<ChangeLevelEvent>,
+        EventWriter<AdRequestEvent>,
+        EventWriter<PurchaseEvent>,
+        EventWriter<HintEvent>,
+        AsyncEventWriter<VideoEvent>,
+        AsyncEventWriter<DailyChallengeDataLoadedEvent>,
+    ),
 ) {
     for ev in events.read() {
         ev.0.on_activated(
-            &mut current_level,
+            &current_level,
+            &found_words,
             &mut menu_state,
-            &mut chosen_state,
-            &mut found_words,
-            &mut hint_state,
             &mut popup_state,
             &mut sequence_completion,
             &mut daily_challenge_completion,
             &mut video_resource,
-            &video_events,
             daily_challenges.as_ref(),
             &mut level_time,
-            &mut selfie_mode_history,
-            &mut purchases,
+            &purchases,
             &mut event_writers.0,
-            &mut event_writers.1
+            &mut event_writers.1,
+            &mut event_writers.2,
+            &mut event_writers.3,
+            &event_writers.4,
+            &mut event_writers.5,
         )
     }
 }
@@ -126,7 +121,7 @@ fn handle_button_activations(
 #[derive(Debug, PartialEq, Event)]
 pub struct ButtonActivated(pub ButtonInteraction);
 
-#[derive(Debug, Clone, Copy, PartialEq, Resource, Default, EnumIs)]
+#[derive(Debug, Clone, Copy, PartialEq, Resource, Default, EnumIs, MavericContext)]
 pub enum PressedButton {
     #[default]
     None,
@@ -135,7 +130,7 @@ pub enum PressedButton {
     },
     Pressed {
         interaction: ButtonInteraction,
-        duration: Duration,
+        start_elapsed: Duration,
         start_state: StartPressState,
     },
     PressedAfterActivated {
@@ -160,11 +155,11 @@ pub enum ButtonPressType {
 
 #[derive(Debug, Clone, Copy, PartialEq, Component, EnumIs)]
 pub enum PopupInteraction {
-    ClickGreyedOut,
+    ClickSufferAlone,
     ClickClose,
-    HintsBuyMore,
-    SelfieInformation,
-    SelfieDontShowAgain,
+    ClickWatchAd,
+    ClickBuyPack1,
+    ClickBuyPack2,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Component, EnumIs, Default)]
@@ -175,8 +170,11 @@ pub enum ButtonInteraction {
     LevelsMenu(LevelsMenuLayoutEntity),
     LevelGroupMenu(LevelGroupLayoutEntity),
     WordSaladMenu(WordSaladMenuLayoutEntity),
+    MainStoreMenu(StoreLayoutEntity),
+    HintsMenu(HintsLayoutEntity),
     WordButton(LayoutWordTile),
-    TopMenuItem(LayoutTopBar),
+    WordSaladLogo,
+    ToggleRecordingButton,
     Congrats(CongratsButton),
     Popup(PopupInteraction),
     MenuBackButton,
@@ -192,6 +190,18 @@ impl ButtonInteraction {
         } else {
             ButtonPressType::OnEnd
         }
+    }
+}
+
+impl From<HintsLayoutEntity> for ButtonInteraction{
+    fn from(value: HintsLayoutEntity) -> Self {
+        ButtonInteraction::HintsMenu(value)
+    }
+}
+
+impl From<StoreLayoutEntity> for ButtonInteraction{
+    fn from(value: StoreLayoutEntity) -> Self {
+        ButtonInteraction::MainStoreMenu(value)
     }
 }
 
@@ -220,9 +230,14 @@ impl From<LayoutWordTile> for ButtonInteraction {
         ButtonInteraction::WordButton(val)
     }
 }
-impl From<LayoutTopBar> for ButtonInteraction {
-    fn from(val: LayoutTopBar) -> Self {
-        ButtonInteraction::TopMenuItem(val)
+impl From<WordSaladLogo> for ButtonInteraction {
+    fn from(_: WordSaladLogo) -> Self {
+        ButtonInteraction::WordSaladLogo
+    }
+}
+impl From<ToggleRecordingButton> for ButtonInteraction {
+    fn from(_: ToggleRecordingButton) -> Self {
+        ButtonInteraction::ToggleRecordingButton
     }
 }
 
@@ -254,22 +269,24 @@ impl ButtonInteraction {
     fn on_activated(
         &self,
         current_level: &CurrentLevel,
+        _found_words: &FoundWordsState, //needed for share
         menu_state: &mut ResMut<MenuState>,
-        chosen_state: &mut ResMut<ChosenState>,
-        found_words: &mut ResMut<FoundWordsState>,
-        hint_state: &mut ResMut<HintState>,
         popup_state: &mut ResMut<PopupState>,
 
         sequence_completion: &mut ResMut<SequenceCompletion>,
         daily_challenge_completion: &mut ResMut<DailyChallengeCompletion>,
         video_resource: &mut ResMut<VideoResource>,
-        video_events: &AsyncEventWriter<VideoEvent>,
+
         daily_challenges: &DailyChallenges,
         level_time: &mut ResMut<LevelTime>,
-        selfie_mode_history: &mut ResMut<SelfieModeHistory>,
-        purchases: &mut ResMut<Purchases>,
-        animate_solution_events: &mut EventWriter<AnimateSolutionsEvent>,
-        change_level_events: &mut EventWriter<ChangeLevelEvent>
+        purchases: &Purchases,
+
+        change_level_events: &mut EventWriter<ChangeLevelEvent>,
+        ad_request_events: &mut EventWriter<AdRequestEvent>,
+        purchase_events: &mut EventWriter<PurchaseEvent>,
+        hint_events: &mut EventWriter<HintEvent>,
+        video_events: &AsyncEventWriter<VideoEvent>,
+        daily_challenge_events: &AsyncEventWriter<DailyChallengeDataLoadedEvent>,
     ) {
         match self {
             ButtonInteraction::None => {}
@@ -289,8 +306,9 @@ impl ButtonInteraction {
             ButtonInteraction::MainMenu(MainMenuLayoutEntity::Puzzles) => {
                 *menu_state.as_mut() = MenuState::ChooseLevelsPage;
             }
+            #[cfg(target_arch = "wasm32")]
             ButtonInteraction::MainMenu(MainMenuLayoutEntity::Store) => {
-                //todo do something
+                *menu_state.as_mut() = MenuState::MainStorePage;
             }
             ButtonInteraction::MainMenu(MainMenuLayoutEntity::SelfieMode) => {
                 video_resource.toggle_selfie_mode(video_events.clone());
@@ -320,29 +338,37 @@ impl ButtonInteraction {
             ButtonInteraction::WordSaladMenu(WordSaladMenuLayoutEntity::YesterdayPuzzle) => {
                 let index = DailyChallenges::get_today_index();
                 {
-                    change_level_events.send(CurrentLevel::DailyChallenge {
-                        index: index.saturating_sub(1),
-                    }.into());
+                    change_level_events.send(
+                        CurrentLevel::DailyChallenge {
+                            index: index.saturating_sub(1),
+                        }
+                        .into(),
+                    );
                 }
                 menu_state.close();
             }
             ButtonInteraction::WordSaladMenu(WordSaladMenuLayoutEntity::EreYesterdayPuzzle) => {
                 let index = DailyChallenges::get_today_index();
                 {
-                    change_level_events.send(CurrentLevel::DailyChallenge {
-                        index: index.saturating_sub(2),
-                    }.into());
+                    change_level_events.send(
+                        CurrentLevel::DailyChallenge {
+                            index: index.saturating_sub(2),
+                        }
+                        .into(),
+                    );
                 }
                 menu_state.close();
             }
             ButtonInteraction::WordSaladMenu(WordSaladMenuLayoutEntity::NextPuzzle) => {
-                if let Some(index) = DailyChallenges::get_today_index()
+
+                if let Some(level) = DailyChallenges::get_today_index()
                     .checked_sub(3)
-                    .and_then(|x| daily_challenge_completion.get_next_incomplete_daily_challenge(x))
+                    .and_then(|x| daily_challenge_completion.get_next_incomplete_daily_challenge(x, daily_challenges).actual_level())
                 {
-                    change_level_events.send(CurrentLevel::DailyChallenge { index }.into());
+                    change_level_events.send(level.into());
                 } else {
-                    change_level_events.send(CurrentLevel::NonLevel(NonLevel::DailyChallengeReset).into());
+                    change_level_events
+                        .send(CurrentLevel::NonLevel(NonLevel::DailyChallengeReset).into());
                 }
                 menu_state.close();
             }
@@ -364,9 +390,8 @@ impl ButtonInteraction {
                         let sequence = level_group.get_level_sequence(*index);
 
                         let level = sequence_completion
-                            .get_next_level_index(sequence, &purchases)
+                            .get_next_level_index(sequence, purchases)
                             .to_level(sequence);
-
 
                         change_level_events.send(level.into());
 
@@ -375,23 +400,19 @@ impl ButtonInteraction {
                 }
             },
             ButtonInteraction::WordButton(word) => {
-                if hint_state.hints_remaining == 0 {
-                    popup_state.0 = Some(PopupType::BuyMoreHints);
-                } else if let Either::Left(level) = current_level.level(daily_challenges) {
-                    found_words.try_hint_word(hint_state, level, word.0, chosen_state, animate_solution_events);
-                }
-            }
-            ButtonInteraction::TopMenuItem(LayoutTopBar::HintCounter) => {
-                popup_state.0 = Some(PopupType::BuyMoreHints);
+                hint_events.send(HintEvent { word_index: word.0 });
             }
 
-            ButtonInteraction::TopMenuItem(LayoutTopBar::ToggleRecordingButton) => {
+            ButtonInteraction::ToggleRecordingButton => {
                 if video_resource.is_selfie_mode {
                     if video_resource.is_recording {
-                        crate::video::stop_screen_record(video_resource);
+                        asynchronous::spawn_and_run(crate::video::stop_screen_record(
+                            video_events.clone(),
+                        ));
                     } else {
-                        crate::video::start_screen_record(video_resource);
-
+                        asynchronous::spawn_and_run(crate::video::start_screen_record(
+                            video_events.clone(),
+                        ));
                     }
                 }
             }
@@ -404,43 +425,50 @@ impl ButtonInteraction {
                         }
                         NonLevel::AfterCustomLevel => {
                             if let Some(l) = CUSTOM_LEVEL.get() {
-                                change_level_events.send(CurrentLevel::Custom {
-                                    name: l.name.to_string(),
-                                }.into());
+                                change_level_events.send(
+                                    CurrentLevel::Custom {
+                                        name: l.name.to_string(),
+                                    }
+                                    .into(),
+                                );
                             }
                         }
                         NonLevel::LevelSequenceMustPurchaseGroup(sequence) => {
-                            purchases.groups_purchased.insert(sequence.group());
-                            let level: CurrentLevel = sequence_completion
-                                .get_next_level_index(sequence, &purchases)
-                                .to_level(sequence);
-
-
-                            change_level_events.send(level.into());
+                            purchase_events.send(PurchaseEvent::BuyLevelGroup(sequence));
                         }
                         NonLevel::DailyChallengeReset => {
                             daily_challenge_completion.reset_daily_challenge_completion();
-                            if let Some(index) = daily_challenge_completion
-                                .get_next_incomplete_daily_challenge_from_today()
+                            match daily_challenge_completion
+                                .get_next_incomplete_daily_challenge_from_today(daily_challenges)
                             {
-                                change_level_events.send(CurrentLevel::DailyChallenge { index }.into());
+                                NextDailyChallengeResult::Level1(index) => {
+                                    change_level_events
+                                        .send(CurrentLevel::DailyChallenge { index }.into());
+                                }
+                                _ => {}
                             }
                         }
                         NonLevel::LevelSequenceReset(ls) => {
                             sequence_completion.restart_level_sequence_completion(ls);
-                            change_level_events.send(CurrentLevel::Fixed {
-                                level_index: 0,
-                                sequence: ls,
-                            }.into());
+                            change_level_events.send(
+                                CurrentLevel::Fixed {
+                                    level_index: 0,
+                                    sequence: ls,
+                                }
+                                .into(),
+                            );
                         }
                         NonLevel::DailyChallengeCountdown { todays_index } => {
-                            change_level_events.send(CurrentLevel::DailyChallenge {
-                                index: todays_index,
-                            }.into());
+                            change_level_events.send(
+                                CurrentLevel::DailyChallenge {
+                                    index: todays_index,
+                                }
+                                .into(),
+                            );
                         }
                         NonLevel::DailyChallengeFinished => {
                             let new_current_level = match sequence_completion
-                                .get_next_level_sequence(None, &purchases)
+                                .get_next_level_sequence(None, purchases)
                             {
                                 Some((sequence, level_index)) => CurrentLevel::Fixed {
                                     level_index,
@@ -453,7 +481,7 @@ impl ButtonInteraction {
                         }
                         NonLevel::LevelSequenceAllFinished(seq) => {
                             let new_current_level = match sequence_completion
-                                .get_next_level_sequence(Some(seq), &purchases)
+                                .get_next_level_sequence(Some(seq), purchases)
                             {
                                 Some((sequence, level_index)) => CurrentLevel::Fixed {
                                     level_index,
@@ -464,17 +492,42 @@ impl ButtonInteraction {
 
                             change_level_events.send(new_current_level.into());
                         }
+                        NonLevel::DailyChallengeNotLoaded => {
+                            asynchronous::spawn_and_run(load_levels_async(
+                                daily_challenge_events.clone(),
+                                true,
+                            ));
+                            change_level_events.send(
+                                CurrentLevel::NonLevel(NonLevel::DailyChallengeLoading).into(),
+                            );
+                        }
+                        NonLevel::DailyChallengeLoading => {
+                            //This button should not exist
+                        }
                     }
                 }
             }
-            ButtonInteraction::TopMenuItem(LayoutTopBar::WordSaladLogo) => {
-                menu_state.toggle()
+            ButtonInteraction::MainStoreMenu(m)=>{
+                match m{ //TODO!
+                    StoreLayoutEntity::RemoveAds => {},
+                    StoreLayoutEntity::BuyHints => {
+                        *menu_state.as_mut() = MenuState::HintsStorePage;
+                    },
+                    StoreLayoutEntity::BuyLevelGroup(_) => {},
+                }
             }
+            ButtonInteraction::HintsMenu(_)=>{
+                //TODO!
+            }
+
+
+            ButtonInteraction::WordSaladLogo => menu_state.toggle(),
             ButtonInteraction::Congrats(CongratsButton::Next) => {
                 let next_level = current_level.get_next_level(
-                    &daily_challenge_completion,
-                    &sequence_completion,
-                    &purchases,
+                    daily_challenge_completion,
+                    sequence_completion,
+                    purchases,
+                    daily_challenges,
                 );
                 change_level_events.send(next_level.into());
             }
@@ -488,41 +541,34 @@ impl ButtonInteraction {
                 if let Some(share_text) = try_generate_share_text(
                     current_level,
                     level_time.as_ref(),
-                    found_words.as_ref(),
+                    _found_words,
                     daily_challenges,
                 ) {
                     crate::wasm::share(share_text);
                 }
             }
             ButtonInteraction::Popup(
-                PopupInteraction::ClickClose | PopupInteraction::ClickGreyedOut,
+                PopupInteraction::ClickClose | PopupInteraction::ClickSufferAlone,
             ) => {
                 popup_state.0 = None;
             }
 
-            ButtonInteraction::Popup(PopupInteraction::HintsBuyMore) => {
-                hint_state.hints_remaining += 3; //TODO actually make them buy them!
-                hint_state.total_bought_hints += 3;
-                popup_state.0 = None;
-            }
-
-            ButtonInteraction::Popup(PopupInteraction::SelfieInformation) => {
-                #[cfg(target_arch = "wasm32")]
-                {
-                    let url = match Platform::CURRENT{
-                        Platform::IOs => "https://support.apple.com/en-gb/HT207935#:~:text=Go%20to%20Settings%20%3E%20Control%20Centre,iPhone%2C%20or%20on%20your%20iPad.&text=%2C%20then%20wait%20for%20the%203%2Dsecond%20countdown",
-                        Platform::Android => "https://support.google.com/android/answer/9075928?hl=en-GB",
-                        Platform::Web => "https://support.apple.com/en-gb/HT207935#:~:text=Go%20to%20Settings%20%3E%20Control%20Centre,iPhone%2C%20or%20on%20your%20iPad.&text=%2C%20then%20wait%20for%20the%203%2Dsecond%20countdown", // todo look at device type
-                        Platform::Other => "https://support.apple.com/en-gb/HT207935#:~:text=Go%20to%20Settings%20%3E%20Control%20Centre,iPhone%2C%20or%20on%20your%20iPad.&text=%2C%20then%20wait%20for%20the%203%2Dsecond%20countdown", //todo better links
-                    };
-
-                    crate::wasm::open_link(url);
+            ButtonInteraction::Popup(PopupInteraction::ClickWatchAd) => {
+                if let Some(PopupType::BuyMoreHints(he)) = popup_state.0.take() {
+                    ad_request_events.send(AdRequestEvent::RequestReward(he))
                 }
             }
 
-            ButtonInteraction::Popup(PopupInteraction::SelfieDontShowAgain) => {
-                selfie_mode_history.do_not_show_selfie_mode_tutorial = true;
-                popup_state.0 = None;
+            ButtonInteraction::Popup(PopupInteraction::ClickBuyPack1) => {
+                if let Some(PopupType::BuyMoreHints(he)) = popup_state.0.take() {
+                    purchase_events.send(PurchaseEvent::BuyHintsPack1(he))
+                }
+            }
+
+            ButtonInteraction::Popup(PopupInteraction::ClickBuyPack2) => {
+                if let Some(PopupType::BuyMoreHints(he)) = popup_state.0.take() {
+                    purchase_events.send(PurchaseEvent::BuyHintsPack2(he))
+                }
             }
         }
     }
@@ -558,5 +604,5 @@ fn try_generate_share_text(
         }
     };
 
-    Some(format!("{first_lines}\n{second_line}\n{url}"))
+    Some(format!("{url}\n{first_lines}\n{second_line}"))
 }

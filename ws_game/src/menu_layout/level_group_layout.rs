@@ -13,7 +13,11 @@ pub struct LevelGroupLayoutEntity {
 }
 
 impl LevelGroupLayoutEntity {
-    pub fn get_text(&self, completion: &SequenceCompletion, group: &LevelGroup) -> (String, String) {
+    pub fn get_text(
+        &self,
+        completion: &SequenceCompletion,
+        group: &LevelGroup,
+    ) -> (String, String) {
         let name = self.name(group);
 
         let sequence = group.get_level_sequence(self.index);

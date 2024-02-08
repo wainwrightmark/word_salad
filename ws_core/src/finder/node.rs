@@ -1,6 +1,9 @@
 use crate::{prelude, Character, Grid};
+use const_sized_bit_set::BitSet;
 use itertools::Itertools;
 use std::{cell::Cell, num::NonZeroU8, str::FromStr};
+
+use self::helpers::FinderGroup;
 
 use super::{
     counter::{Counter, SolutionCollector},
@@ -16,6 +19,27 @@ pub struct GridResult {
     pub grid: Grid,
     pub letters: LetterCounts,
     pub words: Vec<FinderSingleWord>,
+}
+
+impl GridResult {
+    pub fn get_word_bitset<const W: usize>(&self, all_words: &[FinderGroup]) -> BitSet<W> {
+        let mut set: BitSet<W> = Default::default();
+        //todo perf
+
+        for (index, group) in all_words.iter().enumerate() {
+            if group.words.iter().all(|w| self.words.contains(w)) {
+                set.set_bit(index, true);
+            }
+        }
+
+        if set.count() as usize != self.words.len() {
+            log::error!("Grid had a {words_len} words ({words}) but produced a set with {set_count} members ({set_members})",
+            set_members = set.into_iter().map(|x| all_words[x].text).join(", "),
+            words_len=self.words.len(), set_count = set.count(), words = self.words.iter().map(|x|x.text) .join(", "));
+        }
+
+        set
+    }
 }
 
 impl FromStr for GridResult {

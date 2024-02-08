@@ -21,7 +21,7 @@ use crate::level_sequence::LevelSequence;
 )]
 pub enum LevelGroup {
     Geography,
-    NaturalWorld
+    NaturalWorld,
 }
 
 impl LevelGroup {
@@ -32,9 +32,19 @@ impl LevelGroup {
     pub fn get_sequences(&self) -> &'static [LevelSequence] {
         use LevelSequence::*;
         match self {
-            LevelGroup::Geography => &[USStates, EuropeanCountries, SouthAndEastAsianCountries, MiddleEasternCountries, EuropeanCapitals, SouthAndEastAsianCapitals, MiddleEasternCapitals],
+            LevelGroup::Geography => &[
+                USStates,
+                EuropeanCountries,
+                SouthAndEastAsianCountries,
+                MiddleEasternCountries,
+                EuropeanCapitals,
+                SouthAndEastAsianCapitals,
+                MiddleEasternCapitals,
+            ],
 
-            LevelGroup::NaturalWorld => &[Mammals, Birds, Insects, Fruit, Vegetables, Gemstones,  Elements],
+            LevelGroup::NaturalWorld => &[
+                Mammals, Birds, Insects, Fruit, Vegetables, Gemstones, Elements,
+            ],
         }
     }
 

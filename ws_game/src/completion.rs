@@ -6,9 +6,9 @@ use serde::{Deserialize, Serialize};
 use ws_levels::{level_group::LevelGroup, level_sequence::LevelSequence};
 
 use crate::{
+    level_time::LevelTime,
     prelude::{CurrentLevel, DailyChallenges, FoundWordsState, NonLevel, Streak},
     purchases::Purchases,
-    state::HintState,
 };
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, Default, Clone, Resource, MavericContext)]
@@ -29,10 +29,16 @@ impl TrackableResource for TutorialCompletion {
     const KEY: &'static str = "TutorialCompletion";
 }
 
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+pub struct LevelResult {
+    pub seconds: u32,
+    pub hints_used: u32,
+}
+
 #[derive(Debug, PartialEq, Serialize, Deserialize, Default, Clone, Resource, MavericContext)]
 pub struct DailyChallengeCompletion {
+    pub results: HashMap<usize, LevelResult>,
     total_completion: FixedBitSet,
-    current_completion: FixedBitSet,
 }
 
 impl TrackableResource for DailyChallengeCompletion {
@@ -108,7 +114,7 @@ impl SequenceCompletion {
             .current_index;
 
         if index >= sequence.level_count() {
-            return NextLevelResult::NoMoreLevels;
+            NextLevelResult::NoMoreLevels
         } else if index >= sequence.free_level_count()
             && !purchases.groups_purchased.contains(&sequence.group())
         {
@@ -134,29 +140,72 @@ impl SequenceCompletion {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum NextDailyChallengeResult{
+    Level1(usize),
+    AllFinished1,
+    TodayNotLoaded1
+}
+
+impl  NextDailyChallengeResult {
+    pub fn actual_level(&self)->Option<CurrentLevel>{
+        match self{
+            NextDailyChallengeResult::Level1(index) => Some(CurrentLevel::DailyChallenge { index: *index }),
+            NextDailyChallengeResult::AllFinished1 => None,
+            NextDailyChallengeResult::TodayNotLoaded1 => None,
+        }
+    }
+
+    pub fn level_index(&self)-> Option<usize>{
+        match self{
+            NextDailyChallengeResult::Level1(index) => Some(*index),
+            NextDailyChallengeResult::AllFinished1 => None,
+            NextDailyChallengeResult::TodayNotLoaded1 => None,
+        }
+    }
+}
+
+impl From<NextDailyChallengeResult> for CurrentLevel {
+    fn from(val: NextDailyChallengeResult) -> Self {
+        match val{
+            NextDailyChallengeResult::Level1(index) => CurrentLevel::DailyChallenge { index },
+            NextDailyChallengeResult::AllFinished1 => CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished),
+            NextDailyChallengeResult::TodayNotLoaded1 => CurrentLevel::NonLevel(NonLevel::DailyChallengeNotLoaded),
+        }
+    }
+}
+
 impl DailyChallengeCompletion {
     pub fn reset_daily_challenge_completion(&mut self) {
-        self.current_completion.clear();
+        self.results.clear();
+        //keep total completions
     }
 
     pub fn is_daily_challenge_complete(&self, index: usize) -> bool {
         self.total_completion.contains(index)
     }
 
-    pub fn get_next_incomplete_daily_challenge_from_today(&self) -> Option<usize> {
+    pub fn get_next_incomplete_daily_challenge_from_today(&self, daily_challenges: &DailyChallenges) -> NextDailyChallengeResult {
         let today_date_index = DailyChallenges::get_today_index();
-        self.get_next_incomplete_daily_challenge(today_date_index)
+        self.get_next_incomplete_daily_challenge(today_date_index, daily_challenges)
     }
 
-    pub fn get_next_incomplete_daily_challenge(&self, today_date_index: usize) -> Option<usize> {
-        if !self.current_completion.contains(today_date_index) {
-            return Some(today_date_index);
+    pub fn get_next_incomplete_daily_challenge(&self, today_date_index: usize, daily_challenges: &DailyChallenges) -> NextDailyChallengeResult {
+        let mut current_index = today_date_index;
+
+        if daily_challenges.levels.get(current_index).is_none(){
+            return NextDailyChallengeResult::TodayNotLoaded1;
         }
 
-        let mut set = self.current_completion.clone();
-        set.toggle_range(..);
-
-        set.ones().take(today_date_index).last()
+        loop {
+            if !self.results.contains_key(&current_index) {
+                return NextDailyChallengeResult::Level1(current_index);
+            }
+            match current_index.checked_sub(1){
+                Some(ci) => current_index = ci,
+                None => return NextDailyChallengeResult::AllFinished1,
+            }
+        }
     }
 
     pub fn get_daily_challenges_complete(&self) -> usize {
@@ -164,16 +213,16 @@ impl DailyChallengeCompletion {
     }
 }
 
-pub fn track_level_completion<'c>(
+pub fn track_level_completion(
     mut sequence_completion: ResMut<SequenceCompletion>,
     mut daily_challenge_completion: ResMut<DailyChallengeCompletion>,
     mut tutorial_completion: ResMut<TutorialCompletion>,
     current_level: Res<CurrentLevel>,
     found_words: Res<FoundWordsState>,
-    mut hints_state: ResMut<HintState>,
     mut streak: ResMut<Streak>,
+    level_time: Res<LevelTime>,
 ) {
-    if !found_words.is_changed() || !found_words.is_level_complete() {
+    if !found_words.is_changed() || !found_words.is_level_complete() || found_words.word_completions.is_empty() {
         return;
     }
 
@@ -188,22 +237,12 @@ pub fn track_level_completion<'c>(
                 .completions
                 .entry(*sequence)
                 .or_default();
-            completion.current_index = completion.current_index + 1;
+            completion.current_index += 1;
             if completion.total_complete < number_complete {
                 completion.total_complete = number_complete;
 
                 if completion.total_complete % 5 == 0 {
-                    #[cfg(any(feature = "android", feature = "ios"))]
-                    {
-                        crate::logging::do_or_report_error(
-                            capacitor_bindings::rate::Rate::request_review(),
-                        );
-                    }
-                }
-
-                if number_complete <= sequence.level_count() {
-                    hints_state.hints_remaining += 1;
-                    hints_state.total_earned_hints += 1;
+                    crate::platform_specific::request_review();
                 }
             }
         }
@@ -220,11 +259,6 @@ pub fn track_level_completion<'c>(
             completion.current_index = (completion.current_index + 1) % TUTORIAL_LEVEL_COUNT;
             if completion.total_complete < number_complete {
                 completion.total_complete = number_complete;
-
-                if number_complete <= TUTORIAL_LEVEL_COUNT {
-                    hints_state.hints_remaining += 1;
-                    hints_state.total_earned_hints += 1;
-                }
             }
         }
 
@@ -234,8 +268,6 @@ pub fn track_level_completion<'c>(
                     .total_completion
                     .grow(index.saturating_add(1));
                 daily_challenge_completion.total_completion.insert(*index);
-                hints_state.hints_remaining += 1;
-                hints_state.total_earned_hints += 1;
 
                 let index = DailyChallenges::get_today_index();
                 {
@@ -244,12 +276,7 @@ pub fn track_level_completion<'c>(
                         info!("Streak increased by one");
                         streak.current += 1;
 
-                        #[cfg(any(feature = "android", feature = "ios"))]
-                        {
-                            crate::logging::do_or_report_error(
-                                capacitor_bindings::rate::Rate::request_review(),
-                            );
-                        }
+                        crate::platform_specific::request_review();
                     } else {
                         info!("Streak set to one");
                         streak.current = 1;
@@ -259,10 +286,13 @@ pub fn track_level_completion<'c>(
                     streak.longest = streak.current.max(streak.longest);
                 }
             }
-            daily_challenge_completion
-                .current_completion
-                .grow(index.saturating_add(1));
-            daily_challenge_completion.current_completion.insert(*index);
+            daily_challenge_completion.results.insert(
+                *index,
+                LevelResult {
+                    seconds: level_time.total_elapsed().as_secs() as u32,
+                    hints_used: found_words.hints_used as u32,
+                },
+            );
         }
         CurrentLevel::NonLevel(..) => {}
     }
@@ -273,20 +303,48 @@ pub mod test {
     use crate::prelude::*;
 
     #[test]
-    pub fn go() {
+    pub fn test_daily_challenge_completion() {
         let mut completion = DailyChallengeCompletion::default();
-        completion.current_completion.grow(4);
+        let mut daily_challenges = DailyChallenges::default();
+        daily_challenges.levels.push(DesignedLevel::unknown());
+        daily_challenges.levels.push(DesignedLevel::unknown());
+        daily_challenges.levels.push(DesignedLevel::unknown());
+        daily_challenges.levels.push(DesignedLevel::unknown());
 
-        assert_eq!(Some(3), completion.get_next_incomplete_daily_challenge(3));
+        assert_eq!(NextDailyChallengeResult::Level1(3), completion.get_next_incomplete_daily_challenge(3, &daily_challenges));
 
-        completion.current_completion.set(3, true);
-        completion.current_completion.set(2, true);
+        completion.results.insert(
+            3,
+            LevelResult {
+                seconds: 0,
+                hints_used: 0,
+            },
+        );
+        completion.results.insert(
+            2,
+            LevelResult {
+                seconds: 0,
+                hints_used: 0,
+            },
+        );
 
-        assert_eq!(Some(1), completion.get_next_incomplete_daily_challenge(3));
+        assert_eq!(NextDailyChallengeResult::Level1(1), completion.get_next_incomplete_daily_challenge(3, &daily_challenges));
 
-        completion.current_completion.set(1, true);
-        completion.current_completion.set(0, true);
+        completion.results.insert(
+            1,
+            LevelResult {
+                seconds: 0,
+                hints_used: 0,
+            },
+        );
+        completion.results.insert(
+            0,
+            LevelResult {
+                seconds: 0,
+                hints_used: 0,
+            },
+        );
 
-        assert_eq!(None, completion.get_next_incomplete_daily_challenge(3));
+        assert_eq!(NextDailyChallengeResult::AllFinished1, completion.get_next_incomplete_daily_challenge(3, &daily_challenges));
     }
 }

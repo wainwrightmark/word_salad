@@ -22,7 +22,7 @@ impl Plugin for ShapesPlugin {
         app.add_plugins(ExtractToShaderPlugin::<BasicBoxShaderExtraction>::default());
         app.add_plugins(ExtractToShaderPlugin::<ButtonBoxShaderExtraction>::default());
         app.add_plugins(ExtractToShaderPlugin::<BoxWithBorderShader>::default());
-        app.add_plugins(ExtractToShaderPlugin::<CircleShader>::default());
+        //app.add_plugins(ExtractToShaderPlugin::<CircleShader>::default());
         app.add_plugins(ExtractToShaderPlugin::<SparkleShader>::default());
         app.add_plugins(ExtractToShaderPlugin::<
             crate::prelude::fireworks::FireworksShader,
@@ -43,38 +43,42 @@ pub struct BoxShader;
 struct ButtonBoxShaderExtraction;
 
 impl ExtractToShader for ButtonBoxShaderExtraction {
-    type Shader = BoxShader;
+    type Shader = BoxWithBorderShader;
     type ParamsQuery<'a> = (
         &'a ShaderColor,
         &'a ShaderRounding,
-        &'a ShaderAspectRatio,
+        &'a ShaderProportions,
         &'a ShaderSecondColor,
+        &'a ShaderBorder,
         &'a ButtonInteraction,
     );
     type ParamsBundle = (
         ShaderColor,
         ShaderRounding,
-        ShaderAspectRatio,
+        ShaderProportions,
         ShaderSecondColor,
+        ShaderBorder,
         ButtonInteraction,
     );
-    type ResourceParams<'w> = Res<'w, PressedButton>;
+    type ResourceParams<'w> = (Res<'w, PressedButton>, Res<'w, Time>);
 
     fn get_params(
         query_item: <Self::ParamsQuery<'_> as bevy::ecs::query::WorldQuery>::Item<'_>,
         resource: &<Self::ResourceParams<'_> as bevy::ecs::system::SystemParam>::Item<'_, '_>,
     ) -> <Self::Shader as ParameterizedShader>::Params {
-        let (color, rounding, height, color2, button_interaction) = query_item;
+        let (color, rounding, proportions, color2, shader_border, button_interaction) = query_item;
 
-        if let Some(duration) = match resource.as_ref() {
+        let (pressed_button, time) = resource;
+
+        if let Some(duration) = match pressed_button.as_ref() {
             PressedButton::None | PressedButton::NoInteractionPressed { .. } => None,
             PressedButton::Pressed {
                 interaction,
-                duration,
+                start_elapsed,
                 ..
             } => {
                 if interaction == button_interaction {
-                    Some(duration)
+                    Some(time.elapsed().saturating_sub(*start_elapsed))
                 } else {
                     None
                 }
@@ -89,28 +93,34 @@ impl ExtractToShader for ButtonBoxShaderExtraction {
 
             let new_color = rgba2 * ratio + (rgba1 * (1.0 - ratio));
 
-            BoxShaderParams {
+            BoxWithBorderShaderParams {
                 color: new_color,
                 rounding: rounding.rounding,
-                height: height.height,
+                width: proportions.width,
+                height: proportions.height,
+                border_color: shader_border.border_color.into(),
+                border: shader_border.border,
             }
         } else {
-            BoxShaderParams {
+            BoxWithBorderShaderParams {
                 color: color.color.into(),
                 rounding: rounding.rounding,
-                height: height.height,
+                width: proportions.width,
+                height: proportions.height,
+                border_color: shader_border.border_color.into(),
+                border: shader_border.border,
             }
         }
     }
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
-struct BasicBoxShaderExtraction;
+pub struct BasicBoxShaderExtraction;
 
 impl ExtractToShader for BasicBoxShaderExtraction {
     type Shader = BoxShader;
-    type ParamsQuery<'a> = (&'a ShaderColor, &'a ShaderRounding, &'a ShaderAspectRatio);
-    type ParamsBundle = (ShaderColor, ShaderRounding, ShaderAspectRatio);
+    type ParamsQuery<'a> = (&'a ShaderColor, &'a ShaderRounding, &'a ShaderProportions);
+    type ParamsBundle = (ShaderColor, ShaderRounding, ShaderProportions);
     type ResourceParams<'w> = ();
 
     fn get_params(
@@ -121,6 +131,7 @@ impl ExtractToShader for BasicBoxShaderExtraction {
             color: query_item.0.color.into(),
             rounding: query_item.1.rounding,
             height: query_item.2.height,
+            width: query_item.2.width,
         }
     }
 }
@@ -130,7 +141,7 @@ impl ParameterizedShader for BoxShader {
 
     fn fragment_body() -> impl Into<String> {
         SDFColorCall {
-            sdf: "shaders::box::sdf(in.pos, in.height, in.rounding)",
+            sdf: "shaders::box::sdf(in.pos, in.width, in.height, in.rounding)",
             fill_color: "fill::simple::fill(d, in.color, in.pos)",
         }
     }
@@ -146,7 +157,10 @@ impl ParameterizedShader for BoxShader {
 #[derive(Debug, Clone, Copy, PartialEq, Default, Reflect, Pod, Zeroable)]
 pub struct BoxShaderParams {
     pub color: LinearRGBA,
-    // height as a proportion of width
+    // Width as a proportion of scale in range 0..=1.0
+    pub width: f32,
+
+    // Height as a proportion of scale in range 0..=1.0
     pub height: f32,
     pub rounding: f32,
 }
@@ -157,8 +171,10 @@ impl ShaderParams for BoxShaderParams {}
 #[derive(Debug, Clone, Copy, PartialEq, Default, Reflect, Pod, Zeroable)]
 pub struct HorizontalGradientBoxShaderParams {
     pub color: LinearRGBA,
-    // height as a proportion of width
+    /// height as a proportion of scale
     pub height: f32,
+    /// width as a proportion of scale
+    pub width: f32,
     pub rounding: f32,
     pub progress: f32,
     pub color2: LinearRGB,
@@ -188,7 +204,7 @@ impl From<Color> for ShaderSecondColor {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Component, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Component)]
 pub struct ShaderRounding {
     pub rounding: f32,
 }
@@ -198,16 +214,33 @@ impl From<f32> for ShaderRounding {
         Self { rounding }
     }
 }
+impl Default for ShaderRounding{
+    fn default() -> Self {
+        Self { rounding: 0.0 }
+    }
+}
 
 /// height / width
-#[derive(Debug, Clone, Copy, PartialEq, Component, Default)]
-pub struct ShaderAspectRatio {
+#[derive(Debug, Clone, Copy, PartialEq, Component)]
+pub struct ShaderProportions {
+    /// width in range 0..=1.0
+    pub width: f32,
+    /// height in range 0..=1.0
     pub height: f32,
 }
 
-impl From<f32> for ShaderAspectRatio {
-    fn from(height: f32) -> Self {
-        Self { height }
+impl Default for ShaderProportions {
+    fn default() -> Self {
+        Self { width: 1.0, height: 1.0 }
+    }
+}
+
+impl From<Vec2> for ShaderProportions {
+    fn from(value: Vec2) -> Self {
+        Self {
+            width: value.x,
+            height: value.y,
+        }
     }
 }
 
@@ -221,10 +254,10 @@ impl ExtractToShader for BoxWithBorderShader {
     type ParamsQuery<'a> = (
         &'a ShaderColor,
         &'a ShaderRounding,
-        &'a ShaderAspectRatio,
+        &'a ShaderProportions,
         &'a ShaderBorder,
     );
-    type ParamsBundle = (ShaderColor, ShaderRounding, ShaderAspectRatio, ShaderBorder);
+    type ParamsBundle = (ShaderColor, ShaderRounding, ShaderProportions, ShaderBorder);
     type ResourceParams<'w> = ();
 
     fn get_params(
@@ -234,6 +267,8 @@ impl ExtractToShader for BoxWithBorderShader {
         BoxWithBorderShaderParams {
             color: query_item.0.color.into(),
             rounding: query_item.1.rounding,
+
+            width: query_item.2.width,
             height: query_item.2.height,
             border_color: query_item.3.border_color.into(),
             border: query_item.3.border,
@@ -246,7 +281,7 @@ impl ParameterizedShader for BoxWithBorderShader {
 
     fn fragment_body() -> impl Into<String> {
         SDFColorCall {
-            sdf: "shaders::box::sdf(in.pos, in.height, in.rounding)",
+            sdf: "shaders::box::sdf(in.pos, in.width, in.height, in.rounding)",
             fill_color: "fill::fill_with_outline::fill(d, in.color, in.border, in.border_color)",
         }
     }
@@ -261,12 +296,12 @@ impl ParameterizedShader for BoxWithBorderShader {
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Default, Reflect, Pod, Zeroable)]
 pub struct BoxWithBorderShaderParams {
-    // height as a proportion of width
+    pub width: f32,
     pub height: f32,
     pub rounding: f32,
 
     pub color: LinearRGBA,
-    pub border_color: LinearRGB,
+    pub border_color: LinearRGBA,
     pub border: f32,
 }
 
@@ -274,6 +309,20 @@ pub struct BoxWithBorderShaderParams {
 pub struct ShaderBorder {
     pub border_color: Color,
     pub border: f32,
+}
+
+impl ShaderBorder {
+    pub const NONE: Self = ShaderBorder {
+        border_color: Color::NONE,
+        border: 0.0,
+    };
+
+    pub fn from_color(color: Color) -> Self {
+        Self {
+            border_color: color,
+            border: 0.01,
+        }
+    }
 }
 
 impl ShaderParams for BoxWithBorderShaderParams {}
@@ -292,42 +341,42 @@ impl From<f32> for ShaderProgress {
     }
 }
 
-#[derive(Debug, TypeUuid, Default, PartialEq, Clone, Copy)]
-#[uuid = "6d310234-5019-4cd4-9f60-ebabd7dca30b"]
-pub struct CircleShader;
+// #[derive(Debug, TypeUuid, Default, PartialEq, Clone, Copy)]
+// #[uuid = "6d310234-5019-4cd4-9f60-ebabd7dca30b"]
+// pub struct CircleShader;
 
-impl ExtractToShader for CircleShader {
-    type Shader = Self;
-    type ParamsQuery<'a> = &'a ShaderColor;
-    type ParamsBundle = ShaderColor;
-    type ResourceParams<'w> = ();
+// impl ExtractToShader for CircleShader {
+//     type Shader = Self;
+//     type ParamsQuery<'a> = &'a ShaderColor;
+//     type ParamsBundle = ShaderColor;
+//     type ResourceParams<'w> = ();
 
-    fn get_params(
-        query_item: <Self::ParamsQuery<'_> as bevy::ecs::query::WorldQuery>::Item<'_>,
-        _resource: &<Self::ResourceParams<'_> as bevy::ecs::system::SystemParam>::Item<'_, '_>,
-    ) -> <Self::Shader as ParameterizedShader>::Params {
-        ColorParams {
-            color: query_item.color.into(),
-        }
-    }
-}
+//     fn get_params(
+//         query_item: <Self::ParamsQuery<'_> as bevy::ecs::query::WorldQuery>::Item<'_>,
+//         _resource: &<Self::ResourceParams<'_> as bevy::ecs::system::SystemParam>::Item<'_, '_>,
+//     ) -> <Self::Shader as ParameterizedShader>::Params {
+//         ColorParams {
+//             color: query_item.color.into(),
+//         }
+//     }
+// }
 
-impl ParameterizedShader for CircleShader {
-    type Params = ColorParams;
+// impl ParameterizedShader for CircleShader {
+//     type Params = ColorParams;
 
-    fn fragment_body() -> impl Into<String> {
-        SDFColorCall {
-            sdf: "sdf::circle::sdf(in.pos)",
-            fill_color: "fill::simple::fill(d, in.color, in.pos)",
-        }
-    }
+//     fn fragment_body() -> impl Into<String> {
+//         SDFColorCall {
+//             sdf: "sdf::circle::sdf(in.pos)",
+//             fill_color: "fill::simple::fill(d, in.color, in.pos)",
+//         }
+//     }
 
-    fn imports() -> impl Iterator<Item = FragmentImport> {
-        [SIMPLE_FILL_IMPORT, CIRCLE_IMPORT].into_iter()
-    }
+//     fn imports() -> impl Iterator<Item = FragmentImport> {
+//         [SIMPLE_FILL_IMPORT, CIRCLE_IMPORT].into_iter()
+//     }
 
-    const FRAME: Frame = Frame::square(1.0);
-}
+//     const FRAME: Frame = Frame::square(1.0);
+// }
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Default, Reflect, bytemuck::Pod, bytemuck::Zeroable)]
@@ -420,10 +469,10 @@ const SPARKLE_IMPORT: FragmentImport = FragmentImport {
     import_path: "fill::sparkle",
 };
 
-const CIRCLE_IMPORT: FragmentImport = FragmentImport {
-    path: "shaders/sdf/circle.wgsl",
-    import_path: "sdf::circle",
-};
+// const CIRCLE_IMPORT: FragmentImport = FragmentImport {
+//     path: "shaders/sdf/circle.wgsl",
+//     import_path: "sdf::circle",
+// };
 
 pub fn basic_box_node1(
     width: f32,
@@ -433,10 +482,18 @@ pub fn basic_box_node1(
     rounding: f32,
 ) -> impl MavericNode<Context = ()> {
     let height = height.abs();
-    let scale = width.abs();
+    let width = width.abs();
+    let scale = height.max(width);
 
     ShaderBundle::<BasicBoxShaderExtraction> {
-        parameters: (color.into(), rounding.into(), (height / scale).into()),
+        parameters: (
+            color.into(),
+            rounding.into(),
+            ShaderProportions {
+                width: width / scale,
+                height: height / scale,
+            },
+        ),
         transform: Transform {
             translation,
             scale: Vec3::ONE * scale * 0.5,
@@ -452,18 +509,25 @@ pub fn button_box_node(
     translation: Vec3,
     color: Color,
     color2: Color,
+
     rounding: f32,
+    border: ShaderBorder,
     button_interaction: ButtonInteraction,
 ) -> impl MavericNode<Context = ()> {
     let height = height.abs();
-    let scale = width.abs();
+    let width = width.abs();
+    let scale = height.max(width);
 
     ShaderBundle::<ButtonBoxShaderExtraction> {
         parameters: (
             color.into(),
             rounding.into(),
-            (height / scale).into(),
+            ShaderProportions {
+                width: width / scale,
+                height: height / scale,
+            },
             color2.into(),
+            border,
             button_interaction,
         ),
         transform: Transform {
@@ -480,20 +544,23 @@ pub fn box_with_border_node(
     height: f32,
     translation: Vec3,
     color: Color,
-    border_color: Color,
+
     rounding: f32,
-    border_proportion: f32,
+    border: ShaderBorder,
 ) -> impl MavericNode<Context = ()> {
-    let scale = width;
+    let height = height.abs();
+    let width = width.abs();
+    let scale = height.max(width);
+
     ShaderBundle::<BoxWithBorderShader> {
         parameters: (
             color.into(),
             rounding.into(),
-            (height / scale).into(),
-            ShaderBorder {
-                border_color,
-                border: border_proportion,
+            ShaderProportions {
+                width: width / scale,
+                height: height / scale,
             },
+            border,
         ),
         transform: Transform {
             translation,

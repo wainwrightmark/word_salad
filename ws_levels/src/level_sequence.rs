@@ -67,7 +67,13 @@ impl LevelSequence {
     pub fn group(self) -> LevelGroup {
         use LevelSequence::*;
         match self {
-            USStates | EuropeanCountries | EuropeanCapitals | SouthAndEastAsianCountries | MiddleEasternCountries | SouthAndEastAsianCapitals | MiddleEasternCapitals => LevelGroup::Geography,
+            USStates
+            | EuropeanCountries
+            | EuropeanCapitals
+            | SouthAndEastAsianCountries
+            | MiddleEasternCountries
+            | SouthAndEastAsianCapitals
+            | MiddleEasternCapitals => LevelGroup::Geography,
             Mammals | Birds | Insects | Fruit | Vegetables | Gemstones | Elements => {
                 LevelGroup::NaturalWorld
             }
@@ -86,7 +92,7 @@ impl LevelSequence {
         levels.len()
     }
 
-    pub fn free_level_count(self)-> usize{
+    pub fn free_level_count(self) -> usize {
         2
     }
 
@@ -100,7 +106,6 @@ impl LevelSequence {
             LevelSequence::SouthAndEastAsianCapitals => &*SOUTH_AND_EAST_ASIAN_CAPITALS,
             LevelSequence::MiddleEasternCapitals => &*MIDDLE_EASTERN_CAPITALS,
 
-
             LevelSequence::Insects => &*INSECTS,
             LevelSequence::Fruit => &*FRUIT,
             LevelSequence::Gemstones => &*GEMSTONES,
@@ -108,7 +113,6 @@ impl LevelSequence {
             LevelSequence::Elements => &*ELEMENTS,
             LevelSequence::Mammals => &*MAMMALS,
             LevelSequence::Birds => &*BIRDS,
-
         };
         levels
     }
@@ -118,10 +122,10 @@ impl LevelSequence {
             LevelSequence::USStates => "US States",
             LevelSequence::EuropeanCapitals => "European Capitals",
             LevelSequence::EuropeanCountries => "European Countries",
-            LevelSequence::SouthAndEastAsianCountries => "South & East Asian Countries",
+            LevelSequence::SouthAndEastAsianCountries => "S & E Asian Countries",
             LevelSequence::MiddleEasternCountries => "Middle Eastern Countries",
             LevelSequence::MiddleEasternCapitals => "Middle Eastern Capitals",
-            LevelSequence::SouthAndEastAsianCapitals => "South & East Asian Capitals",
+            LevelSequence::SouthAndEastAsianCapitals => "S & E Asian Capitals",
 
             LevelSequence::Insects => "Insects",
             LevelSequence::Gemstones => "Gemstones",
