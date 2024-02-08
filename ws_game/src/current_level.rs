@@ -64,10 +64,9 @@ impl Default for CurrentLevel {
 pub static CUSTOM_LEVEL: OnceLock<DesignedLevel> = OnceLock::new();
 
 impl CurrentLevel {
-
     /// Returns true if hints used on this level should be deducted from the users remaining hints
-    pub fn should_spend_hints(&self)-> bool{
-        match self{
+    pub fn should_spend_hints(&self) -> bool {
+        match self {
             CurrentLevel::Tutorial { .. } => false,
             CurrentLevel::Fixed { .. } => true,
             CurrentLevel::DailyChallenge { .. } => true,
@@ -135,18 +134,16 @@ impl CurrentLevel {
         daily_challenge_completion: &DailyChallengeCompletion,
         sequence_completion: &SequenceCompletion,
         purchases: &Purchases,
+        daily_challenges: &DailyChallenges,
     ) -> CurrentLevel {
         match self {
             CurrentLevel::Tutorial { index } => {
                 let index = index.saturating_add(1);
                 match get_tutorial_level(index) {
                     Some(_) => CurrentLevel::Tutorial { index },
-                    None => match daily_challenge_completion
-                        .get_next_incomplete_daily_challenge_from_today()
-                    {
-                        Some(index) => CurrentLevel::DailyChallenge { index },
-                        None => CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished),
-                    },
+                    None => daily_challenge_completion
+                        .get_next_incomplete_daily_challenge_from_today(daily_challenges)
+                        .into(),
                 }
             }
             CurrentLevel::Fixed {
@@ -155,12 +152,9 @@ impl CurrentLevel {
             } => sequence_completion
                 .get_next_level_index(*sequence, purchases)
                 .to_level(*sequence),
-            CurrentLevel::DailyChallenge { .. } => {
-                match daily_challenge_completion.get_next_incomplete_daily_challenge_from_today() {
-                    Some(index) => CurrentLevel::DailyChallenge { index },
-                    None => CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished),
-                }
-            }
+            CurrentLevel::DailyChallenge { .. } => daily_challenge_completion
+                .get_next_incomplete_daily_challenge_from_today(daily_challenges)
+                .into(),
             CurrentLevel::Custom { .. } => NonLevel::AfterCustomLevel.into(),
             CurrentLevel::NonLevel(x) => (*x).into(), //No change
         }

@@ -23,6 +23,7 @@ pub struct CongratsContext {
     pub video_resource: VideoResource,
     pub streak: Streak,
     pub level_time: LevelTime,
+    pub daily_challenges: DailyChallenges
 }
 
 impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for CongratsContextWrapper<'w> {
@@ -36,6 +37,8 @@ impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for CongratsContextWrapper<'w>
             video_resource: Res::clone(&value.video_resource),
             streak: Res::clone(&value.streak),
             level_time: Res::clone(&value.level_time),
+            daily_challenges: Res::clone(&value.daily_challenges),
+
         }
     }
 }
@@ -256,6 +259,7 @@ impl MavericNode for CongratsView {
                                     &context.daily_challenge_completion,
                                     &context.sequence_completion,
                                     &Purchases::default(), //don't actually worry about purchases here :)
+                                    &context.daily_challenges
                                 );
 
                                 match next_level {

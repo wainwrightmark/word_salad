@@ -1,8 +1,7 @@
 use bevy::math::Vec2;
 use strum::{Display, EnumCount, EnumIter, IntoEnumIterator};
 use ws_core::{
-    layout::entities::*, LayoutSizing, LayoutStructure, LayoutStructureWithFont,
-    LayoutStructureWithStaticText, Spacing,
+    layout::entities::*, BasicColor, LayoutSizing, LayoutStructure, LayoutStructureWithFont, LayoutStructureWithTextOrImage, Spacing
 };
 
 use super::{MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
@@ -68,25 +67,41 @@ impl LayoutStructure for MainMenuLayoutEntity {
     }
 }
 
-impl LayoutStructureWithFont for MainMenuLayoutEntity {
+impl LayoutStructureWithFont for MainMenuLayoutEntity{
     type FontContext = ();
-    fn font_size(&self, _: &()) -> f32 {
+
+    fn font_size(&self, _context: &Self::FontContext) -> f32 {
         MENU_BUTTON_FONT_SIZE
     }
 }
 
-impl LayoutStructureWithStaticText for MainMenuLayoutEntity {
-    fn text(&self, _context: &Self::Context<'_>) -> &'static str {
+impl LayoutStructureWithTextOrImage for MainMenuLayoutEntity {
+    fn text_or_image(&self, _context: &Self::Context<'_>) -> ws_core::prelude::TextOrImage {
         use MainMenuLayoutEntity::*;
 
         match self {
-            Puzzles => "Puzzles",
-            Store => "Store",
-            SelfieMode => "Selfie Mode",
-            Tutorial => "Tutorial",
-            ResetPuzzle => "Reset Puzzle",
+            Puzzles => ws_core::TextOrImage::Text {
+                text: "Puzzles",
+            },
+            Store => ws_core::TextOrImage::Text {
+                text: "Store",
+            },
+            SelfieMode => ws_core::TextOrImage::Text {
+                text: "Selfie Mode",
+            },
+            Tutorial => ws_core::TextOrImage::Text {
+                text: "Tutorial",
+            },
+            ResetPuzzle => ws_core::TextOrImage::Text {
+                text: "Reset Puzzle",
+            },
             #[cfg(target_arch = "wasm32")]
-            PlaySteks => "Play Steks",
+            PlaySteks => ws_core::TextOrImage::Image {
+                path: "images/steks_button.png",
+                color: BasicColor::rgba(0.53, 0.68, 0.92, 1.0),
+                pressed_color: BasicColor::rgba(0.36, 0.55, 0.88, 1.0),
+                aspect_ratio: 7168.0 / 1024.0
+            },
         }
     }
 }

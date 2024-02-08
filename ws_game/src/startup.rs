@@ -1,7 +1,10 @@
 use std::sync::atomic::AtomicUsize;
 
 pub use crate::prelude::*;
-use crate::{achievements::AchievementsPlugin, input::InputPlugin, motion_blur::MotionBlurPlugin, purchases::PurchasesPlugin};
+use crate::{
+    achievements::AchievementsPlugin, input::InputPlugin, motion_blur::MotionBlurPlugin,
+    purchases::PurchasesPlugin,
+};
 use bevy::{log::LogPlugin, window::RequestRedraw};
 use nice_bevy_utils::{async_event_writer, window_size::WindowSizePlugin, CanRegisterAsyncEvent};
 use ws_core::layout::entities::*;
@@ -188,20 +191,11 @@ fn choose_level_on_game_load(
             _ => {}
         }
 
-        if let Some(index) =
-            daily_challenge_completion.get_next_incomplete_daily_challenge_from_today()
-        {
-            let today_level = CurrentLevel::DailyChallenge { index };
-            if today_level.level(&daily_challenges).is_left() {
-                //Only change to this level if we have loaded it already
+        let nl: CurrentLevel = daily_challenge_completion
+            .get_next_incomplete_daily_challenge_from_today(&daily_challenges)
+            .into();
 
-                return Some(today_level);
-            } else {
-                return Some(CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished));
-            }
-        }
-
-        None
+        Some(nl)
     }
 
     if let Some(level) = get_new_level(current_level, daily_challenge_completion, daily_challenges)

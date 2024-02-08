@@ -9,7 +9,7 @@ use strum::EnumIs;
 
 use ws_core::{
     palette::{self, BUTTON_CLICK_FILL},
-    LayoutStructure, LayoutStructureWithFont, LayoutStructureWithStaticText,
+    LayoutStructure, LayoutStructureWithFont, LayoutStructureWithTextOrImage,
 };
 use ws_levels::level_group::LevelGroup;
 
@@ -199,7 +199,7 @@ impl MavericNode for Menu {
                             )
                         },
                         |x| {
-                            if x.is_complete(&context.daily_challenge_completion) {
+                            if x.is_complete(&context.daily_challenge_completion, &context.daily_challenges) {
                                 button_fill_color_complete
                             } else {
                                 button_fill_color_incomplete
@@ -229,7 +229,7 @@ impl MavericNode for Menu {
 fn add_menu_items<
     R: MavericRoot,
     L: LayoutStructureWithFont<FontContext = ()>
-        + LayoutStructureWithStaticText
+        + LayoutStructureWithTextOrImage
         + Into<ButtonInteraction>,
 >(
     context: &<L as LayoutStructure>::Context<'_>,
@@ -241,22 +241,45 @@ fn add_menu_items<
     border: ShaderBorder,
 ) {
     for (index, entity) in L::iter_all(context).enumerate() {
-        let font_size = size.font_size::<L>(&entity, &());
         let rect = size.get_rect(&entity, context);
-        commands.add_child(
-            (index as u16, page),
-            WSButtonNode {
-                font_size,
-                rect,
-                text: entity.text(context),
-                interaction: entity.into(),
-                text_color,
-                fill_color,
-                clicked_fill_color: BUTTON_CLICK_FILL.convert_color(),
-                border,
-            },
-            &(),
-        );
+        match entity.text_or_image(context) {
+            TextOrImage::Text{
+                text,
+            } => {
+                let font_size = size.font_size::<L>(&entity, &());
+
+                commands.add_child(
+                    (index as u16, page),
+                    WSButtonNode {
+                        font_size,
+                        rect,
+                        text,
+                        interaction: entity.into(),
+                        text_color,
+                        fill_color,
+                        clicked_fill_color: BUTTON_CLICK_FILL.convert_color(),
+                        border,
+                    },
+                    &(),
+                );
+            }
+            TextOrImage::Image { path,color,pressed_color, aspect_ratio } => {
+                commands.add_child(
+                    (index as u16, page),
+                    WsImageButtonNode {
+                        rect,
+                        image_path: path,
+                        interaction: entity.into(),
+                        fill_color:color.convert_color(),
+                        clicked_fill_color:pressed_color.convert_color(),
+                        image_aspect_ratio: aspect_ratio,
+                        border,
+                    },
+                    &(),
+                );
+
+            }
+        }
     }
 }
 

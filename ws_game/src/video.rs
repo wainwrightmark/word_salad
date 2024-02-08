@@ -4,8 +4,6 @@ use nice_bevy_utils::{async_event_writer::AsyncEventWriter, CanRegisterAsyncEven
 
 use ws_core::layout::entities::SelfieMode;
 
-use crate::{platform_specific, startup};
-
 pub struct VideoPlugin;
 
 impl Plugin for VideoPlugin {
@@ -64,7 +62,7 @@ fn handle_video_event(mut res: ResMut<VideoResource>, mut events: EventReader<Vi
                 res.is_recording = false;
             }
         }
-        startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        crate::startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     }
 }
 
@@ -90,7 +88,6 @@ pub async fn start_screen_record(writer: AsyncEventWriter<VideoEvent>) {
         startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         // info!("Starting screen record");
         match r {
-
             Ok(r) => {
                 //info!("Recording started: state {r:?}");
                 match r.value {
@@ -102,7 +99,8 @@ pub async fn start_screen_record(writer: AsyncEventWriter<VideoEvent>) {
                     }
 
                     _ => {
-                        platform_specific::show_toast_async("Failed to start Screen Record").await;
+                        crate::platform_specific::show_toast_async("Failed to start Screen Record")
+                            .await;
                         writer
                             .send_async(VideoEvent::RecordingStopped)
                             .await
@@ -111,7 +109,7 @@ pub async fn start_screen_record(writer: AsyncEventWriter<VideoEvent>) {
                 }
             }
             Err(err) => {
-                platform_specific::show_toast_async("Could not start Screen Record").await;
+                crate::platform_specific::show_toast_async("Could not start Screen Record").await;
                 error!("{}", err)
             }
         }
@@ -132,7 +130,7 @@ pub async fn stop_screen_record(writer: AsyncEventWriter<VideoEvent>) {
                     .unwrap();
             }
             Err(err) => {
-                platform_specific::show_toast_async("Could not stop Screen Record").await;
+                crate::platform_specific::show_toast_async("Could not stop Screen Record").await;
                 error!("{}", err)
             }
         }
@@ -145,14 +143,14 @@ async fn start_selfie_mode_async(writer: AsyncEventWriter<VideoEvent>) {
     #[cfg(target_arch = "wasm32")]
     {
         let result = crate::wasm::start_selfie_mode_video().await;
-        startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        crate::startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         match result {
             Ok(()) => writer
                 .send_async(VideoEvent::SelfieModeStarted)
                 .await
                 .unwrap(),
             Err(err) => {
-                platform_specific::show_toast_async("Could not start Selfie Mode").await;
+                crate::platform_specific::show_toast_async("Could not start Selfie Mode").await;
                 error!("{}", err)
             }
         }
@@ -165,14 +163,14 @@ async fn stop_selfie_mode_async(writer: AsyncEventWriter<VideoEvent>) {
     #[cfg(target_arch = "wasm32")]
     {
         let result = crate::wasm::stop_selfie_mode_video().await;
-        startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        crate::startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         match result {
             Ok(()) => writer
                 .send_async(VideoEvent::SelfieModeStopped)
                 .await
                 .unwrap(),
             Err(err) => {
-                platform_specific::show_toast_async("Could not stop Selfie Mode").await;
+                crate::platform_specific::show_toast_async("Could not stop Selfie Mode").await;
                 error!("{}", err)
             }
         }

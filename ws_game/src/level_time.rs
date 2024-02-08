@@ -190,14 +190,10 @@ fn count_down(
 pub struct TimeCounterMarker;
 
 pub fn format_seconds(total_seconds: u64) -> String {
-    if total_seconds >= 3600 {
-        "60:00".to_string()
-    } else {
-        let mm = (total_seconds / 60) % 60;
-        let ss = total_seconds % 60;
+    let mm = (total_seconds / 60) % 60;
+    let ss = total_seconds % 60;
 
-        let time_str = format!("{mm:02}:{ss:02}");
+    let time_str = format!("{mm:02}:{ss:02}");
 
-        time_str
-    }
+    time_str
 }

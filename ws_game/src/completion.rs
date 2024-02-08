@@ -140,6 +140,41 @@ impl SequenceCompletion {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum NextDailyChallengeResult{
+    Level1(usize),
+    AllFinished1,
+    TodayNotLoaded1
+}
+
+impl  NextDailyChallengeResult {
+    pub fn actual_level(&self)->Option<CurrentLevel>{
+        match self{
+            NextDailyChallengeResult::Level1(index) => Some(CurrentLevel::DailyChallenge { index: *index }),
+            NextDailyChallengeResult::AllFinished1 => None,
+            NextDailyChallengeResult::TodayNotLoaded1 => None,
+        }
+    }
+
+    pub fn level_index(&self)-> Option<usize>{
+        match self{
+            NextDailyChallengeResult::Level1(index) => Some(*index),
+            NextDailyChallengeResult::AllFinished1 => None,
+            NextDailyChallengeResult::TodayNotLoaded1 => None,
+        }
+    }
+}
+
+impl From<NextDailyChallengeResult> for CurrentLevel {
+    fn from(val: NextDailyChallengeResult) -> Self {
+        match val{
+            NextDailyChallengeResult::Level1(index) => CurrentLevel::DailyChallenge { index },
+            NextDailyChallengeResult::AllFinished1 => CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished),
+            NextDailyChallengeResult::TodayNotLoaded1 => CurrentLevel::NonLevel(NonLevel::DailyChallengeNotLoaded),
+        }
+    }
+}
+
 impl DailyChallengeCompletion {
     pub fn reset_daily_challenge_completion(&mut self) {
         self.results.clear();
@@ -150,20 +185,26 @@ impl DailyChallengeCompletion {
         self.total_completion.contains(index)
     }
 
-    pub fn get_next_incomplete_daily_challenge_from_today(&self) -> Option<usize> {
+    pub fn get_next_incomplete_daily_challenge_from_today(&self, daily_challenges: &DailyChallenges) -> NextDailyChallengeResult {
         let today_date_index = DailyChallenges::get_today_index();
-        self.get_next_incomplete_daily_challenge(today_date_index)
+        self.get_next_incomplete_daily_challenge(today_date_index, daily_challenges)
     }
 
-    pub fn get_next_incomplete_daily_challenge(&self, today_date_index: usize) -> Option<usize> {
+    pub fn get_next_incomplete_daily_challenge(&self, today_date_index: usize, daily_challenges: &DailyChallenges) -> NextDailyChallengeResult {
         let mut current_index = today_date_index;
+
+        if daily_challenges.levels.get(current_index).is_none(){
+            return NextDailyChallengeResult::TodayNotLoaded1;
+        }
 
         loop {
             if !self.results.contains_key(&current_index) {
-                return Some(current_index);
+                return NextDailyChallengeResult::Level1(current_index);
             }
-
-            current_index = current_index.checked_sub(1)?;
+            match current_index.checked_sub(1){
+                Some(ci) => current_index = ci,
+                None => return NextDailyChallengeResult::AllFinished1,
+            }
         }
     }
 
@@ -264,8 +305,9 @@ pub mod test {
     #[test]
     pub fn go() {
         let mut completion = DailyChallengeCompletion::default();
+        let daily_challenges = DailyChallenges::default();
 
-        assert_eq!(Some(3), completion.get_next_incomplete_daily_challenge(3));
+        assert_eq!(NextDailyChallengeResult::Level1(3), completion.get_next_incomplete_daily_challenge(3, &daily_challenges));
 
         completion.results.insert(
             3,
@@ -282,7 +324,7 @@ pub mod test {
             },
         );
 
-        assert_eq!(Some(1), completion.get_next_incomplete_daily_challenge(3));
+        assert_eq!(NextDailyChallengeResult::Level1(1), completion.get_next_incomplete_daily_challenge(3, &daily_challenges));
 
         completion.results.insert(
             1,
@@ -299,6 +341,6 @@ pub mod test {
             },
         );
 
-        assert_eq!(None, completion.get_next_incomplete_daily_challenge(3));
+        assert_eq!(NextDailyChallengeResult::AllFinished1, completion.get_next_incomplete_daily_challenge(3, &daily_challenges));
     }
 }

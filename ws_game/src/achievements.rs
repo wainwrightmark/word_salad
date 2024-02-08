@@ -93,8 +93,12 @@ fn track_level_completion_achievements(
     sequence_completions: Res<SequenceCompletion>,
     daily_challenge_completions: Res<DailyChallengeCompletion>,
     level_time: Res<LevelTime>,
+    daily_challenges: Res<DailyChallenges>,
 ) {
-    if !found_words.is_changed() || !found_words.is_level_complete() || found_words.word_completions.is_empty() {
+    if !found_words.is_changed()
+        || !found_words.is_level_complete()
+        || found_words.word_completions.is_empty()
+    {
         return;
     }
 
@@ -119,9 +123,10 @@ fn track_level_completion_achievements(
             }
         }
         CurrentLevel::DailyChallenge { .. } => {
-            if daily_challenge_completions
-                .get_next_incomplete_daily_challenge(DailyChallenges::get_today_index())
-                .is_none()
+            if daily_challenge_completions.get_next_incomplete_daily_challenge(
+                DailyChallenges::get_today_index(),
+                &daily_challenges,
+            ) == NextDailyChallengeResult::AllFinished1
             {
                 maybe_unlock(&mut achievements, Achievement::CaesarSalad);
             }
@@ -156,19 +161,19 @@ fn track_level_completion_achievements(
         }
     }
 
-    if was_completed_alphabetically(&found_words){
+    if was_completed_alphabetically(&found_words) {
         maybe_unlock(&mut achievements, Achievement::AlphabetCity);
-    }
-    else if was_completed_reverse_alphabetically(&found_words){
+    } else if was_completed_reverse_alphabetically(&found_words) {
         maybe_unlock(&mut achievements, Achievement::BackToFront);
     }
 }
 
-fn was_completed_alphabetically(state: &FoundWordsState)-> bool{
-
-    for (expected, completion) in state.word_completions.iter().enumerate(){
-        let Completion::Complete { index } = completion else {return  false};
-        if expected != *index as usize{
+fn was_completed_alphabetically(state: &FoundWordsState) -> bool {
+    for (expected, completion) in state.word_completions.iter().enumerate() {
+        let Completion::Complete { index } = completion else {
+            return false;
+        };
+        if expected != *index as usize {
             return false;
         }
     }
@@ -176,11 +181,12 @@ fn was_completed_alphabetically(state: &FoundWordsState)-> bool{
     true
 }
 
-fn was_completed_reverse_alphabetically(state: &FoundWordsState)-> bool{
-
-    for (expected, completion) in state.word_completions.iter().rev().enumerate(){
-        let Completion::Complete { index } = completion else {return  false};
-        if expected != *index as usize{
+fn was_completed_reverse_alphabetically(state: &FoundWordsState) -> bool {
+    for (expected, completion) in state.word_completions.iter().rev().enumerate() {
+        let Completion::Complete { index } = completion else {
+            return false;
+        };
+        if expected != *index as usize {
             return false;
         }
     }

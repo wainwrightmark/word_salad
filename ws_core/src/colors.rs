@@ -7,7 +7,7 @@ pub struct BasicColor {
 }
 
 impl BasicColor {
-    pub(crate) const fn rgba(r: f32, g: f32, b: f32, a: f32) -> Self {
+    pub  const fn rgba(r: f32, g: f32, b: f32, a: f32) -> Self {
         Self {
             red: r,
             green: g,

@@ -90,7 +90,7 @@ fn handle_button_activations(
         EventWriter<PurchaseEvent>,
         EventWriter<HintEvent>,
         AsyncEventWriter<VideoEvent>,
-        AsyncEventWriter<DailyChallengeDataLoadedEvent>
+        AsyncEventWriter<DailyChallengeDataLoadedEvent>,
     ),
 ) {
     for ev in events.read() {
@@ -102,7 +102,6 @@ fn handle_button_activations(
             &mut sequence_completion,
             &mut daily_challenge_completion,
             &mut video_resource,
-
             daily_challenges.as_ref(),
             &mut level_time,
             &purchases,
@@ -111,7 +110,7 @@ fn handle_button_activations(
             &mut event_writers.2,
             &mut event_writers.3,
             &event_writers.4,
-            &mut event_writers.5
+            &mut event_writers.5,
         )
     }
 }
@@ -343,11 +342,12 @@ impl ButtonInteraction {
                 menu_state.close();
             }
             ButtonInteraction::WordSaladMenu(WordSaladMenuLayoutEntity::NextPuzzle) => {
-                if let Some(index) = DailyChallenges::get_today_index()
+
+                if let Some(level) = DailyChallenges::get_today_index()
                     .checked_sub(3)
-                    .and_then(|x| daily_challenge_completion.get_next_incomplete_daily_challenge(x))
+                    .and_then(|x| daily_challenge_completion.get_next_incomplete_daily_challenge(x, daily_challenges).actual_level())
                 {
-                    change_level_events.send(CurrentLevel::DailyChallenge { index }.into());
+                    change_level_events.send(level.into());
                 } else {
                     change_level_events
                         .send(CurrentLevel::NonLevel(NonLevel::DailyChallengeReset).into());
@@ -420,11 +420,14 @@ impl ButtonInteraction {
                         }
                         NonLevel::DailyChallengeReset => {
                             daily_challenge_completion.reset_daily_challenge_completion();
-                            if let Some(index) = daily_challenge_completion
-                                .get_next_incomplete_daily_challenge_from_today()
+                            match daily_challenge_completion
+                                .get_next_incomplete_daily_challenge_from_today(daily_challenges)
                             {
-                                change_level_events
-                                    .send(CurrentLevel::DailyChallenge { index }.into());
+                                NextDailyChallengeResult::Level1(index) => {
+                                    change_level_events
+                                        .send(CurrentLevel::DailyChallenge { index }.into());
+                                }
+                                _ => {}
                             }
                         }
                         NonLevel::LevelSequenceReset(ls) => {
@@ -472,9 +475,13 @@ impl ButtonInteraction {
                             change_level_events.send(new_current_level.into());
                         }
                         NonLevel::DailyChallengeNotLoaded => {
-                            asynchronous::spawn_and_run(load_levels_async( daily_challenge_events.clone(), true));
-                            change_level_events
-                                .send(CurrentLevel::NonLevel(NonLevel::DailyChallengeLoading).into());
+                            asynchronous::spawn_and_run(load_levels_async(
+                                daily_challenge_events.clone(),
+                                true,
+                            ));
+                            change_level_events.send(
+                                CurrentLevel::NonLevel(NonLevel::DailyChallengeLoading).into(),
+                            );
                         }
                         NonLevel::DailyChallengeLoading => {
                             //This button should not exist
@@ -488,6 +495,7 @@ impl ButtonInteraction {
                     daily_challenge_completion,
                     sequence_completion,
                     purchases,
+                    daily_challenges,
                 );
                 change_level_events.send(next_level.into());
             }
