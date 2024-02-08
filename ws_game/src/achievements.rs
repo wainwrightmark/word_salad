@@ -44,7 +44,6 @@ fn track_hint_achievements(
     mut events: EventReader<HintEvent>,
     current_level: Res<CurrentLevel>,
 ) {
-    info!("Checking hint achievements");
 
     for _ in events.read() {
         if current_level.should_spend_hints() {

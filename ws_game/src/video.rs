@@ -85,7 +85,7 @@ pub async fn start_screen_record(writer: AsyncEventWriter<VideoEvent>) {
     #[cfg(all(target_arch = "wasm32", any(feature = "android", feature = "ios")))]
     {
         let r = crate::wasm::start_screen_record().await;
-        startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        crate::startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         // info!("Starting screen record");
         match r {
             Ok(r) => {
@@ -121,7 +121,7 @@ pub async fn stop_screen_record(writer: AsyncEventWriter<VideoEvent>) {
     #[cfg(all(target_arch = "wasm32", any(feature = "android", feature = "ios")))]
     {
         let r = crate::wasm::stop_screen_record().await;
-        startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        crate::startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         match r {
             Ok(()) => {
                 writer

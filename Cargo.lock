@@ -1301,7 +1301,7 @@ dependencies = [
 [[package]]
 name = "capacitor_bindings"
 version = "0.10.0"
-source = "git+https://github.com/wainwrightmark/capacitor_bindings#460867fcd27dd2bd3498f22f67be3ca50c4c6d2b"
+source = "git+https://github.com/wainwrightmark/capacitor_bindings#18c69d3092e040d044258c0372373315a0d5e6e6"
 dependencies = [
  "js-sys",
  "serde",

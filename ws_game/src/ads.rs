@@ -104,7 +104,9 @@ fn handle_ad_requests(
                 }
                 #[cfg(not(any(feature = "ios", feature = "android")))]
                 {
-                    crate::platform_specific::show_toast_on_web("We would show an interstitial ad here");
+                    crate::platform_specific::show_toast_on_web(
+                        "We would show an interstitial ad here",
+                    );
                     writer.send_blocking(AdEvent::InterstitialShowed).unwrap();
                 }
             }
@@ -159,12 +161,12 @@ fn handle_ad_events(
             }
             AdEvent::FailedToShowInterstitialAd(err) => {
                 bevy::log::error!("{}", err);
-                #[cfg(any(feature = "ios", feature = "android"))]
-                {
-                    asynchronous::spawn_and_run(mobile_only::try_load_interstitial_ad(
-                        writer.clone(),
-                    ));
-                }
+                // #[cfg(any(feature = "ios", feature = "android"))] //todo fix
+                // {
+                //     asynchronous::spawn_and_run(mobile_only::try_load_interstitial_ad(
+                //         writer.clone(),
+                //     ));
+                // }
             }
 
             AdEvent::RewardAdLoaded(ad) => {
@@ -193,10 +195,10 @@ fn handle_ad_events(
 
                 ad_state.hint_wanted = None;
 
-                #[cfg(any(feature = "ios", feature = "android"))]
-                {
-                    asynchronous::spawn_and_run(mobile_only::try_load_reward_ad(writer.clone()));
-                }
+                // #[cfg(any(feature = "ios", feature = "android"))] //TODO request differently
+                // {
+                //     asynchronous::spawn_and_run(mobile_only::try_load_reward_ad(writer.clone()));
+                // }
             }
         }
     }
@@ -252,7 +254,7 @@ mod mobile_only {
     pub async fn try_init_ads_async() -> Result<(), String> {
         Admob::initialize(AdMobInitializationOptions {
             initialize_for_testing: true,
-            testing_devices: vec![],
+            testing_devices: vec!["806EEBB5152549F81255DD01CDA931D9".to_string()],
             tag_for_under_age_of_consent: false,
             tag_for_child_directed_treatment: false,
             max_ad_content_rating: MaxAdContentRating::General,
@@ -283,28 +285,26 @@ mod mobile_only {
                 // return Err("Tracking info status Restricted".to_string());
             }
         };
+        let consent_info = Admob::request_consent_info(AdmobConsentRequestOptions {
+            debug_geography: AdmobConsentDebugGeography::Disabled,
+            test_device_identifiers: vec!["806EEBB5152549F81255DD01CDA931D9".to_string()],
+            tag_for_under_age_of_consent: false,
+        })
+        .await
+        .map_err(|x| x.to_string())?;
 
-        if false {
-            //todo fix
-            let consent_info = Admob::request_consent_info(AdmobConsentRequestOptions {
-                debug_geography: AdmobConsentDebugGeography::Disabled,
-                test_device_identifiers: vec![],
-                tag_for_under_age_of_consent: false,
-            })
-            .await
-            .map_err(|x| x.to_string())?;
+        info!("Consent Info {consent_info:?}");
 
-            if consent_info.is_consent_form_available
-                && consent_info.status == AdmobConsentStatus::Required
-            {
-                let consent_info = Admob::show_consent_form()
-                    .await
-                    .map_err(|x| x.to_string())?;
-                if consent_info.status == AdmobConsentStatus::Required {
-                    return Err("Consent info still required".to_string());
-                } else if consent_info.status == AdmobConsentStatus::Unknown {
-                    return Err("Consent info unknown".to_string());
-                }
+        if consent_info.is_consent_form_available
+            && consent_info.status == AdmobConsentStatus::Required
+        {
+            let consent_info = Admob::show_consent_form()
+                .await
+                .map_err(|x| x.to_string())?;
+            if consent_info.status == AdmobConsentStatus::Required {
+                return Err("Consent info still required".to_string());
+            } else if consent_info.status == AdmobConsentStatus::Unknown {
+                return Err("Consent info unknown".to_string());
             }
         }
 
