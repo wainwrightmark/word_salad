@@ -52,7 +52,7 @@ fn track_purchase_events(
                 show_toast_on_web("In the real app you would pay money");
                 hint_events.send(*hint_event);
             }
-            PurchaseEvent::BuyLevelGroup(sequence) => {
+            PurchaseEvent::BuyLevelGroupBySequence(sequence) => {
                 purchases.groups_purchased.insert(sequence.group());
                 show_toast_on_web("In the real app you would pay money");
 
@@ -66,6 +66,17 @@ fn track_purchase_events(
                 purchases.avoid_ads_purchased = true;
                 show_toast_on_web("In the real app you would pay money");
             }
+            PurchaseEvent::BuyLevelGroup(lg) => {
+                purchases.groups_purchased.insert(*lg);
+                show_toast_on_web("In the real app you would pay money");
+                let sequence = lg.get_sequences()[0];
+
+                let level: CurrentLevel = sequence_completion
+                    .get_next_level_index(sequence, &purchases)
+                    .to_level(sequence);
+
+                change_level_events.send(level.into());
+            },
         }
     }
 }
@@ -74,6 +85,7 @@ fn track_purchase_events(
 pub enum PurchaseEvent {
     BuyHintsPack1(HintEvent),
     BuyHintsPack2(HintEvent),
-    BuyLevelGroup(LevelSequence),
+    BuyLevelGroupBySequence(LevelSequence),
+    BuyLevelGroup(LevelGroup),
     BuyAvoidAds,
 }

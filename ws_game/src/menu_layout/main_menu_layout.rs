@@ -17,7 +17,8 @@ pub enum MainMenuLayoutEntity {
     SelfieMode = 2,
     Tutorial = 3,
     ResetPuzzle = 4,
-    PlaySteks = 5,
+    Settings = 5,
+    PlaySteks = 6,
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -29,6 +30,7 @@ pub enum MainMenuLayoutEntity {
     SelfieMode = 1,
     Tutorial = 2,
     ResetPuzzle = 3,
+    Settings = 4,
 }
 
 //#[cfg_attr(target_arch = "wasm32", derive( Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumIter, EnumCount, Display,))]
@@ -98,6 +100,7 @@ impl LayoutStructureWithTextOrImage for MainMenuLayoutEntity {
                 pressed_color: ws_core::BasicColor::rgba(0.36, 0.55, 0.88, 1.0),
                 aspect_ratio: 7168.0 / 1024.0,
             },
+            Settings => ws_core::TextOrImage::Text{text: "Settings"},
         }
     }
 }

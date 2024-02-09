@@ -90,12 +90,14 @@ fn sign_in_user(writer: AsyncEventWriter<SignInEvent>) {
 }
 
 pub fn show_achievements() {
+    info!("Showing achievements");
     #[cfg(any(feature = "android", feature = "ios"))]
     {
-        info!("Showing achievements");
+
         use capacitor_bindings::game_connect::*;
         do_or_report_error(GameConnect::show_achievements());
     }
+    crate::platform_specific::show_toast_on_web("We would go to achievement page");
 }
 
 fn track_hint_achievements(

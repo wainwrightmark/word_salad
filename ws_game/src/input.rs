@@ -13,7 +13,10 @@ use bevy::{prelude::*, window::PrimaryWindow};
 use strum::EnumIs;
 use ws_core::layout::entities::{recording_button::ToggleRecordingButton, *};
 
-use self::{hints_menu_layout::HintsLayoutEntity, store_menu_layout::StoreLayoutEntity};
+use self::{
+    hints_menu_layout::HintsLayoutEntity, settings_menu_layout::SettingsLayoutEntity,
+    store_menu_layout::StoreLayoutEntity,
+};
 pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
@@ -180,6 +183,18 @@ impl InteractionEntity {
                     }
                 }
             },
+
+            MenuState::SettingsPage => {
+                if let Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &())
+                {
+                    return Some(back);
+                }
+
+                Some(
+                    Self::try_get_button::<SettingsLayoutEntity>(position, size, &selfie_mode)
+                        .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
+                )
+            }
 
             MenuState::HintsStorePage => {
                 if let Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &())

@@ -11,8 +11,6 @@
 - landscape open graph image
 
 - african countries
-- settings menu
 - store menu buttons should work
 - hints menu should take you to store
-- settings page (consent screen, see achievements, resync achievements, restore purchases)
 - use newly clustered grids

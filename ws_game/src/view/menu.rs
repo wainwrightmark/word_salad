@@ -36,6 +36,7 @@ pub enum MenuState {
     WordSaladLevels,
     MainStorePage,
     HintsStorePage,
+    SettingsPage
 }
 
 impl MenuState {
@@ -61,6 +62,7 @@ impl MenuState {
             WordSaladLevels => ChooseLevelsPage,
             MainStorePage => ShowMainMenu,
             HintsStorePage => MainStorePage,
+            SettingsPage => ShowMainMenu,
         }
     }
 }
@@ -131,6 +133,17 @@ impl MavericNode for Menu {
                 MenuState::Closed => {}
                 MenuState::ShowMainMenu => {
                     add_menu_items::<R, MainMenuLayoutEntity>(
+                        &context.video_resource.selfie_mode(),
+                        commands,
+                        size,
+                        0,
+                        palette::MENU_BUTTON_FILL.convert_color(),
+                        palette::MENU_BUTTON_TEXT_REGULAR.convert_color(),
+                        border,
+                    );
+                }
+                MenuState::SettingsPage => {
+                    add_menu_items::<R, settings_menu_layout::SettingsLayoutEntity>(
                         &context.video_resource.selfie_mode(),
                         commands,
                         size,

@@ -1,6 +1,6 @@
 #[cfg(any(feature = "ios", feature = "android"))]
 use crate::asynchronous;
-use crate::prelude::*;
+use crate::{logging, prelude::*};
 use bevy::prelude::*;
 use capacitor_bindings::admob::*;
 use nice_bevy_utils::{async_event_writer::AsyncEventWriter, CanRegisterAsyncEvent};
@@ -32,6 +32,7 @@ impl Plugin for AdsPlugin {
 pub enum AdRequestEvent {
     RequestReward(HintEvent),
     RequestInterstitial,
+    RequestConsent
 }
 
 #[derive(Debug, Default, Resource, MavericContext)]
@@ -56,6 +57,12 @@ fn handle_ad_requests(
 ) {
     for event in events.read() {
         match event {
+
+            AdRequestEvent::RequestConsent =>{
+
+                logging::do_or_report_error(reshow_consent_form());
+            }
+
             AdRequestEvent::RequestReward(hint_event) => {
                 #[cfg(any(feature = "ios", feature = "android"))]
                 {
@@ -112,6 +119,16 @@ fn handle_ad_requests(
             }
         }
     }
+}
+
+async fn reshow_consent_form()-> Result<(), capacitor_bindings::error::Error>{
+    #[cfg(feature = "android")]//todo also ios
+    {
+        let _r = Admob::show_consent_form().await?;
+    }
+    show_toast_on_web("We would show GDPR");
+
+    Ok(())
 }
 
 #[allow(unused_variables)]
@@ -302,14 +319,14 @@ mod mobile_only {
             if consent_info.is_consent_form_available
                 && consent_info.status == AdmobConsentStatus::Required
             {
-                let consent_info = Admob::show_consent_form()
+                let _consent_info = Admob::show_consent_form()
                     .await
                     .map_err(|x| x.to_string())?;
-                if consent_info.status == AdmobConsentStatus::Required {
-                    return Err("Consent info still required".to_string());
-                } else if consent_info.status == AdmobConsentStatus::Unknown {
-                    return Err("Consent info unknown".to_string());
-                }
+                // if consent_info.status == AdmobConsentStatus::Required {
+                //     return Err("Consent info still required".to_string());
+                // } else if consent_info.status == AdmobConsentStatus::Unknown {
+                //     return Err("Consent info unknown".to_string());
+                // }
             }
         }
         
