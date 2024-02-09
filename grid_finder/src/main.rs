@@ -60,7 +60,7 @@ struct Options {
     #[arg(long, default_value = "false")]
     pub remove_duplicates: bool,
 
-    #[arg(long, default_value = "100")]
+    #[arg(long, default_value = "50")]
     pub max_clusters: u32,
 
     /// Whether to resume execution

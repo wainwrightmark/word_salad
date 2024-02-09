@@ -1,7 +1,4 @@
-use std::{
-    cmp::Reverse,
-    collections::{BTreeMap, HashSet},
-};
+use std::collections::{BTreeMap, HashSet};
 
 use indicatif::{ProgressBar, ProgressStyle};
 use itertools::Itertools;
@@ -15,12 +12,15 @@ use const_sized_bit_set::BitSet;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, PartialOrd, Ord)]
 pub struct ClusterScore {
-    /// The maximum overlap between two elements.
-    /// Lower is better
-    pub max_overlap: std::cmp::Reverse<u32>,
-    /// The total overlap between all pairs of elements.
-    /// Lower is better
-    pub total_overlap: std::cmp::Reverse<u32>,
+    /// Higher is better
+    pub min_underlap: u32,
+
+    /// The sum of the counts of symmetric differences between all pairs of elements.
+    /// Higher is better
+    pub total_underlap: u32,
+    // /// The total overlap between all pairs of elements.
+    // /// Lower is better
+    // pub total_overlap: std::cmp::Reverse<u32>,
     /// The total sum of the item count of all elements
     /// Higher is better
     pub total_element_items: u32,
@@ -33,12 +33,18 @@ impl ClusterScore {
         new_item: &BitSet<W>,
     ) -> Self {
         let mut result = *self;
-        result.total_element_items += new_item.count();
+        let new_item_count = new_item.count();
+        result.total_element_items += new_item_count;
 
         for item in original_cluster {
-            let overlap = item.intersect(new_item).count();
-            result.max_overlap = result.max_overlap.max(Reverse(overlap));
-            result.total_overlap = Reverse(result.total_overlap.0 + overlap);
+            let left_underlap = item.intersect(&new_item.negate()).count();
+            let right_underlap = new_item.intersect(&item.negate()).count();
+            let lower_underlap = left_underlap.min(right_underlap);
+
+            //let underlap = item.symmetric_difference(new_item).count();
+
+            result.min_underlap = result.min_underlap.min(lower_underlap);
+            result.total_underlap += lower_underlap;
         }
 
         result
@@ -46,18 +52,21 @@ impl ClusterScore {
 
     pub fn calculate<const W: usize>(cluster: &[BitSet<W>]) -> Self {
         let total_element_items = cluster.iter().map(|x| x.count()).sum();
-        let mut max_overlap = 0;
-        let mut total_overlap = 0;
+        let mut min_lower_underlap = u32::MAX;
+        let mut total_underlap = 0;
 
         for (a, b) in cluster.iter().tuple_combinations() {
-            let overlap = a.intersect(b).count();
-            total_overlap += overlap;
-            max_overlap = max_overlap.max(overlap);
+            let left_underlap = a.intersect(&b.negate()).count();
+            let right_underlap = b.intersect(&a.negate()).count();
+            let lower_underlap = left_underlap.min(right_underlap);
+
+            min_lower_underlap = min_lower_underlap.min(lower_underlap);
+            total_underlap += lower_underlap;
         }
 
         ClusterScore {
-            max_overlap: Reverse(max_overlap),
-            total_overlap: Reverse(total_overlap),
+            min_underlap: min_lower_underlap,
+            total_underlap,
             total_element_items,
         }
     }
@@ -65,21 +74,7 @@ impl ClusterScore {
 
 impl<'a, const W: usize> From<&'a [BitSet<W>]> for ClusterScore {
     fn from(cluster: &'a [BitSet<W>]) -> Self {
-        let total_element_items = cluster.iter().map(|x| x.count()).sum();
-        let mut max_overlap = 0;
-        let mut total_overlap = 0;
-
-        for (a, b) in cluster.iter().tuple_combinations() {
-            let overlap = a.intersect(b).count();
-            total_overlap += overlap;
-            max_overlap = max_overlap.max(overlap);
-        }
-
-        ClusterScore {
-            max_overlap: Reverse(max_overlap),
-            total_overlap: Reverse(total_overlap),
-            total_element_items,
-        }
+        Self::calculate(cluster)
     }
 }
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -141,8 +136,8 @@ impl std::fmt::Display for Cluster {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let grid_words = self.grids.iter().join("\n");
 
-        let average_overlap = self.score.total_overlap.0 as f32
-            / (2.0 * (binomial_coefficient(self.grids.len(), 2) as f32));
+        let mean_underlap = self.score.total_underlap as f32
+            / (binomial_coefficient(self.grids.len(), 2) as f32);
         let distinct_items = self
             .grids
             .iter()
@@ -160,9 +155,9 @@ impl std::fmt::Display for Cluster {
 
         write!(
             f,
-            "Grids: {l:2}\tMax overlap: {max_overlap:2}\tMean overlap: {average_overlap:2.2}\tMean items: {mean_items:2.2}\tDistinct items: {distinct_items:3}\tMax adjacent {max_adj:2}\tMean adjacent {mean_adj:2.2}\tMean utilization {mean_util:1.2}\n{grid_words}",
+            "Grids: {l:2}\tMin underlap: {min_underlap:2}\tMean underlap: {mean_underlap:2.2}\tMean items: {mean_items:2.2}\tDistinct items: {distinct_items:3}\tMax adjacent {max_adj:2}\tMean adjacent {mean_adj:2.2}\tMean utilization {mean_util:1.2}\n{grid_words}",
             l = self.grids.len(),
-            max_overlap = self.score.max_overlap.0,
+            min_underlap = self.score.min_underlap ,
             mean_items = self.score.total_element_items as f32 / self.grids.len() as f32,
             max_adj = self.adjacency_score.max_adjacent,
             mean_adj = self.adjacency_score.mean_adjacency,
