@@ -1,6 +1,7 @@
 use std::cmp::Reverse;
 
 use const_sized_bit_set::BitSet;
+use itertools::Itertools;
 
 pub fn order_cluster<const W: usize>(cluster: &mut Vec<BitSet<W>>) {
     let Some((first_index, _)) = cluster
@@ -14,9 +15,9 @@ pub fn order_cluster<const W: usize>(cluster: &mut Vec<BitSet<W>>) {
     cluster.swap(0, first_index);
     let mut number_ordered = 1usize;
 
-    loop {
+    'reorder: loop {
         let Some(prev) = cluster.get(number_ordered.saturating_sub(1usize)) else {
-            return;
+            break 'reorder;
         };
 
         let Some((index, _)) =
@@ -31,12 +32,22 @@ pub fn order_cluster<const W: usize>(cluster: &mut Vec<BitSet<W>>) {
                     )
                 })
         else {
-            return;
+            break 'reorder;
         };
 
         cluster.swap(number_ordered, index);
         number_ordered += 1;
     }
+
+    //rotate the list to minimize adjacency
+    let Some(rotate_index) = (0..cluster.len()).map(|index|{
+        let s1 = cluster[index];
+        let s2 = cluster[(index + 1) % cluster.len()];
+        s1.intersect(&s2).count()
+    }).position_max() else{return;};
+
+    cluster.rotate_left(rotate_index + 1)
+
 }
 
 const KEY_SIZE: usize = 16;
