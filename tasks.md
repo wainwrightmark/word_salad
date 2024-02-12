@@ -14,3 +14,4 @@
 - store menu buttons should work
 - hints menu should take you to store
 - use newly clustered grids
+- show countdown

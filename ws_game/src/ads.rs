@@ -59,8 +59,8 @@ fn handle_ad_requests(
         match event {
 
             AdRequestEvent::RequestConsent =>{
-
-                logging::do_or_report_error(reshow_consent_form());
+                #[cfg(any(feature = "android", feature = "ios", feature = "web"))]
+                crate::logging::do_or_report_error(reshow_consent_form());
             }
 
             AdRequestEvent::RequestReward(hint_event) => {

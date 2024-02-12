@@ -37,6 +37,7 @@ impl LevelGroup {
                 EuropeanCountries,
                 SouthAndEastAsianCountries,
                 MiddleEasternCountries,
+                AfricanCountries,
                 EuropeanCapitals,
                 SouthAndEastAsianCapitals,
                 MiddleEasternCapitals,

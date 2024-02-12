@@ -26,6 +26,7 @@ pub enum LevelSequence {
     EuropeanCountries,
     SouthAndEastAsianCountries,
     MiddleEasternCountries,
+    AfricanCountries,
 
     EuropeanCapitals,
     SouthAndEastAsianCapitals,
@@ -49,7 +50,8 @@ impl LevelSequence {
             USStates => EuropeanCountries,
             EuropeanCountries => SouthAndEastAsianCountries,
             SouthAndEastAsianCountries => MiddleEasternCountries,
-            MiddleEasternCountries => EuropeanCapitals,
+            MiddleEasternCountries => AfricanCountries,
+            AfricanCountries => EuropeanCapitals,
             EuropeanCapitals => SouthAndEastAsianCapitals,
             SouthAndEastAsianCapitals => MiddleEasternCapitals,
             MiddleEasternCapitals => Mammals,
@@ -73,6 +75,7 @@ impl LevelSequence {
             | SouthAndEastAsianCountries
             | MiddleEasternCountries
             | SouthAndEastAsianCapitals
+            | AfricanCountries
             | MiddleEasternCapitals => LevelGroup::Geography,
             Mammals | Birds | Insects | Fruit | Vegetables | Gemstones | Elements => {
                 LevelGroup::NaturalWorld
@@ -105,6 +108,7 @@ impl LevelSequence {
             LevelSequence::MiddleEasternCountries => &*MIDDLE_EASTERN_COUNTRIES,
             LevelSequence::SouthAndEastAsianCapitals => &*SOUTH_AND_EAST_ASIAN_CAPITALS,
             LevelSequence::MiddleEasternCapitals => &*MIDDLE_EASTERN_CAPITALS,
+            LevelSequence::AfricanCountries => &*AFRICAN_COUNTRIES,
 
             LevelSequence::Insects => &*INSECTS,
             LevelSequence::Fruit => &*FRUIT,
@@ -123,6 +127,7 @@ impl LevelSequence {
             LevelSequence::EuropeanCapitals => "European Capitals",
             LevelSequence::EuropeanCountries => "European Countries",
             LevelSequence::SouthAndEastAsianCountries => "S & E Asian Countries",
+            LevelSequence::AfricanCountries => "African Countries",
             LevelSequence::MiddleEasternCountries => "Middle Eastern Countries",
             LevelSequence::MiddleEasternCapitals => "Middle Eastern Capitals",
             LevelSequence::SouthAndEastAsianCapitals => "S & E Asian Capitals",

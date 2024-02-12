@@ -50,6 +50,14 @@ lazy_static! { //todo data_bake
         "Middle Eastern Countries"
     );
 
+    pub(crate) static ref AFRICAN_COUNTRIES: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/geography/african_countries.tsv")
+            .lines()
+            .map(DesignedLevel::from_tsv_line)
+            .map(|x| x.unwrap()),
+        "African Countries"
+    );
+
     pub(crate) static ref SOUTH_AND_EAST_ASIAN_CAPITALS: Vec<DesignedLevel> = number_levels(
         include_str!("levels/geography/south_and_east_asian_capitals.tsv")
             .lines()
