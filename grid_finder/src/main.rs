@@ -1,4 +1,3 @@
-pub mod cluster_ordering;
 pub mod clustering;
 pub mod combinations;
 pub mod grid_creator;
@@ -20,9 +19,7 @@ use std::{
     str::FromStr,
 };
 use ws_core::finder::{
-    helpers::*,
-    node::GridResult,
-    orientation::{self, *},
+    cluster::Cluster, helpers::*, node::GridResult, orientation::{self, *}
 };
 
 use crate::clustering::cluster_words;
@@ -561,7 +558,7 @@ fn do_finder(options: Options) {
             .dedup()
             .collect_vec();
 
-        let clusters: Vec<clustering::Cluster> = match all_words.len() {
+        let clusters: Vec<Cluster> = match all_words.len() {
             0..=64 => cluster_words::<1>(
                 grids,
                 &all_words,
