@@ -44,7 +44,8 @@ ________________	5	Jupiter	Pluto	Saturn	Uranus	Venus
 ________________	5	Mars	Mercury	Neptune	Pluto	Saturn
 ________________	5	Earth	Mars	Mercury	Uranus	Venus
 ________________	5	Earth	Jupiter	Mars	Neptune	Pluto
-Grids:  9	Min underlap:  1	Mean underlap: 2.47	Mean items: 5.00	Distinct items:   9	Max adjacent  3	Mean adjacent 2.00	Mean utilization 1.81
+Grids:  9	Min underlap:  1	Mean underlap: 2.47	Mean items: 5.00	Distinct items:   9	Max adjacent  2	Mean adjacent 1.88	Mean utilization 1.81
+________________	5	Earth	Mars	Mercury	Uranus	Venus
 ________________	5	Mars	Mercury	Neptune	Pluto	Saturn
 ________________	5	Jupiter	Pluto	Saturn	Uranus	Venus
 ________________	5	Earth	Jupiter	Mars	Neptune	Pluto
@@ -53,7 +54,6 @@ ________________	5	Jupiter	Neptune	Pluto	Uranus	Venus
 ________________	5	Earth	Mercury	Neptune	Saturn	Venus
 ________________	5	Jupiter	Mars	Neptune	Pluto	Venus
 ________________	5	Earth	Mercury	Pluto	Saturn	Uranus
-________________	5	Earth	Mars	Mercury	Uranus	Venus
 Grids: 10	Min underlap:  1	Mean underlap: 2.44	Mean items: 5.00	Distinct items:   9	Max adjacent  2	Mean adjacent 1.67	Mean utilization 1.81
 ________________	5	Jupiter	Pluto	Saturn	Uranus	Venus
 ________________	5	Mars	Mercury	Neptune	Pluto	Saturn

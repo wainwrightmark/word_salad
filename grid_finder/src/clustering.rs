@@ -10,11 +10,13 @@ use ws_core::{
 use crate::cluster_ordering;
 use const_sized_bit_set::BitSet;
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, PartialOrd, Ord)]
-pub struct ClusterScore {
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct ClusterScoreBuilder<const W: usize> {
     /// Higher is better
     pub min_underlap: u32,
 
+    pub all_items: BitSet<W>,
+    //pub trigrams: hashbrown::HashSet<Trigram>,
     /// The sum of the counts of symmetric differences between all pairs of elements.
     /// Higher is better
     pub total_underlap: u32,
@@ -26,13 +28,45 @@ pub struct ClusterScore {
     pub total_element_items: u32,
 }
 
-impl ClusterScore {
-    pub fn increment<const W: usize>(
-        &self,
-        original_cluster: &[BitSet<W>],
-        new_item: &BitSet<W>,
-    ) -> Self {
-        let mut result = *self;
+impl<const W: usize> Into<ClusterScore> for ClusterScoreBuilder<W> {
+    fn into(self) -> ClusterScore {
+        let ClusterScoreBuilder {
+            min_underlap,
+            all_items,
+            total_underlap,
+            total_element_items,
+        } = self;
+
+        ClusterScore {
+            min_underlap,
+            all_items_count: all_items.count(),
+            total_underlap,
+            total_element_items,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq, PartialOrd, Ord)]
+pub struct ClusterScore {
+    /// Higher is better
+    pub min_underlap: u32,
+
+    pub all_items_count: u32,
+    //pub trigrams: hashbrown::HashSet<Trigram>,
+    /// The sum of the counts of symmetric differences between all pairs of elements.
+    /// Higher is better
+    pub total_underlap: u32,
+    // /// The total overlap between all pairs of elements.
+    // /// Lower is better
+    // pub total_overlap: std::cmp::Reverse<u32>,
+    /// The total sum of the item count of all elements
+    /// Higher is better
+    pub total_element_items: u32,
+}
+
+impl<const W: usize> ClusterScoreBuilder<W> {
+    pub fn increment(&self, original_cluster: &[BitSet<W>], new_item: &BitSet<W>) -> Self {
+        let mut result = self.clone();
         let new_item_count = new_item.count();
         result.total_element_items += new_item_count;
 
@@ -47,10 +81,16 @@ impl ClusterScore {
             result.total_underlap += lower_underlap;
         }
 
+        result.all_items = result.all_items.union(new_item);
+
+        // for t in Trigram::iter_from_bitset(new_item) {
+        //     result.trigrams.insert(t);
+        // }
+
         result
     }
 
-    pub fn calculate<const W: usize>(cluster: &[BitSet<W>]) -> Self {
+    pub fn calculate(cluster: &[BitSet<W>]) -> Self {
         let total_element_items = cluster.iter().map(|x| x.count()).sum();
         let mut min_lower_underlap = u32::MAX;
         let mut total_underlap = 0;
@@ -64,15 +104,29 @@ impl ClusterScore {
             total_underlap += lower_underlap;
         }
 
-        ClusterScore {
+        let mut all_items = BitSet::<W>::EMPTY;
+
+        for set in cluster {
+            all_items = all_items.union(set);
+        }
+
+        // let mut trigrams: hashbrown::HashSet<Trigram> = Default::default();
+        // for c in cluster {
+        //     for t in Trigram::iter_from_bitset(c) {
+        //         trigrams.insert(t);
+        //     }
+        // }
+
+        Self {
             min_underlap: min_lower_underlap,
+            all_items,
             total_underlap,
             total_element_items,
         }
     }
 }
 
-impl<'a, const W: usize> From<&'a [BitSet<W>]> for ClusterScore {
+impl<'a, const W: usize> From<&'a [BitSet<W>]> for ClusterScoreBuilder<W> {
     fn from(cluster: &'a [BitSet<W>]) -> Self {
         Self::calculate(cluster)
     }
@@ -115,7 +169,8 @@ impl Cluster {
         map: &BTreeMap<BitSet<W>, GridResult>,
     ) -> Self {
         cluster_ordering::order_cluster(&mut points);
-        let score: ClusterScore = ClusterScore::calculate(points.as_slice());
+        let score_builder: ClusterScoreBuilder<W> =
+            ClusterScoreBuilder::calculate(points.as_slice());
         let adjacency_score = AdjacencyScore::calculate(points.as_slice());
 
         let grids = points
@@ -126,7 +181,7 @@ impl Cluster {
 
         Self {
             grids,
-            score,
+            score: score_builder.into(),
             adjacency_score,
         }
     }
@@ -136,8 +191,8 @@ impl std::fmt::Display for Cluster {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let grid_words = self.grids.iter().join("\n");
 
-        let mean_underlap = self.score.total_underlap as f32
-            / (binomial_coefficient(self.grids.len(), 2) as f32);
+        let mean_underlap =
+            self.score.total_underlap as f32 / (binomial_coefficient(self.grids.len(), 2) as f32);
         let distinct_items = self
             .grids
             .iter()
@@ -232,18 +287,19 @@ pub fn cluster_words<const W: usize>(
         chosen_points.push(point_to_add);
         //let mut swaps = 0;
         'inner: loop {
-            let distance = ClusterScore::calculate(chosen_points.as_slice());
+            let distance: ClusterScore =
+                ClusterScoreBuilder::calculate(chosen_points.as_slice()).into();
             let Some((removed_index, best_point, new_distance)) = (0..chosen_points.len())
                 .map(|index| {
                     let mut new_chosen = chosen_points.clone();
                     let _removed = new_chosen.remove(index);
                     let best_point = find_best_point_to_add(&new_chosen, &all_points);
                     new_chosen.push(best_point);
-                    let distance = ClusterScore::calculate(&new_chosen);
-
-                    (index, best_point, distance)
+                    let score_builder = ClusterScoreBuilder::calculate(&new_chosen);
+                    let score: ClusterScore = score_builder.into();
+                    (index, best_point, score)
                 })
-                .max_by_key(|(_, _, distance)| *distance)
+                .max_by_key(|(_, _, score)| *score)
             else {
                 break 'inner;
             };
@@ -286,12 +342,16 @@ fn find_best_point_to_add<const W: usize>(
     chosen_points: &[BitSet<W>],
     all_points: &[BitSet<W>],
 ) -> BitSet<W> {
-    let original_score = ClusterScore::calculate(chosen_points);
+    let original_score = ClusterScoreBuilder::calculate(chosen_points);
 
     *all_points
         .iter()
         .filter(|p| !chosen_points.contains(p))
-        .max_by_key(|point| original_score.increment(chosen_points, point))
+        .max_by_key(|point| {
+            let builder = original_score.increment(chosen_points, point);
+            let score: ClusterScore = builder.into();
+            score
+        })
         .unwrap()
 }
 

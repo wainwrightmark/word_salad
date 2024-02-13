@@ -7,7 +7,7 @@ grid_finder/data/*.txt
 grid_finder/done/*.txt
 grid_finder/clusters/*.txt
 grid_finder/master/*.txt
-grid_finder/todo/*.txt
+grid_finder/data todo/*.txt
 
 sheet_reader/**/*.txt
 sheet1.txt
