@@ -2,19 +2,19 @@
 source: ws_levels/src/all_levels.rs
 expression: text
 ---
-US States                                          Grids: 50	Min underlap:  1	Mean underlap: 4.47	Mean items: 5.00	Distinct items:  46	Max adjacent  0	Mean adjacent 0.00	Mean utilization 2.25
-European Countries                                 Grids: 50	Min underlap:  1	Mean underlap: 4.31	Mean items: 5.00	Distinct items:  33	Max adjacent  0	Mean adjacent 0.00	Mean utilization 2.16
-S & E Asian Countries                              Grids: 50	Min underlap:  1	Mean underlap: 3.91	Mean items: 5.00	Distinct items:  25	Max adjacent  1	Mean adjacent 0.04	Mean utilization 2.15
-Middle Eastern Countries                           Grids: 20	Min underlap:  1	Mean underlap: 3.61	Mean items: 5.00	Distinct items:  16	Max adjacent  1	Mean adjacent 0.05	Mean utilization 1.85
-African Countries                                  Grids: 50	Min underlap:  4	Mean underlap: 5.70	Mean items: 7.96	Distinct items:  40	Max adjacent  3	Mean adjacent 0.33	Mean utilization 2.90
-European Capitals                                  Grids: 50	Min underlap:  1	Mean underlap: 4.28	Mean items: 5.00	Distinct items:  31	Max adjacent  0	Mean adjacent 0.00	Mean utilization 2.03
-S & E Asian Capitals                               Grids: 50	Min underlap:  1	Mean underlap: 3.69	Mean items: 5.00	Distinct items:  21	Max adjacent  2	Mean adjacent 0.04	Mean utilization 1.92
-Middle Eastern Capitals                            Grids: 20	Min underlap:  1	Mean underlap: 3.53	Mean items: 5.00	Distinct items:  16	Max adjacent  1	Mean adjacent 0.16	Mean utilization 1.94
-Mammals                                            Grids: 50	Min underlap:  1	Mean underlap: 4.80	Mean items: 5.00	Distinct items:  87	Max adjacent  0	Mean adjacent 0.00	Mean utilization 1.88
-Birds                                              Grids: 50	Min underlap:  2	Mean underlap: 4.82	Mean items: 5.00	Distinct items:  94	Max adjacent  0	Mean adjacent 0.00	Mean utilization 2.04
-Insects                                            Grids: 20	Min underlap:  2	Mean underlap: 4.41	Mean items: 5.00	Distinct items:  32	Max adjacent  0	Mean adjacent 0.00	Mean utilization 1.97
-Fruit                                              Grids: 50	Min underlap:  1	Mean underlap: 5.93	Mean items: 7.00	Distinct items:  57	Max adjacent  1	Mean adjacent 0.02	Mean utilization 2.80
-Vegetables                                         Grids: 50	Min underlap:  1	Mean underlap: 4.48	Mean items: 5.00	Distinct items:  42	Max adjacent  0	Mean adjacent 0.00	Mean utilization 2.08
-Gemstones                                          Grids: 50	Min underlap:  1	Mean underlap: 3.84	Mean items: 5.00	Distinct items:  21	Max adjacent  1	Mean adjacent 0.02	Mean utilization 1.92
-Elements                                           Grids: 50	Min underlap:  1	Mean underlap: 6.24	Mean items: 8.00	Distinct items:  41	Max adjacent  1	Mean adjacent 0.02	Mean utilization 2.98
+US States                                          Grids: 50	Min underlap:  3	Mean underlap: 4.42	Mean items: 5.00	Distinct items:  47	Max adjacent  1	Mean adjacent 0.04	Mean utilization 2.20
+European Countries                                 Grids: 50	Min underlap:  3	Mean underlap: 4.83	Mean items: 5.98	Distinct items:  33	Max adjacent  1	Mean adjacent 0.02	Mean utilization 2.50
+S & E Asian Countries                              Grids: 50	Min underlap:  2	Mean underlap: 3.84	Mean items: 5.00	Distinct items:  25	Max adjacent  0	Mean adjacent 0.00	Mean utilization 2.12
+Middle Eastern Countries                           Grids: 20	Min underlap:  2	Mean underlap: 3.59	Mean items: 5.00	Distinct items:  16	Max adjacent  1	Mean adjacent 0.11	Mean utilization 1.84
+African Countries                                  Grids: 50	Min underlap:  4	Mean underlap: 5.49	Mean items: 6.90	Distinct items:  49	Max adjacent  1	Mean adjacent 0.02	Mean utilization 2.62
+European Capitals                                  Grids: 50	Min underlap:  3	Mean underlap: 4.70	Mean items: 6.00	Distinct items:  31	Max adjacent  0	Mean adjacent 0.00	Mean utilization 2.22
+S & E Asian Capitals                               Grids: 50	Min underlap:  2	Mean underlap: 3.63	Mean items: 5.00	Distinct items:  21	Max adjacent  0	Mean adjacent 0.00	Mean utilization 1.90
+Middle Eastern Capitals                            Grids: 20	Min underlap:  2	Mean underlap: 3.44	Mean items: 5.00	Distinct items:  16	Max adjacent  1	Mean adjacent 0.05	Mean utilization 1.91
+Mammals                                            Grids: 50	Min underlap:  6	Mean underlap: 7.68	Mean items: 8.94	Distinct items:  86	Max adjacent  0	Mean adjacent 0.00	Mean utilization 2.93
+Birds                                              Grids: 50	Min underlap:  5	Mean underlap: 7.11	Mean items: 7.94	Distinct items:  94	Max adjacent  0	Mean adjacent 0.00	Mean utilization 2.83
+Insects                                            Grids: 50	Min underlap:  3	Mean underlap: 4.55	Mean items: 5.96	Distinct items:  32	Max adjacent  1	Mean adjacent 0.04	Mean utilization 2.11
+Fruit                                              Grids: 50	Min underlap:  4	Mean underlap: 5.74	Mean items: 7.00	Distinct items:  59	Max adjacent  0	Mean adjacent 0.00	Mean utilization 2.67
+Vegetables                                         Grids: 50	Min underlap:  3	Mean underlap: 5.04	Mean items: 6.00	Distinct items:  42	Max adjacent  0	Mean adjacent 0.00	Mean utilization 2.30
+Gemstones                                          Grids: 50	Min underlap:  2	Mean underlap: 3.81	Mean items: 5.00	Distinct items:  21	Max adjacent  0	Mean adjacent 0.00	Mean utilization 1.89
+Elements                                           Grids: 50	Min underlap:  4	Mean underlap: 6.08	Mean items: 8.00	Distinct items:  42	Max adjacent  2	Mean adjacent 0.06	Mean utilization 2.93
 
