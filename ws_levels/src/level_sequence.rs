@@ -99,7 +99,7 @@ impl LevelSequence {
         2
     }
 
-    fn levels(self) -> &'static Vec<DesignedLevel> {
+    pub (crate) fn levels(self) -> &'static Vec<DesignedLevel> {
         let levels = match self {
             LevelSequence::USStates => &*US_STATES,
             LevelSequence::EuropeanCapitals => &*EUROPEAN_CAPITALS,

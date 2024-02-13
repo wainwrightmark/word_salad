@@ -155,9 +155,13 @@ pub mod tests {
 
     use std::str::FromStr;
 
-    use ws_core::finder::{helpers::FinderSingleWord, node::GridResult, orientation};
+    use strum::IntoEnumIterator;
+    use ws_core::finder::{cluster::*, helpers::FinderSingleWord, node::GridResult, orientation};
+
+    use crate::prelude::LevelSequence;
 
     use super::*;
+
     pub fn get_all_levels() -> Vec<DesignedLevel> {
         [
             TUTORIAL.iter(),
@@ -245,6 +249,19 @@ pub mod tests {
         }
 
         assert!(taboo_errors.is_empty())
+    }
+
+    #[test]
+    pub fn test_sequence_clustering() {
+        let mut text: String = String::default();
+
+        for sequence in LevelSequence::iter() {
+            let cluster = Cluster::from_levels(&sequence.levels());
+
+            text.push_str(format!("{:50} {}\n", sequence.name(), cluster.header()).as_str());
+        }
+
+        insta::assert_snapshot!(text);
     }
 
     fn test_grid_not_taboo(level: &DesignedLevel) -> Result<(), String> {

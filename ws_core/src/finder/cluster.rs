@@ -1,6 +1,6 @@
-use crate::finder::*;
+use crate::{finder::*, CharsArray, DesignedLevel};
 use itertools::Itertools;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashSet};
 
 use const_sized_bit_set::BitSet;
 
@@ -181,12 +181,39 @@ impl Cluster {
             adjacency_score,
         }
     }
-}
 
-impl std::fmt::Display for Cluster {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let grid_words = self.grids.iter().join("\n");
+    pub fn from_levels(levels: &[DesignedLevel]) -> Self {
+        let all_words: Vec<CharsArray> = levels
+            .iter()
+            .flat_map(|x| x.words.iter().map(|w| w.characters.clone()))
+            .sorted()
+            .dedup()
+            .collect();
 
+        let sets: Vec<(BitSet<4>, GridResult)> = levels
+            .iter()
+            .map(|level| {
+                let set: HashSet<CharsArray> =
+                    HashSet::from_iter(level.words.iter().map(|x| x.characters.clone()));
+
+                let set: BitSet<4> = BitSet::<4>::from_fn(|word_id| {
+                    let Some(word) = all_words.get(word_id) else {
+                        return false;
+                    };
+                    set.contains(word)
+                });
+                let grid_result: GridResult = level.into();
+                (set, grid_result)
+            })
+            .collect();
+
+        let points = sets.iter().map(|x| x.0).collect_vec();
+        let map: BTreeMap<BitSet<4>, GridResult> = sets.into_iter().collect();
+
+        Self::new(points, &map)
+    }
+
+    pub fn header(&self) -> String {
         let mean_underlap =
             self.score.total_underlap as f32 / (binomial_coefficient(self.grids.len(), 2) as f32);
         let distinct_items = self
@@ -204,15 +231,23 @@ impl std::fmt::Display for Cluster {
             .sum::<usize>() as f32)
             / (16 * self.grids.len()) as f32;
 
-        write!(
-            f,
-            "Grids: {l:2}\tMin underlap: {min_underlap:2}\tMean underlap: {mean_underlap:2.2}\tMean items: {mean_items:2.2}\tDistinct items: {distinct_items:3}\tMax adjacent {max_adj:2}\tMean adjacent {mean_adj:2.2}\tMean utilization {mean_util:1.2}\n{grid_words}",
+        format!(
+            "Grids: {l:2}\tMin underlap: {min_underlap:2}\tMean underlap: {mean_underlap:2.2}\tMean items: {mean_items:2.2}\tDistinct items: {distinct_items:3}\tMax adjacent {max_adj:2}\tMean adjacent {mean_adj:2.2}\tMean utilization {mean_util:1.2}",
             l = self.grids.len(),
             min_underlap = self.score.min_underlap ,
             mean_items = self.score.total_element_items as f32 / self.grids.len() as f32,
             max_adj = self.adjacency_score.max_adjacent,
             mean_adj = self.adjacency_score.mean_adjacency,
         )
+    }
+}
+
+impl std::fmt::Display for Cluster {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let grid_words = self.grids.iter().join("\n");
+        let header = self.header();
+
+        write!(f, "{header}\n{grid_words}",)
     }
 }
 

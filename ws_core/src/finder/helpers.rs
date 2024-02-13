@@ -9,15 +9,15 @@ use ustr::ustr;
 pub type LetterCounts = PrimeBag128<Character>;
 
 pub fn make_finder_group_vec_from_file(text: &str) -> Vec<FinderGroup> {
-
     let mut errors: Vec<(&str, &str)> = vec![];
-    let result = text.lines()
-    .filter(|x|!x.is_empty())
+    let result = text
+        .lines()
+        .filter(|x| !x.is_empty())
         //.flat_map(|x| x.split(','))
         .flat_map(|s| match FinderGroup::from_str(s) {
             Ok(word) => Some(word),
             Err(err) => {
-                errors.push((err, s ));
+                errors.push((err, s));
                 //log::warn!("Word '{s}' is invalid: {err}");
                 None
             }
@@ -26,8 +26,12 @@ pub fn make_finder_group_vec_from_file(text: &str) -> Vec<FinderGroup> {
         .dedup()
         .collect_vec();
     errors.sort();
-    for (error, words) in errors.into_iter().group_by(|(err,_)| err.to_string()).into_iter(){
-        let words = words.map(|(_, word)|word).join(", ");
+    for (error, words) in errors
+        .into_iter()
+        .group_by(|(err, _)| err.to_string())
+        .into_iter()
+    {
+        let words = words.map(|(_, word)| word).join(", ");
         log::warn!("{error}: {words}")
     }
 
@@ -109,6 +113,23 @@ impl FromStr for FinderSingleWord {
             counts,
             text: word.text,
         })
+    }
+}
+
+impl From<&DisplayWord> for FinderSingleWord {
+    fn from(value: &DisplayWord) -> Self {
+        let DisplayWord {
+            characters,
+            text,
+            ..
+        } = value;
+        let counts = PrimeBag128::try_from_iter(characters.iter().cloned()).unwrap();
+
+        Self {
+            text: text.clone(),
+            array: characters.clone(),
+            counts,
+        }
     }
 }
 
