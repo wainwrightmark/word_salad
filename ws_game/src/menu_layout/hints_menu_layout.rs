@@ -19,6 +19,15 @@ impl HintsLayoutEntity {
     pub fn index(&self) -> usize {
         *self as usize
     }
+
+    pub fn hint_count(&self)-> usize{
+        match self {
+            HintsLayoutEntity::Hints25 => 25,
+            HintsLayoutEntity::Hints50 => 50,
+            HintsLayoutEntity::Hints100 => 100,
+            HintsLayoutEntity::Hints500 => 500,
+        }
+    }
 }
 
 impl LayoutStructure for HintsLayoutEntity {

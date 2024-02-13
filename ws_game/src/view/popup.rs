@@ -21,10 +21,10 @@ impl Plugin for PopupPlugin {
     }
 }
 
-#[derive(Debug, Clone, Copy, Resource, MavericContext, PartialEq,  Default)]
+#[derive(Debug, Clone, Copy, Resource, MavericContext, PartialEq, Default)]
 pub struct PopupState(pub Option<PopupType>);
 
-#[derive(Debug, Clone, Copy, Resource, MavericContext, PartialEq,  EnumIs)]
+#[derive(Debug, Clone, Copy, Resource, MavericContext, PartialEq, EnumIs)]
 pub enum PopupType {
     BuyMoreHints(HintEvent),
 }
@@ -93,17 +93,13 @@ impl MavericRootChildren for PopupStateRoot {
                             commands.add_child("title text", text_node, &());
                         }
                         HintsPopupLayoutEntity::WatchAdButton
-                        | HintsPopupLayoutEntity::BuyPack1Button
-                        | HintsPopupLayoutEntity::BuyPack2Button => {
+                        | HintsPopupLayoutEntity::HintsStorePageButton=> {
                             let interaction = match item {
                                 HintsPopupLayoutEntity::WatchAdButton => {
                                     PopupInteraction::ClickWatchAd
                                 }
-                                HintsPopupLayoutEntity::BuyPack1Button => {
-                                    PopupInteraction::ClickBuyPack1
-                                }
-                                HintsPopupLayoutEntity::BuyPack2Button => {
-                                    PopupInteraction::ClickBuyPack2
+                                HintsPopupLayoutEntity::HintsStorePageButton => {
+                                    PopupInteraction::ClickHintsStore
                                 }
                                 _ => panic!("Should not be here"),
                             };
@@ -124,8 +120,7 @@ impl MavericRootChildren for PopupStateRoot {
                             let text = match item {
                                 HintsPopupLayoutEntity::Text => "unknown",
                                 HintsPopupLayoutEntity::WatchAdButton => "5 hints (Watch ad)",
-                                HintsPopupLayoutEntity::BuyPack1Button => "100 hints (£1.00)",
-                                HintsPopupLayoutEntity::BuyPack2Button => "1000 hints (£2.00)",
+                                HintsPopupLayoutEntity::HintsStorePageButton => "Hints Store Page",
                                 HintsPopupLayoutEntity::SufferAloneButton => "Suffer Alone",
                                 HintsPopupLayoutEntity::PopupBox => "unknown",
                             };
@@ -206,10 +201,9 @@ impl MavericRootChildren for PopupStateRoot {
 pub enum HintsPopupLayoutEntity {
     Text = 0,
     WatchAdButton = 1,
-    BuyPack1Button = 2,
-    BuyPack2Button = 3,
-    SufferAloneButton = 4,
-    PopupBox = 5,
+    HintsStorePageButton = 2,
+    SufferAloneButton = 3,
+    PopupBox = 4,
 }
 
 impl HintsPopupLayoutEntity {
@@ -228,8 +222,7 @@ impl LayoutStructure for HintsPopupLayoutEntity {
                 y: HINTS_POPUP_BOX_TITLE_HEIGHT,
             },
             Self::WatchAdButton
-            | Self::BuyPack1Button
-            | Self::BuyPack2Button
+            | Self::HintsStorePageButton
             | Self::SufferAloneButton => Vec2 {
                 x: HINTS_POPUP_BOX_BUTTON_WIDTH,
                 y: HINTS_POPUP_BOX_BUTTON_HEIGHT,
@@ -245,8 +238,7 @@ impl LayoutStructure for HintsPopupLayoutEntity {
         match self {
             Self::Text
             | Self::WatchAdButton
-            | Self::BuyPack1Button
-            | Self::BuyPack2Button
+            | Self::HintsStorePageButton
             | Self::SufferAloneButton => Vec2 {
                 x: (IDEAL_WIDTH - HINTS_POPUP_BOX_TITLE_WIDTH) / 2.,
                 y: HINTS_POPUP_BOX_TOP

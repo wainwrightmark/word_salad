@@ -40,17 +40,14 @@ fn track_purchase_events(
 ) {
     for event in ev.read() {
         match event {
-            PurchaseEvent::BuyHintsPack1(hint_event) => {
-                hints.hints_remaining += 100;
-                hints.total_bought_hints += 100;
+            PurchaseEvent::BuyHintsPack { hint_event, number_of_hints } => {
+                hints.hints_remaining += number_of_hints;
+                hints.total_bought_hints += number_of_hints;
                 show_toast_on_web("In the real app you would pay money");
-                hint_events.send(*hint_event);
-            }
-            PurchaseEvent::BuyHintsPack2(hint_event) => {
-                hints.hints_remaining += 1000;
-                hints.total_bought_hints += 1000;
-                show_toast_on_web("In the real app you would pay money");
-                hint_events.send(*hint_event);
+                if let Some(hint_event) = hint_event{
+                    hint_events.send(*hint_event);
+                }
+
             }
             PurchaseEvent::BuyLevelGroupBySequence(sequence) => {
                 purchases.groups_purchased.insert(sequence.group());
@@ -83,8 +80,10 @@ fn track_purchase_events(
 
 #[derive(Debug, Event, Clone, PartialEq)]
 pub enum PurchaseEvent {
-    BuyHintsPack1(HintEvent),
-    BuyHintsPack2(HintEvent),
+    BuyHintsPack{
+        hint_event: Option<HintEvent>,
+        number_of_hints: usize
+    },
     BuyLevelGroupBySequence(LevelSequence),
     BuyLevelGroup(LevelGroup),
     BuyAvoidAds,

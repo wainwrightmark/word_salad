@@ -1,6 +1,6 @@
 #[cfg(any(feature = "ios", feature = "android"))]
 use crate::asynchronous;
-use crate::{logging, prelude::*};
+use crate::prelude::*;
 use bevy::prelude::*;
 use capacitor_bindings::admob::*;
 use nice_bevy_utils::{async_event_writer::AsyncEventWriter, CanRegisterAsyncEvent};
@@ -121,6 +121,7 @@ fn handle_ad_requests(
     }
 }
 
+#[allow(dead_code)]
 async fn reshow_consent_form()-> Result<(), capacitor_bindings::error::Error>{
     #[cfg(feature = "android")]//todo also ios
     {

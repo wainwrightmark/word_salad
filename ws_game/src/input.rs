@@ -83,14 +83,9 @@ impl InteractionEntity {
                                     PopupInteraction::ClickWatchAd,
                                 )))
                             }
-                            HintsPopupLayoutEntity::BuyPack1Button => {
+                            HintsPopupLayoutEntity::HintsStorePageButton => {
                                 Some(InteractionEntity::Button(ButtonInteraction::Popup(
-                                    PopupInteraction::ClickBuyPack1,
-                                )))
-                            }
-                            HintsPopupLayoutEntity::BuyPack2Button => {
-                                Some(InteractionEntity::Button(ButtonInteraction::Popup(
-                                    PopupInteraction::ClickBuyPack2,
+                                    PopupInteraction::ClickHintsStore,
                                 )))
                             }
                         },

@@ -159,8 +159,7 @@ pub enum PopupInteraction {
     ClickSufferAlone,
     ClickClose,
     ClickWatchAd,
-    ClickBuyPack1,
-    ClickBuyPack2,
+    ClickHintsStore
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Component, EnumIs, Default)]
@@ -543,8 +542,10 @@ impl ButtonInteraction {
                     menu_state.close();
                 }
             },
-            ButtonInteraction::HintsMenu(_) => {
-                //TODO!
+            ButtonInteraction::HintsMenu(hints_layout_entity) => {
+                let number_of_hints = hints_layout_entity.hint_count();
+                purchase_events.send(PurchaseEvent::BuyHintsPack { hint_event: None, number_of_hints });
+                menu_state.close();
             }
 
             ButtonInteraction::WordSaladLogo => menu_state.toggle(),
@@ -585,15 +586,9 @@ impl ButtonInteraction {
                 }
             }
 
-            ButtonInteraction::Popup(PopupInteraction::ClickBuyPack1) => {
-                if let Some(PopupType::BuyMoreHints(he)) = popup_state.0.take() {
-                    purchase_events.send(PurchaseEvent::BuyHintsPack1(he))
-                }
-            }
-
-            ButtonInteraction::Popup(PopupInteraction::ClickBuyPack2) => {
-                if let Some(PopupType::BuyMoreHints(he)) = popup_state.0.take() {
-                    purchase_events.send(PurchaseEvent::BuyHintsPack2(he))
+            ButtonInteraction::Popup(PopupInteraction::ClickHintsStore) => {
+                if let Some(PopupType::BuyMoreHints(..)) = popup_state.0.take() {
+                    menu_state.set_if_neq(MenuState::HintsStorePage);
                 }
             }
         }
