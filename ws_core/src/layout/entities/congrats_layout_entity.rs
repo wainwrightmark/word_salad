@@ -18,6 +18,7 @@ pub enum CongratsButton {
     Next = 0,
     MoreLevels = 1,
     Share = 2,
+    ResetPuzzle = 3,
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -25,6 +26,7 @@ pub enum CongratsButton {
 pub enum CongratsButton {
     Next = 0,
     MoreLevels = 1,
+    ResetPuzzle = 2,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, EnumCount, Display)]

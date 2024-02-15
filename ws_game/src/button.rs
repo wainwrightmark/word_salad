@@ -586,6 +586,8 @@ impl ButtonInteraction {
 
             ButtonInteraction::Congrats(CongratsButton::MoreLevels) => {
                 *menu_state.as_mut() = MenuState::ChooseLevelsPage;
+            }ButtonInteraction::Congrats(CongratsButton::ResetPuzzle) => {
+                change_level_events.send(ChangeLevelEvent::Reset);
             }
 
             #[cfg(target_arch = "wasm32")]

@@ -12,12 +12,12 @@
 
 - show countdown
 - word animation at the end of level
-- reset button on end screen
+
 - animate the menu
 - menu is a carousel that is overlayed on top of the current level
 - ws logo should transform into a burger when the menu is open
 - menu buy buttons should have a left and right component for the name and the price
-- add "5 hints - watch ad" to the hints menu
+
 - grey out already-purchased things
 - sharing with a new user should take them to that puzzle (currently loads game)
 - loading bar comes up on the app?

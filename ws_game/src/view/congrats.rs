@@ -290,6 +290,7 @@ impl MavericNode for CongratsView {
                             }
                         },
                         CongratsButton::MoreLevels => "More Puzzles".to_string(),
+                        CongratsButton::ResetPuzzle => "Reset Puzzle".to_string(),
                         #[cfg(target_arch = "wasm32")]
                         CongratsButton::Share => "Share".to_string(),
                     };
