@@ -35,10 +35,16 @@ pub enum LevelSequence {
     Mammals,
     Birds,
     Insects,
+    ReptilesAndAmphibians,
     Fruit,
     Vegetables,
     Gemstones,
     Elements,
+
+    NFLTeams,
+    NBATeams,
+    MLBTeams,
+    NHLTeams,
 }
 
 impl LevelSequence {
@@ -55,13 +61,20 @@ impl LevelSequence {
             EuropeanCapitals => SouthAndEastAsianCapitals,
             SouthAndEastAsianCapitals => MiddleEasternCapitals,
             MiddleEasternCapitals => Mammals,
+
             Mammals => Birds,
             Birds => Insects,
-            Insects => Fruit,
+            Insects => ReptilesAndAmphibians,
+            ReptilesAndAmphibians => Fruit,
             Fruit => Vegetables,
             Vegetables => Gemstones,
             Gemstones => Elements,
-            Elements => return None,
+            Elements => NFLTeams,
+
+            NFLTeams => NBATeams,
+            NBATeams => MLBTeams,
+            MLBTeams => NHLTeams,
+            NHLTeams => return None,
         };
         return Some(r);
     }
@@ -77,8 +90,12 @@ impl LevelSequence {
             | SouthAndEastAsianCapitals
             | AfricanCountries
             | MiddleEasternCapitals => LevelGroup::Geography,
-            Mammals | Birds | Insects | Fruit | Vegetables | Gemstones | Elements => {
+            Mammals | Birds | Insects | Fruit | Vegetables | Gemstones | Elements | ReptilesAndAmphibians => {
                 LevelGroup::NaturalWorld
+            },
+
+            NFLTeams | NBATeams | MLBTeams | NHLTeams =>{
+                LevelGroup::USSports
             }
         }
     }
@@ -99,7 +116,7 @@ impl LevelSequence {
         2
     }
 
-    pub (crate) fn levels(self) -> &'static Vec<DesignedLevel> {
+    pub(crate) fn levels(self) -> &'static Vec<DesignedLevel> {
         let levels = match self {
             LevelSequence::USStates => &*US_STATES,
             LevelSequence::EuropeanCapitals => &*EUROPEAN_CAPITALS,
@@ -117,6 +134,15 @@ impl LevelSequence {
             LevelSequence::Elements => &*ELEMENTS,
             LevelSequence::Mammals => &*MAMMALS,
             LevelSequence::Birds => &*BIRDS,
+            LevelSequence::ReptilesAndAmphibians => &*REPTILES_AND_AMPHIBIANS,
+
+            LevelSequence::NFLTeams => &*NFL_TEAMS,
+            LevelSequence::NBATeams => &*NBA_TEAMS,
+            LevelSequence::MLBTeams => &*MLB_TEAMS,
+            LevelSequence::NHLTeams => &*NHL_TEAMS,
+
+
+
         };
         levels
     }
@@ -139,6 +165,13 @@ impl LevelSequence {
             LevelSequence::Mammals => "Mammals",
             LevelSequence::Birds => "Birds",
             LevelSequence::Fruit => "Fruit",
+            LevelSequence::ReptilesAndAmphibians => "Reptiles & Amphibians",
+
+
+            LevelSequence::NFLTeams => "NFL Teams",
+            LevelSequence::NBATeams => "NBA Teams",
+            LevelSequence::MLBTeams => "MLB Teams",
+            LevelSequence::NHLTeams => "NHL Teams",
         }
     }
 }

@@ -2,6 +2,7 @@ pub mod clustering;
 pub mod combinations;
 pub mod grid_creator;
 pub mod search;
+pub mod obvious;
 pub mod word_layout;
 pub mod word_set;
 
@@ -63,6 +64,10 @@ struct Options {
     /// Whether to resume execution
     #[arg(long, default_value = "false")]
     pub resume: bool,
+
+    /// search all found grids for ones where ones in this list are written in an obvious way
+    #[arg(long)]
+    pub obvious: Option<String>
 }
 
 fn main() {
@@ -79,6 +84,11 @@ fn main() {
     if let Some(search) = &options.search {
         did_something = true;
         search::do_search(search);
+    }
+
+    if let Some(obvious) = &options.obvious{
+        did_something = true;
+        obvious::do_obvious(&obvious);
     }
 
     if options.reorient {

@@ -128,6 +128,46 @@ lazy_static! { //todo data_bake
             .map(|x| x.unwrap()),
         "Birds"
     );
+
+    pub(crate) static ref REPTILES_AND_AMPHIBIANS: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/natural_world/reptiles and amphibians.tsv")
+            .lines()
+            .map(DesignedLevel::from_tsv_line)
+            .map(|x| x.unwrap()),
+        "Reptiles & Amphibians"
+    );
+
+    pub(crate) static ref NFL_TEAMS: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/US Sports/NFL Teams.tsv")
+            .lines()
+            .map(DesignedLevel::from_tsv_line)
+            .map(|x| x.unwrap()),
+        "NFL Teams"
+    );
+
+    pub(crate) static ref NHL_TEAMS: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/US Sports/NHL Teams.tsv")
+            .lines()
+            .map(DesignedLevel::from_tsv_line)
+            .map(|x| x.unwrap()),
+        "NHL Teams"
+    );
+
+    pub(crate) static ref NBA_TEAMS: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/US Sports/NBA Teams.tsv")
+            .lines()
+            .map(DesignedLevel::from_tsv_line)
+            .map(|x| x.unwrap()),
+        "NBA Teams"
+    );
+
+    pub(crate) static ref MLB_TEAMS: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/US Sports/MLB Teams.tsv")
+            .lines()
+            .map(DesignedLevel::from_tsv_line)
+            .map(|x| x.unwrap()),
+        "MLB Teams"
+    );
 }
 
 pub fn number_levels(

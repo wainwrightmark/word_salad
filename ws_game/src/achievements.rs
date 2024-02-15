@@ -178,6 +178,9 @@ fn track_level_completion_achievements(
                     ws_levels::level_group::LevelGroup::NaturalWorld => {
                         maybe_unlock(&mut achievements, Achievement::LinnaeusCarl);
                     }
+                    ws_levels::level_group::LevelGroup::USSports => {
+                        //todo maybe have an achievement here
+                    },
                 }
             }
         }

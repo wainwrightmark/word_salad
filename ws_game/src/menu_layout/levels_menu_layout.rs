@@ -109,6 +109,7 @@ impl LayoutStructure for LevelsMenuLayoutEntity {
             Self::WordSalad,
             Self::AdditionalLevel(LevelGroup::Geography),
             Self::AdditionalLevel(LevelGroup::NaturalWorld),
+            Self::AdditionalLevel(LevelGroup::USSports),
         ]
         .into_iter()
     }
