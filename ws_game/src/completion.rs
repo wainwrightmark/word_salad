@@ -143,27 +143,27 @@ impl SequenceCompletion {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum NextDailyChallengeResult {
-    Level1(usize),
-    AllFinished1,
-    TodayNotLoaded1,
+    Level(usize),
+    AllFinished,
+    TodayNotLoaded(usize),
 }
 
 impl NextDailyChallengeResult {
     pub fn actual_level(&self) -> Option<CurrentLevel> {
         match self {
-            NextDailyChallengeResult::Level1(index) => {
+            NextDailyChallengeResult::Level(index) => {
                 Some(CurrentLevel::DailyChallenge { index: *index })
             }
-            NextDailyChallengeResult::AllFinished1 => None,
-            NextDailyChallengeResult::TodayNotLoaded1 => None,
+            NextDailyChallengeResult::AllFinished => None,
+            NextDailyChallengeResult::TodayNotLoaded{..} => None,
         }
     }
 
     pub fn level_index(&self) -> Option<usize> {
         match self {
-            NextDailyChallengeResult::Level1(index) => Some(*index),
-            NextDailyChallengeResult::AllFinished1 => None,
-            NextDailyChallengeResult::TodayNotLoaded1 => None,
+            NextDailyChallengeResult::Level(index) => Some(*index),
+            NextDailyChallengeResult::AllFinished => None,
+            NextDailyChallengeResult::TodayNotLoaded{..} => None,
         }
     }
 }
@@ -171,12 +171,12 @@ impl NextDailyChallengeResult {
 impl From<NextDailyChallengeResult> for CurrentLevel {
     fn from(val: NextDailyChallengeResult) -> Self {
         match val {
-            NextDailyChallengeResult::Level1(index) => CurrentLevel::DailyChallenge { index },
-            NextDailyChallengeResult::AllFinished1 => {
+            NextDailyChallengeResult::Level(index) => CurrentLevel::DailyChallenge { index },
+            NextDailyChallengeResult::AllFinished => {
                 CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished)
             }
-            NextDailyChallengeResult::TodayNotLoaded1 => {
-                CurrentLevel::NonLevel(NonLevel::DailyChallengeNotLoaded)
+            NextDailyChallengeResult::TodayNotLoaded(index) => {
+                CurrentLevel::NonLevel(NonLevel::DailyChallengeNotLoaded{goto_level: index})
             }
         }
     }
@@ -208,16 +208,16 @@ impl DailyChallengeCompletion {
         let mut current_index = today_date_index;
 
         if daily_challenges.levels.get(current_index).is_none() {
-            return NextDailyChallengeResult::TodayNotLoaded1;
+            return NextDailyChallengeResult::TodayNotLoaded(current_index);
         }
 
         loop {
             if !self.results.contains_key(&current_index) {
-                return NextDailyChallengeResult::Level1(current_index);
+                return NextDailyChallengeResult::Level(current_index);
             }
             match current_index.checked_sub(1) {
                 Some(ci) => current_index = ci,
-                None => return NextDailyChallengeResult::AllFinished1,
+                None => return NextDailyChallengeResult::AllFinished,
             }
         }
     }
@@ -334,7 +334,7 @@ pub mod test {
         daily_challenges.levels.push(DesignedLevel::unknown());
 
         assert_eq!(
-            NextDailyChallengeResult::Level1(3),
+            NextDailyChallengeResult::Level(3),
             completion.get_next_incomplete_daily_challenge(3, &daily_challenges)
         );
 
@@ -354,7 +354,7 @@ pub mod test {
         );
 
         assert_eq!(
-            NextDailyChallengeResult::Level1(1),
+            NextDailyChallengeResult::Level(1),
             completion.get_next_incomplete_daily_challenge(3, &daily_challenges)
         );
 
@@ -374,7 +374,7 @@ pub mod test {
         );
 
         assert_eq!(
-            NextDailyChallengeResult::AllFinished1,
+            NextDailyChallengeResult::AllFinished,
             completion.get_next_incomplete_daily_challenge(3, &daily_challenges)
         );
     }

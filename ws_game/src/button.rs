@@ -471,7 +471,7 @@ impl ButtonInteraction {
                             match daily_challenge_completion
                                 .get_next_incomplete_daily_challenge_from_today(daily_challenges)
                             {
-                                NextDailyChallengeResult::Level1(index) => {
+                                NextDailyChallengeResult::Level(index) => {
                                     change_level_events
                                         .send(CurrentLevel::DailyChallenge { index }.into());
                                 }
@@ -522,16 +522,16 @@ impl ButtonInteraction {
 
                             change_level_events.send(new_current_level.into());
                         }
-                        NonLevel::DailyChallengeNotLoaded => {
+                        NonLevel::DailyChallengeNotLoaded{goto_level} => {
                             asynchronous::spawn_and_run(load_levels_async(
                                 daily_challenge_events.clone(),
                                 true,
                             ));
                             change_level_events.send(
-                                CurrentLevel::NonLevel(NonLevel::DailyChallengeLoading).into(),
+                                CurrentLevel::NonLevel(NonLevel::DailyChallengeLoading{goto_level}).into(),
                             );
                         }
-                        NonLevel::DailyChallengeLoading => {
+                        NonLevel::DailyChallengeLoading{..} => {
                             //This button should not exist
                         }
                     }

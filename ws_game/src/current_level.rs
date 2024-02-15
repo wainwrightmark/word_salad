@@ -35,10 +35,10 @@ pub enum NonLevel {
     BeforeTutorial,
     AfterCustomLevel,
     DailyChallengeFinished,
-    DailyChallengeNotLoaded,
-    DailyChallengeLoading,
+    DailyChallengeNotLoaded{goto_level: usize},
+    DailyChallengeLoading{goto_level: usize},
     DailyChallengeReset,
-    DailyChallengeCountdown { todays_index: usize },
+    DailyChallengeCountdown { todays_index: usize },//TODO remove
 
     LevelSequenceMustPurchaseGroup(LevelSequence),
     LevelSequenceAllFinished(LevelSequence),
@@ -123,7 +123,7 @@ impl CurrentLevel {
             },
             CurrentLevel::DailyChallenge { index } => match daily_challenges.levels.get(*index) {
                 Some(cl) => Either::Left(cl),
-                None => Either::Right(NonLevel::DailyChallengeNotLoaded),
+                None => Either::Right(NonLevel::DailyChallengeNotLoaded{goto_level: *index}),
             },
             CurrentLevel::NonLevel(nl) => Either::Right(*nl),
         }

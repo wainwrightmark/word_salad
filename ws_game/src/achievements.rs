@@ -188,7 +188,7 @@ fn track_level_completion_achievements(
             if daily_challenge_completions.get_next_incomplete_daily_challenge(
                 DailyChallenges::get_today_index(),
                 &daily_challenges,
-            ) == NextDailyChallengeResult::AllFinished1
+            ) == NextDailyChallengeResult::AllFinished
             {
                 maybe_unlock(&mut achievements, Achievement::CaesarSalad);
             }

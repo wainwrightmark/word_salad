@@ -1,6 +1,6 @@
 use std::ops::Add;
 
-use crate::{asynchronous, prelude::*, startup};
+use crate::{asynchronous, prelude::*, startup::{self}};
 use bevy::prelude::*;
 use chrono::{Datelike, Duration, Timelike};
 use itertools::Itertools;
@@ -188,17 +188,26 @@ fn handle_daily_challenge_data_loaded(
             daily_challenges.level_data = event.data.clone();
             daily_challenges.levels = levels;
 
-            let should_change = match current_level.as_ref() {
+
+
+            let should_change_to: Option<usize> = match current_level.as_ref() {
                 CurrentLevel::NonLevel(
                     NonLevel::DailyChallengeFinished
-                    | NonLevel::DailyChallengeLoading
-                    | NonLevel::DailyChallengeNotLoaded,
-                ) => true,
-                _ => false,
+                ) => {
+                    let index = DailyChallenges::get_today_index();
+                    Some(index)
+                },
+                CurrentLevel::NonLevel(
+                    NonLevel::DailyChallengeLoading{goto_level}
+                    | NonLevel::DailyChallengeNotLoaded{goto_level},
+                )=>{
+                    Some(*goto_level)
+                },
+                _ => None,
             };
 
-            if should_change {
-                let index = DailyChallenges::get_today_index();
+            if let Some(index) = should_change_to {
+
 
                 let new_current_level = CurrentLevel::DailyChallenge { index };
 
