@@ -541,8 +541,11 @@ impl ButtonInteraction {
                 }
             }
             ButtonInteraction::BuyLevelGroup(level_group) => {
-                purchase_events.send(PurchaseEvent::BuyLevelGroup(*level_group));
-                menu_state.close();
+                if !purchases.groups_purchased.contains(level_group){
+                    purchase_events.send(PurchaseEvent::BuyLevelGroup(*level_group));
+                    menu_state.close();
+                }
+
             }
 
             ButtonInteraction::MainStoreMenu(m) => match m {

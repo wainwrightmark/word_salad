@@ -19,6 +19,7 @@ use crate::{
         word_salad_menu_layout::WordSaladMenuLayoutEntity,
     },
     prelude::*,
+    purchases::Purchases,
 };
 
 use self::{
@@ -77,6 +78,7 @@ pub struct MenuContext {
     pub sequence_completion: SequenceCompletion,
     pub video_resource: VideoResource,
     pub daily_challenges: DailyChallenges,
+    pub purchases: Purchases,
 }
 
 impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for MenuContextWrapper<'w> {
@@ -88,6 +90,7 @@ impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for MenuContextWrapper<'w> {
             menu_state: Res::clone(&value.menu_state),
             daily_challenge_completion: Res::clone(&value.daily_challenge_completion),
             sequence_completion: Res::clone(&value.sequence_completion),
+            purchases: Res::clone(&value.purchases),
         }
     }
 }
@@ -289,17 +292,15 @@ fn add_menu_items<
 
 fn add_double_text_menu_items<
     R: MavericRoot,
-    L: LayoutStructureDoubleText + Into<ButtonInteraction>,
+    L: LayoutStructureDoubleTextButton + Into<ButtonInteraction>,
 >(
     context: &<L as LayoutStructure>::Context<'_>,
     commands: &mut UnorderedChildCommands<R>,
     size: &Size,
     page: u16,
     background_type: BackgroundType,
-    // fill_color_func: impl Fn(&L) -> Color,
-    // text_color: Color,
     border: ShaderBorder,
-    text_context: &<L as LayoutStructureDoubleText>::TextContext<'_>,
+    text_context: &<L as LayoutStructureDoubleTextButton>::TextContext<'_>,
 ) {
     for (index, entity) in L::iter_all(context).enumerate() {
         let font_size = size.font_size::<L>(&entity, &());
@@ -312,6 +313,12 @@ fn add_double_text_menu_items<
             .convert_color();
 
         let rect = size.get_rect(&entity, context);
+
+        let interaction: ButtonInteraction = if entity.is_disabled(context, text_context) {
+            ButtonInteraction::None
+        } else {
+            entity.into()
+        };
         commands.add_child(
             (index as u16, page),
             DoubleTextButtonNode {
@@ -319,7 +326,7 @@ fn add_double_text_menu_items<
                 rect,
                 left_text,
                 right_text,
-                interaction: entity.into(),
+                interaction,
                 text_color,
                 fill_color,
                 left_font,

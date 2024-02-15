@@ -1,7 +1,7 @@
 use bevy::math::Vec2;
 use strum::{Display, EnumIter, IntoEnumIterator};
 use ws_core::{
-    layout::entities::*, palette, LayoutSizing, LayoutStructure, LayoutStructureDoubleText,
+    layout::entities::*, palette, LayoutSizing, LayoutStructure, LayoutStructureDoubleTextButton,
     LayoutStructureWithFont, LayoutStructureWithTextOrImage, Spacing,
 };
 
@@ -91,7 +91,7 @@ impl LayoutStructureWithTextOrImage for HintsLayoutEntity {
     }
 }
 
-impl LayoutStructureDoubleText for HintsLayoutEntity {
+impl LayoutStructureDoubleTextButton for HintsLayoutEntity {
     type TextContext<'a> = MenuContextWrapper<'a>;
 
     fn double_text(
@@ -133,5 +133,13 @@ impl LayoutStructureDoubleText for HintsLayoutEntity {
         _text_context: &Self::TextContext<'_>,
     ) -> ws_core::prelude::BasicColor {
         palette::MENU_BUTTON_FILL
+    }
+
+    fn is_disabled(
+        &self,
+        _context: &Self::Context<'_>,
+        _text_context: &Self::TextContext<'_>,
+    )-> bool {
+        false
     }
 }

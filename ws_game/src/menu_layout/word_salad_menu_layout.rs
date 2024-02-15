@@ -133,7 +133,7 @@ impl LayoutStructureWithFont for WordSaladMenuLayoutEntity {
     }
 }
 
-impl LayoutStructureDoubleText for WordSaladMenuLayoutEntity {
+impl LayoutStructureDoubleTextButton for WordSaladMenuLayoutEntity {
     type TextContext<'a> = MenuContextWrapper<'a>;
 
     fn double_text(
@@ -177,5 +177,13 @@ impl LayoutStructureDoubleText for WordSaladMenuLayoutEntity {
         } else {
             background_type.menu_button_incomplete_fill()
         }
+    }
+
+    fn is_disabled(
+        &self,
+        _context: &Self::Context<'_>,
+        _text_context: &Self::TextContext<'_>,
+    )-> bool {
+        false
     }
 }

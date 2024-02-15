@@ -1,7 +1,7 @@
 use bevy::math::Vec2;
 use strum::IntoEnumIterator;
 use ws_core::{
-    layout::entities::*, palette, LayoutSizing, LayoutStructure, LayoutStructureDoubleText,
+    layout::entities::*, palette, LayoutSizing, LayoutStructure, LayoutStructureDoubleTextButton,
     LayoutStructureWithFont, LayoutStructureWithTextOrImage, Spacing,
 };
 use ws_levels::level_group::LevelGroup;
@@ -63,17 +63,21 @@ impl LayoutStructureWithTextOrImage for LevelGroupStoreLayoutStructure {
     }
 }
 
-impl LayoutStructureDoubleText for LevelGroupStoreLayoutStructure {
+impl LayoutStructureDoubleTextButton for LevelGroupStoreLayoutStructure {
     type TextContext<'a> = MenuContextWrapper<'a>;
 
     fn double_text(
         &self,
         _context: &Self::Context<'_>,
-        _text_context: &Self::TextContext<'_>,
+        text_context: &Self::TextContext<'_>,
     ) -> (String, String) {
         //todo get price from store
         let left = self.0.name();
-        let right = "Free";
+        let right = if text_context.purchases.groups_purchased.contains(&self.0) {
+            "Purchased"
+        } else {
+            "Free"
+        };
         (left.to_string(), right.to_string())
     }
 
@@ -97,8 +101,20 @@ impl LayoutStructureDoubleText for LevelGroupStoreLayoutStructure {
         &self,
         _background_type: ws_core::prelude::BackgroundType,
         _context: &Self::Context<'_>,
-        _text_context: &Self::TextContext<'_>,
+        text_context: &Self::TextContext<'_>,
     ) -> ws_core::prelude::BasicColor {
-        palette::MENU_BUTTON_FILL
+        if text_context.purchases.groups_purchased.contains(&self.0) {
+            palette::MENU_BUTTON_DISCOURAGED_FILL
+        } else {
+            palette::MENU_BUTTON_FILL
+        }
+    }
+
+    fn is_disabled(
+        &self,
+        _context: &Self::Context<'_>,
+        text_context: &Self::TextContext<'_>,
+    ) -> bool {
+        text_context.purchases.groups_purchased.contains(&self.0)
     }
 }

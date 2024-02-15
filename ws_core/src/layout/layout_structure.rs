@@ -48,7 +48,7 @@ pub trait LayoutStructureWithTextOrImage: LayoutStructure + LayoutStructureWithF
     fn text_or_image(&self, context: &Self::Context<'_>) -> TextOrImage;
 }
 
-pub trait LayoutStructureDoubleText:
+pub trait LayoutStructureDoubleTextButton:
     LayoutStructure + LayoutStructureWithFont<FontContext = ()>
 {
     type TextContext<'a>;
@@ -73,4 +73,11 @@ pub trait LayoutStructureDoubleText:
         context: &Self::Context<'_>,
         text_context: &Self::TextContext<'_>,
     ) -> BasicColor;
+
+    fn is_disabled(
+        &self,
+        context: &Self::Context<'_>,
+        text_context: &Self::TextContext<'_>,
+    )-> bool;
+
 }

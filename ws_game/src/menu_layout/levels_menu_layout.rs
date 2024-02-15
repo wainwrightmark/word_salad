@@ -122,7 +122,7 @@ impl LayoutStructureWithFont for LevelsMenuLayoutEntity {
     }
 }
 
-impl LayoutStructureDoubleText for LevelsMenuLayoutEntity {
+impl LayoutStructureDoubleTextButton for LevelsMenuLayoutEntity {
     type TextContext<'a> = MenuContextWrapper<'a>;
 
     fn double_text(
@@ -168,5 +168,13 @@ impl LayoutStructureDoubleText for LevelsMenuLayoutEntity {
         } else {
             background_type.menu_button_incomplete_fill()
         }
+    }
+
+    fn is_disabled(
+        &self,
+        _context: &Self::Context<'_>,
+        _text_context: &Self::TextContext<'_>,
+    )-> bool {
+        false
     }
 }

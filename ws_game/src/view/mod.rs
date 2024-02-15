@@ -25,7 +25,7 @@ pub use tutorial::*;
 pub use wordline::*;
 pub use words::*;
 
-use crate::{completion::*, prelude::*};
+use crate::{completion::*, prelude::*, purchases::Purchases};
 use maveric::prelude::*;
 
 #[derive(Debug, NodeContext)]
@@ -42,6 +42,7 @@ pub struct ViewContext {
     pub video_resource: VideoResource,
     pub daily_challenges: DailyChallenges,
     pub streak: Streak,
+    pub purchases: Purchases
 }
 
 #[derive(MavericRoot)]

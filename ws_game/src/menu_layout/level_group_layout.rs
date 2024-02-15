@@ -3,7 +3,7 @@ use crate::{completion::SequenceCompletion, prelude::BUTTONS_FONT_PATH, view::Me
 use super::{MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
 use bevy::math::Vec2;
 use ws_core::{
-    layout::entities::*, palette, LayoutSizing, LayoutStructure, LayoutStructureDoubleText,
+    layout::entities::*, palette, LayoutSizing, LayoutStructure, LayoutStructureDoubleTextButton,
     LayoutStructureWithFont, Spacing,
 };
 use ws_levels::level_group::LevelGroup;
@@ -109,7 +109,7 @@ impl Iterator for LevelGroupLayoutIter {
     }
 }
 
-impl LayoutStructureDoubleText for LevelGroupLayoutEntity {
+impl LayoutStructureDoubleTextButton for LevelGroupLayoutEntity {
     type TextContext<'a> = MenuContextWrapper<'a>;
 
     fn double_text(
@@ -147,5 +147,13 @@ impl LayoutStructureDoubleText for LevelGroupLayoutEntity {
         } else {
             background_type.menu_button_incomplete_fill()
         }
+    }
+
+    fn is_disabled(
+        &self,
+        _context: &Self::Context<'_>,
+        _text_context: &Self::TextContext<'_>,
+    )-> bool {
+        false
     }
 }
