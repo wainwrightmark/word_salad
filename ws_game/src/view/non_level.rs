@@ -52,10 +52,10 @@ impl MavericNode for NonLevelView {
                         ls.group().total_count()
                     )
                 }
-                NonLevel::DailyChallengeNotLoaded{..} => {
+                NonLevel::DailyChallengeNotLoaded { .. } => {
                     format!("Could not load Daily Challenge")
                 }
-                NonLevel::DailyChallengeLoading{..} => {
+                NonLevel::DailyChallengeLoading { .. } => {
                     format!("Loading Daily Challenges")
                 }
             };
@@ -99,7 +99,7 @@ impl MavericNode for NonLevelView {
                 NonLevel::BeforeTutorial => Some("Ok".to_string()),
                 NonLevel::AfterCustomLevel => Some("Restart".to_string()),
                 NonLevel::DailyChallengeFinished => Some("Next".to_string()),
-                NonLevel::DailyChallengeNotLoaded{..} => Some("Retry".to_string()),
+                NonLevel::DailyChallengeNotLoaded { .. } => Some("Retry".to_string()),
                 NonLevel::DailyChallengeReset | NonLevel::LevelSequenceReset(_) => {
                     Some("Reset".to_string())
                 }
@@ -108,7 +108,7 @@ impl MavericNode for NonLevelView {
                     Some(format!("Replay #{}", todays_index + 1))
                 }
                 NonLevel::LevelSequenceMustPurchaseGroup(_) => Some("Purchase".to_string()),
-                NonLevel::DailyChallengeLoading{..} => None,
+                NonLevel::DailyChallengeLoading { .. } => None,
             };
 
             let (fill_color, border) = if selfie_mode.is_selfie_mode {

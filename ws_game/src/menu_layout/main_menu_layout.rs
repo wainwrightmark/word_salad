@@ -100,7 +100,7 @@ impl LayoutStructureWithTextOrImage for MainMenuLayoutEntity {
                 pressed_color: ws_core::BasicColor::rgba(0.36, 0.55, 0.88, 1.0),
                 aspect_ratio: 7168.0 / 1024.0,
             },
-            Settings => ws_core::TextOrImage::Text{text: "Settings"},
+            Settings => ws_core::TextOrImage::Text { text: "Settings" },
         }
     }
 }

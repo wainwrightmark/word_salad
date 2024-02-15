@@ -119,9 +119,7 @@ impl FromStr for FinderSingleWord {
 impl From<&DisplayWord> for FinderSingleWord {
     fn from(value: &DisplayWord) -> Self {
         let DisplayWord {
-            characters,
-            text,
-            ..
+            characters, text, ..
         } = value;
         let counts = PrimeBag128::try_from_iter(characters.iter().cloned()).unwrap();
 

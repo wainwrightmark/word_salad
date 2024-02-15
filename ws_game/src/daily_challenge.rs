@@ -1,6 +1,10 @@
 use std::ops::Add;
 
-use crate::{asynchronous, prelude::*, startup::{self}};
+use crate::{
+    asynchronous,
+    prelude::*,
+    startup::{self},
+};
 use bevy::prelude::*;
 use chrono::{Datelike, Duration, Timelike};
 use itertools::Itertools;
@@ -118,7 +122,10 @@ fn load_levels(writer: AsyncEventWriter<DailyChallengeDataLoadedEvent>, dc: Res<
     asynchronous::spawn_and_run(load_levels_async(writer, false));
 }
 
-pub async fn load_levels_async( writer: AsyncEventWriter<DailyChallengeDataLoadedEvent>, user_requested: bool,) {
+pub async fn load_levels_async(
+    writer: AsyncEventWriter<DailyChallengeDataLoadedEvent>,
+    user_requested: bool,
+) {
     info!("Loading levels");
     let url = "https://wordsalad.online/daily.tsv".to_string();
 
@@ -126,7 +133,7 @@ pub async fn load_levels_async( writer: AsyncEventWriter<DailyChallengeDataLoade
     let data = match res {
         Ok(response) => response.text().await,
         Err(err) => {
-            if user_requested{
+            if user_requested {
                 crate::platform_specific::show_toast_async("Could not load daily challenges").await;
             }
 
@@ -138,7 +145,7 @@ pub async fn load_levels_async( writer: AsyncEventWriter<DailyChallengeDataLoade
     let data = match data {
         Ok(data) => data,
         Err(err) => {
-            if user_requested{
+            if user_requested {
                 crate::platform_specific::show_toast_async("Could not load daily challenges").await;
             }
 
@@ -188,27 +195,19 @@ fn handle_daily_challenge_data_loaded(
             daily_challenges.level_data = event.data.clone();
             daily_challenges.levels = levels;
 
-
-
             let should_change_to: Option<usize> = match current_level.as_ref() {
-                CurrentLevel::NonLevel(
-                    NonLevel::DailyChallengeFinished
-                ) => {
+                CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished) => {
                     let index = DailyChallenges::get_today_index();
                     Some(index)
-                },
+                }
                 CurrentLevel::NonLevel(
-                    NonLevel::DailyChallengeLoading{goto_level}
-                    | NonLevel::DailyChallengeNotLoaded{goto_level},
-                )=>{
-                    Some(*goto_level)
-                },
+                    NonLevel::DailyChallengeLoading { goto_level }
+                    | NonLevel::DailyChallengeNotLoaded { goto_level },
+                ) => Some(*goto_level),
                 _ => None,
             };
 
             if let Some(index) = should_change_to {
-
-
                 let new_current_level = CurrentLevel::DailyChallenge { index };
 
                 if new_current_level.level(daily_challenges.as_mut()).is_left() {

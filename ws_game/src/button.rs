@@ -197,8 +197,8 @@ impl ButtonInteraction {
     }
 }
 
-impl From<level_group_store_layout::LevelGroupStoreLayoutEntity> for ButtonInteraction {
-    fn from(value: level_group_store_layout::LevelGroupStoreLayoutEntity) -> Self {
+impl From<level_group_store_layout::LevelGroupStoreLayoutStructure> for ButtonInteraction {
+    fn from(value: level_group_store_layout::LevelGroupStoreLayoutStructure) -> Self {
         Self::BuyLevelGroup(value.0)
     }
 }
@@ -522,16 +522,19 @@ impl ButtonInteraction {
 
                             change_level_events.send(new_current_level.into());
                         }
-                        NonLevel::DailyChallengeNotLoaded{goto_level} => {
+                        NonLevel::DailyChallengeNotLoaded { goto_level } => {
                             asynchronous::spawn_and_run(load_levels_async(
                                 daily_challenge_events.clone(),
                                 true,
                             ));
                             change_level_events.send(
-                                CurrentLevel::NonLevel(NonLevel::DailyChallengeLoading{goto_level}).into(),
+                                CurrentLevel::NonLevel(NonLevel::DailyChallengeLoading {
+                                    goto_level,
+                                })
+                                .into(),
                             );
                         }
-                        NonLevel::DailyChallengeLoading{..} => {
+                        NonLevel::DailyChallengeLoading { .. } => {
                             //This button should not exist
                         }
                     }
@@ -586,7 +589,8 @@ impl ButtonInteraction {
 
             ButtonInteraction::Congrats(CongratsButton::MoreLevels) => {
                 *menu_state.as_mut() = MenuState::ChooseLevelsPage;
-            }ButtonInteraction::Congrats(CongratsButton::ResetPuzzle) => {
+            }
+            ButtonInteraction::Congrats(CongratsButton::ResetPuzzle) => {
                 change_level_events.send(ChangeLevelEvent::Reset);
             }
 

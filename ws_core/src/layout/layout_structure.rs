@@ -2,7 +2,7 @@ use std::fmt::Debug;
 
 use glam::Vec2;
 
-use crate::{BasicColor, LayoutRectangle, LayoutSizing};
+use crate::{BackgroundType, BasicColor, LayoutRectangle, LayoutSizing};
 
 pub trait LayoutStructure: Sized + PartialEq + Debug {
     //TODO rename to positioning
@@ -32,29 +32,45 @@ pub trait LayoutStructureWithFont {
     fn font_size(&self, context: &Self::FontContext) -> f32;
 }
 
-pub enum TextOrImage{
-    Text{
+pub enum TextOrImage {
+    Text {
         text: &'static str,
     },
-    Image{
+    Image {
         path: &'static str,
         color: BasicColor,
         pressed_color: BasicColor,
-        aspect_ratio:f32//width / height,
-    }
+        aspect_ratio: f32, //width / height,
+    },
 }
 
-pub trait LayoutStructureWithTextOrImage : LayoutStructure + LayoutStructureWithFont {
+pub trait LayoutStructureWithTextOrImage: LayoutStructure + LayoutStructureWithFont {
     fn text_or_image(&self, context: &Self::Context<'_>) -> TextOrImage;
-
 }
 
-
-pub trait LayoutStructureDoubleText : LayoutStructure + LayoutStructureWithFont<FontContext = ()> {
+pub trait LayoutStructureDoubleText:
+    LayoutStructure + LayoutStructureWithFont<FontContext = ()>
+{
     type TextContext<'a>;
 
-    fn double_text(&self, context: &Self::Context<'_>, text_context: &Self::TextContext<'_>)-> (String, String);
+    fn double_text(
+        &self,
+        context: &Self::Context<'_>,
+        text_context: &Self::TextContext<'_>,
+    ) -> (String, String);
 
-    fn left_font(&self)-> &'static str;
-    fn right_font(&self)-> &'static str;
+    fn left_font(&self) -> &'static str;
+    fn right_font(&self) -> &'static str;
+
+    fn text_color(
+        &self,
+        context: &Self::Context<'_>,
+        text_context: &Self::TextContext<'_>,
+    ) -> BasicColor;
+    fn fill_color(
+        &self,
+        background_type: BackgroundType,
+        context: &Self::Context<'_>,
+        text_context: &Self::TextContext<'_>,
+    ) -> BasicColor;
 }

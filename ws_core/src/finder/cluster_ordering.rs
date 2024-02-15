@@ -40,14 +40,18 @@ pub fn order_cluster<const W: usize>(cluster: &mut Vec<BitSet<W>>) {
     }
 
     //rotate the list to minimize adjacency
-    let Some(rotate_index) = (0..cluster.len()).map(|index|{
-        let s1 = cluster[index];
-        let s2 = cluster[(index + 1) % cluster.len()];
-        s1.intersect(&s2).count()
-    }).position_max() else{return;};
+    let Some(rotate_index) = (0..cluster.len())
+        .map(|index| {
+            let s1 = cluster[index];
+            let s2 = cluster[(index + 1) % cluster.len()];
+            s1.intersect(&s2).count()
+        })
+        .position_max()
+    else {
+        return;
+    };
 
     cluster.rotate_left(rotate_index + 1)
-
 }
 
 const KEY_SIZE: usize = 16;

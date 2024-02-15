@@ -5,9 +5,8 @@ use ws_core::layout::entities::*;
 pub struct LogoContext {
     pub window_size: MyWindowSize,
     pub video_resource: VideoResource,
-    pub pressed_button: PressedButton
+    pub pressed_button: PressedButton,
 }
-
 
 #[derive(Debug, PartialEq, Clone, Copy, MavericRoot)]
 pub struct WordSaladLogoRoot;

@@ -7,7 +7,7 @@ pub struct BasicColor {
 }
 
 impl BasicColor {
-    pub  const fn rgba(r: f32, g: f32, b: f32, a: f32) -> Self {
+    pub const fn rgba(r: f32, g: f32, b: f32, a: f32) -> Self {
         Self {
             red: r,
             green: g,
@@ -38,11 +38,10 @@ impl BasicColor {
 pub mod palette {
     use crate::BasicColor as Color;
 
+    pub const NONE: Color = Color::rgba(0.0, 0.0, 0.0, 0.0);
+
     pub const ANIMATED_SOLUTION_NEW: Color = GREEN_LIGHT;
     pub const ANIMATED_SOLUTION_OLD: Color = GOLD;
-
-
-
 
     pub const TOP_BAR_LOGO_SELFIE: Color = MY_WHITE;
 
@@ -124,7 +123,4 @@ pub mod palette {
     const GOLD: Color = Color::rgba(1., 0.94, 0.62, 1.);
     #[allow(dead_code)]
     pub const TRANSPARENT: Color = Color::rgba(0., 0., 0., 0.);
-
-
-
 }

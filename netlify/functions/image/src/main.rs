@@ -1,7 +1,7 @@
-use base64::Engine;
 use aws_lambda_events::encodings::Body;
 use aws_lambda_events::event::apigw::{ApiGatewayProxyRequest, ApiGatewayProxyResponse};
 use aws_lambda_events::http::{HeaderMap, HeaderValue};
+use base64::Engine;
 use lambda_runtime::{service_fn, Error, LambdaEvent};
 use resvg::usvg::*;
 use ws_core::{DesignedLevel, Grid, Tile};
@@ -28,7 +28,6 @@ fn get_parameter<'a>(
 async fn image_request_handler(
     lambda_event: LambdaEvent<ApiGatewayProxyRequest>,
 ) -> Result<ApiGatewayProxyResponse, Error> {
-
     let daily: Option<DesignedLevel> = get_parameter(&lambda_event, "daily")
         .and_then(|x| x.parse().ok())
         .map(|i| level_from_daily_index(i));

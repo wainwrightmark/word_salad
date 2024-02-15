@@ -214,7 +214,7 @@ impl From<f32> for ShaderRounding {
         Self { rounding }
     }
 }
-impl Default for ShaderRounding{
+impl Default for ShaderRounding {
     fn default() -> Self {
         Self { rounding: 0.0 }
     }
@@ -231,7 +231,10 @@ pub struct ShaderProportions {
 
 impl Default for ShaderProportions {
     fn default() -> Self {
-        Self { width: 1.0, height: 1.0 }
+        Self {
+            width: 1.0,
+            height: 1.0,
+        }
     }
 }
 

@@ -90,13 +90,16 @@ impl LevelSequence {
             | SouthAndEastAsianCapitals
             | AfricanCountries
             | MiddleEasternCapitals => LevelGroup::Geography,
-            Mammals | Birds | Insects | Fruit | Vegetables | Gemstones | Elements | ReptilesAndAmphibians => {
-                LevelGroup::NaturalWorld
-            },
+            Mammals
+            | Birds
+            | Insects
+            | Fruit
+            | Vegetables
+            | Gemstones
+            | Elements
+            | ReptilesAndAmphibians => LevelGroup::NaturalWorld,
 
-            NFLTeams | NBATeams | MLBTeams | NHLTeams =>{
-                LevelGroup::USSports
-            }
+            NFLTeams | NBATeams | MLBTeams | NHLTeams => LevelGroup::USSports,
         }
     }
 
@@ -140,9 +143,6 @@ impl LevelSequence {
             LevelSequence::NBATeams => &*NBA_TEAMS,
             LevelSequence::MLBTeams => &*MLB_TEAMS,
             LevelSequence::NHLTeams => &*NHL_TEAMS,
-
-
-
         };
         levels
     }
@@ -166,7 +166,6 @@ impl LevelSequence {
             LevelSequence::Birds => "Birds",
             LevelSequence::Fruit => "Fruit",
             LevelSequence::ReptilesAndAmphibians => "Reptiles & Amphibians",
-
 
             LevelSequence::NFLTeams => "NFL Teams",
             LevelSequence::NBATeams => "NBA Teams",

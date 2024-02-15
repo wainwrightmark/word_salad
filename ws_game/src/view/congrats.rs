@@ -23,7 +23,7 @@ pub struct CongratsContext {
     pub video_resource: VideoResource,
     pub streak: Streak,
     pub level_time: LevelTime,
-    pub daily_challenges: DailyChallenges
+    pub daily_challenges: DailyChallenges,
 }
 
 impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for CongratsContextWrapper<'w> {
@@ -38,7 +38,6 @@ impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for CongratsContextWrapper<'w>
             streak: Res::clone(&value.streak),
             level_time: Res::clone(&value.level_time),
             daily_challenges: Res::clone(&value.daily_challenges),
-
         }
     }
 }
@@ -142,7 +141,9 @@ impl MavericNode for CongratsView {
                     Vec3::ONE
                 };
                 let transition = TransitionBuilder::default()
-                    .then_wait(Duration::from_secs_f32(TRANSITION_WAIT_SECS + TRANSITION_SECS))
+                    .then_wait(Duration::from_secs_f32(
+                        TRANSITION_WAIT_SECS + TRANSITION_SECS,
+                    ))
                     .then_set_value(Vec3::ONE)
                     //.then_ease(Vec3::ONE, (1.0 / TRANSITION_SECS).into(), Ease::CubicOut)
                     .build();
@@ -259,7 +260,7 @@ impl MavericNode for CongratsView {
                                     &context.daily_challenge_completion,
                                     &context.sequence_completion,
                                     &Purchases::default(), //don't actually worry about purchases here :)
-                                    &context.daily_challenges
+                                    &context.daily_challenges,
                                 );
 
                                 match next_level {

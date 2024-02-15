@@ -37,7 +37,6 @@ async fn setup_notifications_async(
         .small_icon("notification_icon")
         .large_icon("notification_icon")
         .icon_color("#86AEEA")
-
         .schedule(ScheduleOn::builder().hour(6).build())
         .auto_cancel(true)
         .build();

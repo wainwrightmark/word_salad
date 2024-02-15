@@ -3,7 +3,7 @@ use crate::{completion::SequenceCompletion, prelude::BUTTONS_FONT_PATH, view::Me
 use super::{MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
 use bevy::math::Vec2;
 use ws_core::{
-    layout::entities::*, LayoutSizing, LayoutStructure, LayoutStructureDoubleText,
+    layout::entities::*, palette, LayoutSizing, LayoutStructure, LayoutStructureDoubleText,
     LayoutStructureWithFont, Spacing,
 };
 use ws_levels::level_group::LevelGroup;
@@ -126,5 +126,26 @@ impl LayoutStructureDoubleText for LevelGroupLayoutEntity {
 
     fn right_font(&self) -> &'static str {
         BUTTONS_FONT_PATH
+    }
+
+    fn text_color(
+        &self,
+        context: &Self::Context<'_>,
+        text_context: &Self::TextContext<'_>,
+    ) -> ws_core::prelude::BasicColor {
+        palette::MENU_BUTTON_TEXT_REGULAR
+    }
+
+    fn fill_color(
+        &self,
+        background_type: ws_core::prelude::BackgroundType,
+        context: &Self::Context<'_>,
+        text_context: &Self::TextContext<'_>,
+    ) -> ws_core::prelude::BasicColor {
+        if self.is_complete(&text_context.sequence_completion, &context.1) {
+            background_type.menu_button_complete_fill()
+        } else {
+            background_type.menu_button_incomplete_fill()
+        }
     }
 }

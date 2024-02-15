@@ -30,12 +30,12 @@ impl Plugin for AdsPlugin {
 
 #[derive(Debug, Event)]
 pub enum AdRequestEvent {
-    RequestReward{
+    RequestReward {
         event: Option<HintEvent>,
-        hints: usize
+        hints: usize,
     },
     RequestInterstitial,
-    RequestConsent
+    RequestConsent,
 }
 
 #[derive(Debug, Default, Resource, MavericContext)]
@@ -43,7 +43,7 @@ pub struct AdState {
     pub can_show_ads: Option<bool>,
     pub reward_ad: Option<AdLoadInfo>,
     pub interstitial_ad: Option<AdLoadInfo>,
-    pub hint_wanted: Option<(usize, Option<HintEvent>)> ,
+    pub hint_wanted: Option<(usize, Option<HintEvent>)>,
 }
 
 #[derive(Debug, Default, Resource, MavericContext)]
@@ -60,15 +60,12 @@ fn handle_ad_requests(
 ) {
     for event in events.read() {
         match event {
-
-            AdRequestEvent::RequestConsent =>{
+            AdRequestEvent::RequestConsent => {
                 #[cfg(any(feature = "android", feature = "ios", feature = "web"))]
                 crate::logging::do_or_report_error(reshow_consent_form());
             }
 
-            AdRequestEvent::RequestReward{
-                event, hints
-            } => {
+            AdRequestEvent::RequestReward { event, hints } => {
                 #[cfg(any(feature = "ios", feature = "android"))]
                 {
                     if ad_state.can_show_ads == Some(true) {
@@ -127,8 +124,8 @@ fn handle_ad_requests(
 }
 
 #[allow(dead_code)]
-async fn reshow_consent_form()-> Result<(), capacitor_bindings::error::Error>{
-    #[cfg(feature = "android")]//todo also ios
+async fn reshow_consent_form() -> Result<(), capacitor_bindings::error::Error> {
+    #[cfg(feature = "android")] //todo also ios
     {
         let _r = Admob::show_consent_form().await?;
     }
@@ -199,8 +196,6 @@ fn handle_ad_events(
             AdEvent::RewardAdRewarded(reward) => {
                 info!("admob Reward ad rewarded {reward:?}",);
 
-
-
                 #[cfg(any(feature = "ios", feature = "android"))]
                 {
                     asynchronous::spawn_and_run(mobile_only::try_load_reward_ad(writer.clone()));
@@ -208,10 +203,9 @@ fn handle_ad_events(
                 if let Some((hint_count, hint_event)) = ad_state.hint_wanted.take() {
                     hints.hints_remaining += hint_count;
                     hints.total_bought_hints += hint_count;
-                    if let Some(hint_event) = hint_event{
+                    if let Some(hint_event) = hint_event {
                         hint_events.send(hint_event);
                     }
-
                 }
             }
             AdEvent::FailedToLoadRewardAd(s) => {
@@ -313,7 +307,6 @@ mod mobile_only {
             }
         };
 
-
         #[cfg(any(feature = "android"))]
         {
             let consent_info = Admob::request_consent_info(AdmobConsentRequestOptions {
@@ -323,9 +316,9 @@ mod mobile_only {
             })
             .await
             .map_err(|x| x.to_string())?;
-    
+
             info!("Consent Info {consent_info:?}");
-    
+
             if consent_info.is_consent_form_available
                 && consent_info.status == AdmobConsentStatus::Required
             {
@@ -339,7 +332,6 @@ mod mobile_only {
                 // }
             }
         }
-        
 
         Ok(())
     }

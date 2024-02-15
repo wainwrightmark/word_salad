@@ -2,7 +2,6 @@ use std::time::Duration;
 
 use crate::prelude::*;
 use bevy::prelude::*;
-use strum::EnumIs;
 
 const CLEAR_COLOR: Color = {
     //Color::NONE
@@ -33,12 +32,14 @@ fn clear_color_transition(
     clear_color: Res<ClearColor>,
 ) {
     if video.is_changed() || current_level.is_changed() || found_words.is_changed() {
-        let background_type = BackgroundType::from_resources(&video, &current_level, &found_words);
+        let background_type = background_type_from_resources(&video, &current_level, &found_words);
 
-        if clear_transition.transition.is_some() || clear_color.0 != background_type.color() {
+        if clear_transition.transition.is_some()
+            || clear_color.0 != background_type.color().convert_color()
+        {
             if background_type.is_transition_instant() {
                 clear_transition.transition = Some(Transition::SetValue {
-                    value: background_type.color(),
+                    value: background_type.color().convert_color(),
                     next: None,
                 })
             } else {
@@ -46,7 +47,7 @@ fn clear_color_transition(
                     remaining: Duration::from_secs_f32(crate::view::TILE_LINGER_SECONDS),
                     next: Some(Box::new(Transition::ThenEase {
                         next: None,
-                        destination: background_type.color(),
+                        destination: background_type.color().convert_color(),
                         speed: 2.0.into(),
                         ease: Ease::CubicOut,
                     })),
@@ -56,47 +57,18 @@ fn clear_color_transition(
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, EnumIs)]
-pub enum BackgroundType {
-    Congrats,
-    NonLevel,
-    Selfie,
-    Normal,
-}
-
-impl BackgroundType {
-    pub fn from_resources(
-        video: &VideoResource,
-        current_level: &CurrentLevel,
-        found_words: &FoundWordsState,
-    ) -> Self {
-        if video.is_selfie_mode {
-            Self::Selfie
-        } else if current_level.is_non_level() {
-            Self::NonLevel
-        } else if found_words.is_level_complete() {
-            Self::Congrats
-        } else {
-            Self::Normal
-        }
-    }
-
-    pub fn color(&self) -> Color {
-        match self {
-            BackgroundType::Congrats => palette::CLEAR_COLOR_CONGRATS,
-            BackgroundType::NonLevel => palette::CLEAR_COLOR_NON_LEVEL,
-            BackgroundType::Selfie => palette::CLEAR_COLOR_SELFIE,
-            BackgroundType::Normal => palette::CLEAR_COLOR_NORMAL,
-        }
-        .convert_color()
-    }
-
-    pub fn is_transition_instant(&self) -> bool {
-        match self {
-            BackgroundType::Congrats => false,
-            BackgroundType::NonLevel => true,
-            BackgroundType::Selfie => true,
-            BackgroundType::Normal => true,
-        }
+pub fn background_type_from_resources(
+    video: &VideoResource,
+    current_level: &CurrentLevel,
+    found_words: &FoundWordsState,
+) -> BackgroundType {
+    if video.is_selfie_mode {
+        BackgroundType::Selfie
+    } else if current_level.is_non_level() {
+        BackgroundType::NonLevel
+    } else if found_words.is_level_complete() {
+        BackgroundType::Congrats
+    } else {
+        BackgroundType::Normal
     }
 }

@@ -1,12 +1,12 @@
 use crate::CharacterSet;
 
+pub mod cluster;
+pub mod cluster_ordering;
 pub mod counter;
 pub mod helpers;
 pub mod node;
 pub mod orientation;
 pub mod partial_grid;
-pub mod cluster_ordering;
-pub mod cluster;
 
 pub type Tile = geometrid::tile::Tile<4, 4>;
 

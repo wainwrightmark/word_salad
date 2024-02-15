@@ -11,7 +11,7 @@ use super::{MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
 pub enum StoreLayoutEntity {
     RemoveAds,
     BuyHints,
-    LevelGroups
+    LevelGroups,
 }
 
 impl StoreLayoutEntity {
@@ -62,7 +62,6 @@ impl LayoutStructureWithTextOrImage for StoreLayoutEntity {
             StoreLayoutEntity::RemoveAds => ws_core::TextOrImage::Text { text: "Remove Ads" },
             StoreLayoutEntity::BuyHints => ws_core::TextOrImage::Text { text: "Buy Hints" },
             StoreLayoutEntity::LevelGroups => ws_core::TextOrImage::Text { text: "Buy Addons" },
-
         }
     }
 }

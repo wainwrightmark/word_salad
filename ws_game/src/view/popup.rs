@@ -93,7 +93,7 @@ impl MavericRootChildren for PopupStateRoot {
                             commands.add_child("title text", text_node, &());
                         }
                         HintsPopupLayoutEntity::WatchAdButton
-                        | HintsPopupLayoutEntity::HintsStorePageButton=> {
+                        | HintsPopupLayoutEntity::HintsStorePageButton => {
                             let interaction = match item {
                                 HintsPopupLayoutEntity::WatchAdButton => {
                                     PopupInteraction::ClickWatchAd
@@ -221,9 +221,7 @@ impl LayoutStructure for HintsPopupLayoutEntity {
                 x: HINTS_POPUP_BOX_TITLE_WIDTH,
                 y: HINTS_POPUP_BOX_TITLE_HEIGHT,
             },
-            Self::WatchAdButton
-            | Self::HintsStorePageButton
-            | Self::SufferAloneButton => Vec2 {
+            Self::WatchAdButton | Self::HintsStorePageButton | Self::SufferAloneButton => Vec2 {
                 x: HINTS_POPUP_BOX_BUTTON_WIDTH,
                 y: HINTS_POPUP_BOX_BUTTON_HEIGHT,
             },

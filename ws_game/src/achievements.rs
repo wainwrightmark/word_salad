@@ -93,7 +93,6 @@ pub fn show_achievements() {
     info!("Showing achievements");
     #[cfg(any(feature = "android", feature = "ios"))]
     {
-
         use capacitor_bindings::game_connect::*;
         do_or_report_error(GameConnect::show_achievements());
     }
@@ -180,7 +179,7 @@ fn track_level_completion_achievements(
                     }
                     ws_levels::level_group::LevelGroup::USSports => {
                         //todo maybe have an achievement here
-                    },
+                    }
                 }
             }
         }

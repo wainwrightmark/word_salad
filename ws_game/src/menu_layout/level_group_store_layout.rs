@@ -1,23 +1,25 @@
 use bevy::math::Vec2;
 use strum::IntoEnumIterator;
 use ws_core::{
-    layout::entities::*, LayoutSizing, LayoutStructure, LayoutStructureWithFont,
-    LayoutStructureWithTextOrImage, Spacing,
+    layout::entities::*, palette, LayoutSizing, LayoutStructure, LayoutStructureDoubleText,
+    LayoutStructureWithFont, LayoutStructureWithTextOrImage, Spacing,
 };
 use ws_levels::level_group::LevelGroup;
+
+use crate::{prelude::BUTTONS_FONT_PATH, view::MenuContextWrapper};
 
 use super::{MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct LevelGroupStoreLayoutEntity(pub LevelGroup);
+pub struct LevelGroupStoreLayoutStructure(pub LevelGroup);
 
-impl LevelGroupStoreLayoutEntity {
+impl LevelGroupStoreLayoutStructure {
     pub fn index(&self) -> usize {
         self.0 as usize
     }
 }
 
-impl LayoutStructure for LevelGroupStoreLayoutEntity {
+impl LayoutStructure for LevelGroupStoreLayoutStructure {
     type Context<'a> = SelfieMode;
 
     fn size(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
@@ -45,7 +47,7 @@ impl LayoutStructure for LevelGroupStoreLayoutEntity {
     }
 }
 
-impl LayoutStructureWithFont for LevelGroupStoreLayoutEntity {
+impl LayoutStructureWithFont for LevelGroupStoreLayoutStructure {
     type FontContext = ();
 
     fn font_size(&self, _context: &Self::FontContext) -> f32 {
@@ -53,10 +55,50 @@ impl LayoutStructureWithFont for LevelGroupStoreLayoutEntity {
     }
 }
 
-impl LayoutStructureWithTextOrImage for LevelGroupStoreLayoutEntity {
+impl LayoutStructureWithTextOrImage for LevelGroupStoreLayoutStructure {
     fn text_or_image(&self, _context: &Self::Context<'_>) -> ws_core::prelude::TextOrImage {
         ws_core::TextOrImage::Text {
             text: self.0.name(),
         }
+    }
+}
+
+impl LayoutStructureDoubleText for LevelGroupStoreLayoutStructure {
+    type TextContext<'a> = MenuContextWrapper<'a>;
+
+    fn double_text(
+        &self,
+        _context: &Self::Context<'_>,
+        _text_context: &Self::TextContext<'_>,
+    ) -> (String, String) {
+        //todo get price from store
+        let left = self.0.name();
+        let right = "Free";
+        (left.to_string(), right.to_string())
+    }
+
+    fn left_font(&self) -> &'static str {
+        BUTTONS_FONT_PATH
+    }
+
+    fn right_font(&self) -> &'static str {
+        BUTTONS_FONT_PATH
+    }
+
+    fn text_color(
+        &self,
+        context: &Self::Context<'_>,
+        text_context: &Self::TextContext<'_>,
+    ) -> ws_core::prelude::BasicColor {
+        palette::MENU_BUTTON_TEXT_REGULAR
+    }
+
+    fn fill_color(
+        &self,
+        background_type: ws_core::prelude::BackgroundType,
+        context: &Self::Context<'_>,
+        text_context: &Self::TextContext<'_>,
+    ) -> ws_core::prelude::BasicColor {
+        palette::MENU_BUTTON_FILL
     }
 }

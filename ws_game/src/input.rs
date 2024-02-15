@@ -203,14 +203,14 @@ impl InteractionEntity {
                 )
             }
 
-            MenuState::LevelGroupStorePage =>{
+            MenuState::LevelGroupStorePage => {
                 if let Some(back) = Self::try_get_button::<MainMenuBackButton>(position, size, &())
                 {
                     return Some(back);
                 }
 
                 Some(
-                    Self::try_get_button::<level_group_store_layout::LevelGroupStoreLayoutEntity>(position, size, &selfie_mode)
+                    Self::try_get_button::<level_group_store_layout::LevelGroupStoreLayoutStructure>(position, size, &selfie_mode)
                         .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
                 )
             }

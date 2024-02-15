@@ -162,10 +162,11 @@ fn choose_level_on_game_load(
                     if let Some(level) = new_level.level(&daily_challenges).left() {
                         return Some(new_level);
                     } else {
-                        return Some(CurrentLevel::NonLevel(NonLevel::DailyChallengeNotLoaded{goto_level: daily_index}));
+                        return Some(CurrentLevel::NonLevel(NonLevel::DailyChallengeNotLoaded {
+                            goto_level: daily_index,
+                        }));
                     }
-                }
-                else{
+                } else {
                     return None;
                 }
             }
@@ -183,8 +184,7 @@ fn choose_level_on_game_load(
 
                 if !current_level.as_ref().eq(&custom_level) {
                     return Some(custom_level);
-                }
-                else{
+                } else {
                     return None;
                 }
             }

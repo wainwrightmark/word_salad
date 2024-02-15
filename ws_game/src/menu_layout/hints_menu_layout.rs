@@ -1,9 +1,11 @@
 use bevy::math::Vec2;
 use strum::{Display, EnumIter, IntoEnumIterator};
 use ws_core::{
-    layout::entities::*, LayoutSizing, LayoutStructure, LayoutStructureWithFont,
-    LayoutStructureWithTextOrImage, Spacing,
+    layout::entities::*, palette, LayoutSizing, LayoutStructure, LayoutStructureDoubleText,
+    LayoutStructureWithFont, LayoutStructureWithTextOrImage, Spacing,
 };
+
+use crate::{prelude::BUTTONS_FONT_PATH, view::MenuContextWrapper};
 
 use super::{MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
 
@@ -86,5 +88,50 @@ impl LayoutStructureWithTextOrImage for HintsLayoutEntity {
             HintsLayoutEntity::Hints100 => ws_core::TextOrImage::Text { text: "100 Hints" },
             HintsLayoutEntity::Hints500 => ws_core::TextOrImage::Text { text: "500 Hints" },
         }
+    }
+}
+
+impl LayoutStructureDoubleText for HintsLayoutEntity {
+    type TextContext<'a> = MenuContextWrapper<'a>;
+
+    fn double_text(
+        &self,
+        _context: &Self::Context<'_>,
+        _text_context: &Self::TextContext<'_>,
+    ) -> (String, String) {
+        //todo get price from store
+        let (left, right) = match self {
+            HintsLayoutEntity::Hints5WatchAd => ("  5 Hints", "Watch Ad"),
+            HintsLayoutEntity::Hints25 => (" 25 Hints", "Free"),
+            HintsLayoutEntity::Hints50 => (" 50 Hints", "Free"),
+            HintsLayoutEntity::Hints100 => ("100 Hints", "Free"),
+            HintsLayoutEntity::Hints500 => ("500 Hints", "Free"),
+        };
+        (left.to_string(), right.to_string())
+    }
+
+    fn left_font(&self) -> &'static str {
+        BUTTONS_FONT_PATH
+    }
+
+    fn right_font(&self) -> &'static str {
+        BUTTONS_FONT_PATH
+    }
+
+    fn text_color(
+        &self,
+        context: &Self::Context<'_>,
+        text_context: &Self::TextContext<'_>,
+    ) -> ws_core::prelude::BasicColor {
+        palette::MENU_BUTTON_TEXT_REGULAR
+    }
+
+    fn fill_color(
+        &self,
+        background_type: ws_core::prelude::BackgroundType,
+        context: &Self::Context<'_>,
+        text_context: &Self::TextContext<'_>,
+    ) -> ws_core::prelude::BasicColor {
+        palette::MENU_BUTTON_FILL
     }
 }

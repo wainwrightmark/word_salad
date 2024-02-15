@@ -47,16 +47,22 @@ impl WordSaladMenuLayoutEntity {
         (s1.to_string(), "\u{f096}".to_string())
     }
 
-    pub fn is_complete(&self, completion: &DailyChallengeCompletion, daily_challenges: &DailyChallenges) -> bool {
+    pub fn is_complete(
+        &self,
+        completion: &DailyChallengeCompletion,
+        daily_challenges: &DailyChallenges,
+    ) -> bool {
         let today_index = DailyChallenges::get_today_index();
 
         let index = match self {
             WordSaladMenuLayoutEntity::TodayPuzzle => Some(today_index),
             WordSaladMenuLayoutEntity::YesterdayPuzzle => today_index.checked_sub(1),
             WordSaladMenuLayoutEntity::EreYesterdayPuzzle => today_index.checked_sub(2),
-            WordSaladMenuLayoutEntity::NextPuzzle => today_index
-                .checked_sub(3)
-                .and_then(|x| completion.get_next_incomplete_daily_challenge(x, daily_challenges).level_index()),
+            WordSaladMenuLayoutEntity::NextPuzzle => today_index.checked_sub(3).and_then(|x| {
+                completion
+                    .get_next_incomplete_daily_challenge(x, daily_challenges)
+                    .level_index()
+            }),
         };
 
         let Some(index) = index else {
@@ -77,9 +83,9 @@ impl WordSaladMenuLayoutEntity {
             WordSaladMenuLayoutEntity::TodayPuzzle => today_index,
             WordSaladMenuLayoutEntity::YesterdayPuzzle => today_index.checked_sub(1)?,
             WordSaladMenuLayoutEntity::EreYesterdayPuzzle => today_index.checked_sub(2)?,
-            WordSaladMenuLayoutEntity::NextPuzzle => {
-                completion.get_next_incomplete_daily_challenge(today_index.checked_sub(3)?, daily_challenges).level_index()?
-            }
+            WordSaladMenuLayoutEntity::NextPuzzle => completion
+                .get_next_incomplete_daily_challenge(today_index.checked_sub(3)?, daily_challenges)
+                .level_index()?,
         };
 
         let level: &ws_core::prelude::DesignedLevel = daily_challenges.levels.get(index)?;
@@ -127,22 +133,49 @@ impl LayoutStructureWithFont for WordSaladMenuLayoutEntity {
     }
 }
 
-
-impl LayoutStructureDoubleText for WordSaladMenuLayoutEntity{
+impl LayoutStructureDoubleText for WordSaladMenuLayoutEntity {
     type TextContext<'a> = MenuContextWrapper<'a>;
 
-    fn double_text(&self, _context: &Self::Context<'_>, text_context: &Self::TextContext<'_>)-> (String, String) {
+    fn double_text(
+        &self,
+        _context: &Self::Context<'_>,
+        text_context: &Self::TextContext<'_>,
+    ) -> (String, String) {
         self.get_text(
             text_context.daily_challenge_completion.as_ref(),
             text_context.daily_challenges.as_ref(),
         )
     }
 
-    fn left_font(&self)-> &'static str {
+    fn left_font(&self) -> &'static str {
         BUTTONS_FONT_PATH
     }
 
-    fn right_font(&self)-> &'static str {
+    fn right_font(&self) -> &'static str {
         ICON_FONT_PATH
+    }
+
+    fn text_color(
+        &self,
+        context: &Self::Context<'_>,
+        text_context: &Self::TextContext<'_>,
+    ) -> BasicColor {
+        palette::MENU_BUTTON_TEXT_REGULAR
+    }
+
+    fn fill_color(
+        &self,
+        background_type: ws_core::prelude::BackgroundType,
+        context: &Self::Context<'_>,
+        text_context: &Self::TextContext<'_>,
+    ) -> BasicColor {
+        if self.is_complete(
+            &text_context.daily_challenge_completion,
+            &text_context.daily_challenges,
+        ) {
+            background_type.menu_button_complete_fill()
+        } else {
+            background_type.menu_button_incomplete_fill()
+        }
     }
 }

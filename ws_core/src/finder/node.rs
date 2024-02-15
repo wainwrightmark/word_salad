@@ -42,17 +42,17 @@ impl GridResult {
     }
 }
 
-impl From<&DesignedLevel> for GridResult{
+impl From<&DesignedLevel> for GridResult {
     fn from(value: &DesignedLevel) -> Self {
-        let DesignedLevel {  grid, words,.. } = value;
+        let DesignedLevel { grid, words, .. } = value;
 
         let letters = LetterCounts::try_from_iter(grid.iter().cloned()).unwrap();
 
-        let words = words.iter().map(|x|x.into()).collect_vec();
-        GridResult{
+        let words = words.iter().map(|x| x.into()).collect_vec();
+        GridResult {
             grid: grid.clone(),
             letters,
-            words
+            words,
         }
     }
 }

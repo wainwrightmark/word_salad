@@ -122,11 +122,14 @@ impl LayoutStructureWithFont for LevelsMenuLayoutEntity {
     }
 }
 
-
-impl LayoutStructureDoubleText for LevelsMenuLayoutEntity{
+impl LayoutStructureDoubleText for LevelsMenuLayoutEntity {
     type TextContext<'a> = MenuContextWrapper<'a>;
 
-    fn double_text(&self, _context: &Self::Context<'_>, text_context: &Self::TextContext<'_>)-> (String, String) {
+    fn double_text(
+        &self,
+        _context: &Self::Context<'_>,
+        text_context: &Self::TextContext<'_>,
+    ) -> (String, String) {
         self.get_text(
             text_context.daily_challenge_completion.as_ref(),
             text_context.sequence_completion.as_ref(),
@@ -134,11 +137,36 @@ impl LayoutStructureDoubleText for LevelsMenuLayoutEntity{
         )
     }
 
-    fn left_font(&self)-> &'static str {
+    fn left_font(&self) -> &'static str {
         BUTTONS_FONT_PATH
     }
 
-    fn right_font(&self)-> &'static str {
+    fn right_font(&self) -> &'static str {
         BUTTONS_FONT_PATH
+    }
+
+    fn text_color(
+        &self,
+        context: &Self::Context<'_>,
+        text_context: &Self::TextContext<'_>,
+    ) -> BasicColor {
+        palette::MENU_BUTTON_TEXT_REGULAR
+    }
+
+    fn fill_color(
+        &self,
+        background_type: BackgroundType,
+        context: &Self::Context<'_>,
+        text_context: &Self::TextContext<'_>,
+    ) -> BasicColor {
+        if self.is_complete(
+            &text_context.daily_challenge_completion,
+            &text_context.sequence_completion,
+            text_context.daily_challenges.as_ref(),
+        ) {
+            background_type.menu_button_complete_fill()
+        } else {
+            background_type.menu_button_incomplete_fill()
+        }
     }
 }

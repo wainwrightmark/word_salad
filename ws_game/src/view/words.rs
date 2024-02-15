@@ -134,7 +134,7 @@ impl MavericNode for WordNode {
                 Completion::Unstarted => node.word.hidden_text.to_string(),
                 Completion::ManualHinted(hints) => node.word.hinted_text(hints).to_uppercase(),
 
-                Completion::Complete{..} => node.word.text.to_uppercase().to_string(),
+                Completion::Complete { .. } => node.word.text.to_uppercase().to_string(),
             };
 
             let completion = node.completion;
@@ -142,7 +142,7 @@ impl MavericNode for WordNode {
             let progress = match completion {
                 Completion::Unstarted => 0.0,
                 Completion::ManualHinted(_) => 0.0,
-                Completion::Complete{..} => 1.0,
+                Completion::Complete { .. } => 1.0,
             };
 
             let centre = node.rect.centre();
@@ -151,7 +151,9 @@ impl MavericNode for WordNode {
 
             let text_color = match completion {
                 Completion::Unstarted => palette::WORD_TEXT_NUMBER,
-                Completion::ManualHinted(_) | Completion::Complete{..} => palette::WORD_TEXT_LETTERS,
+                Completion::ManualHinted(_) | Completion::Complete { .. } => {
+                    palette::WORD_TEXT_LETTERS
+                }
             }
             .convert_color();
 
@@ -186,7 +188,7 @@ impl MavericNode for WordNode {
             let transition_speed = match completion {
                 Completion::Unstarted => f32::MAX,
                 Completion::ManualHinted(_) => f32::MAX,
-                Completion::Complete{..} => 1.0 / animated_solutions::TOTAL_SECONDS,
+                Completion::Complete { .. } => 1.0 / animated_solutions::TOTAL_SECONDS,
             };
 
             let height = node.rect.extents.y.abs();
@@ -287,7 +289,7 @@ impl ExtractToShader for WordButtonBoxShader {
             let color = match completion {
                 Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color(),
                 Completion::ManualHinted(_) => palette::WORD_BACKGROUND_MANUAL_HINT.convert_color(),
-                Completion::Complete{..} => palette::WORD_BACKGROUND_COMPLETE.convert_color(),
+                Completion::Complete { .. } => palette::WORD_BACKGROUND_COMPLETE.convert_color(),
             };
 
             let color2 = match completion {
@@ -295,7 +297,7 @@ impl ExtractToShader for WordButtonBoxShader {
                 Completion::ManualHinted(_) => {
                     palette::WORD_BACKGROUND_MANUAL_HINT2.convert_color()
                 }
-                Completion::Complete{..} => palette::WORD_BACKGROUND_COMPLETE.convert_color(),
+                Completion::Complete { .. } => palette::WORD_BACKGROUND_COMPLETE.convert_color(),
             };
 
             let progress =
@@ -313,7 +315,7 @@ impl ExtractToShader for WordButtonBoxShader {
             let color = match completion {
                 Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color(),
                 Completion::ManualHinted(_) => palette::WORD_BACKGROUND_MANUAL_HINT.convert_color(),
-                Completion::Complete{..} => {
+                Completion::Complete { .. } => {
                     if previous_completion.is_some_and(|x| x.is_manual_hinted()) {
                         palette::WORD_BACKGROUND_MANUAL_HINT.convert_color()
                     } else {
@@ -325,7 +327,7 @@ impl ExtractToShader for WordButtonBoxShader {
             let color2 = match completion {
                 Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color(),
                 Completion::ManualHinted(_) => palette::WORD_BACKGROUND_MANUAL_HINT.convert_color(),
-                Completion::Complete{..} => palette::WORD_BACKGROUND_COMPLETE.convert_color(),
+                Completion::Complete { .. } => palette::WORD_BACKGROUND_COMPLETE.convert_color(),
             };
 
             HorizontalGradientBoxShaderParams {

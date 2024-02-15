@@ -1,8 +1,8 @@
 pub mod clustering;
 pub mod combinations;
 pub mod grid_creator;
-pub mod search;
 pub mod obvious;
+pub mod search;
 pub mod word_layout;
 pub mod word_set;
 
@@ -20,7 +20,10 @@ use std::{
     str::FromStr,
 };
 use ws_core::finder::{
-    cluster::Cluster, helpers::*, node::GridResult, orientation::{self, *}
+    cluster::Cluster,
+    helpers::*,
+    node::GridResult,
+    orientation::{self, *},
 };
 
 use crate::clustering::cluster_words;
@@ -67,7 +70,7 @@ struct Options {
 
     /// search all found grids for ones where ones in this list are written in an obvious way
     #[arg(long)]
-    pub obvious: Option<String>
+    pub obvious: Option<String>,
 }
 
 fn main() {
@@ -86,7 +89,7 @@ fn main() {
         search::do_search(search);
     }
 
-    if let Some(obvious) = &options.obvious{
+    if let Some(obvious) = &options.obvious {
         did_something = true;
         obvious::do_obvious(&obvious);
     }
@@ -292,7 +295,6 @@ fn cluster_files(options: &Options) {
             enough: usize,
             filter_below: &mut usize,
         ) -> bool {
-
             if grid.words.len() < *filter_below {
                 return false;
             }
@@ -319,17 +321,13 @@ fn cluster_files(options: &Options) {
                 }
             })
             .filter(|x| {
-                if options.grids == 0{
+                if options.grids == 0 {
                     true
-                }else{
+                } else {
                     filter_enough_grids(x, &mut count, options.grids as usize, &mut filter_below)
                 }
-
-
             })
             .collect_vec();
-
-
 
         let all_words = grids
             .iter()

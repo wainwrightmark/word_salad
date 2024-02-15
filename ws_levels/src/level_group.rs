@@ -22,7 +22,7 @@ use crate::level_sequence::LevelSequence;
 pub enum LevelGroup {
     Geography,
     NaturalWorld,
-    USSports
+    USSports,
 }
 
 impl LevelGroup {
@@ -45,12 +45,17 @@ impl LevelGroup {
             ],
 
             LevelGroup::NaturalWorld => &[
-                Mammals, Birds, Insects, ReptilesAndAmphibians, Fruit, Vegetables, Gemstones, Elements,
+                Mammals,
+                Birds,
+                Insects,
+                ReptilesAndAmphibians,
+                Fruit,
+                Vegetables,
+                Gemstones,
+                Elements,
             ],
 
-            LevelGroup::USSports=> &[
-                NFLTeams, NBATeams, MLBTeams, NHLTeams
-            ]
+            LevelGroup::USSports => &[NFLTeams, NBATeams, MLBTeams, NHLTeams],
         }
     }
 

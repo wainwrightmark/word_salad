@@ -155,7 +155,7 @@ impl NextDailyChallengeResult {
                 Some(CurrentLevel::DailyChallenge { index: *index })
             }
             NextDailyChallengeResult::AllFinished => None,
-            NextDailyChallengeResult::TodayNotLoaded{..} => None,
+            NextDailyChallengeResult::TodayNotLoaded { .. } => None,
         }
     }
 
@@ -163,7 +163,7 @@ impl NextDailyChallengeResult {
         match self {
             NextDailyChallengeResult::Level(index) => Some(*index),
             NextDailyChallengeResult::AllFinished => None,
-            NextDailyChallengeResult::TodayNotLoaded{..} => None,
+            NextDailyChallengeResult::TodayNotLoaded { .. } => None,
         }
     }
 }
@@ -176,7 +176,7 @@ impl From<NextDailyChallengeResult> for CurrentLevel {
                 CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished)
             }
             NextDailyChallengeResult::TodayNotLoaded(index) => {
-                CurrentLevel::NonLevel(NonLevel::DailyChallengeNotLoaded{goto_level: index})
+                CurrentLevel::NonLevel(NonLevel::DailyChallengeNotLoaded { goto_level: index })
             }
         }
     }

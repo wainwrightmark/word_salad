@@ -15,7 +15,8 @@ pub fn do_obvious(search: &str) {
         .map(|s| Word::from_str(s).unwrap())
         .collect();
 
-    let words_characters: hash_set::HashSet<ArrayVec<Character, 16>> = words.iter().map(|x|&x.characters).cloned().collect();
+    let words_characters: hash_set::HashSet<ArrayVec<Character, 16>> =
+        words.iter().map(|x| &x.characters).cloned().collect();
 
     let paths: Vec<_> = folder.collect();
 
@@ -32,39 +33,45 @@ pub fn do_obvious(search: &str) {
         for line in grid_file_text.lines() {
             let level = DesignedLevel::from_tsv_line(line).unwrap();
 
-            if !level.words.iter().any(|w| words_characters.contains(&w.characters)){
+            if !level
+                .words
+                .iter()
+                .any(|w| words_characters.contains(&w.characters))
+            {
                 continue;
             }
             //What we maybe want is grids where two words are very obvious...
 
-            for word in level.words
+            for word in level
+                .words
                 .iter()
                 .filter(|w| words_characters.contains(&w.characters))
             {
-                for solution in word.find_solutions(&level.grid){
+                for solution in word.find_solutions(&level.grid) {
                     let mut left = 0usize;
                     let mut right = 0usize;
                     let mut up = 0usize;
                     let mut down = 0usize;
-                    for (a,b) in solution.iter().tuple_windows(){
-                        match a.x().cmp(&b.x()){
+                    for (a, b) in solution.iter().tuple_windows() {
+                        match a.x().cmp(&b.x()) {
                             std::cmp::Ordering::Less => left += 1,
-                            std::cmp::Ordering::Equal => {},
+                            std::cmp::Ordering::Equal => {}
                             std::cmp::Ordering::Greater => right += 1,
                         }
-                        match a.y().cmp(&b.y()){
+                        match a.y().cmp(&b.y()) {
                             std::cmp::Ordering::Less => down += 1,
-                            std::cmp::Ordering::Equal => {},
-                            std::cmp::Ordering::Greater => up+=1,
+                            std::cmp::Ordering::Equal => {}
+                            std::cmp::Ordering::Greater => up += 1,
                         }
                     }
 
                     let min = [left, right, up, down].into_iter().min();
 
-                    if min == Some(0){
-                        if left.min(right) <= 1 && up.min(down) <= 1{
-                            total_solutions+= 1;
-                            let base64_level = base64::engine::general_purpose::URL_SAFE.encode(level.to_string());
+                    if min == Some(0) {
+                        if left.min(right) <= 1 && up.min(down) <= 1 {
+                            total_solutions += 1;
+                            let base64_level =
+                                base64::engine::general_purpose::URL_SAFE.encode(level.to_string());
                             info!(
                                 "Found {word} in {file} {left} {right} {up} {down} {base64_level} ",
                                 file = grids_path
@@ -75,13 +82,8 @@ pub fn do_obvious(search: &str) {
                             );
                             continue;
                         }
-
                     }
-
-
                 }
-
-
             }
         }
 

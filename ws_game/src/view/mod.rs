@@ -2,28 +2,28 @@ pub mod congrats;
 pub mod fireworks;
 pub mod game_grid;
 pub mod hints;
+pub mod logo;
 pub mod menu;
 pub mod non_level;
 pub mod popup;
+pub mod recording_button;
 pub mod theme_view;
-pub mod logo;
 pub mod tutorial;
 pub mod wordline;
 pub mod words;
-pub mod recording_button;
 
 pub use congrats::*;
 pub use game_grid::*;
 pub use hints::*;
+pub use logo::*;
 pub use menu::*;
 pub use non_level::*;
 pub use popup::*;
+pub use recording_button::*;
 pub use theme_view::*;
-pub use logo::*;
 pub use tutorial::*;
 pub use wordline::*;
 pub use words::*;
-pub use recording_button::*;
 
 use crate::{completion::*, prelude::*};
 use maveric::prelude::*;
@@ -56,12 +56,11 @@ impl MavericRootChildren for ViewRoot {
     ) {
         let selfie_mode = context.video_resource.selfie_mode();
         let is_level_complete = context.found_words_state.is_level_complete();
-        let background_type = BackgroundType::from_resources(
+        let background_type = background_type_from_resources(
             &context.video_resource,
             &context.current_level,
             &context.found_words_state,
         );
-
 
         if !context.menu_state.is_closed() {
             commands.add_child("menu", Menu { background_type }, &context.into());
