@@ -53,10 +53,10 @@ impl MavericNode for NonLevelView {
                     )
                 }
                 NonLevel::DailyChallengeNotLoaded { .. } => {
-                    format!("Could not load Daily Challenge")
+                    "Could not load Daily Challenge".to_string()
                 }
                 NonLevel::DailyChallengeLoading { .. } => {
-                    format!("Loading Daily Challenges")
+                    "Loading Daily Challenges".to_string()
                 }
             };
 

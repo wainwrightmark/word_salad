@@ -43,7 +43,7 @@ impl LayoutStructure for LevelGroupStoreLayoutStructure {
     }
 
     fn iter_all(_context: &Self::Context<'_>) -> impl Iterator<Item = Self> {
-        LevelGroup::iter().map(|lg| Self(lg))
+        LevelGroup::iter().map(Self)
     }
 }
 
@@ -87,17 +87,17 @@ impl LayoutStructureDoubleText for LevelGroupStoreLayoutStructure {
 
     fn text_color(
         &self,
-        context: &Self::Context<'_>,
-        text_context: &Self::TextContext<'_>,
+        _context: &Self::Context<'_>,
+        _text_context: &Self::TextContext<'_>,
     ) -> ws_core::prelude::BasicColor {
         palette::MENU_BUTTON_TEXT_REGULAR
     }
 
     fn fill_color(
         &self,
-        background_type: ws_core::prelude::BackgroundType,
-        context: &Self::Context<'_>,
-        text_context: &Self::TextContext<'_>,
+        _background_type: ws_core::prelude::BackgroundType,
+        _context: &Self::Context<'_>,
+        _text_context: &Self::TextContext<'_>,
     ) -> ws_core::prelude::BasicColor {
         palette::MENU_BUTTON_FILL
     }

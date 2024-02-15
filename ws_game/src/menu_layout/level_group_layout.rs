@@ -130,8 +130,8 @@ impl LayoutStructureDoubleText for LevelGroupLayoutEntity {
 
     fn text_color(
         &self,
-        context: &Self::Context<'_>,
-        text_context: &Self::TextContext<'_>,
+        _context: &Self::Context<'_>,
+        _text_context: &Self::TextContext<'_>,
     ) -> ws_core::prelude::BasicColor {
         palette::MENU_BUTTON_TEXT_REGULAR
     }

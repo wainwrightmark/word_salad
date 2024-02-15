@@ -115,12 +115,10 @@ fn track_selfie_achievements(
     mut achievements: ResMut<AchievementsState>,
     video: Res<VideoResource>,
 ) {
-    if video.is_changed() {
-        if video.is_selfie_mode {
-            maybe_unlock(&mut achievements, Achievement::MirrorMirror);
-            if video.is_recording {
-                maybe_unlock(&mut achievements, Achievement::FilmStar);
-            }
+    if video.is_changed() && video.is_selfie_mode {
+        maybe_unlock(&mut achievements, Achievement::MirrorMirror);
+        if video.is_recording {
+            maybe_unlock(&mut achievements, Achievement::FilmStar);
         }
     }
 }

@@ -50,11 +50,9 @@ fn watch_hints_remaining_linger(
                 until: time.elapsed() + Duration::from_secs_f32(LINGER_SECONDS),
             };
         }
-    } else {
-        if let HintsRemainingLinger::Linger { until } = linger.as_ref() {
-            if time.elapsed() >= *until {
-                *linger = HintsRemainingLinger::None;
-            }
+    } else if let HintsRemainingLinger::Linger { until } = linger.as_ref() {
+        if time.elapsed() >= *until {
+            *linger = HintsRemainingLinger::None;
         }
     }
 }

@@ -157,8 +157,8 @@ impl LayoutStructureDoubleText for WordSaladMenuLayoutEntity {
 
     fn text_color(
         &self,
-        context: &Self::Context<'_>,
-        text_context: &Self::TextContext<'_>,
+        _context: &Self::Context<'_>,
+        _text_context: &Self::TextContext<'_>,
     ) -> BasicColor {
         palette::MENU_BUTTON_TEXT_REGULAR
     }
@@ -166,7 +166,7 @@ impl LayoutStructureDoubleText for WordSaladMenuLayoutEntity {
     fn fill_color(
         &self,
         background_type: ws_core::prelude::BackgroundType,
-        context: &Self::Context<'_>,
+        _context: &Self::Context<'_>,
         text_context: &Self::TextContext<'_>,
     ) -> BasicColor {
         if self.is_complete(

@@ -147,8 +147,8 @@ impl LayoutStructureDoubleText for LevelsMenuLayoutEntity {
 
     fn text_color(
         &self,
-        context: &Self::Context<'_>,
-        text_context: &Self::TextContext<'_>,
+        _context: &Self::Context<'_>,
+        _text_context: &Self::TextContext<'_>,
     ) -> BasicColor {
         palette::MENU_BUTTON_TEXT_REGULAR
     }
@@ -156,7 +156,7 @@ impl LayoutStructureDoubleText for LevelsMenuLayoutEntity {
     fn fill_color(
         &self,
         background_type: BackgroundType,
-        context: &Self::Context<'_>,
+        _context: &Self::Context<'_>,
         text_context: &Self::TextContext<'_>,
     ) -> BasicColor {
         if self.is_complete(

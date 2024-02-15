@@ -60,7 +60,7 @@ impl MavericNode for WsImageButtonNode {
                 commands.add_child(
                     "text",
                     SpriteNode {
-                        texture_path: &image_path,
+                        texture_path: image_path,
                         sprite: Sprite {
                             color: Color::WHITE,
                             flip_x: false,

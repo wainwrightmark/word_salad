@@ -106,12 +106,10 @@ impl InteractionEntity {
             is_selfie_mode: video_resource.is_selfie_mode,
         };
 
-        if video_resource.show_recording_button() {
-            if let Some(..) = size.try_pick::<ToggleRecordingButton>(*position, &selfie_mode) {
-                return Some(InteractionEntity::Button(
-                    ButtonInteraction::ToggleRecordingButton,
-                ));
-            }
+        if video_resource.show_recording_button() && size.try_pick::<ToggleRecordingButton>(*position, &selfie_mode).is_some() {
+            return Some(InteractionEntity::Button(
+                ButtonInteraction::ToggleRecordingButton,
+            ));
         }
 
         match menu_state {

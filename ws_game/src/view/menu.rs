@@ -163,7 +163,7 @@ impl MavericNode for Menu {
                         0,
                         node.background_type,
                         border,
-                        &context,
+                        context,
                     );
                 }
                 MenuState::LevelGroupStorePage => {
@@ -177,7 +177,7 @@ impl MavericNode for Menu {
                         1,
                         node.background_type,
                         border,
-                        &context,
+                        context,
                     );
                 }
                 MenuState::ChooseLevelsPage => {
@@ -188,7 +188,7 @@ impl MavericNode for Menu {
                         2,
                         node.background_type,
                         border,
-                        &context,
+                        context,
                     );
                 }
                 MenuState::LevelGroupPage(group) => {
@@ -199,7 +199,7 @@ impl MavericNode for Menu {
                         3,
                         node.background_type,
                         border,
-                        &context,
+                        context,
                     );
                 }
                 MenuState::WordSaladLevels => {
@@ -210,7 +210,7 @@ impl MavericNode for Menu {
                         4,
                         node.background_type,
                         border,
-                        &context,
+                        context,
                     )
                 }
             }

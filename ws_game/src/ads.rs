@@ -253,9 +253,9 @@ pub enum AdEvent {
 }
 
 #[allow(dead_code)]
-const BETWEEN_LEVELS_INTERSTITIAL_AD_ID: &'static str = "ca-app-pub-5238923028364185/8193403915"; //todo different on ios
+const BETWEEN_LEVELS_INTERSTITIAL_AD_ID: &str = "ca-app-pub-5238923028364185/8193403915"; //todo different on ios
 #[allow(dead_code)]
-const BUY_HINTS_REWARD_AD_ID: &'static str = "ca-app-pub-5238923028364185/7292181940"; //todo different on ios
+const BUY_HINTS_REWARD_AD_ID: &str = "ca-app-pub-5238923028364185/7292181940"; //todo different on ios
 
 //const HINTS_REWARD_AMOUNT: usize = 5;
 
