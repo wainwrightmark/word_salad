@@ -102,11 +102,7 @@ impl MavericRootChildren for HintsRemainingRoot {
             return;
         }
 
-        let text = match context.hints.hints_remaining {
-            0 => "No Hints Left".to_string(),
-            1 => " 1 Hint  Left".to_string(),
-            n => format!("{n:>2} Hints Left"),
-        };
+        let text = context.hints.as_text();
 
         let font_size = context.window_size.font_size(&HintsRemainingLayout, &());
         let color = if context.video_resource.is_selfie_mode {

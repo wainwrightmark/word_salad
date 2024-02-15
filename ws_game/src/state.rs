@@ -288,6 +288,16 @@ impl TrackableResource for HintState {
     const KEY: &'static str = "HintState";
 }
 
+impl HintState{
+    pub fn as_text(&self)-> String{
+        match self.hints_remaining {
+            0 => "No Hints Left".to_string(),
+            1 => " 1 Hint  Left".to_string(),
+            n => format!("{n:>2} Hints Left"),
+        }
+    }
+}
+
 #[derive(
     Debug, Clone, Resource, Serialize, Deserialize, MavericContext, Default, PartialEq, Eq,
 )]
@@ -332,6 +342,8 @@ impl FoundWordsState {
     pub fn manual_hint_set(&self, level: &DesignedLevel, solution: &Solution) -> GridSet {
         self.hint_set::<true>(level, solution)
     }
+
+
 
     fn hint_set<const MANUAL: bool>(&self, level: &DesignedLevel, solution: &Solution) -> GridSet {
         let mut set = GridSet::default();

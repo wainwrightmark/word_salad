@@ -79,6 +79,7 @@ pub struct MenuContext {
     pub video_resource: VideoResource,
     pub daily_challenges: DailyChallenges,
     pub purchases: Purchases,
+    pub hint_state: HintState,
 }
 
 impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for MenuContextWrapper<'w> {
@@ -91,6 +92,7 @@ impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for MenuContextWrapper<'w> {
             daily_challenge_completion: Res::clone(&value.daily_challenge_completion),
             sequence_completion: Res::clone(&value.sequence_completion),
             purchases: Res::clone(&value.purchases),
+            hint_state: Res::clone(&value.hint_state),
         }
     }
 }
@@ -148,14 +150,14 @@ impl MavericNode for Menu {
                     );
                 }
                 MenuState::MainStorePage => {
-                    add_menu_items::<R, store_menu_layout::StoreLayoutEntity>(
+                    add_double_text_menu_items::<R, store_menu_layout::StoreLayoutStructure>(
                         &context.video_resource.selfie_mode(),
                         commands,
                         size,
                         0,
-                        palette::MENU_BUTTON_FILL.convert_color(),
-                        palette::MENU_BUTTON_TEXT_REGULAR.convert_color(),
+                        node.background_type,
                         border,
+                        context
                     );
                 }
                 MenuState::HintsStorePage => {

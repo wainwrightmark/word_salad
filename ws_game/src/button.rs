@@ -19,7 +19,7 @@ use crate::{input, prelude::*, startup};
 
 use self::hints_menu_layout::HintsLayoutEntity;
 use self::settings_menu_layout::SettingsLayoutEntity;
-use self::store_menu_layout::StoreLayoutEntity;
+use self::store_menu_layout::StoreLayoutStructure;
 
 pub struct ButtonPlugin;
 
@@ -171,7 +171,7 @@ pub enum ButtonInteraction {
     LevelsMenu(LevelsMenuLayoutEntity),
     LevelGroupMenu(LevelGroupLayoutEntity),
     WordSaladMenu(WordSaladMenuLayoutEntity),
-    MainStoreMenu(StoreLayoutEntity),
+    MainStoreMenu(StoreLayoutStructure),
     BuyLevelGroup(LevelGroup),
     HintsMenu(HintsLayoutEntity),
     SettingsMenu(SettingsLayoutEntity),
@@ -209,8 +209,8 @@ impl From<HintsLayoutEntity> for ButtonInteraction {
     }
 }
 
-impl From<StoreLayoutEntity> for ButtonInteraction {
-    fn from(value: StoreLayoutEntity) -> Self {
+impl From<StoreLayoutStructure> for ButtonInteraction {
+    fn from(value: StoreLayoutStructure) -> Self {
         ButtonInteraction::MainStoreMenu(value)
     }
 }
@@ -549,14 +549,14 @@ impl ButtonInteraction {
             }
 
             ButtonInteraction::MainStoreMenu(m) => match m {
-                StoreLayoutEntity::RemoveAds => {
+                StoreLayoutStructure::RemoveAds => {
                     purchase_events.send(PurchaseEvent::BuyAvoidAds);
                     menu_state.close();
                 }
-                StoreLayoutEntity::BuyHints => {
+                StoreLayoutStructure::BuyHints => {
                     *menu_state.as_mut() = MenuState::HintsStorePage;
                 }
-                StoreLayoutEntity::LevelGroups => {
+                StoreLayoutStructure::LevelGroups => {
                     *menu_state.as_mut() = MenuState::LevelGroupStorePage
                 }
             },

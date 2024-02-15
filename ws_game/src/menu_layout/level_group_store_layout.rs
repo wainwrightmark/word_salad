@@ -68,13 +68,13 @@ impl LayoutStructureDoubleTextButton for LevelGroupStoreLayoutStructure {
 
     fn double_text(
         &self,
-        _context: &Self::Context<'_>,
+        context: &Self::Context<'_>,
         text_context: &Self::TextContext<'_>,
     ) -> (String, String) {
         //todo get price from store
         let left = self.0.name();
-        let right = if text_context.purchases.groups_purchased.contains(&self.0) {
-            "Purchased"
+        let right = if self.is_disabled(context, text_context) {
+            "Owned"
         } else {
             "Free"
         };
@@ -100,12 +100,12 @@ impl LayoutStructureDoubleTextButton for LevelGroupStoreLayoutStructure {
     fn fill_color(
         &self,
         _background_type: ws_core::prelude::BackgroundType,
-        _context: &Self::Context<'_>,
+        context: &Self::Context<'_>,
         text_context: &Self::TextContext<'_>,
     ) -> ws_core::prelude::BasicColor {
-        if text_context.purchases.groups_purchased.contains(&self.0) {
-            palette::MENU_BUTTON_DISCOURAGED_FILL
-        } else {
+        if self.is_disabled(context, text_context){
+            palette::MENU_BUTTON_COMPLETE_FILL
+        }else{
             palette::MENU_BUTTON_FILL
         }
     }

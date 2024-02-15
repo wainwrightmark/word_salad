@@ -15,7 +15,7 @@ use ws_core::layout::entities::{recording_button::ToggleRecordingButton, *};
 
 use self::{
     hints_menu_layout::HintsLayoutEntity, settings_menu_layout::SettingsLayoutEntity,
-    store_menu_layout::StoreLayoutEntity,
+    store_menu_layout::StoreLayoutStructure,
 };
 pub struct InputPlugin;
 
@@ -220,7 +220,7 @@ impl InteractionEntity {
                 }
 
                 Some(
-                    Self::try_get_button::<StoreLayoutEntity>(position, size, &selfie_mode)
+                    Self::try_get_button::<StoreLayoutStructure>(position, size, &selfie_mode)
                         .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
                 )
             }
