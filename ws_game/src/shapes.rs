@@ -58,7 +58,7 @@ impl ExtractToShader for ButtonBoxShaderExtraction {
         ShaderProportions,
         ShaderSecondColor,
         ShaderBorder,
-        ButtonInteraction,
+        ButtonInteraction, //todo make interaction optional
     );
     type ResourceParams<'w> = (Res<'w, PressedButton>, Res<'w, Time>);
 

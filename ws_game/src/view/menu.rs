@@ -195,13 +195,6 @@ impl MavericNode for Menu {
                         size,
                         1,
                         |x| {
-                            x.get_text(
-                                context.daily_challenge_completion.as_ref(),
-                                context.sequence_completion.as_ref(),
-                                context.daily_challenges.as_ref(),
-                            )
-                        },
-                        |x| {
                             if x.is_complete(
                                 &context.daily_challenge_completion,
                                 &context.sequence_completion,
@@ -212,10 +205,9 @@ impl MavericNode for Menu {
                                 button_fill_color_incomplete
                             }
                         },
-                        BUTTONS_FONT_PATH,
-                        BUTTONS_FONT_PATH,
                         palette::MENU_BUTTON_TEXT_REGULAR.convert_color(),
                         border,
+                        &context
                     );
                 }
                 MenuState::LevelGroupPage(group) => {
@@ -224,7 +216,7 @@ impl MavericNode for Menu {
                         commands,
                         size,
                         2,
-                        |x| x.get_text(context.sequence_completion.as_ref(), group),
+
                         |x| {
                             if x.is_complete(&context.sequence_completion, group) {
                                 button_fill_color_complete
@@ -232,10 +224,9 @@ impl MavericNode for Menu {
                                 button_fill_color_incomplete
                             }
                         },
-                        BUTTONS_FONT_PATH,
-                        BUTTONS_FONT_PATH,
                         palette::MENU_BUTTON_TEXT_REGULAR.convert_color(),
                         border,
+                        &context
                     );
                 }
                 MenuState::WordSaladLevels => {
@@ -244,12 +235,12 @@ impl MavericNode for Menu {
                         commands,
                         size,
                         5,
-                        |x| {
-                            x.get_text(
-                                context.daily_challenge_completion.as_ref(),
-                                context.daily_challenges.as_ref(),
-                            )
-                        },
+                        // |x| {
+                        //     x.get_text(
+                        //         context.daily_challenge_completion.as_ref(),
+                        //         context.daily_challenges.as_ref(),
+                        //     )
+                        // },
                         |x| {
                             if x.is_complete(
                                 &context.daily_challenge_completion,
@@ -260,10 +251,11 @@ impl MavericNode for Menu {
                                 button_fill_color_incomplete
                             }
                         },
-                        BUTTONS_FONT_PATH,
-                        ICON_FONT_PATH,
+                        // BUTTONS_FONT_PATH,
+                        // ICON_FONT_PATH,
                         palette::MENU_BUTTON_TEXT_REGULAR.convert_color(),
                         border,
+                        &context
                     )
                 }
             }
@@ -342,22 +334,22 @@ fn add_menu_items<
 
 fn add_double_text_menu_items<
     R: MavericRoot,
-    L: LayoutStructureWithFont<FontContext = ()> + LayoutStructure + Into<ButtonInteraction>,
+    L: LayoutStructureDoubleText + Into<ButtonInteraction>,
 >(
     context: &<L as LayoutStructure>::Context<'_>,
     commands: &mut UnorderedChildCommands<R>,
     size: &Size,
     page: u16,
-    text_func: impl Fn(&L) -> (String, String),
     fill_color_func: impl Fn(&L) -> Color,
-    left_font: &'static str,
-    right_font: &'static str,
     text_color: Color,
     border: ShaderBorder,
+    text_context: &<L as LayoutStructureDoubleText>::TextContext<'_>
 ) {
     for (index, entity) in L::iter_all(context).enumerate() {
         let font_size = size.font_size::<L>(&entity, &());
-        let (left_text, right_text) = text_func(&entity);
+        let (left_text, right_text) = entity.double_text(context, text_context);
+        let left_font = entity.left_font();
+        let right_font = entity.right_font();
         let fill_color = fill_color_func(&entity);
 
         let rect = size.get_rect(&entity, context);

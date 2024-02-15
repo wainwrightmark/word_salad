@@ -48,3 +48,13 @@ pub trait LayoutStructureWithTextOrImage : LayoutStructure + LayoutStructureWith
     fn text_or_image(&self, context: &Self::Context<'_>) -> TextOrImage;
 
 }
+
+
+pub trait LayoutStructureDoubleText : LayoutStructure + LayoutStructureWithFont<FontContext = ()> {
+    type TextContext<'a>;
+
+    fn double_text(&self, context: &Self::Context<'_>, text_context: &Self::TextContext<'_>)-> (String, String);
+
+    fn left_font(&self)-> &'static str;
+    fn right_font(&self)-> &'static str;
+}

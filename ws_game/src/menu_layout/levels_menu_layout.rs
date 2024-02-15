@@ -121,3 +121,24 @@ impl LayoutStructureWithFont for LevelsMenuLayoutEntity {
         MENU_BUTTON_FONT_SIZE
     }
 }
+
+
+impl LayoutStructureDoubleText for LevelsMenuLayoutEntity{
+    type TextContext<'a> = MenuContextWrapper<'a>;
+
+    fn double_text(&self, _context: &Self::Context<'_>, text_context: &Self::TextContext<'_>)-> (String, String) {
+        self.get_text(
+            text_context.daily_challenge_completion.as_ref(),
+            text_context.sequence_completion.as_ref(),
+            text_context.daily_challenges.as_ref(),
+        )
+    }
+
+    fn left_font(&self)-> &'static str {
+        BUTTONS_FONT_PATH
+    }
+
+    fn right_font(&self)-> &'static str {
+        BUTTONS_FONT_PATH
+    }
+}

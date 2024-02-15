@@ -1,9 +1,10 @@
-use crate::completion::SequenceCompletion;
+use crate::{completion::SequenceCompletion, prelude::BUTTONS_FONT_PATH, view::MenuContextWrapper};
 
 use super::{MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
 use bevy::math::Vec2;
 use ws_core::{
-    layout::entities::*, LayoutSizing, LayoutStructure, LayoutStructureWithFont, Spacing,
+    layout::entities::*, LayoutSizing, LayoutStructure, LayoutStructureDoubleText,
+    LayoutStructureWithFont, Spacing,
 };
 use ws_levels::level_group::LevelGroup;
 
@@ -105,5 +106,25 @@ impl Iterator for LevelGroupLayoutIter {
             }
             std::cmp::Ordering::Equal | std::cmp::Ordering::Greater => None,
         }
+    }
+}
+
+impl LayoutStructureDoubleText for LevelGroupLayoutEntity {
+    type TextContext<'a> = MenuContextWrapper<'a>;
+
+    fn double_text(
+        &self,
+        context: &Self::Context<'_>,
+        text_context: &Self::TextContext<'_>,
+    ) -> (String, String) {
+        self.get_text(text_context.sequence_completion.as_ref(), &context.1)
+    }
+
+    fn left_font(&self) -> &'static str {
+        BUTTONS_FONT_PATH
+    }
+
+    fn right_font(&self) -> &'static str {
+        BUTTONS_FONT_PATH
     }
 }
