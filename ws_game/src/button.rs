@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
-use ws_levels::level_group::LevelGroup;
 use std::time::Duration;
 use strum::EnumIs;
 use ws_core::layout::entities::recording_button::ToggleRecordingButton;
 use ws_core::layout::entities::{
     CongratsButton, CongratsLayoutEntity, LayoutWordTile, WordSaladLogo,
 };
+use ws_levels::level_group::LevelGroup;
 
 use crate::menu_layout::main_menu_back_button::MainMenuBackButton;
 use crate::menu_layout::word_salad_menu_layout::WordSaladMenuLayoutEntity;
@@ -160,7 +160,7 @@ pub enum PopupInteraction {
     ClickSufferAlone,
     ClickClose,
     ClickWatchAd,
-    ClickHintsStore
+    ClickHintsStore,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Component, EnumIs, Default)]
@@ -197,7 +197,7 @@ impl ButtonInteraction {
     }
 }
 
-impl From<level_group_store_layout::LevelGroupStoreLayoutEntity> for ButtonInteraction{
+impl From<level_group_store_layout::LevelGroupStoreLayoutEntity> for ButtonInteraction {
     fn from(value: level_group_store_layout::LevelGroupStoreLayoutEntity) -> Self {
         Self::BuyLevelGroup(value.0)
     }
@@ -537,7 +537,7 @@ impl ButtonInteraction {
                     }
                 }
             }
-            ButtonInteraction::BuyLevelGroup(level_group)=>{
+            ButtonInteraction::BuyLevelGroup(level_group) => {
                 purchase_events.send(PurchaseEvent::BuyLevelGroup(*level_group));
                 menu_state.close();
             }
@@ -552,11 +552,24 @@ impl ButtonInteraction {
                 }
                 StoreLayoutEntity::LevelGroups => {
                     *menu_state.as_mut() = MenuState::LevelGroupStorePage
-                },
+                }
             },
             ButtonInteraction::HintsMenu(hints_layout_entity) => {
-                let number_of_hints = hints_layout_entity.hint_count();
-                purchase_events.send(PurchaseEvent::BuyHintsPack { hint_event: None, number_of_hints });
+                let (method, hints) = hints_layout_entity.hint_data();
+
+                match method {
+                    hints_menu_layout::PurchaseMethod::WatchAd => {
+                        ad_request_events
+                            .send(AdRequestEvent::RequestReward { event: None, hints });
+                    }
+                    hints_menu_layout::PurchaseMethod::Money => {
+                        purchase_events.send(PurchaseEvent::BuyHintsPack {
+                            hint_event: None,
+                            number_of_hints: hints,
+                        });
+                    }
+                }
+
                 menu_state.close();
             }
 
@@ -594,7 +607,10 @@ impl ButtonInteraction {
 
             ButtonInteraction::Popup(PopupInteraction::ClickWatchAd) => {
                 if let Some(PopupType::BuyMoreHints(he)) = popup_state.0.take() {
-                    ad_request_events.send(AdRequestEvent::RequestReward(he))
+                    ad_request_events.send(AdRequestEvent::RequestReward {
+                        event: Some(he),
+                        hints: 5,
+                    })
                 }
             }
 

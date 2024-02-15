@@ -9,10 +9,16 @@ use super::{MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Display, EnumIter)]
 pub enum HintsLayoutEntity {
-    Hints25 = 0,
-    Hints50 = 1,
-    Hints100 = 2,
-    Hints500 = 3,
+    Hints5WatchAd = 0,
+    Hints25 = 1,
+    Hints50 = 2,
+    Hints100 = 3,
+    Hints500 = 4,
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Display)]
+pub enum PurchaseMethod {
+    WatchAd,
+    Money,
 }
 
 impl HintsLayoutEntity {
@@ -20,12 +26,15 @@ impl HintsLayoutEntity {
         *self as usize
     }
 
-    pub fn hint_count(&self)-> usize{
+    pub fn hint_data(&self) -> (PurchaseMethod, usize) {
+        use PurchaseMethod::*;
         match self {
-            HintsLayoutEntity::Hints25 => 25,
-            HintsLayoutEntity::Hints50 => 50,
-            HintsLayoutEntity::Hints100 => 100,
-            HintsLayoutEntity::Hints500 => 500,
+            HintsLayoutEntity::Hints5WatchAd => (WatchAd, 5),
+
+            HintsLayoutEntity::Hints25 => (Money, 25),
+            HintsLayoutEntity::Hints50 => (Money, 50),
+            HintsLayoutEntity::Hints100 => (Money, 100),
+            HintsLayoutEntity::Hints500 => (Money, 500),
         }
     }
 }
@@ -69,6 +78,9 @@ impl LayoutStructureWithFont for HintsLayoutEntity {
 impl LayoutStructureWithTextOrImage for HintsLayoutEntity {
     fn text_or_image(&self, _context: &Self::Context<'_>) -> ws_core::prelude::TextOrImage {
         match self {
+            HintsLayoutEntity::Hints5WatchAd => ws_core::TextOrImage::Text {
+                text: "5 Hints (Watch Ad)",
+            },
             HintsLayoutEntity::Hints25 => ws_core::TextOrImage::Text { text: "25 Hints" },
             HintsLayoutEntity::Hints50 => ws_core::TextOrImage::Text { text: "50 Hints" },
             HintsLayoutEntity::Hints100 => ws_core::TextOrImage::Text { text: "100 Hints" },

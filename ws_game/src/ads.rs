@@ -30,7 +30,10 @@ impl Plugin for AdsPlugin {
 
 #[derive(Debug, Event)]
 pub enum AdRequestEvent {
-    RequestReward(HintEvent),
+    RequestReward{
+        event: Option<HintEvent>,
+        hints: usize
+    },
     RequestInterstitial,
     RequestConsent
 }
@@ -40,7 +43,7 @@ pub struct AdState {
     pub can_show_ads: Option<bool>,
     pub reward_ad: Option<AdLoadInfo>,
     pub interstitial_ad: Option<AdLoadInfo>,
-    pub hint_wanted: Option<HintEvent>,
+    pub hint_wanted: Option<(usize, Option<HintEvent>)> ,
 }
 
 #[derive(Debug, Default, Resource, MavericContext)]
@@ -63,13 +66,15 @@ fn handle_ad_requests(
                 crate::logging::do_or_report_error(reshow_consent_form());
             }
 
-            AdRequestEvent::RequestReward(hint_event) => {
+            AdRequestEvent::RequestReward{
+                event, hints
+            } => {
                 #[cfg(any(feature = "ios", feature = "android"))]
                 {
                     if ad_state.can_show_ads == Some(true) {
                         if ad_state.reward_ad.is_some() {
                             ad_state.reward_ad = None;
-                            ad_state.hint_wanted = Some(*hint_event);
+                            ad_state.hint_wanted = Some((*hints, *event));
                             asynchronous::spawn_and_run(mobile_only::try_show_reward_ad(
                                 writer.clone(),
                             ));
@@ -83,7 +88,7 @@ fn handle_ad_requests(
 
                 #[cfg(not(any(feature = "ios", feature = "android")))]
                 {
-                    ad_state.hint_wanted = Some(*hint_event);
+                    ad_state.hint_wanted = Some((*hints, *event));
                     crate::platform_specific::show_toast_on_web("We would show a reward ad here");
                     writer
                         .send_blocking(AdEvent::RewardAdRewarded(AdMobRewardItem {
@@ -194,15 +199,19 @@ fn handle_ad_events(
             AdEvent::RewardAdRewarded(reward) => {
                 info!("admob Reward ad rewarded {reward:?}",);
 
-                hints.hints_remaining += HINTS_REWARD_AMOUNT;
-                hints.total_bought_hints += HINTS_REWARD_AMOUNT;
+
 
                 #[cfg(any(feature = "ios", feature = "android"))]
                 {
                     asynchronous::spawn_and_run(mobile_only::try_load_reward_ad(writer.clone()));
                 }
-                if let Some(hint_event) = ad_state.hint_wanted.take() {
-                    hint_events.send(hint_event);
+                if let Some((hint_count, hint_event)) = ad_state.hint_wanted.take() {
+                    hints.hints_remaining += hint_count;
+                    hints.total_bought_hints += hint_count;
+                    if let Some(hint_event) = hint_event{
+                        hint_events.send(hint_event);
+                    }
+
                 }
             }
             AdEvent::FailedToLoadRewardAd(s) => {
@@ -250,11 +259,11 @@ pub enum AdEvent {
 }
 
 #[allow(dead_code)]
-const BETWEEN_LEVELS_INTERSTITIAL_AD_ID: &'static str = "ca-app-pub-5238923028364185/8193403915";
+const BETWEEN_LEVELS_INTERSTITIAL_AD_ID: &'static str = "ca-app-pub-5238923028364185/8193403915"; //todo different on ios
 #[allow(dead_code)]
-const BUY_HINTS_REWARD_AD_ID: &'static str = "ca-app-pub-5238923028364185/7292181940";
+const BUY_HINTS_REWARD_AD_ID: &'static str = "ca-app-pub-5238923028364185/7292181940"; //todo different on ios
 
-const HINTS_REWARD_AMOUNT: usize = 5;
+//const HINTS_REWARD_AMOUNT: usize = 5;
 
 #[cfg(any(feature = "ios", feature = "android"))]
 mod mobile_only {
