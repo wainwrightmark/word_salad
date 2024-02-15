@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
+use ws_levels::level_group::LevelGroup;
 use std::time::Duration;
 use strum::EnumIs;
 use ws_core::layout::entities::recording_button::ToggleRecordingButton;
@@ -171,6 +172,7 @@ pub enum ButtonInteraction {
     LevelGroupMenu(LevelGroupLayoutEntity),
     WordSaladMenu(WordSaladMenuLayoutEntity),
     MainStoreMenu(StoreLayoutEntity),
+    BuyLevelGroup(LevelGroup),
     HintsMenu(HintsLayoutEntity),
     SettingsMenu(SettingsLayoutEntity),
     WordButton(LayoutWordTile),
@@ -192,6 +194,12 @@ impl ButtonInteraction {
         } else {
             ButtonPressType::OnEnd
         }
+    }
+}
+
+impl From<level_group_store_layout::LevelGroupStoreLayoutEntity> for ButtonInteraction{
+    fn from(value: level_group_store_layout::LevelGroupStoreLayoutEntity) -> Self {
+        Self::BuyLevelGroup(value.0)
     }
 }
 
@@ -529,6 +537,11 @@ impl ButtonInteraction {
                     }
                 }
             }
+            ButtonInteraction::BuyLevelGroup(level_group)=>{
+                purchase_events.send(PurchaseEvent::BuyLevelGroup(*level_group));
+                menu_state.close();
+            }
+
             ButtonInteraction::MainStoreMenu(m) => match m {
                 StoreLayoutEntity::RemoveAds => {
                     purchase_events.send(PurchaseEvent::BuyAvoidAds);
@@ -537,10 +550,9 @@ impl ButtonInteraction {
                 StoreLayoutEntity::BuyHints => {
                     *menu_state.as_mut() = MenuState::HintsStorePage;
                 }
-                StoreLayoutEntity::BuyLevelGroup(lg) => {
-                    purchase_events.send(PurchaseEvent::BuyLevelGroup(*lg));
-                    menu_state.close();
-                }
+                StoreLayoutEntity::LevelGroups => {
+                    *menu_state.as_mut() = MenuState::LevelGroupStorePage
+                },
             },
             ButtonInteraction::HintsMenu(hints_layout_entity) => {
                 let number_of_hints = hints_layout_entity.hint_count();

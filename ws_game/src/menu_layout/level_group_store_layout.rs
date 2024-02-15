@@ -1,26 +1,23 @@
 use bevy::math::Vec2;
-use strum::{Display, EnumIter, IntoEnumIterator};
+use strum::IntoEnumIterator;
 use ws_core::{
     layout::entities::*, LayoutSizing, LayoutStructure, LayoutStructureWithFont,
     LayoutStructureWithTextOrImage, Spacing,
 };
+use ws_levels::level_group::LevelGroup;
 
 use super::{MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Display, EnumIter)]
-pub enum StoreLayoutEntity {
-    RemoveAds,
-    BuyHints,
-    LevelGroups
-}
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct LevelGroupStoreLayoutEntity(pub LevelGroup);
 
-impl StoreLayoutEntity {
+impl LevelGroupStoreLayoutEntity {
     pub fn index(&self) -> usize {
-        *self as usize
+        self.0 as usize
     }
 }
 
-impl LayoutStructure for StoreLayoutEntity {
+impl LayoutStructure for LevelGroupStoreLayoutEntity {
     type Context<'a> = SelfieMode;
 
     fn size(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
@@ -44,11 +41,11 @@ impl LayoutStructure for StoreLayoutEntity {
     }
 
     fn iter_all(_context: &Self::Context<'_>) -> impl Iterator<Item = Self> {
-        Self::iter()
+        LevelGroup::iter().map(|lg| Self(lg))
     }
 }
 
-impl LayoutStructureWithFont for StoreLayoutEntity {
+impl LayoutStructureWithFont for LevelGroupStoreLayoutEntity {
     type FontContext = ();
 
     fn font_size(&self, _context: &Self::FontContext) -> f32 {
@@ -56,13 +53,10 @@ impl LayoutStructureWithFont for StoreLayoutEntity {
     }
 }
 
-impl LayoutStructureWithTextOrImage for StoreLayoutEntity {
+impl LayoutStructureWithTextOrImage for LevelGroupStoreLayoutEntity {
     fn text_or_image(&self, _context: &Self::Context<'_>) -> ws_core::prelude::TextOrImage {
-        match self {
-            StoreLayoutEntity::RemoveAds => ws_core::TextOrImage::Text { text: "Remove Ads" },
-            StoreLayoutEntity::BuyHints => ws_core::TextOrImage::Text { text: "Buy Hints" },
-            StoreLayoutEntity::LevelGroups => ws_core::TextOrImage::Text { text: "Buy Addons" },
-
+        ws_core::TextOrImage::Text {
+            text: self.0.name(),
         }
     }
 }
