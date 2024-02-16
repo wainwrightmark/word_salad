@@ -139,7 +139,7 @@ impl MavericRootChildren for MenuRoot {
             MenuState::Closed => {}
             MenuState::ShowMainMenu => {
                 add_menu_items::<MainMenuLayoutEntity>(
-                    &context.video_resource.selfie_mode(),
+                    &(context.video_resource.selfie_mode(), ()),
                     commands,
                     size,
                     0,
@@ -150,7 +150,7 @@ impl MavericRootChildren for MenuRoot {
             }
             MenuState::SettingsPage => {
                 add_menu_items::<settings_menu_layout::SettingsLayoutEntity>(
-                    &context.video_resource.selfie_mode(),
+                    &(context.video_resource.selfie_mode(), ()),
                     commands,
                     size,
                     0,
@@ -161,7 +161,7 @@ impl MavericRootChildren for MenuRoot {
             }
             MenuState::MainStorePage => {
                 add_double_text_menu_items::<store_menu_layout::StoreLayoutStructure>(
-                    &context.video_resource.selfie_mode(),
+                    &(context.video_resource.selfie_mode(), ()),
                     commands,
                     size,
                     0,
@@ -172,7 +172,7 @@ impl MavericRootChildren for MenuRoot {
             }
             MenuState::HintsStorePage => {
                 add_double_text_menu_items::<hints_menu_layout::HintsLayoutEntity>(
-                    &context.video_resource.selfie_mode(),
+                    &(context.video_resource.selfie_mode(), ()),
                     commands,
                     size,
                     0,
@@ -183,7 +183,7 @@ impl MavericRootChildren for MenuRoot {
             }
             MenuState::LevelGroupStorePage => {
                 add_double_text_menu_items::<LevelGroupStoreLayoutStructure>(
-                    &context.video_resource.selfie_mode(),
+                    &(context.video_resource.selfie_mode(), ()),
                     commands,
                     size,
                     1,
@@ -194,7 +194,7 @@ impl MavericRootChildren for MenuRoot {
             }
             MenuState::ChooseLevelsPage => {
                 add_double_text_menu_items::<LevelsMenuLayoutEntity>(
-                    &context.video_resource.selfie_mode(),
+                    &(context.video_resource.selfie_mode(), ()),
                     commands,
                     size,
                     2,
@@ -215,7 +215,7 @@ impl MavericRootChildren for MenuRoot {
                 );
             }
             MenuState::WordSaladLevels => add_double_text_menu_items::<WordSaladMenuLayoutEntity>(
-                &context.video_resource.selfie_mode(),
+                &(context.video_resource.selfie_mode(), ()),
                 commands,
                 size,
                 4,

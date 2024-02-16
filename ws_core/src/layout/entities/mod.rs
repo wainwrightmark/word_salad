@@ -8,6 +8,7 @@ pub mod level_info_entity;
 pub mod non_level_layout_entity;
 pub mod recording_button;
 pub mod word_salad_logo;
+pub mod menu_buttons_layout;
 
 pub use congrats_layout_entity::*;
 pub use consts::*;
@@ -17,3 +18,4 @@ pub use layout_grid_tile::*;
 pub use layout_word_tile::*;
 pub use non_level_layout_entity::*;
 pub use word_salad_logo::*;
+pub use menu_buttons_layout::*;

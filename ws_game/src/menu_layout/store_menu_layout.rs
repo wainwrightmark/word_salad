@@ -1,61 +1,34 @@
-use bevy::math::Vec2;
+
 use strum::{Display, EnumCount, EnumIter, IntoEnumIterator};
 use ws_core::{
-    layout::entities::*, palette, LayoutSizing, LayoutStructure, LayoutStructureDoubleTextButton,
-    LayoutStructureWithFont, Spacing,
+    layout::entities::*, palette, LayoutStructureDoubleTextButton,
 };
 use ws_levels::level_group::LevelGroup;
 
 use crate::{prelude::BUTTONS_FONT_PATH, view::MenuContextWrapper};
 
-use super::{MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Display, EnumIter)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Display, EnumIter, EnumCount,
+)]
 pub enum StoreLayoutStructure {
     RemoveAds,
     BuyHints,
     LevelGroups,
 }
 
-impl StoreLayoutStructure {
-    pub fn index(&self) -> usize {
-        *self as usize + 3
-    }
-}
+impl MenuButtonsLayout for StoreLayoutStructure {
+    type Context = ();
 
-impl LayoutStructure for StoreLayoutStructure {
-    type Context<'a> = SelfieMode;
-
-    fn size(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
-        Vec2 {
-            x: MENU_BUTTON_WIDTH,
-            y: MENU_BUTTON_HEIGHT,
-        }
+    fn index(&self) -> usize {
+        *self as usize
     }
 
-    fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
-        Vec2 {
-            x: (IDEAL_WIDTH - MENU_BUTTON_WIDTH) / 2.,
-            y: (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, context))
-                + Spacing::Centre.apply(
-                    IDEAL_HEIGHT - (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, context)),
-                    MENU_BUTTON_HEIGHT + MENU_BUTTON_SPACING,
-                    super::MENU_VIRTUAL_CHILDREN,
-                    self.index(),
-                ),
-        }
+    fn count(_context: &Self::Context) -> usize {
+        Self::COUNT
     }
 
-    fn iter_all(_context: &Self::Context<'_>) -> impl Iterator<Item = Self> {
+    fn iter_all(_context: &Self::Context) -> impl Iterator<Item = Self> {
         Self::iter()
-    }
-}
-
-impl LayoutStructureWithFont for StoreLayoutStructure {
-    type FontContext = ();
-
-    fn font_size(&self, _context: &Self::FontContext) -> f32 {
-        MENU_BUTTON_FONT_SIZE
     }
 }
 

@@ -184,7 +184,7 @@ impl InteractionEntity {
                 }
 
                 Some(
-                    Self::try_get_button::<SettingsLayoutEntity>(position, size, &selfie_mode)
+                    Self::try_get_button::<SettingsLayoutEntity>(position, size, &(selfie_mode, ()))
                         .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
                 )
             }
@@ -196,7 +196,7 @@ impl InteractionEntity {
                 }
 
                 Some(
-                    Self::try_get_button::<HintsLayoutEntity>(position, size, &selfie_mode)
+                    Self::try_get_button::<HintsLayoutEntity>(position, size, &(selfie_mode, ()))
                         .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
                 )
             }
@@ -208,7 +208,7 @@ impl InteractionEntity {
                 }
 
                 Some(
-                    Self::try_get_button::<level_group_store_layout::LevelGroupStoreLayoutStructure>(position, size, &selfie_mode)
+                    Self::try_get_button::<level_group_store_layout::LevelGroupStoreLayoutStructure>(position, size, &(selfie_mode, ()))
                         .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
                 )
             }
@@ -220,7 +220,7 @@ impl InteractionEntity {
                 }
 
                 Some(
-                    Self::try_get_button::<StoreLayoutStructure>(position, size, &selfie_mode)
+                    Self::try_get_button::<StoreLayoutStructure>(position, size, &(selfie_mode, ()))
                         .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
                 )
             }
@@ -232,7 +232,7 @@ impl InteractionEntity {
                 }
 
                 Some(
-                    Self::try_get_button::<MainMenuLayoutEntity>(position, size, &selfie_mode)
+                    Self::try_get_button::<MainMenuLayoutEntity>(position, size, &(selfie_mode, ()))
                         .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
                 )
             }
@@ -243,7 +243,7 @@ impl InteractionEntity {
                 }
 
                 Some(
-                    Self::try_get_button::<LevelsMenuLayoutEntity>(position, size, &selfie_mode)
+                    Self::try_get_button::<LevelsMenuLayoutEntity>(position, size, &(selfie_mode, ()))
                         .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
                 )
             }
@@ -254,7 +254,7 @@ impl InteractionEntity {
                 }
 
                 Some(
-                    Self::try_get_button::<WordSaladMenuLayoutEntity>(position, size, &selfie_mode)
+                    Self::try_get_button::<WordSaladMenuLayoutEntity>(position, size, &(selfie_mode, ()))
                         .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
                 )
             }
