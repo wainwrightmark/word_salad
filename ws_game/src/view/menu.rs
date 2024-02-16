@@ -1,8 +1,7 @@
 use bevy::prelude::*;
 
 use maveric::{
-    helpers::{ChildCommands, MavericContext, NodeContext, UnorderedChildCommands},
-    node::MavericNode,
+    helpers::{ChildCommands, MavericContext, NodeContext},
     root::MavericRoot,
 };
 use strum::EnumIs;
@@ -19,12 +18,11 @@ use crate::{
         word_salad_menu_layout::WordSaladMenuLayoutEntity,
     },
     prelude::*,
-    purchases::Purchases,
+    purchases::Purchases, shapes, z_indices,
 };
 
 use self::{
-    level_group_layout::LevelGroupLayoutEntity, levels_menu_layout::LevelsMenuLayoutEntity,
-    main_menu_layout::MainMenuLayoutEntity,
+    level_group_layout::LevelGroupLayoutEntity, level_group_store_layout::LevelGroupStoreLayoutStructure, levels_menu_layout::LevelsMenuLayoutEntity, main_menu_layout::MainMenuLayoutEntity
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Resource, EnumIs, MavericContext)]
@@ -80,167 +78,172 @@ pub struct MenuContext {
     pub daily_challenges: DailyChallenges,
     pub purchases: Purchases,
     pub hint_state: HintState,
+    pub current_level: CurrentLevel,
+    pub found_words_state: FoundWordsState,
 }
 
-impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for MenuContextWrapper<'w> {
-    fn from(value: &'a ViewContextWrapper<'w>) -> Self {
-        Self {
-            window_size: Res::clone(&value.window_size),
-            video_resource: Res::clone(&value.video_resource),
-            daily_challenges: Res::clone(&value.daily_challenges),
-            menu_state: Res::clone(&value.menu_state),
-            daily_challenge_completion: Res::clone(&value.daily_challenge_completion),
-            sequence_completion: Res::clone(&value.sequence_completion),
-            purchases: Res::clone(&value.purchases),
-            hint_state: Res::clone(&value.hint_state),
-        }
-    }
-}
+#[derive(Debug, PartialEq, Clone, Copy, MavericRoot)]
+pub struct MenuRoot;
 
-#[derive(Debug, PartialEq, Clone, Copy)]
-pub struct Menu {
-    pub background_type: BackgroundType,
-}
-
-impl MavericNode for Menu {
+impl MavericRootChildren for MenuRoot {
     type Context = MenuContext;
 
-    fn set_components(commands: maveric::prelude::SetComponentCommands<Self, Self::Context>) {
-        commands
-            .ignore_context()
-            .ignore_node()
-            .insert(SpatialBundle::default());
-    }
-
-    fn set_children<R: maveric::prelude::MavericRoot>(
-        commands: maveric::prelude::SetChildrenCommands<Self, Self::Context, R>,
+    fn set_children(
+        context: &<Self::Context as NodeContext>::Wrapper<'_>,
+        commands: &mut impl ChildCommands,
     ) {
-        commands.unordered_children_with_node_and_context(|node, context, commands| {
-            let border = match node.background_type {
-                BackgroundType::Congrats | BackgroundType::NonLevel => {
-                    ShaderBorder::from_color(palette::MENU_BUTTON_TEXT_REGULAR.convert_color())
-                }
+        if context.menu_state.is_closed() {
+            return;
+        }
 
-                BackgroundType::Selfie | BackgroundType::Normal => ShaderBorder::NONE,
-            };
+        let size = &context.window_size;
+        let grey_color = palette::GREEN_DARK.convert_color();
+        let opacity = 0.95;
+        commands.add_child(
+            "grey out",
+            shapes::basic_box_node1(
+                size.scaled_width.max(size.scaled_height),
+                size.scaled_width.max(size.scaled_height),
+                Vec3::Z * z_indices::GREY_OUT,
+                grey_color.with_a(opacity),
+                0.0,
+            )
+            .with_transition_in_out::<ShaderColorLens>(
+                grey_color.with_a(0.0),
+                grey_color.with_a(opacity),
+                grey_color.with_a(0.0),
+                core::time::Duration::from_millis(500),
+                core::time::Duration::from_millis(500),
+                Some(Ease::CubicOut),
+                Some(Ease::CubicOut),
+            ),
+            &(),
+        );
 
-            let size = context.window_size.as_ref();
-            match context.menu_state.as_ref() {
-                MenuState::Closed => {}
-                MenuState::ShowMainMenu => {
-                    add_menu_items::<R, MainMenuLayoutEntity>(
-                        &context.video_resource.selfie_mode(),
-                        commands,
-                        size,
-                        0,
-                        palette::MENU_BUTTON_FILL.convert_color(),
-                        palette::MENU_BUTTON_TEXT_REGULAR.convert_color(),
-                        border,
-                    );
-                }
-                MenuState::SettingsPage => {
-                    add_menu_items::<R, settings_menu_layout::SettingsLayoutEntity>(
-                        &context.video_resource.selfie_mode(),
-                        commands,
-                        size,
-                        0,
-                        palette::MENU_BUTTON_FILL.convert_color(),
-                        palette::MENU_BUTTON_TEXT_REGULAR.convert_color(),
-                        border,
-                    );
-                }
-                MenuState::MainStorePage => {
-                    add_double_text_menu_items::<R, store_menu_layout::StoreLayoutStructure>(
-                        &context.video_resource.selfie_mode(),
-                        commands,
-                        size,
-                        0,
-                        node.background_type,
-                        border,
-                        context
-                    );
-                }
-                MenuState::HintsStorePage => {
-                    add_double_text_menu_items::<R, hints_menu_layout::HintsLayoutEntity>(
-                        &context.video_resource.selfie_mode(),
-                        commands,
-                        size,
-                        0,
-                        node.background_type,
-                        border,
-                        context,
-                    );
-                }
-                MenuState::LevelGroupStorePage => {
-                    add_double_text_menu_items::<
-                        R,
-                        level_group_store_layout::LevelGroupStoreLayoutStructure,
-                    >(
-                        &context.video_resource.selfie_mode(),
-                        commands,
-                        size,
-                        1,
-                        node.background_type,
-                        border,
-                        context,
-                    );
-                }
-                MenuState::ChooseLevelsPage => {
-                    add_double_text_menu_items::<R, LevelsMenuLayoutEntity>(
-                        &context.video_resource.selfie_mode(),
-                        commands,
-                        size,
-                        2,
-                        node.background_type,
-                        border,
-                        context,
-                    );
-                }
-                MenuState::LevelGroupPage(group) => {
-                    add_double_text_menu_items::<R, LevelGroupLayoutEntity>(
-                        &(context.video_resource.selfie_mode(), *group),
-                        commands,
-                        size,
-                        3,
-                        node.background_type,
-                        border,
-                        context,
-                    );
-                }
-                MenuState::WordSaladLevels => {
-                    add_double_text_menu_items::<R, WordSaladMenuLayoutEntity>(
-                        &context.video_resource.selfie_mode(),
-                        commands,
-                        size,
-                        4,
-                        node.background_type,
-                        border,
-                        context,
-                    )
-                }
+        let background_type = background_type_from_resources(
+            &context.video_resource,
+            &context.current_level,
+            &context.found_words_state,
+        );
+
+        let border = match background_type {
+            BackgroundType::Congrats | BackgroundType::NonLevel => {
+                ShaderBorder::from_color(palette::MENU_BUTTON_TEXT_REGULAR.convert_color())
             }
 
-            add_menu_items::<R, MainMenuBackButton>(
-                &(),
+            BackgroundType::Selfie | BackgroundType::Normal => ShaderBorder::NONE,
+        };
+
+        let size = context.window_size.as_ref();
+        match context.menu_state.as_ref() {
+            MenuState::Closed => {}
+            MenuState::ShowMainMenu => {
+                add_menu_items::<MainMenuLayoutEntity>(
+                    &context.video_resource.selfie_mode(),
+                    commands,
+                    size,
+                    0,
+                    palette::MENU_BUTTON_FILL.convert_color(),
+                    palette::MENU_BUTTON_TEXT_REGULAR.convert_color(),
+                    border,
+                );
+            }
+            MenuState::SettingsPage => {
+                add_menu_items::<settings_menu_layout::SettingsLayoutEntity>(
+                    &context.video_resource.selfie_mode(),
+                    commands,
+                    size,
+                    0,
+                    palette::MENU_BUTTON_FILL.convert_color(),
+                    palette::MENU_BUTTON_TEXT_REGULAR.convert_color(),
+                    border,
+                );
+            }
+            MenuState::MainStorePage => {
+                add_double_text_menu_items::<store_menu_layout::StoreLayoutStructure>(
+                    &context.video_resource.selfie_mode(),
+                    commands,
+                    size,
+                    0,
+                    background_type,
+                    border,
+                    context,
+                );
+            }
+            MenuState::HintsStorePage => {
+                add_double_text_menu_items::<hints_menu_layout::HintsLayoutEntity>(
+                    &context.video_resource.selfie_mode(),
+                    commands,
+                    size,
+                    0,
+                    background_type,
+                    border,
+                    context,
+                );
+            }
+            MenuState::LevelGroupStorePage => {
+                add_double_text_menu_items::<LevelGroupStoreLayoutStructure>(
+                    &context.video_resource.selfie_mode(),
+                    commands,
+                    size,
+                    1,
+                    background_type,
+                    border,
+                    context,
+                );
+            }
+            MenuState::ChooseLevelsPage => {
+                add_double_text_menu_items::<LevelsMenuLayoutEntity>(
+                    &context.video_resource.selfie_mode(),
+                    commands,
+                    size,
+                    2,
+                    background_type,
+                    border,
+                    context,
+                );
+            }
+            MenuState::LevelGroupPage(group) => {
+                add_double_text_menu_items::<LevelGroupLayoutEntity>(
+                    &(context.video_resource.selfie_mode(), *group),
+                    commands,
+                    size,
+                    3,
+                    background_type,
+                    border,
+                    context,
+                );
+            }
+            MenuState::WordSaladLevels => add_double_text_menu_items::<WordSaladMenuLayoutEntity>(
+                &context.video_resource.selfie_mode(),
                 commands,
                 size,
                 4,
-                palette::MENU_BUTTON_DISCOURAGED_FILL.convert_color(),
-                palette::MENU_BUTTON_TEXT_DISCOURAGED.convert_color(),
+                background_type,
                 border,
-            );
-        });
+                context,
+            ),
+        }
+
+        add_menu_items::<MainMenuBackButton>(
+            &(),
+            commands,
+            size,
+            4,
+            palette::MENU_BUTTON_DISCOURAGED_FILL.convert_color(),
+            palette::MENU_BUTTON_TEXT_DISCOURAGED.convert_color(),
+            border,
+        );
     }
 }
 
 fn add_menu_items<
-    R: MavericRoot,
     L: LayoutStructureWithFont<FontContext = ()>
         + LayoutStructureWithTextOrImage
         + Into<ButtonInteraction>,
 >(
     context: &<L as LayoutStructure>::Context<'_>,
-    commands: &mut UnorderedChildCommands<R>,
+    commands: &mut impl ChildCommands,
     size: &Size,
     page: u16,
     fill_color: Color,
@@ -292,12 +295,9 @@ fn add_menu_items<
     }
 }
 
-fn add_double_text_menu_items<
-    R: MavericRoot,
-    L: LayoutStructureDoubleTextButton + Into<ButtonInteraction>,
->(
+fn add_double_text_menu_items<L: LayoutStructureDoubleTextButton + Into<ButtonInteraction>>(
     context: &<L as LayoutStructure>::Context<'_>,
-    commands: &mut UnorderedChildCommands<R>,
+    commands: &mut impl ChildCommands,
     size: &Size,
     page: u16,
     background_type: BackgroundType,

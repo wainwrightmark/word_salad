@@ -31,14 +31,14 @@ impl BackgroundType {
 
     pub fn menu_button_complete_fill(&self) -> BasicColor {
         match self {
-            BackgroundType::Congrats | BackgroundType::NonLevel => palette::NONE,
+            BackgroundType::Congrats | BackgroundType::NonLevel => palette::TRANSPARENT,
             BackgroundType::Selfie | BackgroundType::Normal => palette::MENU_BUTTON_COMPLETE_FILL,
         }
     }
 
     pub fn menu_button_incomplete_fill(&self) -> BasicColor {
         match self {
-            BackgroundType::Congrats | BackgroundType::NonLevel => palette::NONE,
+            BackgroundType::Congrats | BackgroundType::NonLevel => palette::TRANSPARENT,
             BackgroundType::Selfie | BackgroundType::Normal => palette::MENU_BUTTON_FILL,
         }
     }

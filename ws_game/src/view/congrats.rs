@@ -24,6 +24,7 @@ pub struct CongratsContext {
     pub streak: Streak,
     pub level_time: LevelTime,
     pub daily_challenges: DailyChallenges,
+    pub menu_state: MenuState,
 }
 
 impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for CongratsContextWrapper<'w> {
@@ -38,6 +39,7 @@ impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for CongratsContextWrapper<'w>
             streak: Res::clone(&value.streak),
             level_time: Res::clone(&value.level_time),
             daily_challenges: Res::clone(&value.daily_challenges),
+            menu_state: Res::clone(&value.menu_state),
         }
     }
 }
@@ -231,6 +233,10 @@ impl MavericNode for CongratsView {
                         ),
                         &(),
                     );
+                }
+
+                if !context.menu_state.is_closed(){
+                    return; //TODO change control flow
                 }
 
                 let button_count = CongratsLayoutEntity::get_button_count(&congrats_context);

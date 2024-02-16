@@ -38,8 +38,6 @@ impl BasicColor {
 pub mod palette {
     use crate::BasicColor as Color;
 
-    pub const NONE: Color = Color::rgba(0.0, 0.0, 0.0, 0.0);
-
     pub const ANIMATED_SOLUTION_NEW: Color = GREEN_LIGHT;
     pub const ANIMATED_SOLUTION_OLD: Color = GOLD;
 
@@ -118,7 +116,7 @@ pub mod palette {
     const MEDIUM_GRAY: Color = Color::rgba(0.37, 0.4, 0.42, 1.0);
 
     const GREEN_LIGHT: Color = Color::rgba(0.17, 0.71, 0.35, 1.);
-    const GREEN_DARK: Color = Color::rgba(0.07, 0.34, 0.27, 1.);
+    pub const GREEN_DARK: Color = Color::rgba(0.07, 0.34, 0.27, 1.);
     const GREEN_OTHER: Color = Color::rgba(0.36, 0.73, 0.28, 1.);
     const GOLD: Color = Color::rgba(1., 0.94, 0.62, 1.);
     #[allow(dead_code)]

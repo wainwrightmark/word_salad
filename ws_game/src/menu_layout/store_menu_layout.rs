@@ -19,7 +19,7 @@ pub enum StoreLayoutStructure {
 
 impl StoreLayoutStructure {
     pub fn index(&self) -> usize {
-        *self as usize
+        *self as usize + 3
     }
 }
 
@@ -79,7 +79,7 @@ impl LayoutStructureDoubleTextButton for StoreLayoutStructure {
                 right = if disabled {
                     "Owned".to_string()
                 } else {
-                    "Free".to_string()
+                    "£2.99".to_string()
                 };
             }
             StoreLayoutStructure::BuyHints => {

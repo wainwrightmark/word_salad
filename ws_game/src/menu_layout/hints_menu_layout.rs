@@ -102,10 +102,10 @@ impl LayoutStructureDoubleTextButton for HintsLayoutEntity {
         //todo get price from store
         let (left, right) = match self {
             HintsLayoutEntity::Hints5WatchAd => ("  5 Hints", "Watch Ad"),
-            HintsLayoutEntity::Hints25 => (" 25 Hints", "Free"),
-            HintsLayoutEntity::Hints50 => (" 50 Hints", "Free"),
-            HintsLayoutEntity::Hints100 => ("100 Hints", "Free"),
-            HintsLayoutEntity::Hints500 => ("500 Hints", "Free"),
+            HintsLayoutEntity::Hints25 => (" 25 Hints", "£0.99"),
+            HintsLayoutEntity::Hints50 => (" 50 Hints", "£1.49"),
+            HintsLayoutEntity::Hints100 => ("100 Hints", "£1.99"),
+            HintsLayoutEntity::Hints500 => ("500 Hints", "£2.99"),
         };
         (left.to_string(), right.to_string())
     }

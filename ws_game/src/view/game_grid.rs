@@ -68,6 +68,14 @@ impl HintStatus {
 #[derive(Debug, Clone, PartialEq)]
 pub struct GridTiles {
     pub is_level_complete: bool,
+    pub pause_type: PauseType
+}
+
+#[derive(Debug, Clone, PartialEq, EnumIs)]
+pub enum PauseType{
+    NotPaused,
+    Blank,
+    BlankWithPlay
 }
 
 const TILE_SCALE_SPEED: LinearSpeed = LinearSpeed {
@@ -80,7 +88,6 @@ pub struct GridTilesContext {
     pub current_level: CurrentLevel,
     pub found_words_state: FoundWordsState,
     pub window_size: MyWindowSize,
-    pub level_time: LevelTime,
     pub video_resource: VideoResource,
     pub daily_challenges: DailyChallenges,
 }
@@ -93,7 +100,6 @@ impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for GridTilesContextWrapper<'w
             window_size: Res::clone(&value.window_size),
             video_resource: Res::clone(&value.video_resource),
             chosen_state: Res::clone(&value.chosen_state),
-            level_time: Res::clone(&value.level_time),
             daily_challenges: Res::clone(&value.daily_challenges),
         }
     }
@@ -160,7 +166,7 @@ impl MavericNode for GridTiles {
                         font_size,
 
                         hint_status,
-                        timer_paused: context.level_time.is_paused(),
+                        timer_paused: !node.pause_type.is_not_paused(),
                         is_selfie_mode: context.video_resource.is_selfie_mode,
                     }
                     .with_bundle(Transform::from_translation(
@@ -170,7 +176,7 @@ impl MavericNode for GridTiles {
                 );
             }
 
-            if context.level_time.is_paused() {
+            if node.pause_type.is_blank_with_play() {
                 commands.add_child(
                     "play_button",
                     Text2DNode {

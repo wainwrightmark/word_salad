@@ -29,6 +29,7 @@ pub struct WordsContext {
     pub window_size: MyWindowSize,
     pub video_resource: VideoResource,
     pub daily_challenges: DailyChallenges,
+    pub menu_state: MenuState
 }
 
 impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for WordsContextWrapper<'w> {
@@ -39,6 +40,7 @@ impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for WordsContextWrapper<'w> {
             window_size: Res::clone(&value.window_size),
             video_resource: Res::clone(&value.video_resource),
             daily_challenges: Res::clone(&value.daily_challenges),
+            menu_state: Res::clone(&value.menu_state)
         }
     }
 }
@@ -98,6 +100,7 @@ impl MavericNode for WordsNode {
                             rect,
                             font_size,
                             selfie_mode,
+                            menu_closed: context.menu_state.is_closed()
                         },
                         &(),
                     );
@@ -114,6 +117,7 @@ pub struct WordNode {
     pub rect: LayoutRectangle,
     pub font_size: f32,
     pub selfie_mode: SelfieMode,
+    pub menu_closed: bool
 }
 
 impl MavericNode for WordNode {
@@ -130,12 +134,7 @@ impl MavericNode for WordNode {
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered(|args, commands| {
             let node = args.node;
-            let text = match node.completion {
-                Completion::Unstarted => node.word.hidden_text.to_string(),
-                Completion::ManualHinted(hints) => node.word.hinted_text(hints).to_uppercase(),
 
-                Completion::Complete { .. } => node.word.text.to_uppercase().to_string(),
-            };
 
             let completion = node.completion;
 
@@ -147,40 +146,50 @@ impl MavericNode for WordNode {
 
             let centre = node.rect.centre();
 
-            let text_translation = centre.extend(crate::z_indices::WORD_TEXT);
+            if node.menu_closed{
+                let text = match node.completion {
+                    Completion::Unstarted => node.word.hidden_text.to_string(),
+                    Completion::ManualHinted(hints) => node.word.hinted_text(hints).to_uppercase(),
 
-            let text_color = match completion {
-                Completion::Unstarted => palette::WORD_TEXT_NUMBER,
-                Completion::ManualHinted(_) | Completion::Complete { .. } => {
-                    palette::WORD_TEXT_LETTERS
-                }
-            }
-            .convert_color();
+                    Completion::Complete { .. } => node.word.text.to_uppercase().to_string(),
+                };
 
-            commands.add_child(
-                "text",
-                Text2DNode {
-                    text,
-                    font_size: node.font_size,
-                    color: text_color,
-                    font: SOLUTIONS_FONT_PATH,
-                    alignment: TextAlignment::Center,
-                    linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                    text_2d_bounds: Default::default(),
-                    text_anchor: Default::default(),
+                let text_translation = centre.extend(crate::z_indices::WORD_TEXT);
+
+                let text_color = match completion {
+                    Completion::Unstarted => palette::WORD_TEXT_NUMBER,
+                    Completion::ManualHinted(_) | Completion::Complete { .. } => {
+                        palette::WORD_TEXT_LETTERS
+                    }
                 }
-                .with_bundle(Transform::from_translation(text_translation))
-                .with_transition_to::<TextColorLens<0>>(
-                    text_color,
-                    calculate_speed(
-                        &palette::WORD_TEXT_NUMBER.convert_color(),
-                        &palette::WORD_TEXT_LETTERS.convert_color(),
-                        Duration::from_secs_f32(animated_solutions::TOTAL_SECONDS),
+                .convert_color();
+
+                commands.add_child(
+                    "text",
+                    Text2DNode {
+                        text,
+                        font_size: node.font_size,
+                        color: text_color,
+                        font: SOLUTIONS_FONT_PATH,
+                        alignment: TextAlignment::Center,
+                        linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                        text_2d_bounds: Default::default(),
+                        text_anchor: Default::default(),
+                    }
+                    .with_bundle(Transform::from_translation(text_translation))
+                    .with_transition_to::<TextColorLens<0>>(
+                        text_color,
+                        calculate_speed(
+                            &palette::WORD_TEXT_NUMBER.convert_color(),
+                            &palette::WORD_TEXT_LETTERS.convert_color(),
+                            Duration::from_secs_f32(animated_solutions::TOTAL_SECONDS),
+                        ),
+                        None,
                     ),
-                    None,
-                ),
-                &(),
-            );
+                    &(),
+                );
+            }
+
 
             let shape_translation = centre.extend(crate::z_indices::WORD_BACKGROUND);
             let _shape_border_translation = centre.extend(crate::z_indices::WORD_BACKGROUND + 1.0);

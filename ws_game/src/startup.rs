@@ -51,6 +51,7 @@ pub fn go() {
     app.register_maveric::<ViewRoot>();
     app.register_maveric::<RecordingButtonRoot>();
     app.register_maveric::<WordSaladLogoRoot>();
+    app.register_maveric::<MenuRoot>();
     app.add_plugins(HintsRemainingPlugin);
     app.add_plugins(StatePlugin);
     app.add_plugins(LevelTimePlugin);

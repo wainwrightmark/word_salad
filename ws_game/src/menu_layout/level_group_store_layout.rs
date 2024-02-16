@@ -76,7 +76,7 @@ impl LayoutStructureDoubleTextButton for LevelGroupStoreLayoutStructure {
         let right = if self.is_disabled(context, text_context) {
             "Owned"
         } else {
-            "Free"
+            "£2.99"
         };
         (left.to_string(), right.to_string())
     }
