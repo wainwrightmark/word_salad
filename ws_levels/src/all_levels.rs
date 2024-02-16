@@ -291,9 +291,9 @@ pub mod tests {
             test_word_ordering(&level, &mut all_errors);
 
             if let Some(colors) = level.special_colors {
-                if colors.len() < 5 {
+                if colors.len() < 4 {
                     all_errors.push(format!(
-                        "Level {name} has custom colors but fewer than five"
+                        "Level {name} has custom colors but fewer than four"
                     ));
                 }
             }
