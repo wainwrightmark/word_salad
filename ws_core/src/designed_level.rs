@@ -79,7 +79,7 @@ impl DesignedLevel {
             })
             .try_collect()?;
 
-        words.sort_by_cached_key(|x| x.text.to_ascii_lowercase());
+        words.sort();
 
         let (name1, extra_info) = if name.ends_with(']') {
             if let Some(index) = name.find('[') {

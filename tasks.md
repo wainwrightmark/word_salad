@@ -14,15 +14,10 @@
 - word animation at the end of level
 
 - animate the menu
-- menu is a carousel that is overlayed on top of the current level
-- ws logo should transform into a burger when the menu is open
-- menu buy buttons should have a left and right component for the name and the price
 
 - loading bar comes up on the app?
 - Generate a metric for the probability of a letter falling away after two words
 - Do 100 birds and mammals puzzles
 - More daily puzzles
-- Correct Acai/apricot ordering
 - Build a system for allowing particular puzzles to have different line color schemes
-- buttons should be in the midpoint
-- give record button a maximum size
+

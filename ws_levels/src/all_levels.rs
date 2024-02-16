@@ -193,7 +193,7 @@ pub fn get_tutorial_level(index: usize) -> Option<&'static DesignedLevel> {
 #[cfg(test)]
 pub mod tests {
 
-    use std::str::FromStr;
+    use std::{cmp::Ordering, str::FromStr};
 
     use strum::IntoEnumIterator;
     use ws_core::finder::{cluster::*, helpers::FinderSingleWord, node::GridResult, orientation};
@@ -233,7 +233,7 @@ pub mod tests {
 
         assert!(levels.len() > 5);
 
-        let mut taboo_errors: Vec<String> = Default::default();
+        let mut all_errors: Vec<String> = Default::default();
 
         for level in levels {
             let name = &level.name;
@@ -249,22 +249,26 @@ pub mod tests {
             }
 
             if let Err(err) = test_grid_not_taboo(&level) {
-                taboo_errors.push(err);
+                all_errors.push(err);
             }
+
+            test_word_ordering(&level, &mut all_errors);
         }
 
-        for error in taboo_errors.iter() {
+
+
+        for error in all_errors.iter() {
             println!("{error}")
         }
 
-        assert!(taboo_errors.is_empty())
+        assert!(all_errors.is_empty())
     }
 
     #[test]
     pub fn test_daily_challenge_levels_valid() {
         assert!(DAILY_CHALLENGE.len() > 10);
 
-        let mut taboo_errors: Vec<String> = Default::default();
+        let mut all_errors: Vec<String> = Default::default();
 
         for level in DAILY_CHALLENGE.clone().into_iter() {
             let name = &level.name;
@@ -280,15 +284,17 @@ pub mod tests {
             }
 
             if let Err(err) = test_grid_not_taboo(&level) {
-                taboo_errors.push(err);
+                all_errors.push(err);
             }
+
+            test_word_ordering(&level, &mut all_errors);
         }
 
-        for error in taboo_errors.iter() {
+        for error in all_errors.iter() {
             println!("{error}")
         }
 
-        assert!(taboo_errors.is_empty())
+        assert!(all_errors.is_empty())
     }
 
     #[test]
@@ -302,6 +308,14 @@ pub mod tests {
         }
 
         insta::assert_snapshot!(text);
+    }
+
+    fn test_word_ordering(level: &DesignedLevel, errors: &mut Vec<String>){
+        for (a, b) in level.words.iter().tuple_windows(){
+            if a > b{
+                errors.push(format!("{b} should come before {a}"));
+            }
+        }
     }
 
     fn test_grid_not_taboo(level: &DesignedLevel) -> Result<(), String> {

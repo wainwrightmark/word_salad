@@ -42,8 +42,7 @@ impl VideoResource {
     }
 
     pub fn show_recording_button(&self) -> bool {
-        true
-        //cfg!(any(feature = "android", feature = "ios")) && self.is_selfie_mode
+        cfg!(any(feature = "android", feature = "ios")) && self.is_selfie_mode
     }
 }
 

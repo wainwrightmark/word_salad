@@ -68,12 +68,31 @@ impl FromStr for FinderGroup {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct FinderSingleWord {
     pub text: Ustr,
     pub array: CharsArray,
     pub counts: PrimeBag128<Character>,
 }
+
+impl PartialOrd for FinderSingleWord{
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.array
+            .iter()
+            .map(|x| x.as_char())
+            .partial_cmp(other.array.iter().map(|x| x.as_char()))
+    }
+}
+
+impl Ord for FinderSingleWord{
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.array
+            .iter()
+            .map(|x| x.as_char())
+            .cmp(other.array.iter().map(|x| x.as_char()))
+    }
+}
+
 
 impl FinderSingleWord {
     pub fn is_strict_substring(&self, super_string: &Self) -> bool {

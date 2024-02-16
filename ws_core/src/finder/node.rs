@@ -95,8 +95,9 @@ impl std::fmt::Display for GridResult {
         let words_text = self
             .words
             .iter()
-            .map(|x| format!("{:8}", x.text))
             .sorted()
+            .map(|x| format!("{:8}", x.text))
+
             .join("\t");
         let solution = self.grid.iter().join("");
         let size = self.words.len();
