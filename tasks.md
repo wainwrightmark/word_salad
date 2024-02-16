@@ -20,4 +20,3 @@
 - Do 100 birds and mammals puzzles
 - More daily puzzles
 - Build a system for allowing particular puzzles to have different line color schemes
-

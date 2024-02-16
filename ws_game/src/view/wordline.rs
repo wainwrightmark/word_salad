@@ -22,6 +22,7 @@ pub struct WordLine {
     pub should_hide: bool,
     pub close_to_solution: bool,
     pub selfie_mode: SelfieMode,
+    pub special_colors: Option<Vec<BasicColor>>
 }
 
 impl MavericNode for WordLine {
@@ -76,7 +77,7 @@ impl MavericNode for WordLine {
                 let rect = args
                     .context
                     .get_rect(&LayoutGridTile(*tile), &args.node.selfie_mode);
-                let color = index_to_color(0);
+                let color = index_to_color(0, &args.node.special_colors);
 
                 commands.add_child(
                     0,
@@ -113,14 +114,14 @@ impl MavericNode for WordLine {
 
                     let translation =
                         ((rect_f.centre() + rect_t.centre()) * 0.5).extend(z_indices::WORD_LINE);
-                    let color = index_to_color(line_index);
+                    let color = index_to_color(line_index, &args.node.special_colors);
 
                     if Some(direction) != last_direction {
                         last_direction = Some(direction);
                         line_index = line_index.wrapping_add(1);
                     }
 
-                    let color2 = index_to_color(line_index);
+                    let color2 = index_to_color(line_index, &args.node.special_colors);
 
                     commands.add_child(
                         index as u32,
@@ -208,12 +209,18 @@ fn get_direction(from: &Tile, to: &Tile) -> u32 {
     }
 }
 
-fn index_to_color(index: usize) -> Color {
+fn index_to_color(index: usize, special_colors: &Option<Vec<BasicColor>>) -> Color {
     //hsl(140, 62%, 44%)
 
-    let hue = (((index as f32) * 20.0) + 140.0) % 360.0;
+    if let Some(special_colors) = special_colors{
+        special_colors[index % special_colors.len()].convert_color()
+    }else{
+        let hue = (((index as f32) * 20.0) + 140.0) % 360.0;
 
-    Color::hsl(hue, 0.62, 0.44)
+        Color::hsl(hue, 0.62, 0.44)
+    }
+
+
 }
 
 #[repr(C)]

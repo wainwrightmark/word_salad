@@ -2,9 +2,10 @@ use std::str::FromStr;
 
 use crate::{finder::helpers::LetterCounts, prelude::*, Grid};
 use itertools::Itertools;
+use log::warn;
 use ustr::Ustr;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct DesignedLevel {
     pub name: Ustr,
     pub numbering: Option<Numbering>,
@@ -13,6 +14,7 @@ pub struct DesignedLevel {
     pub extra_info: Option<Ustr>,
     pub grid: Grid,
     pub words: Vec<DisplayWord>,
+    pub special_colors: Option<Vec<BasicColor>>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -53,6 +55,7 @@ impl DesignedLevel {
             extra_info: None,
             grid: Grid::from_inner([Character::Blank; 16]),
             words: vec![],
+            special_colors: None,
         }
     }
 
@@ -81,24 +84,56 @@ impl DesignedLevel {
 
         words.sort();
 
-        let (name1, extra_info) = if name.ends_with(']') {
-            if let Some(index) = name.find('[') {
-                let (name, extra_info) = name.split_at(index);
-                let extra_info = Ustr::from(&extra_info[1..(extra_info.len() - 1)]);
-                (Ustr::from(name.trim_end()), Some(extra_info))
+        let mut name = name;
+
+        let special_colors = if name.ends_with('}') {
+            if let Some(index) = name.find('{') {
+                let (prefix, colors) = name.split_at(index);
+                name = prefix.trim_end();
+                let colors = &colors[1..(colors.len() - 1)];
+                let mut colors_vec = Vec::<BasicColor>::default();
+
+                for c in colors.split(',') {
+                    if let Some(color) = BasicColor::try_from_str(c) {
+                        colors_vec.push(color);
+                    } else {
+                        warn!("Could not parse color '{c}'");
+                    }
+                }
+                if colors_vec.is_empty() {
+                    None
+                } else {
+                    Some(colors_vec)
+                }
             } else {
-                (Ustr::from(name), None)
+                None
             }
         } else {
-            (Ustr::from(name), None)
+            None
         };
 
+        let extra_info = if name.ends_with(']') {
+            if let Some(index) = name.find('[') {
+                let (prefix, extra_info) = name.split_at(index);
+                name = prefix.trim_end();
+                let extra_info = Ustr::from(&extra_info[1..(extra_info.len() - 1)]);
+                Some(extra_info)
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
+        let name = Ustr::from(name.trim_end());
+
         Ok(Self {
-            name: name1,
+            name,
             numbering: None,
             extra_info,
             grid,
             words,
+            special_colors,
         })
     }
 }

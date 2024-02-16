@@ -193,7 +193,7 @@ pub fn get_tutorial_level(index: usize) -> Option<&'static DesignedLevel> {
 #[cfg(test)]
 pub mod tests {
 
-    use std::{cmp::Ordering, str::FromStr};
+    use std::str::FromStr;
 
     use strum::IntoEnumIterator;
     use ws_core::finder::{cluster::*, helpers::FinderSingleWord, node::GridResult, orientation};
@@ -255,8 +255,6 @@ pub mod tests {
             test_word_ordering(&level, &mut all_errors);
         }
 
-
-
         for error in all_errors.iter() {
             println!("{error}")
         }
@@ -272,14 +270,17 @@ pub mod tests {
 
         for level in DAILY_CHALLENGE.clone().into_iter() {
             let name = &level.name;
-            assert!(level.words.len() > 0, "Level {name} should have words");
+            if level.words.len() < 4 {
+                all_errors.push(format!("Level {name} should have at least 4 words"))
+            }
+
             for word in level.words.iter() {
                 let solution = word.find_solution(&level.grid);
                 if solution.is_none() {
-                    panic!(
+                    all_errors.push(format!(
                         "Level '{name}' has no solution for '{word}'",
                         word = word.text
-                    )
+                    ));
                 }
             }
 
@@ -288,6 +289,14 @@ pub mod tests {
             }
 
             test_word_ordering(&level, &mut all_errors);
+
+            if let Some(colors) = level.special_colors {
+                if colors.len() < 5 {
+                    all_errors.push(format!(
+                        "Level {name} has custom colors but fewer than five"
+                    ));
+                }
+            }
         }
 
         for error in all_errors.iter() {
@@ -310,9 +319,9 @@ pub mod tests {
         insta::assert_snapshot!(text);
     }
 
-    fn test_word_ordering(level: &DesignedLevel, errors: &mut Vec<String>){
-        for (a, b) in level.words.iter().tuple_windows(){
-            if a > b{
+    fn test_word_ordering(level: &DesignedLevel, errors: &mut Vec<String>) {
+        for (a, b) in level.words.iter().tuple_windows() {
+            if a > b {
                 errors.push(format!("{b} should come before {a}"));
             }
         }
