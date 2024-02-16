@@ -20,7 +20,7 @@ impl LayoutStructure for ToggleRecordingButton {
             return default_size;
         }
 
-        let size = bottom_padding;
+        let size = bottom_padding.min(RECORDING_BUTTON_MAX_SIZE);
 
         Vec2 { x: size, y: size }
     }
@@ -37,8 +37,10 @@ impl LayoutStructure for ToggleRecordingButton {
             return default_location;
         }
 
+        let size = bottom_padding.min(RECORDING_BUTTON_MAX_SIZE);
+
         Vec2 {
-            x: (IDEAL_WIDTH - bottom_padding) * 0.5,
+            x: (IDEAL_WIDTH - size) * 0.5,
             y: IDEAL_HEIGHT + extra_top_bar_height,
         }
     }
