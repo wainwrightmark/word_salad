@@ -2083,9 +2083,9 @@ checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
 
 [[package]]
 name = "fontdb"
-version = "0.16.1"
+version = "0.16.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3890d0893c8253d3eb98337af18b3e1a10a9b2958f2a164b53a93fb3a3049e72"
+checksum = "b0299020c3ef3f60f526a4f64ab4a3d4ce116b1acbf24cdd22da0068e5d81dc3"
 dependencies = [
  "log",
  "slotmap",
@@ -3077,7 +3077,7 @@ dependencies = [
 [[package]]
 name = "maveric"
 version = "0.1.0"
-source = "git+https://github.com/wainwrightmark/maveric#b334e45fb0c500c62a545b4d37b3cdd2ed19c681"
+source = "git+https://github.com/wainwrightmark/maveric#f1fef724b900b75f12b9aa0d36a4b8364d2c0209"
 dependencies = [
  "allocator-api2",
  "bevy",
@@ -3089,7 +3089,7 @@ dependencies = [
 [[package]]
 name = "maveric-macro"
 version = "0.1.0"
-source = "git+https://github.com/wainwrightmark/maveric#b334e45fb0c500c62a545b4d37b3cdd2ed19c681"
+source = "git+https://github.com/wainwrightmark/maveric#f1fef724b900b75f12b9aa0d36a4b8364d2c0209"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3242,7 +3242,7 @@ dependencies = [
 [[package]]
 name = "nice_bevy_utils"
 version = "0.1.0"
-source = "git+https://github.com/wainwrightmark/nice_bevy_utils#de6078e029530776cd4992863f287cf249815bcd"
+source = "git+https://github.com/wainwrightmark/nice_bevy_utils#f8442e43723256d75f05839ec5b90bff9ba06581"
 dependencies = [
  "async-channel",
  "bevy",

@@ -55,10 +55,10 @@ impl MavericNode for WsImageButtonNode {
                 let height = rect.height() * ratio;
                 let width = image_aspect_ratio * height;
 
-                let text_translation = centre.extend(crate::z_indices::MENU_BUTTON_TEXT);
+                let sprite_translation = centre.extend(crate::z_indices::MENU_BUTTON_TEXT);
 
                 commands.add_child(
-                    "text",
+                    "sprite",
                     SpriteNode {
                         texture_path: image_path,
                         sprite: Sprite {
@@ -73,7 +73,7 @@ impl MavericNode for WsImageButtonNode {
                             }),
                         },
                     }
-                    .with_bundle(Transform::from_translation(text_translation)),
+                    .with_bundle(Transform::from_translation(sprite_translation)),
                     &(),
                 );
 

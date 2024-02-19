@@ -32,11 +32,11 @@ maveric = { git = 'https://github.com/wainwrightmark/maveric', features = [
   "widgets",
   "derive",
   "tracing",
+  "bevy_text"
 ] }
 nice_bevy_utils = { git = "https://github.com/wainwrightmark/nice_bevy_utils", features = [
   "async-channel",
   "bevy_pkv",
-  "bevy_ui",
 ] }
 serde_repr = "0.1"
 enumset = { version = "1", features = ["serde"] }

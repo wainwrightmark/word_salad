@@ -47,20 +47,20 @@ impl MavericRootChildren for WordSaladLogoRoot {
     }
 }
 
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
-struct LogoImageNodeStyle;
+// #[derive(Debug, Clone, Copy, Default, PartialEq)]
+// struct LogoImageNodeStyle;
 
-impl IntoBundle for LogoImageNodeStyle {
-    type B = Style;
+// impl IntoBundle for LogoImageNodeStyle {
+//     type B = Style;
 
-    fn into_bundle(self) -> Self::B {
-        Style {
-            width: Val::Px(100.0),
-            height: Val::Px(100.0),
-            margin: UiRect::DEFAULT,
-            align_self: AlignSelf::Center,
-            justify_self: JustifySelf::Center,
-            ..default()
-        }
-    }
-}
+//     fn into_bundle(self) -> Self::B {
+//         Style {
+//             width: Val::Px(100.0),
+//             height: Val::Px(100.0),
+//             margin: UiRect::DEFAULT,
+//             align_self: AlignSelf::Center,
+//             justify_self: JustifySelf::Center,
+//             ..default()
+//         }
+//     }
+// }

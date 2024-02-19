@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use bevy::{ utils::HashSet};
+use bevy::prelude::*;
 use nice_bevy_utils::{
     async_event_writer::AsyncEventWriter, CanInitTrackedResource, CanRegisterAsyncEvent,
     TrackableResource,
@@ -293,7 +293,7 @@ fn track_found_words(
 
 #[derive(Debug, Resource, Clone, PartialEq, Serialize, Deserialize, Default)]
 struct AchievementsState {
-    pub unlocked: HashSet<Achievement>,
+    pub unlocked: bevy::utils::HashSet<Achievement>,
 }
 
 impl AchievementsState {

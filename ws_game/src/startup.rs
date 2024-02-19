@@ -61,7 +61,6 @@ pub fn go() {
     #[cfg(any(feature = "ios", feature = "android"))]
     app.add_plugins(NotificationPlugin);
 
-    app.register_transition::<BackgroundColorLens>();
     app.register_transition::<TransformRotationYLens>();
     app.register_transition::<TransformTranslationLens>();
     app.register_transition::<TransformScaleLens>();

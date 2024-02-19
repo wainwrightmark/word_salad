@@ -70,6 +70,8 @@ pub mod prelude {
     pub use crate::video::*;
     pub use crate::view::*;
 
+    pub use bevy::prelude::*;
+
     pub use std::array;
 
     //pub use bevy::prelude::*;
