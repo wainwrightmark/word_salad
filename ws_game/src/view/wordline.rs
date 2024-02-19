@@ -1,5 +1,4 @@
 use crate::{prelude::*, startup, z_indices};
-use bevy::reflect::TypeUuid;
 use bevy_param_shaders::prelude::*;
 use itertools::Itertools;
 use ws_core::layout::entities::*;
@@ -224,8 +223,7 @@ fn index_to_color(index: usize, special_colors: &Option<Vec<BasicColor>>) -> Col
 }
 
 #[repr(C)]
-#[derive(Debug, Reflect, Clone, Copy, TypeUuid, Default, PartialEq)]
-#[uuid = "a68d3916-1385-4269-a512-4561eccd664d"]
+#[derive(Debug, Reflect, Clone, Copy, Default, PartialEq)]
 struct WordLineSegmentShader;
 
 impl ExtractToShader for WordLineSegmentShader {
@@ -271,7 +269,7 @@ impl ParameterizedShader for WordLineSegmentShader {
 
     fn imports() -> impl Iterator<Item = bevy_param_shaders::prelude::FragmentImport> {
         const WORDLINE_IMPORT: FragmentImport = FragmentImport {
-            path: "shaders/sdf/word_line_segment.wgsl",
+            path: "embedded://ws_game/../../assets/shaders/sdf/word_line_segment.wgsl",
             import_path: "sdf::word_line_segment",
         };
 
@@ -279,6 +277,8 @@ impl ParameterizedShader for WordLineSegmentShader {
     }
 
     const FRAME: Frame = Frame::square(1.0); // this seems the lowest we can make it (keep in mind the pulsing)
+
+    const UUID: u128 = 0xa68d391613854269a5124561eccd664d;
 }
 
 #[derive(Debug, Clone, Component, PartialEq, Default)]

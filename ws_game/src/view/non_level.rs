@@ -79,7 +79,7 @@ impl MavericNode for NonLevelView {
                     font_size: size.font_size(&NonLevelLayoutEntity::Text, &non_level_type),
                     color: text_color,
                     font: BUTTONS_FONT_PATH,
-                    alignment: TextAlignment::Center,
+                    justify_text: JustifyText::Center,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     text_2d_bounds: Default::default(),
                     text_anchor: Default::default(),

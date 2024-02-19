@@ -129,7 +129,7 @@ impl MavericRootChildren for HintsRemainingRoot {
                 font: THEME_FONT_PATH,
                 font_size,
                 color,
-                alignment: TextAlignment::Center,
+                justify_text: JustifyText::Center,
                 linebreak_behavior: bevy::text::BreakLineOn::AnyCharacter,
                 text_anchor: bevy::sprite::Anchor::Center,
                 text_2d_bounds: Text2dBounds::UNBOUNDED,

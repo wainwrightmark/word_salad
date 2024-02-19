@@ -33,7 +33,7 @@ impl MavericRootChildren for WordSaladLogoRoot {
         commands.add_child(
             "Word Salad Icon",
             SpriteNode {
-                texture_path: r#"images/logo1024.png"#,
+                texture_path: r#"embedded://ws_game/../../assets/images/logo1024.png"#,
                 sprite: Sprite {
                     custom_size: Some(logo_rect.extents.abs() * pressed_multiplier),
                     ..Default::default()

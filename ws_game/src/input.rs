@@ -106,7 +106,11 @@ impl InteractionEntity {
             is_selfie_mode: video_resource.is_selfie_mode,
         };
 
-        if video_resource.show_recording_button() && size.try_pick::<ToggleRecordingButton>(*position, &selfie_mode).is_some() {
+        if video_resource.show_recording_button()
+            && size
+                .try_pick::<ToggleRecordingButton>(*position, &selfie_mode)
+                .is_some()
+        {
             return Some(InteractionEntity::Button(
                 ButtonInteraction::ToggleRecordingButton,
             ));
@@ -184,8 +188,12 @@ impl InteractionEntity {
                 }
 
                 Some(
-                    Self::try_get_button::<SettingsLayoutEntity>(position, size, &(selfie_mode, ()))
-                        .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
+                    Self::try_get_button::<SettingsLayoutEntity>(
+                        position,
+                        size,
+                        &(selfie_mode, ()),
+                    )
+                    .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
                 )
             }
 
@@ -220,8 +228,12 @@ impl InteractionEntity {
                 }
 
                 Some(
-                    Self::try_get_button::<StoreLayoutStructure>(position, size, &(selfie_mode, ()))
-                        .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
+                    Self::try_get_button::<StoreLayoutStructure>(
+                        position,
+                        size,
+                        &(selfie_mode, ()),
+                    )
+                    .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
                 )
             }
 
@@ -232,8 +244,12 @@ impl InteractionEntity {
                 }
 
                 Some(
-                    Self::try_get_button::<MainMenuLayoutEntity>(position, size, &(selfie_mode, ()))
-                        .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
+                    Self::try_get_button::<MainMenuLayoutEntity>(
+                        position,
+                        size,
+                        &(selfie_mode, ()),
+                    )
+                    .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
                 )
             }
             MenuState::ChooseLevelsPage => {
@@ -243,8 +259,12 @@ impl InteractionEntity {
                 }
 
                 Some(
-                    Self::try_get_button::<LevelsMenuLayoutEntity>(position, size, &(selfie_mode, ()))
-                        .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
+                    Self::try_get_button::<LevelsMenuLayoutEntity>(
+                        position,
+                        size,
+                        &(selfie_mode, ()),
+                    )
+                    .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
                 )
             }
             MenuState::WordSaladLevels => {
@@ -254,8 +274,12 @@ impl InteractionEntity {
                 }
 
                 Some(
-                    Self::try_get_button::<WordSaladMenuLayoutEntity>(position, size, &(selfie_mode, ()))
-                        .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
+                    Self::try_get_button::<WordSaladMenuLayoutEntity>(
+                        position,
+                        size,
+                        &(selfie_mode, ()),
+                    )
+                    .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
                 )
             }
             MenuState::LevelGroupPage(group) => {
@@ -481,7 +505,7 @@ impl InputType {
 }
 
 pub fn handle_mouse_input(
-    mouse_input: Res<Input<MouseButton>>,
+    mouse_input: Res<ButtonInput<MouseButton>>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
 
     size: Res<Size>,

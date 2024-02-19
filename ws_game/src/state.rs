@@ -47,7 +47,7 @@ impl Plugin for StatePlugin {
         );
     }
 }
-#[derive(Debug, Event)]
+#[derive(Debug, Event, Clone)]
 pub enum ChangeLevelEvent {
     ChangeTo(CurrentLevel),
     Reset,

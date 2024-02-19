@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use bevy::{prelude::*, utils::HashSet};
+use bevy::{ utils::HashSet};
 use nice_bevy_utils::{
     async_event_writer::AsyncEventWriter, CanInitTrackedResource, CanRegisterAsyncEvent,
     TrackableResource,

@@ -159,7 +159,7 @@ impl MavericNode for TutorialPopupNode {
                 font: TUTORIAL_FONT_PATH,
                 font_size,
                 color: Color::BLACK,
-                alignment: TextAlignment::Left,
+                justify_text: JustifyText::Left,
                 linebreak_behavior: bevy::text::BreakLineOn::WordBoundary,
                 text_2d_bounds: Text2dBounds::default(),
                 text_anchor: bevy::sprite::Anchor::CenterLeft,

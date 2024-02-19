@@ -8,13 +8,13 @@ edition = "2021"
 [dependencies]
 rand = "0.8.5"
 itertools = "0.12"
-strum = { version = "0.25", features = ["derive"] }
+strum = { version = "0.26", features = ["derive"] }
 chrono = { version = "0.4", features = ["serde", "wasmbind"] }
 serde = { version = "1", features = ["derive", "rc"] }
 anyhow = "1"
 base64 = "0.21"
 geometrid = { git = "https://github.com/wainwrightmark/geometrid", features = ["glam", "serde"] }
-glam = "0.24"
+glam = "0.25"
 prime_bag = { version = "0.2.0"}
 serde_with = "3"
 lazy_static = "1.4"

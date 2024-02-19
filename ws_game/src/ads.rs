@@ -56,7 +56,8 @@ pub struct InterstitialProgressState {
 fn handle_ad_requests(
     mut events: EventReader<AdRequestEvent>,
     mut ad_state: ResMut<AdState>,
-    writer: AsyncEventWriter<AdEvent>,
+    mut sync_writer:  EventWriter<AdEvent>,
+    async_writer: AsyncEventWriter<AdEvent>,
 ) {
     for event in events.read() {
         match event {
@@ -73,7 +74,7 @@ fn handle_ad_requests(
                             ad_state.reward_ad = None;
                             ad_state.hint_wanted = Some((*hints, *event));
                             asynchronous::spawn_and_run(mobile_only::try_show_reward_ad(
-                                writer.clone(),
+                                async_writer.clone(),
                             ));
                         } else {
                             warn!("Cannot request reward with admob (no reward ad is loaded)")
@@ -87,12 +88,10 @@ fn handle_ad_requests(
                 {
                     ad_state.hint_wanted = Some((*hints, *event));
                     crate::platform_specific::show_toast_on_web("We would show a reward ad here");
-                    writer
-                        .send_blocking(AdEvent::RewardAdRewarded(AdMobRewardItem {
-                            reward_type: "blah".to_string(),
-                            amount: 0,
-                        }))
-                        .unwrap();
+                    sync_writer.send(AdEvent::RewardAdRewarded(AdMobRewardItem {
+                        reward_type: "blah".to_string(),
+                        amount: 0,
+                    }));
                 }
             }
             AdRequestEvent::RequestInterstitial => {
@@ -102,7 +101,7 @@ fn handle_ad_requests(
                         if ad_state.interstitial_ad.is_some() {
                             ad_state.interstitial_ad = None;
                             asynchronous::spawn_and_run(mobile_only::try_show_interstitial_ad(
-                                writer.clone(),
+                                async_writer.clone(),
                             ));
                         } else {
                             warn!("Cannot request interstitial with admob (ads are not set up)")
@@ -116,7 +115,7 @@ fn handle_ad_requests(
                     crate::platform_specific::show_toast_on_web(
                         "We would show an interstitial ad here",
                     );
-                    writer.send_blocking(AdEvent::InterstitialShowed).unwrap();
+                    sync_writer.send(AdEvent::InterstitialShowed);
                 }
             }
         }

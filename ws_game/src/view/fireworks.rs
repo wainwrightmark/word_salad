@@ -1,5 +1,4 @@
 use crate::{prelude::*, z_indices};
-use bevy::reflect::TypeUuid;
 use bevy_param_shaders::prelude::*;
 
 use num_traits::Zero;
@@ -77,8 +76,7 @@ pub fn create_firework(
 }
 
 #[repr(C)]
-#[derive(Debug, Reflect, Clone, Copy, TypeUuid, Default, PartialEq)]
-#[uuid = "3b76cd37-5f82-4fcc-9d26-ea6f60d616e3"]
+#[derive(Debug, Reflect, Clone, Copy,  Default, PartialEq)]
 pub struct FireworksShader;
 
 impl ExtractToShader for FireworksShader {
@@ -110,6 +108,7 @@ impl ParameterizedShader for FireworksShader {
     }
 
     const FRAME: Frame = Frame::square(0.25);
+    const UUID: u128 = 0x3b76cd375f824fcc9d26ea6f60d616e3;
 }
 
 #[repr(C)]
@@ -122,6 +121,6 @@ pub struct FireworksParams {
 impl ShaderParams for FireworksParams {}
 
 const FIREWORKS_IMPORT: FragmentImport = FragmentImport {
-    path: "shaders/fill/fireworks.wgsl",
+    path: "embedded://ws_game/../../assets/shaders/fill/fireworks.wgsl",
     import_path: "fill::fireworks",
 };

@@ -619,7 +619,7 @@ impl ButtonInteraction {
                     ad_request_events.send(AdRequestEvent::RequestReward {
                         event: Some(he),
                         hints: 5,
-                    })
+                    });
                 }
             }
 

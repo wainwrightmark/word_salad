@@ -188,7 +188,7 @@ impl MavericNode for GridTiles {
                         } else {
                             palette::GRID_LETTER_NORMAL.convert_color()
                         },
-                        alignment: TextAlignment::Center,
+                        justify_text: JustifyText::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         text_anchor: bevy::sprite::Anchor::Center,
                         text_2d_bounds: Text2dBounds::UNBOUNDED,
@@ -253,7 +253,7 @@ impl GridTile {
             font: TILE_FONT_PATH,
             font_size: self.font_size,
             color,
-            alignment: TextAlignment::Center,
+            justify_text: JustifyText::Center,
             linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
             text_2d_bounds: Default::default(),
             text_anchor: Default::default(),

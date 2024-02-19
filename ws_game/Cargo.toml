@@ -10,10 +10,9 @@ ws_core = { path = "../ws_core" }
 ws_levels = { path = "../ws_levels" }
 rand = "0.8.5"
 itertools = "0.12"
-# bevy_prototype_lyon = { version = "0.10" }
-strum = { version = "0.25", features = ["derive"] }
+strum = { version = "0.26", features = ["derive"] }
 chrono = { version = "0.4", features = ["serde", "wasmbind"] }
-bevy_pkv = { version = "0.9" }
+bevy_pkv = { git='https://github.com/johanhelsing/bevy_pkv' }
 serde = { version = "1", features = ["derive", "rc"] }
 anyhow = "1"
 base64 = "0.21"
@@ -27,7 +26,6 @@ capacitor_bindings = {  git = "https://github.com/wainwrightmark/capacitor_bindi
   "rate_plugin",
   "admob_plugin"
 ] }
-# bevy_embedded_assets = "0.8"
 lazy_static = "1.4"
 serde_yaml = "0.9"
 maveric = { git = 'https://github.com/wainwrightmark/maveric', features = [
@@ -43,17 +41,16 @@ nice_bevy_utils = { git = "https://github.com/wainwrightmark/nice_bevy_utils", f
 serde_repr = "0.1"
 enumset = { version = "1", features = ["serde"] }
 arrayvec = { version = "0.7.4", features = ["serde"] }
-bevy_embedded_assets = "0.9"
 wasm-bindgen-futures = "0.4.38"
 serde-wasm-bindgen = "0.6.1"
 num-traits = "0.2"
 bevy_param_shaders = { git = "https://github.com/wainwrightmark/bevy_param_shaders/" }
-bitfield-struct = "0.5.5"
+bitfield-struct = "0.6"
 reqwest = { version = "0.11", default-features = false, features = ["json"] }
 fixedbitset = { version = "0.4.2", features = ["serde"] }
 fmtastic = "0.2.0"
 bytemuck = { version = "1.14.0", features = ["derive"] }
-bevy = { version = "0.12", default_features = false, features = [
+bevy = { version = "0.13", default_features = false, features = [
   "bevy_winit",         # Window management
   "bevy_render",        # Rendering framework core
   "bevy_core_pipeline", # Higher-level rendering abstractions
@@ -79,7 +76,7 @@ web-sys = { version = "0.3", features = [
 console_error_panic_hook = "0.1"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-async-compat = "0.2.1"
+async-compat = "0.2.3"
 reqwest = { version = "0.11", default-features = false, features = [
   "json",
   "native-tls",
@@ -89,7 +86,7 @@ reqwest = { version = "0.11", default-features = false, features = [
 [dev-dependencies]
 insta = "1"
 test-case = "3"
-bevy = { version = "0.12", default_features = false, features = [
+bevy = { version = "0.13", default_features = false, features = [
   "bevy_winit",         # Window management
   "bevy_render",        # Rendering framework core
   "bevy_core_pipeline", # Higher-level rendering abstractions

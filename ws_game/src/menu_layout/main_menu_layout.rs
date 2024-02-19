@@ -61,7 +61,7 @@ impl LayoutStructureWithTextOrImage for MainMenuLayoutEntity {
             Store => ws_core::TextOrImage::Text { text: "Store" },
             #[cfg(target_arch = "wasm32")]
             PlaySteks => ws_core::TextOrImage::Image {
-                path: "images/steks_button.png",
+                path: "embedded://ws_game/../../assets/images/steks_button.png",
                 color: ws_core::BasicColor::rgba(0.53, 0.68, 0.92, 1.0),
                 pressed_color: ws_core::BasicColor::rgba(0.36, 0.55, 0.88, 1.0),
                 aspect_ratio: 7168.0 / 1024.0,

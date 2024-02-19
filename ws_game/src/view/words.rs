@@ -1,7 +1,6 @@
 use std::time::Duration;
 
 use crate::{animated_solutions, prelude::*};
-use bevy::reflect::TypeUuid;
 use bevy_param_shaders::frame::Frame;
 use bevy_param_shaders::parameterized_shader::{
     ExtractToShader, FragmentImport, ParameterizedShader, SDFColorCall,
@@ -171,7 +170,7 @@ impl MavericNode for WordNode {
                         font_size: node.font_size,
                         color: text_color,
                         font: SOLUTIONS_FONT_PATH,
-                        alignment: TextAlignment::Center,
+                        justify_text: JustifyText::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         text_2d_bounds: Default::default(),
                         text_anchor: Default::default(),
@@ -250,8 +249,7 @@ pub struct WordButtonCompletion {
 pub const WORD_BUTTON_HOLD_SECONDS: f32 = 0.3;
 
 #[repr(C)]
-#[derive(Debug, Reflect, Clone, Copy, TypeUuid, Default, PartialEq)]
-#[uuid = "266b0619-b913-4cce-be86-7470ef0b129b"]
+#[derive(Debug, Reflect, Clone, Copy, Default, PartialEq)]
 pub struct WordButtonBoxShader;
 
 impl ExtractToShader for WordButtonBoxShader {
@@ -367,4 +365,6 @@ impl ParameterizedShader for WordButtonBoxShader {
     }
 
     const FRAME: Frame = Frame::square(1.0);
+
+    const UUID: u128 = 0x266b0619b9134ccebe867470ef0b129b;
 }

@@ -24,18 +24,18 @@ pub trait AnyEventWriter<E: Event> {
 
 impl<'w, E: Event> AnyEventWriter<E> for EventWriter<'w, E> {
     fn send(&mut self, event: E) {
-        self.send(event)
+        self.send(event);
     }
 
     fn send_batch(&mut self, events: impl IntoIterator<Item = E>) {
-        self.send_batch(events)
+        self.send_batch(events);
     }
 
     fn send_default(&mut self)
     where
         E: Default,
     {
-        self.send_default()
+        self.send_default();
     }
 }
 
