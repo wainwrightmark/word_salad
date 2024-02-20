@@ -1,12 +1,12 @@
 [workspace]
 members = [
-"ws_core",
-"ws_game",
-"ws_levels",
-"grid_finder",
-"sheet_reader", 
-"achievement_icons",
-"netlify/functions/image"
+    "ws_core",
+    "ws_game",
+    "ws_levels",
+    "grid_finder",
+    "sheet_reader",
+    "achievement_icons",
+    "netlify/functions/image",
 ]
 default-members = ["ws_game"]
 resolver = "2" # Important! wgpu/Bevy needs this!
@@ -19,7 +19,7 @@ opt-level = 1
 debug = false
 opt-level = 'z'
 codegen-units = 1
-lto = 'thin'
+lto = 'fat'
 strip = "symbols"
 panic = 'abort'
 
@@ -28,4 +28,3 @@ panic = 'abort'
 debug = false
 opt-level = 3
 codegen-units = 1
-
