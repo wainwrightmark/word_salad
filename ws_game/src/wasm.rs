@@ -233,6 +233,8 @@ pub enum VideoRecordingStateEnum {
     Unknown,
 }
 
+
+
 #[wasm_bindgen::prelude::wasm_bindgen(module = "/video.js")]
 extern "C" {
     #[wasm_bindgen(catch, final, js_name = "startVideo")]
