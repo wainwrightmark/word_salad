@@ -6,12 +6,13 @@ pub mod search;
 pub mod word_layout;
 pub mod word_set;
 
-use clap::Parser;
+use clap::{Args, Parser, Subcommand};
 use const_sized_bit_set::BitSet;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use indicatif_log_bridge::LogWrapper;
 use itertools::Itertools;
 use log::{info, warn};
+use obvious::ObviousArgs;
 use std::{
     collections::HashSet,
     fs::DirEntry,
@@ -28,12 +29,43 @@ use ws_core::finder::{
 
 use crate::clustering::cluster_words;
 
-#[derive(Parser, Debug)]
-#[command()]
-struct Options {
-    /// Folder to look in for data
+#[derive(Parser, Debug, Default)]
+#[command(version, about, long_about = None)]
+#[command(propagate_version = true)]
+struct Cli {
+    #[command(subcommand)]
+    command: Option<Commands>,
+}
+#[derive(Subcommand, Debug)]
+
+pub enum Commands {
+    FindGrids(FindGridsArgs),
+
+    /// search all found grids for ones where ones in this list are written in an obvious way
+    Obvious(ObviousArgs),
+    /// find clusters for all existing grids rather than finding new grids
+    Cluster(ClusterArgs),
+    /// search all found grids for a particular word or list of words
+    Search {
+        words: String,
+    },
+    /// Check word layouts
+    CheckLayout {},
+    /// reorient existing grids rather than finding new grids
+    Reorient {},
+
+    /// Remove duplicate grids
+    RemoveDuplicates {},
+}
+
+#[derive(Args, Debug)]
+pub struct ClusterArgs {
+    /// Folder to look for data in
     #[arg(short, long, default_value = "data")]
     pub folder: String,
+
+    #[arg(long, default_value = "50")]
+    pub max_clusters: u32,
 
     /// Minimum number of words in a grid
     #[arg(short, long, default_value = "5")]
@@ -41,25 +73,22 @@ struct Options {
 
     /// Maximum number of grids to return
     #[arg(short, long, default_value = "0")]
-    pub grids: u32,
-    /// search all found grids for a particular word or list of words
-    #[arg(long)]
-    pub search: Option<String>,
+    grids: u32,
+}
 
-    /// Check word layouts
-    #[arg(long)]
-    pub check_layout: bool,
+#[derive(Args, Debug)]
+pub struct FindGridsArgs {
+    /// Folder to look for data in
+    #[arg(short, long, default_value = "data")]
+    pub folder: String,
 
-    /// If set, will find clusters for all existing grids rather than finding new grids
-    #[arg(short, long, default_value = "false")]
-    pub cluster: bool,
+    /// Maximum number of grids to return
+    #[arg(short, long, default_value = "0")]
+    grids: u32,
 
-    /// If set, will reorient existing grids rather than finding new grids
-    #[arg(short, long, default_value = "false")]
-    pub reorient: bool,
-
-    #[arg(long, default_value = "false")]
-    pub remove_duplicates: bool,
+    /// Minimum number of words in a grid
+    #[arg(short, long, default_value = "5")]
+    pub minimum: u32,
 
     #[arg(long, default_value = "50")]
     pub max_clusters: u32,
@@ -67,10 +96,18 @@ struct Options {
     /// Whether to resume execution
     #[arg(long, default_value = "false")]
     pub resume: bool,
+}
 
-    /// search all found grids for ones where ones in this list are written in an obvious way
-    #[arg(long)]
-    pub obvious: Option<String>,
+impl Default for FindGridsArgs {
+    fn default() -> Self {
+        Self {
+            folder: "data".to_string(),
+            grids: 0,
+            minimum: 5,
+            max_clusters: 50,
+            resume: false,
+        }
+    }
 }
 
 fn main() {
@@ -80,48 +117,32 @@ fn main() {
 
     LogWrapper::new(multi.clone(), logger).try_init().unwrap();
 
-    let options = Options::parse();
+    let options = Cli::parse();
 
-    let mut did_something = false;
-
-    if let Some(search) = &options.search {
-        did_something = true;
-        search::do_search(search);
-    }
-
-    if let Some(obvious) = &options.obvious {
-        did_something = true;
-        obvious::do_obvious(&obvious);
-    }
-
-    if options.reorient {
-        did_something = true;
-        reorient_grids(&options);
-    }
-
-    if options.remove_duplicates {
-        did_something = true;
-        remove_duplicate_grids(&options);
-    }
-
-    if options.check_layout {
-        did_something = true;
-        word_layout::do_word_layout();
-    }
-    if options.cluster {
-        did_something = true;
-        cluster_files(&options);
-    }
-
-    if !did_something {
-        do_finder(options);
+    match options.command {
+        Some(Commands::Obvious(args)) => {
+            obvious::do_obvious(args);
+        }
+        Some(Commands::Cluster(cluster_args)) => {
+            cluster_files(&cluster_args);
+        }
+        Some(Commands::Search { words }) => search::do_search(&words),
+        Some(Commands::CheckLayout {}) => word_layout::do_word_layout(),
+        Some(Commands::Reorient {}) => reorient_grids(),
+        Some(Commands::FindGrids(find_args)) => {
+            do_finder(find_args);
+        }
+        Some(Commands::RemoveDuplicates {}) => {
+            remove_duplicate_grids(&options);
+        }
+        None => do_finder(FindGridsArgs::default()),
     }
 
     info!("Finished... Press enter");
     io::stdin().read_line(&mut String::new()).unwrap();
 }
 
-fn remove_duplicate_grids(_options: &Options) {
+fn remove_duplicate_grids(_options: &Cli) {
     let folder = std::fs::read_dir("grids").unwrap();
     let paths: Vec<_> = folder.collect();
 
@@ -201,7 +222,7 @@ fn remove_duplicate_grids(_options: &Options) {
     pb.finish();
 }
 
-fn reorient_grids(_options: &Options) {
+fn reorient_grids() {
     let folder = std::fs::read_dir("grids").unwrap();
 
     let paths: Vec<_> = folder.collect();
@@ -269,7 +290,7 @@ fn reorient_grids(_options: &Options) {
     pb.finish();
 }
 
-fn cluster_files(options: &Options) {
+fn cluster_files(options: &ClusterArgs) {
     let folder = std::fs::read_dir("grids").unwrap();
 
     let paths: Vec<_> = folder.collect();
@@ -417,7 +438,7 @@ impl FinderCase {
     }
 }
 
-fn do_finder(options: Options) {
+fn do_finder(options: FindGridsArgs) {
     info!("Starting up");
 
     let folder = std::fs::read_dir(options.folder).unwrap();

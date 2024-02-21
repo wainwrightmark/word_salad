@@ -19,7 +19,7 @@ opt-level = 1
 debug = false
 opt-level = 'z'
 codegen-units = 1
-lto = 'fat'
+lto = 'thin' #todo fat
 strip = "symbols"
 panic = 'abort'
 
