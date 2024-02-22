@@ -40,7 +40,6 @@ impl LayoutStructureDoubleTextButton for StoreLayoutStructure {
         context: &Self::Context<'_>,
         text_context: &Self::TextContext<'_>,
     ) -> (String, String) {
-        //todo get price from store
 
         let left: String;
         let right: String;
@@ -52,7 +51,7 @@ impl LayoutStructureDoubleTextButton for StoreLayoutStructure {
                 right = if disabled {
                     "Owned".to_string()
                 } else {
-                    "£2.99".to_string()
+                    text_context.prices.get_price_string(crate::purchases::Product::RemoveAds)
                 };
             }
             StoreLayoutStructure::BuyHints => {

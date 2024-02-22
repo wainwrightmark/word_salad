@@ -1,7 +1,8 @@
 use crate::prelude::*;
 use bevy::{prelude::*, utils::HashSet};
-use nice_bevy_utils::{CanInitTrackedResource, TrackableResource};
+use nice_bevy_utils::{CanInitTrackedResource, CanRegisterAsyncEvent, TrackableResource};
 use serde::{Deserialize, Serialize};
+use strum::{EnumString, EnumTable};
 use ws_levels::{level_group::LevelGroup, level_sequence::LevelSequence};
 
 pub struct PurchasesPlugin;
@@ -9,6 +10,7 @@ pub struct PurchasesPlugin;
 impl Plugin for PurchasesPlugin {
     fn build(&self, app: &mut App) {
         app.init_tracked_resource::<Purchases>();
+        app.init_resource::<Prices>();
         app.add_event::<PurchaseEvent>();
 
         app.add_systems(
@@ -17,13 +19,17 @@ impl Plugin for PurchasesPlugin {
         );
 
         app.add_systems(Startup, on_startup);
+        app.add_systems(Update, update_product_prices.run_if(|ev: EventReader<UpdateProductPricesEvent>| !ev.is_empty()));
+
+        app.register_async_event::<UpdateProductPricesEvent>();
     }
 }
 
-fn on_startup() {
+#[allow(unused_variables)]
+fn on_startup(writer: nice_bevy_utils::async_event_writer::AsyncEventWriter<UpdateProductPricesEvent>) {
     #[cfg(all(target_arch = "wasm32", any(feature = "android", feature = "ios")))]
     {
-        crate::asynchronous::spawn_and_run(purchase_api::get_products());
+        crate::asynchronous::spawn_and_run(purchase_api::get_products(writer));
     }
 }
 
@@ -33,6 +39,64 @@ pub struct Purchases {
     pub groups_purchased: HashSet<LevelGroup>,
     /// True is the user has purchased the pack to avoid ads
     pub avoid_ads_purchased: bool,
+}
+
+#[derive(Debug, PartialEq, MavericContext, Resource, Clone, Default)]
+pub struct Prices {
+    pub product_prices : ProductTable<Option<String>>
+}
+
+impl Prices
+{
+    pub fn get_price_string(&self, product: Product)-> String{
+        match &self.product_prices[product]{
+            Some(s) => s.to_string(),
+            None => "???".to_string(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Event)]
+pub struct UpdateProductPricesEvent{
+    pub product_prices : ProductTable<Option<String>>
+}
+
+fn update_product_prices(mut events: EventReader<UpdateProductPricesEvent>, mut prices: ResMut<Prices>){
+    for ev in events.read(){
+        prices.product_prices = ev.product_prices.clone();
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, EnumString, EnumTable)]
+pub enum Product {
+    //spellchecker:disable
+    #[strum(serialize = "removeads")]
+    RemoveAds,
+    #[strum(serialize = "naturalworldpack")]
+    NaturalWorldPack,
+    #[strum(serialize = "geographypack")]
+    GeographyPack,
+    #[strum(serialize = "ussports")]
+    USSportsPack,
+    #[strum(serialize = "hints500")]
+    Hints500,
+    #[strum(serialize = "hints100")]
+    Hints100,
+    #[strum(serialize = "hints50")]
+    Hints50,
+    #[strum(serialize = "hints25")]
+    Hints25,
+    //spellchecker:enable
+}
+
+impl From<LevelGroup> for Product{
+    fn from(value: LevelGroup) -> Self {
+        match value {
+            LevelGroup::Geography => Product::GeographyPack,
+            LevelGroup::NaturalWorld => Product::NaturalWorldPack,
+            LevelGroup::USSports => Product::USSportsPack,
+        }
+    }
 }
 
 impl TrackableResource for Purchases {
@@ -102,8 +166,11 @@ pub enum PurchaseEvent {
 
 mod purchase_api {
     use serde::{Deserialize, Serialize};
+
     #[cfg(all(target_arch = "wasm32", any(feature = "android", feature = "ios")))]
     use wasm_bindgen_futures::wasm_bindgen::JsValue;
+
+    use super::{Product, ProductTable, UpdateProductPricesEvent};
 
     #[cfg(all(target_arch = "wasm32", any(feature = "android", feature = "ios")))]
     #[wasm_bindgen::prelude::wasm_bindgen(module = "/purchase.js")]
@@ -113,15 +180,18 @@ mod purchase_api {
     }
 
     #[cfg(all(target_arch = "wasm32", any(feature = "android", feature = "ios")))]
-    pub async fn get_products() {
-        let result: Result<Vec<Product>, capacitor_bindings::error::Error> =
+    pub async fn get_products(writer: nice_bevy_utils::async_event_writer::AsyncEventWriter<super::UpdateProductPricesEvent>) {
+
+        let result: Result<Vec<ExternProduct>, capacitor_bindings::error::Error> =
             capacitor_bindings::helpers::run_unit_value(get_products_extern).await;
 
         match result {
             Ok(products) => {
-                for product in products {
-                    bevy::log::info!("{product:?}");
-                }
+                let event = ExternProduct::make_product_price_event(products);
+                writer.send_async(event).await.unwrap();
+                // for product in products {
+                //     bevy::log::info!("{product:?}");
+                // }
             }
             Err(e) => {
                 bevy::log::error!("Get Products Error: {e}");
@@ -129,10 +199,9 @@ mod purchase_api {
         }
     }
 
-
     #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 
-    pub struct Product {
+    pub struct ExternProduct {
         /// Platform this product is available from
         #[serde(rename = "platform")]
         pub platform: PurchasePlatform,
@@ -167,18 +236,32 @@ mod purchase_api {
         pub group: Option<String>,
     }
 
-    impl Product {
-        pub fn pricing(&self) -> String {
-            match self
+    #[allow(dead_code)]
+    impl ExternProduct {
+        pub fn pricing(&self) -> Option<String> {
+            self
                 .offers
                 .iter()
                 .flat_map(|x| x.pricing_phases.iter())
                 .map(|x| &x.price)
-                .next()
-            {
-                Some(s) => s.clone(),
-                None => "Unknown".to_string(),
+                .next().cloned()
+        }
+
+        pub fn as_product(&self)-> Option<Product>{
+            use std::str::FromStr;
+            Product::from_str(self.id.as_str()).ok()
+        }
+
+        pub fn make_product_price_event(products: Vec<Self>)-> UpdateProductPricesEvent{
+            let mut product_prices: ProductTable<Option<String>> = Default::default();
+
+            for extern_product in products.into_iter(){
+                if let Some(product)= extern_product.as_product(){
+                    product_prices[product] =  extern_product.pricing();
+                }
             }
+
+            UpdateProductPricesEvent { product_prices }
         }
     }
 

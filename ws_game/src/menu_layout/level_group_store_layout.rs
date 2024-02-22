@@ -1,13 +1,10 @@
-
 use strum::{EnumCount, IntoEnumIterator};
 use ws_core::{
     layout::entities::*, palette, LayoutStructureDoubleTextButton, LayoutStructureWithTextOrImage,
 };
 use ws_levels::level_group::LevelGroup;
 
-use crate::{prelude::BUTTONS_FONT_PATH, view::MenuContextWrapper};
-
-
+use crate::{prelude::BUTTONS_FONT_PATH, purchases::Product, view::MenuContextWrapper};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct LevelGroupStoreLayoutStructure(pub LevelGroup);
@@ -49,14 +46,15 @@ impl LayoutStructureDoubleTextButton for LevelGroupStoreLayoutStructure {
         context: &Self::Context<'_>,
         text_context: &Self::TextContext<'_>,
     ) -> (String, String) {
-        //todo get price from store
-        let left = self.0.name();
-        let right = if self.is_disabled(context, text_context) {
-            "Owned"
+        let name = self.0.name();
+        let price = if self.is_disabled(context, text_context) {
+            "Owned".to_string()
         } else {
-            "£2.99"
+            let product: Product = self.0.into();
+            let price = text_context.prices.get_price_string(product);
+            price
         };
-        (left.to_string(), right.to_string())
+        (name.to_string(), price)
     }
 
     fn left_font(&self) -> &'static str {
@@ -81,9 +79,9 @@ impl LayoutStructureDoubleTextButton for LevelGroupStoreLayoutStructure {
         context: &Self::Context<'_>,
         text_context: &Self::TextContext<'_>,
     ) -> ws_core::prelude::BasicColor {
-        if self.is_disabled(context, text_context){
+        if self.is_disabled(context, text_context) {
             palette::MENU_BUTTON_COMPLETE_FILL
-        }else{
+        } else {
             palette::MENU_BUTTON_FILL
         }
     }

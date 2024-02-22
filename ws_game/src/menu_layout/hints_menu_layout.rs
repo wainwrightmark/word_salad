@@ -3,7 +3,7 @@ use ws_core::{
     layout::entities::*, palette, LayoutStructureDoubleTextButton, LayoutStructureWithTextOrImage,
 };
 
-use crate::{prelude::BUTTONS_FONT_PATH, view::MenuContextWrapper};
+use crate::{prelude::BUTTONS_FONT_PATH, purchases::Product, view::MenuContextWrapper};
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Display, EnumIter, EnumCount,
@@ -70,17 +70,27 @@ impl LayoutStructureDoubleTextButton for HintsLayoutEntity {
     fn double_text(
         &self,
         _context: &Self::Context<'_>,
-        _text_context: &Self::TextContext<'_>,
+        text_context: &Self::TextContext<'_>,
     ) -> (String, String) {
-        //todo get price from store
-        let (left, right) = match self {
-            HintsLayoutEntity::Hints5WatchAd => ("  5 Hints", "Watch Ad"),
-            HintsLayoutEntity::Hints25 => (" 25 Hints", "£0.99"),
-            HintsLayoutEntity::Hints50 => (" 50 Hints", "£1.49"),
-            HintsLayoutEntity::Hints100 => ("100 Hints", "£1.99"),
-            HintsLayoutEntity::Hints500 => ("500 Hints", "£2.99"),
+        let name = match self {
+            HintsLayoutEntity::Hints5WatchAd => "  5 Hints",
+            HintsLayoutEntity::Hints25 => " 25 Hints",
+            HintsLayoutEntity::Hints50 => " 50 Hints",
+            HintsLayoutEntity::Hints100 => "100 Hints",
+            HintsLayoutEntity::Hints500 => "500 Hints",
+        }
+        .to_string();
+
+        let price = match self {
+            HintsLayoutEntity::Hints5WatchAd => "Watch Ad".to_string(),
+
+            HintsLayoutEntity::Hints25 => text_context.prices.get_price_string(Product::Hints25),
+            HintsLayoutEntity::Hints50 => text_context.prices.get_price_string(Product::Hints50),
+            HintsLayoutEntity::Hints100 => text_context.prices.get_price_string(Product::Hints100),
+            HintsLayoutEntity::Hints500 => text_context.prices.get_price_string(Product::Hints500),
         };
-        (left.to_string(), right.to_string())
+
+        (name, price)
     }
 
     fn left_font(&self) -> &'static str {

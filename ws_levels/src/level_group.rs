@@ -30,6 +30,7 @@ impl LevelGroup {
         self.get_sequences().iter().map(|x| x.level_count()).sum()
     }
 
+
     pub fn get_sequences(&self) -> &'static [LevelSequence] {
         use LevelSequence::*;
         match self {

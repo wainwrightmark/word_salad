@@ -18,7 +18,7 @@ use crate::{
         word_salad_menu_layout::WordSaladMenuLayoutEntity,
     },
     prelude::*,
-    purchases::Purchases, shapes, z_indices,
+    purchases::{Prices, Purchases}, shapes, z_indices,
 };
 
 use self::{
@@ -80,6 +80,7 @@ pub struct MenuContext {
     pub hint_state: HintState,
     pub current_level: CurrentLevel,
     pub found_words_state: FoundWordsState,
+    pub prices: Prices
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, MavericRoot)]
