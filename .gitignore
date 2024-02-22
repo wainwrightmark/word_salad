@@ -22,3 +22,6 @@ package.json
 ws_game/saves/bevy_pkv.redb
 netlify/functions/image/*.png
 achievement_icons/*.png
+PromoImages/*.jpeg
+PromoImages/*.png
+ws_game/icon/logo.png
