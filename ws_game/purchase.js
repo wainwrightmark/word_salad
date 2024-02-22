@@ -42,9 +42,6 @@ function refreshUI() {
   console.log(`Purchase Plugin: product: ${myProduct} transaction: ${myTransaction}`, );
 }
 
-export async function log_hello(){
-  console.log("Purchase Plugin Hello");
-}
 
 
 export async function get_products(){

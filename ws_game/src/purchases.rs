@@ -23,7 +23,6 @@ impl Plugin for PurchasesPlugin {
 fn on_startup() {
     #[cfg(all(target_arch = "wasm32", any(feature = "android", feature = "ios")))]
     {
-        crate::asynchronous::spawn_and_run(purchase_api::log_hello());
         crate::asynchronous::spawn_and_run(purchase_api::get_products());
     }
 }
@@ -109,33 +108,27 @@ mod purchase_api {
     #[cfg(all(target_arch = "wasm32", any(feature = "android", feature = "ios")))]
     #[wasm_bindgen::prelude::wasm_bindgen(module = "/purchase.js")]
     extern "C" {
-        #[wasm_bindgen(catch, final, js_name = "log_hello")]
-        async fn log_hello_extern() -> Result<(), JsValue>;
-
         #[wasm_bindgen(catch, final, js_name = "get_products")]
         async fn get_products_extern() -> Result<JsValue, JsValue>;
     }
 
     #[cfg(all(target_arch = "wasm32", any(feature = "android", feature = "ios")))]
-    pub async fn get_products(){
-        let result : Result<Vec<Product>, capacitor_bindings::error::Error> = capacitor_bindings::helpers::run_unit_value(get_products_extern).await;
+    pub async fn get_products() {
+        let result: Result<Vec<Product>, capacitor_bindings::error::Error> =
+            capacitor_bindings::helpers::run_unit_value(get_products_extern).await;
 
-        match result{
-            Ok(products)=>{
-                for product in products{
+        match result {
+            Ok(products) => {
+                for product in products {
                     bevy::log::info!("{product:?}");
                 }
             }
-            Err(e)=>{
+            Err(e) => {
                 bevy::log::error!("Get Products Error: {e}");
             }
         }
     }
 
-    #[cfg(all(target_arch = "wasm32", any(feature = "android", feature = "ios")))]
-    pub async fn log_hello() {
-        let _ = capacitor_bindings::helpers::run_unit_unit(log_hello_extern).await;
-    }
 
     #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 
