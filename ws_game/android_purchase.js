@@ -69,7 +69,13 @@ export async function get_products() {
   return store.products;
 }
 
-export async function purchase_product(options){
+export async function refresh_and_get_products() {
+  await store.update();
+
+  return store.products;
+}
+
+export async function purchase_product(options) {
 
 
 
@@ -80,12 +86,12 @@ export async function purchase_product(options){
 
   var result = await store.order(offer);
 
-  if (result.isError){
+  if (result.isError) {
     console.error(`${result}`)
     return {
       purchased: false
     }
-  }else{
+  } else {
     return {
       purchased: true
     };

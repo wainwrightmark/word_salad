@@ -13,7 +13,7 @@ use crate::menu_layout::word_salad_menu_layout::WordSaladMenuLayoutEntity;
 use crate::prelude::level_group_layout::LevelGroupLayoutEntity;
 use crate::prelude::levels_menu_layout::LevelsMenuLayoutEntity;
 use crate::prelude::main_menu_layout::MainMenuLayoutEntity;
-use crate::purchases::{RequestPurchaseEvent, Purchases};
+use crate::purchases::{Purchases, RefreshAndRestoreEvent, RequestPurchaseEvent};
 use crate::{achievements, asynchronous, completion::*};
 use crate::{input, prelude::*, startup};
 
@@ -96,6 +96,7 @@ fn handle_button_activations(
         EventWriter<HintEvent>,
         AsyncEventWriter<VideoEvent>,
         AsyncEventWriter<DailyChallengeDataLoadedEvent>,
+        EventWriter<RefreshAndRestoreEvent>,
     ),
 ) {
     for ev in events.read() {
@@ -113,9 +114,11 @@ fn handle_button_activations(
             &mut event_writers.0,
             &mut event_writers.1,
             &mut event_writers.2,
+            &mut event_writers.6,
             &mut event_writers.3,
             &event_writers.4,
             &mut event_writers.5,
+
         )
     }
 }
@@ -300,6 +303,7 @@ impl ButtonInteraction {
         change_level_events: &mut EventWriter<ChangeLevelEvent>,
         ad_request_events: &mut EventWriter<AdRequestEvent>,
         purchase_events: &mut EventWriter<RequestPurchaseEvent>,
+        refresh_and_restore_events: &mut EventWriter<RefreshAndRestoreEvent>,
         hint_events: &mut EventWriter<HintEvent>,
         video_events: &AsyncEventWriter<VideoEvent>,
         daily_challenge_events: &AsyncEventWriter<DailyChallengeDataLoadedEvent>,
@@ -340,6 +344,9 @@ impl ButtonInteraction {
             }
             ButtonInteraction::SettingsMenu(SettingsLayoutEntity::SeeAchievements) => {
                 achievements::show_achievements();
+            }
+            ButtonInteraction::SettingsMenu(SettingsLayoutEntity::RestorePurchases) => {
+                refresh_and_restore_events.send(RefreshAndRestoreEvent);
             }
             ButtonInteraction::SettingsMenu(SettingsLayoutEntity::AdsConsent) => {
                 ad_request_events.send(AdRequestEvent::RequestConsent);
@@ -558,6 +565,9 @@ impl ButtonInteraction {
                 }
                 StoreLayoutStructure::LevelGroups => {
                     *menu_state.as_mut() = MenuState::LevelGroupStorePage
+                }
+                StoreLayoutStructure::RefreshPrices | StoreLayoutStructure::RestorePurchases =>{
+                    refresh_and_restore_events.send(RefreshAndRestoreEvent);
                 }
             },
             ButtonInteraction::HintsMenu(hints_layout_entity) => {

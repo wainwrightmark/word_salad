@@ -124,7 +124,7 @@ fn handle_ad_requests(
 
 #[allow(dead_code)]
 async fn reshow_consent_form() -> Result<(), capacitor_bindings::error::Error> {
-    #[cfg(feature = "android")] //todo also ios
+    #[cfg(any(feature = "android", feature = "ios"))]
     {
         let _r = Admob::show_consent_form().await?;
     }

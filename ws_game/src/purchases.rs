@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{platform_specific, prelude::*};
 use bevy::{prelude::*, utils::HashSet};
 use nice_bevy_utils::{CanInitTrackedResource, CanRegisterAsyncEvent, TrackableResource};
 use serde::{Deserialize, Serialize};
@@ -12,6 +12,7 @@ impl Plugin for PurchasesPlugin {
         app.init_tracked_resource::<Purchases>();
         app.init_resource::<Prices>();
         app.add_event::<RequestPurchaseEvent>();
+        app.add_event::<RefreshAndRestoreEvent>();
 
         app.add_systems(
             Update,
@@ -31,6 +32,12 @@ impl Plugin for PurchasesPlugin {
                 .run_if(|ev: EventReader<ProductPurchasedEvent>| !ev.is_empty()),
         );
 
+        app.add_systems(
+            Update,
+            handle_refresh_and_restore
+                .run_if(|ev: EventReader<RefreshAndRestoreEvent>| !ev.is_empty()),
+        );
+
         app.register_async_event::<UpdateProductsEvent>();
         app.register_async_event::<ProductPurchasedEvent>();
     }
@@ -44,6 +51,25 @@ fn on_startup(
     {
         crate::asynchronous::spawn_and_run(purchase_api::get_products(get_products_writer));
     }
+}
+
+#[derive(Debug, Clone, Event)]
+pub struct  RefreshAndRestoreEvent;
+
+#[allow(unused_variables)]
+fn handle_refresh_and_restore(
+    mut ev: EventReader<RefreshAndRestoreEvent>,
+    get_products_writer: nice_bevy_utils::async_event_writer::AsyncEventWriter<UpdateProductsEvent>,
+){
+    for event in ev.read(){
+        #[cfg(all(target_arch = "wasm32", any(feature = "android", feature = "ios")))]
+        {
+            let writer = get_products_writer.clone();
+            crate::asynchronous::spawn_and_run(purchase_api::refresh_and_get_products(writer));
+        }
+        platform_specific::show_toast_on_web("We would refresh prices and restore purchases here");
+    }
+
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, MavericContext, Resource, Clone, Default)]
@@ -284,6 +310,9 @@ mod purchase_api {
         #[wasm_bindgen(catch, final, js_name = "get_products")]
         async fn get_products_extern() -> Result<JsValue, JsValue>;
 
+        #[wasm_bindgen(catch, final, js_name = "refresh_and_get_products")]
+        async fn refresh_and_get_products_extern() -> Result<JsValue, JsValue>;
+
         #[wasm_bindgen(catch, final, js_name = "purchase_product")]
         async fn purchase_product_extern(
             product_purchase_options: JsValue,
@@ -295,6 +324,9 @@ mod purchase_api {
     extern "C" {
         #[wasm_bindgen(catch, final, js_name = "get_products")]
         async fn get_products_extern() -> Result<JsValue, JsValue>;
+
+        #[wasm_bindgen(catch, final, js_name = "refresh_and_get_products")]
+        async fn refresh_and_get_products_extern() -> Result<JsValue, JsValue>;
 
         #[wasm_bindgen(catch, final, js_name = "purchase_product")]
         async fn purchase_product_extern(
@@ -324,7 +356,7 @@ mod purchase_api {
             }
             Err(e) => {
                 bevy::log::error!("purchase_product error: {e}");
-                crate::platform_specific::show_toast_async("Could not load purchase product").await;
+                crate::platform_specific::show_toast_async("Could not purchase product").await;
             }
         }
     }
@@ -335,6 +367,28 @@ mod purchase_api {
     ) {
         let result: Result<Vec<ExternProduct>, capacitor_bindings::error::Error> =
             capacitor_bindings::helpers::run_unit_value(get_products_extern).await;
+
+        match result {
+            Ok(products) => {
+                for product in products.iter() {
+                    bevy::log::info!("Got product: {product:?}");
+                }
+                let event = ExternProduct::make_product_price_event(products);
+                writer.send_async(event).await.unwrap();
+            }
+            Err(e) => {
+                bevy::log::error!("get_products error: {e}");
+                crate::platform_specific::show_toast_async("Could not load store products").await;
+            }
+        }
+    }
+
+    #[cfg(all(target_arch = "wasm32", any(feature = "android", feature = "ios")))]
+    pub async fn refresh_and_get_products(
+        writer: nice_bevy_utils::async_event_writer::AsyncEventWriter<super::UpdateProductsEvent>,
+    ) {
+        let result: Result<Vec<ExternProduct>, capacitor_bindings::error::Error> =
+            capacitor_bindings::helpers::run_unit_value(refresh_and_get_products_extern).await;
 
         match result {
             Ok(products) => {

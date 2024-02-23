@@ -12,7 +12,7 @@ pub enum SettingsLayoutEntity {
     AdsConsent,
     SeeAchievements,
     //SyncAchievements  //todo
-    //RestorePurchases  //todo
+    RestorePurchases  //todo
 }
 
 impl MenuButtonsLayout for SettingsLayoutEntity {
@@ -39,6 +39,10 @@ impl LayoutStructureWithTextOrImage for SettingsLayoutEntity {
             },
             SettingsLayoutEntity::SeeAchievements => ws_core::TextOrImage::Text {
                 text: "See Achievements",
+            },
+
+            SettingsLayoutEntity::RestorePurchases => ws_core::TextOrImage::Text {
+                text: "Restore Purchases",
             },
         }
     }

@@ -2254,7 +2254,7 @@ checksum = "1d758ba1b47b00caf47f24925c0074ecb20d6dfcffe7f6d53395c0465674841a"
 [[package]]
 name = "geometrid"
 version = "0.7.0"
-source = "git+https://github.com/wainwrightmark/geometrid#f74dcd2600e1d05ad00fcc33ff65ab2f372480d2"
+source = "git+https://github.com/wainwrightmark/geometrid#17817ae7332353e6313b75735224b8454bbf7861"
 dependencies = [
  "const_panic",
  "ethnum",

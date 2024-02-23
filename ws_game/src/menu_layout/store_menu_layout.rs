@@ -11,9 +11,11 @@ use crate::{prelude::BUTTONS_FONT_PATH, view::MenuContextWrapper};
     Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Display, EnumIter, EnumCount,
 )]
 pub enum StoreLayoutStructure {
-    RemoveAds,
-    BuyHints,
-    LevelGroups,
+    RemoveAds = 0,
+    BuyHints = 1,
+    LevelGroups = 2,
+    RefreshPrices = 4,
+    RestorePurchases = 5,
 }
 
 impl MenuButtonsLayout for StoreLayoutStructure {
@@ -56,13 +58,21 @@ impl LayoutStructureDoubleTextButton for StoreLayoutStructure {
             }
             StoreLayoutStructure::BuyHints => {
                 left = "Buy Hints".to_string();
-                right = text_context.hint_state.as_text()
+                right = String::new();
             }
             StoreLayoutStructure::LevelGroups => {
                 left = "Buy Addons".to_string();
                 let complete = text_context.purchases.groups_purchased.len();
-                let total = LevelGroup::COUNT;
-                right = format!("{:#}", fmtastic::VulgarFraction::new(complete, total));
+
+                right = String::new();
+            }
+            StoreLayoutStructure::RefreshPrices => {
+                left = "Refresh Prices".to_string();
+                right = String::new();
+            }
+            StoreLayoutStructure::RestorePurchases => {
+                left = "Restore Purchases".to_string();
+                right = String::new();
             }
         }
         (left.to_string(), right.to_string())
@@ -107,6 +117,12 @@ impl LayoutStructureDoubleTextButton for StoreLayoutStructure {
             StoreLayoutStructure::BuyHints => false,
             StoreLayoutStructure::LevelGroups => {
                 text_context.purchases.groups_purchased.len() == LevelGroup::COUNT
+            }
+            StoreLayoutStructure::RefreshPrices => {
+                false
+            }
+             StoreLayoutStructure::RestorePurchases => {
+                false
             }
         }
     }

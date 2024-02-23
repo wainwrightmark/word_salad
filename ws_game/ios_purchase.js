@@ -69,6 +69,12 @@ export async function get_products() {
   return store.products;
 }
 
+export async function refresh_and_get_products() {
+  await store.update();
+
+  return store.products;
+}
+
 export async function purchase_product(options) {
 
 
