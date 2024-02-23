@@ -63,12 +63,12 @@ impl LayoutStructure for GameLayoutEntity {
             },
             GameLayoutEntity::WordList => {
                 let y = (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, context))
-                        + THEME_HEIGHT
-                        + THEME_INFO_HEIGHT
-                        + TIMER_HEIGHT
-                        + GRID_SIZE
-                        + GRID_THEME_SPACER
-                        + GRID_WORD_LIST_SPACER;
+                    + THEME_HEIGHT
+                    + THEME_INFO_HEIGHT
+                    + TIMER_HEIGHT
+                    + GRID_SIZE
+                    + GRID_THEME_SPACER
+                    + GRID_WORD_LIST_SPACER;
 
                 Vec2 {
                     x: (IDEAL_WIDTH - GRID_SIZE) / 2.,

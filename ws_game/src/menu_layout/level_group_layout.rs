@@ -1,9 +1,8 @@
-use crate::completion::SequenceCompletion;
+use crate::{completion::SequenceCompletion, prelude::BUTTONS_FONT_PATH, view::MenuContextWrapper};
 
-use super::{MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
-use bevy::math::Vec2;
+
 use ws_core::{
-    layout::entities::*, LayoutSizing, LayoutStructure, LayoutStructureWithFont, Spacing,
+    layout::entities::*, palette, LayoutStructureDoubleTextButton,
 };
 use ws_levels::level_group::LevelGroup;
 
@@ -48,62 +47,69 @@ impl LevelGroupLayoutEntity {
     }
 }
 
-impl LayoutStructure for LevelGroupLayoutEntity {
-    type Context<'a> = (SelfieMode, LevelGroup);
+impl MenuButtonsLayout for LevelGroupLayoutEntity {
+    type Context = LevelGroup;
 
-    fn size(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> bevy::prelude::Vec2 {
-        Vec2 {
-            x: MENU_BUTTON_WIDTH,
-            y: super::MENU_BUTTON_HEIGHT,
-        }
+    fn index(&self) -> usize {
+        self.index
     }
 
-    fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> bevy::prelude::Vec2 {
-        Vec2 {
-            x: (IDEAL_WIDTH - MENU_BUTTON_WIDTH) / 2.,
-            y: (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, &context.0))
-                + Spacing::Centre.apply(
-                    IDEAL_HEIGHT - (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, &context.0)),
-                    MENU_BUTTON_HEIGHT + MENU_BUTTON_SPACING,
-                    super::MENU_VIRTUAL_CHILDREN,
-                    self.index,
-                ),
-        }
+    const FONT_SIZE_SMALL: bool = true;
+
+    fn iter_all(context: &Self::Context) -> impl Iterator<Item = Self> {
+        (0..context.get_sequences().len()).map(|x| Self { index: x })
     }
 
-    fn iter_all(context: &Self::Context<'_>) -> impl Iterator<Item = Self> {
-        LevelGroupLayoutIter {
-            next_index: 0,
-            group: context.1,
-        }
+    fn count(context: &Self::Context) -> usize {
+        context.get_sequences().len()
     }
 }
 
-impl LayoutStructureWithFont for LevelGroupLayoutEntity {
-    type FontContext = ();
-    fn font_size(&self, _: &()) -> f32 {
-        MENU_BUTTON_FONT_SIZE_SMALL
+impl LayoutStructureDoubleTextButton for LevelGroupLayoutEntity {
+    type TextContext<'a> = MenuContextWrapper<'a>;
+
+    fn double_text(
+        &self,
+        context: &Self::Context<'_>,
+        text_context: &Self::TextContext<'_>,
+    ) -> (String, String) {
+        self.get_text(text_context.sequence_completion.as_ref(), &context.1)
     }
-}
 
-pub struct LevelGroupLayoutIter {
-    pub next_index: usize,
-    pub group: LevelGroup,
-}
+    fn left_font(&self) -> &'static str {
+        BUTTONS_FONT_PATH
+    }
 
-impl Iterator for LevelGroupLayoutIter {
-    type Item = LevelGroupLayoutEntity;
+    fn right_font(&self) -> &'static str {
+        BUTTONS_FONT_PATH
+    }
 
-    fn next(&mut self) -> Option<Self::Item> {
-        match self.next_index.cmp(&self.group.get_sequences().len()) {
-            std::cmp::Ordering::Less => {
-                let next = LevelGroupLayoutEntity {
-                    index: self.next_index,
-                };
-                self.next_index += 1;
-                Some(next)
-            }
-            std::cmp::Ordering::Equal | std::cmp::Ordering::Greater => None,
+    fn text_color(
+        &self,
+        _context: &Self::Context<'_>,
+        _text_context: &Self::TextContext<'_>,
+    ) -> ws_core::prelude::BasicColor {
+        palette::MENU_BUTTON_TEXT_REGULAR
+    }
+
+    fn fill_color(
+        &self,
+        background_type: ws_core::prelude::BackgroundType,
+        context: &Self::Context<'_>,
+        text_context: &Self::TextContext<'_>,
+    ) -> ws_core::prelude::BasicColor {
+        if self.is_complete(&text_context.sequence_completion, &context.1) {
+            background_type.menu_button_complete_fill()
+        } else {
+            background_type.menu_button_incomplete_fill()
         }
+    }
+
+    fn is_disabled(
+        &self,
+        _context: &Self::Context<'_>,
+        _text_context: &Self::TextContext<'_>,
+    ) -> bool {
+        false
     }
 }

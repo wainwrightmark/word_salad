@@ -1,7 +1,6 @@
 use std::time::Duration;
 
 use crate::{animated_solutions, prelude::*};
-use bevy::reflect::TypeUuid;
 use bevy_param_shaders::frame::Frame;
 use bevy_param_shaders::parameterized_shader::{
     ExtractToShader, FragmentImport, ParameterizedShader, SDFColorCall,
@@ -29,6 +28,7 @@ pub struct WordsContext {
     pub window_size: MyWindowSize,
     pub video_resource: VideoResource,
     pub daily_challenges: DailyChallenges,
+    pub menu_state: MenuState
 }
 
 impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for WordsContextWrapper<'w> {
@@ -39,6 +39,7 @@ impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for WordsContextWrapper<'w> {
             window_size: Res::clone(&value.window_size),
             video_resource: Res::clone(&value.video_resource),
             daily_challenges: Res::clone(&value.daily_challenges),
+            menu_state: Res::clone(&value.menu_state)
         }
     }
 }
@@ -98,6 +99,7 @@ impl MavericNode for WordsNode {
                             rect,
                             font_size,
                             selfie_mode,
+                            menu_closed: context.menu_state.is_closed()
                         },
                         &(),
                     );
@@ -114,6 +116,7 @@ pub struct WordNode {
     pub rect: LayoutRectangle,
     pub font_size: f32,
     pub selfie_mode: SelfieMode,
+    pub menu_closed: bool
 }
 
 impl MavericNode for WordNode {
@@ -130,55 +133,62 @@ impl MavericNode for WordNode {
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered(|args, commands| {
             let node = args.node;
-            let text = match node.completion {
-                Completion::Unstarted => node.word.hidden_text.to_string(),
-                Completion::ManualHinted(hints) => node.word.hinted_text(hints).to_uppercase(),
 
-                Completion::Complete{..} => node.word.text.to_uppercase().to_string(),
-            };
 
             let completion = node.completion;
 
             let progress = match completion {
                 Completion::Unstarted => 0.0,
                 Completion::ManualHinted(_) => 0.0,
-                Completion::Complete{..} => 1.0,
+                Completion::Complete { .. } => 1.0,
             };
 
             let centre = node.rect.centre();
 
-            let text_translation = centre.extend(crate::z_indices::WORD_TEXT);
+            if node.menu_closed{
+                let text = match node.completion {
+                    Completion::Unstarted => node.word.hidden_text.to_string(),
+                    Completion::ManualHinted(hints) => node.word.hinted_text(hints).to_uppercase(),
 
-            let text_color = match completion {
-                Completion::Unstarted => palette::WORD_TEXT_NUMBER,
-                Completion::ManualHinted(_) | Completion::Complete{..} => palette::WORD_TEXT_LETTERS,
-            }
-            .convert_color();
+                    Completion::Complete { .. } => node.word.text.to_uppercase().to_string(),
+                };
 
-            commands.add_child(
-                "text",
-                Text2DNode {
-                    text,
-                    font_size: node.font_size,
-                    color: text_color,
-                    font: SOLUTIONS_FONT_PATH,
-                    alignment: TextAlignment::Center,
-                    linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
-                    text_2d_bounds: Default::default(),
-                    text_anchor: Default::default(),
+                let text_translation = centre.extend(crate::z_indices::WORD_TEXT);
+
+                let text_color = match completion {
+                    Completion::Unstarted => palette::WORD_TEXT_NUMBER,
+                    Completion::ManualHinted(_) | Completion::Complete { .. } => {
+                        palette::WORD_TEXT_LETTERS
+                    }
                 }
-                .with_bundle(Transform::from_translation(text_translation))
-                .with_transition_to::<TextColorLens<0>>(
-                    text_color,
-                    calculate_speed(
-                        &palette::WORD_TEXT_NUMBER.convert_color(),
-                        &palette::WORD_TEXT_LETTERS.convert_color(),
-                        Duration::from_secs_f32(animated_solutions::TOTAL_SECONDS),
+                .convert_color();
+
+                commands.add_child(
+                    "text",
+                    Text2DNode {
+                        text,
+                        font_size: node.font_size,
+                        color: text_color,
+                        font: SOLUTIONS_FONT_PATH,
+                        justify_text: JustifyText::Center,
+                        linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                        text_2d_bounds: Default::default(),
+                        text_anchor: Default::default(),
+                    }
+                    .with_bundle(Transform::from_translation(text_translation))
+                    .with_transition_to::<TextColorLens<0>>(
+                        text_color,
+                        calculate_speed(
+                            &palette::WORD_TEXT_NUMBER.convert_color(),
+                            &palette::WORD_TEXT_LETTERS.convert_color(),
+                            Duration::from_secs_f32(animated_solutions::TOTAL_SECONDS),
+                        ),
+                        None,
                     ),
-                    None,
-                ),
-                &(),
-            );
+                    &(),
+                );
+            }
+
 
             let shape_translation = centre.extend(crate::z_indices::WORD_BACKGROUND);
             let _shape_border_translation = centre.extend(crate::z_indices::WORD_BACKGROUND + 1.0);
@@ -186,7 +196,7 @@ impl MavericNode for WordNode {
             let transition_speed = match completion {
                 Completion::Unstarted => f32::MAX,
                 Completion::ManualHinted(_) => f32::MAX,
-                Completion::Complete{..} => 1.0 / animated_solutions::TOTAL_SECONDS,
+                Completion::Complete { .. } => 1.0 / animated_solutions::TOTAL_SECONDS,
             };
 
             let height = node.rect.extents.y.abs();
@@ -239,8 +249,7 @@ pub struct WordButtonCompletion {
 pub const WORD_BUTTON_HOLD_SECONDS: f32 = 0.3;
 
 #[repr(C)]
-#[derive(Debug, Reflect, Clone, Copy, TypeUuid, Default, PartialEq)]
-#[uuid = "266b0619-b913-4cce-be86-7470ef0b129b"]
+#[derive(Debug, Reflect, Clone, Copy, Default, PartialEq)]
 pub struct WordButtonBoxShader;
 
 impl ExtractToShader for WordButtonBoxShader {
@@ -287,7 +296,7 @@ impl ExtractToShader for WordButtonBoxShader {
             let color = match completion {
                 Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color(),
                 Completion::ManualHinted(_) => palette::WORD_BACKGROUND_MANUAL_HINT.convert_color(),
-                Completion::Complete{..} => palette::WORD_BACKGROUND_COMPLETE.convert_color(),
+                Completion::Complete { .. } => palette::WORD_BACKGROUND_COMPLETE.convert_color(),
             };
 
             let color2 = match completion {
@@ -295,7 +304,7 @@ impl ExtractToShader for WordButtonBoxShader {
                 Completion::ManualHinted(_) => {
                     palette::WORD_BACKGROUND_MANUAL_HINT2.convert_color()
                 }
-                Completion::Complete{..} => palette::WORD_BACKGROUND_COMPLETE.convert_color(),
+                Completion::Complete { .. } => palette::WORD_BACKGROUND_COMPLETE.convert_color(),
             };
 
             let progress =
@@ -313,7 +322,7 @@ impl ExtractToShader for WordButtonBoxShader {
             let color = match completion {
                 Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color(),
                 Completion::ManualHinted(_) => palette::WORD_BACKGROUND_MANUAL_HINT.convert_color(),
-                Completion::Complete{..} => {
+                Completion::Complete { .. } => {
                     if previous_completion.is_some_and(|x| x.is_manual_hinted()) {
                         palette::WORD_BACKGROUND_MANUAL_HINT.convert_color()
                     } else {
@@ -325,7 +334,7 @@ impl ExtractToShader for WordButtonBoxShader {
             let color2 = match completion {
                 Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color(),
                 Completion::ManualHinted(_) => palette::WORD_BACKGROUND_MANUAL_HINT.convert_color(),
-                Completion::Complete{..} => palette::WORD_BACKGROUND_COMPLETE.convert_color(),
+                Completion::Complete { .. } => palette::WORD_BACKGROUND_COMPLETE.convert_color(),
             };
 
             HorizontalGradientBoxShaderParams {
@@ -356,4 +365,6 @@ impl ParameterizedShader for WordButtonBoxShader {
     }
 
     const FRAME: Frame = Frame::square(1.0);
+
+    const UUID: u128 = 0x266b0619b9134ccebe867470ef0b129b;
 }

@@ -5,9 +5,8 @@ use ws_core::layout::entities::*;
 pub struct LogoContext {
     pub window_size: MyWindowSize,
     pub video_resource: VideoResource,
-    pub pressed_button: PressedButton
+    pub pressed_button: PressedButton,
 }
-
 
 #[derive(Debug, PartialEq, Clone, Copy, MavericRoot)]
 pub struct WordSaladLogoRoot;
@@ -34,7 +33,7 @@ impl MavericRootChildren for WordSaladLogoRoot {
         commands.add_child(
             "Word Salad Icon",
             SpriteNode {
-                texture_path: r#"images/logo1024.png"#,
+                texture_path: r#"embedded://ws_game/../../assets/images/logo1024.png"#,
                 sprite: Sprite {
                     custom_size: Some(logo_rect.extents.abs() * pressed_multiplier),
                     ..Default::default()
@@ -48,20 +47,20 @@ impl MavericRootChildren for WordSaladLogoRoot {
     }
 }
 
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
-struct LogoImageNodeStyle;
+// #[derive(Debug, Clone, Copy, Default, PartialEq)]
+// struct LogoImageNodeStyle;
 
-impl IntoBundle for LogoImageNodeStyle {
-    type B = Style;
+// impl IntoBundle for LogoImageNodeStyle {
+//     type B = Style;
 
-    fn into_bundle(self) -> Self::B {
-        Style {
-            width: Val::Px(100.0),
-            height: Val::Px(100.0),
-            margin: UiRect::DEFAULT,
-            align_self: AlignSelf::Center,
-            justify_self: JustifySelf::Center,
-            ..default()
-        }
-    }
-}
+//     fn into_bundle(self) -> Self::B {
+//         Style {
+//             width: Val::Px(100.0),
+//             height: Val::Px(100.0),
+//             margin: UiRect::DEFAULT,
+//             align_self: AlignSelf::Center,
+//             justify_self: JustifySelf::Center,
+//             ..default()
+//         }
+//     }
+// }

@@ -18,6 +18,7 @@ pub enum CongratsButton {
     Next = 0,
     MoreLevels = 1,
     Share = 2,
+    ResetPuzzle = 3,
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -25,6 +26,7 @@ pub enum CongratsButton {
 pub enum CongratsButton {
     Next = 0,
     MoreLevels = 1,
+    ResetPuzzle = 2,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, EnumCount, Display)]
@@ -104,8 +106,10 @@ impl LayoutStructure for CongratsLayoutEntity {
         };
 
         let top_offset = if context.0.is_selfie_mode {
-
-            IDEAL_HEIGHT - (button_height + CONGRATS_BUTTON_GAP_SELFIE + ((stat_size + CONGRATS_ENTITY_SPACING) * 2.0))
+            IDEAL_HEIGHT
+                - (button_height
+                    + CONGRATS_BUTTON_GAP_SELFIE
+                    + ((stat_size + CONGRATS_ENTITY_SPACING) * 2.0))
         } else {
             TOP_BAR_HEIGHT_BASE
                 + extra_top_bar_height(sizing, &context.0)
@@ -142,9 +146,11 @@ impl LayoutStructure for CongratsLayoutEntity {
                 x: (IDEAL_WIDTH - button_width) * 0.5,
                 y: top_offset
                     + ((stat_size + CONGRATS_ENTITY_SPACING) * 2.0)
-                    + if context.0.is_selfie_mode{
+                    + if context.0.is_selfie_mode {
                         CONGRATS_BUTTON_GAP_SELFIE
-                    }else{CONGRATS_BUTTON_GAP_NORMAL}
+                    } else {
+                        CONGRATS_BUTTON_GAP_NORMAL
+                    }
                     + Spacing::Centre.apply(
                         button_height,
                         CONGRATS_ENTITY_BUTTON_HEIGHT + MENU_BUTTON_SPACING,

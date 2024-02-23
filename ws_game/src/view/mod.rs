@@ -2,28 +2,28 @@ pub mod congrats;
 pub mod fireworks;
 pub mod game_grid;
 pub mod hints;
+pub mod logo;
 pub mod menu;
 pub mod non_level;
 pub mod popup;
+pub mod recording_button;
 pub mod theme_view;
-pub mod logo;
 pub mod tutorial;
 pub mod wordline;
 pub mod words;
-pub mod recording_button;
 
 pub use congrats::*;
 pub use game_grid::*;
 pub use hints::*;
+pub use logo::*;
 pub use menu::*;
 pub use non_level::*;
 pub use popup::*;
+pub use recording_button::*;
 pub use theme_view::*;
-pub use logo::*;
 pub use tutorial::*;
 pub use wordline::*;
 pub use words::*;
-pub use recording_button::*;
 
 use crate::{completion::*, prelude::*};
 use maveric::prelude::*;
@@ -56,46 +56,53 @@ impl MavericRootChildren for ViewRoot {
     ) {
         let selfie_mode = context.video_resource.selfie_mode();
         let is_level_complete = context.found_words_state.is_level_complete();
-        let background_type = BackgroundType::from_resources(
+        let background_type = background_type_from_resources(
             &context.video_resource,
             &context.current_level,
             &context.found_words_state,
         );
 
+        let pause_type = if !context.menu_state.is_closed() {
+            PauseType::Blank
+        } else if context.level_time.is_paused() {
+            PauseType::BlankWithPlay
+        } else {
+            PauseType::NotPaused
+        };
 
-        if !context.menu_state.is_closed() {
-            commands.add_child("menu", Menu { background_type }, &context.into());
-        }
-
-        if context.menu_state.is_closed() {
-            commands.add_child("cells", GridTiles { is_level_complete }, &context.into());
-        }
+        commands.add_child(
+            "cells",
+            GridTiles {
+                is_level_complete,
+                pause_type,
+            },
+            &context.into(),
+        );
 
         match context.current_level.level(&context.daily_challenges) {
             itertools::Either::Left(level) => {
-                if context.menu_state.is_closed() {
-                    if context.found_words_state.is_level_complete() {
-                        commands.add_child("congrats", CongratsView, &context.into());
-                    } else {
-                        commands.add_child("words", WordsNode, &context.into());
-                    }
+                if context.found_words_state.is_level_complete() {
+                    commands.add_child("congrats", CongratsView, &context.into());
+                } else {
+                    commands.add_child("words", WordsNode, &context.into());
+                }
 
-                    if !context.level_time.is_paused() {
-                        let close_to_solution = context
-                            .chosen_state
-                            .is_close_to_a_solution(level, context.found_words_state.as_ref());
+                if !context.level_time.is_paused() {
+                    let close_to_solution = context
+                        .chosen_state
+                        .is_close_to_a_solution(level, context.found_words_state.as_ref());
 
-                        commands.add_child(
-                            "word_line",
-                            WordLine {
-                                solution: context.chosen_state.solution.clone(),
-                                should_hide: context.chosen_state.is_just_finished,
-                                close_to_solution,
-                                selfie_mode,
-                            },
-                            &context.window_size,
-                        );
-                    }
+                    commands.add_child(
+                        "word_line",
+                        WordLine {
+                            solution: context.chosen_state.solution.clone(),
+                            should_hide: context.chosen_state.is_just_finished,
+                            close_to_solution,
+                            selfie_mode,
+                            special_colors: level.special_colors.clone()
+                        },
+                        &context.window_size,
+                    );
                 }
 
                 if let Some(text) =

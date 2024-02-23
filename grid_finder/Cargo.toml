@@ -9,7 +9,7 @@ edition = "2021"
 ws_core = { path = "../ws_core" }
 rand = "0.8.5"
 itertools = "0.12"
-strum = { version = "0.25", features = ["derive"] }
+strum = { version = "0.26", features = ["derive"] }
 serde = { version = "1", features = ["derive", "rc"] }
 anyhow = "1"
 base64 = "0.21"

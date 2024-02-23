@@ -1,3 +1,4 @@
+pub mod background_type;
 pub mod character;
 pub mod colors;
 pub mod designed_level;
@@ -11,6 +12,7 @@ pub use crate::prelude::*;
 
 pub mod prelude {
 
+    pub use crate::background_type::*;
     pub use crate::character::*;
     pub use crate::colors::*;
     pub use crate::designed_level::*;

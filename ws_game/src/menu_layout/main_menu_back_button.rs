@@ -1,10 +1,10 @@
 use bevy::math::Vec2;
 use ws_core::{
-    layout::entities::{IDEAL_HEIGHT, IDEAL_WIDTH, MENU_BUTTON_FONT_SIZE},
-    LayoutSizing, LayoutStructure, LayoutStructureWithFont, LayoutStructureWithTextOrImage,  TextOrImage,
+    LayoutSizing, LayoutStructure, LayoutStructureWithFont, LayoutStructureWithTextOrImage,
+    TextOrImage,
 };
 
-use super::{MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
+use ws_core::layout::entities::consts::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Default)]
 pub struct MainMenuBackButton;
@@ -38,8 +38,8 @@ impl LayoutStructureWithFont for MainMenuBackButton {
     }
 }
 
-impl LayoutStructureWithTextOrImage  for MainMenuBackButton {
+impl LayoutStructureWithTextOrImage for MainMenuBackButton {
     fn text_or_image(&self, _context: &Self::Context<'_>) -> TextOrImage {
-        TextOrImage::Text{text: "Back"}
+        TextOrImage::Text { text: "Back" }
     }
 }

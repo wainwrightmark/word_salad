@@ -8,6 +8,7 @@ pub const IDEAL_RATIO: f32 = IDEAL_WIDTH as f32 / IDEAL_HEIGHT as f32;
 
 pub const TOP_BAR_HEIGHT_BASE: f32 = 60.;
 pub const RECORDING_BUTTON_MIN_SIZE: f32 = 25.0;
+pub const RECORDING_BUTTON_MAX_SIZE: f32 = 50.0;
 //pub const WORD_SALAD_LOGO_WIDTH: f32 = 160.;
 
 pub const THEME_HEIGHT: f32 = 24.;
@@ -139,3 +140,8 @@ pub const MENU_BUTTON_FONT_SIZE_SMALL: f32 = 18f32;
 
 pub const TUTORIAL_TEXT_FONT_SIZE: f32 = 18f32;
 pub const HINTS_REMAINING_FONT_SIZE: f32 = 18f32;
+
+pub const MENU_BUTTON_HEIGHT: f32 = 35.0;
+pub const MENU_BUTTON_WIDTH: f32 = GRID_SIZE;
+pub const MENU_BUTTON_SPACING: f32 = 40.0 * 0.1;
+pub const MENU_VIRTUAL_CHILDREN: usize = 9; //eight buttons plus back button

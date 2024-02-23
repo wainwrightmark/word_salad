@@ -26,6 +26,7 @@ pub enum LevelSequence {
     EuropeanCountries,
     SouthAndEastAsianCountries,
     MiddleEasternCountries,
+    AfricanCountries,
 
     EuropeanCapitals,
     SouthAndEastAsianCapitals,
@@ -34,10 +35,16 @@ pub enum LevelSequence {
     Mammals,
     Birds,
     Insects,
+    ReptilesAndAmphibians,
     Fruit,
     Vegetables,
     Gemstones,
     Elements,
+
+    NFLTeams,
+    NBATeams,
+    MLBTeams,
+    NHLTeams,
 }
 
 impl LevelSequence {
@@ -49,17 +56,25 @@ impl LevelSequence {
             USStates => EuropeanCountries,
             EuropeanCountries => SouthAndEastAsianCountries,
             SouthAndEastAsianCountries => MiddleEasternCountries,
-            MiddleEasternCountries => EuropeanCapitals,
+            MiddleEasternCountries => AfricanCountries,
+            AfricanCountries => EuropeanCapitals,
             EuropeanCapitals => SouthAndEastAsianCapitals,
             SouthAndEastAsianCapitals => MiddleEasternCapitals,
             MiddleEasternCapitals => Mammals,
+
             Mammals => Birds,
             Birds => Insects,
-            Insects => Fruit,
+            Insects => ReptilesAndAmphibians,
+            ReptilesAndAmphibians => Fruit,
             Fruit => Vegetables,
             Vegetables => Gemstones,
             Gemstones => Elements,
-            Elements => return None,
+            Elements => NFLTeams,
+
+            NFLTeams => NBATeams,
+            NBATeams => MLBTeams,
+            MLBTeams => NHLTeams,
+            NHLTeams => return None,
         };
         return Some(r);
     }
@@ -73,10 +88,18 @@ impl LevelSequence {
             | SouthAndEastAsianCountries
             | MiddleEasternCountries
             | SouthAndEastAsianCapitals
+            | AfricanCountries
             | MiddleEasternCapitals => LevelGroup::Geography,
-            Mammals | Birds | Insects | Fruit | Vegetables | Gemstones | Elements => {
-                LevelGroup::NaturalWorld
-            }
+            Mammals
+            | Birds
+            | Insects
+            | Fruit
+            | Vegetables
+            | Gemstones
+            | Elements
+            | ReptilesAndAmphibians => LevelGroup::NaturalWorld,
+
+            NFLTeams | NBATeams | MLBTeams | NHLTeams => LevelGroup::USSports,
         }
     }
 
@@ -96,7 +119,7 @@ impl LevelSequence {
         2
     }
 
-    fn levels(self) -> &'static Vec<DesignedLevel> {
+    pub(crate) fn levels(self) -> &'static Vec<DesignedLevel> {
         let levels = match self {
             LevelSequence::USStates => &*US_STATES,
             LevelSequence::EuropeanCapitals => &*EUROPEAN_CAPITALS,
@@ -105,6 +128,7 @@ impl LevelSequence {
             LevelSequence::MiddleEasternCountries => &*MIDDLE_EASTERN_COUNTRIES,
             LevelSequence::SouthAndEastAsianCapitals => &*SOUTH_AND_EAST_ASIAN_CAPITALS,
             LevelSequence::MiddleEasternCapitals => &*MIDDLE_EASTERN_CAPITALS,
+            LevelSequence::AfricanCountries => &*AFRICAN_COUNTRIES,
 
             LevelSequence::Insects => &*INSECTS,
             LevelSequence::Fruit => &*FRUIT,
@@ -113,6 +137,12 @@ impl LevelSequence {
             LevelSequence::Elements => &*ELEMENTS,
             LevelSequence::Mammals => &*MAMMALS,
             LevelSequence::Birds => &*BIRDS,
+            LevelSequence::ReptilesAndAmphibians => &*REPTILES_AND_AMPHIBIANS,
+
+            LevelSequence::NFLTeams => &*NFL_TEAMS,
+            LevelSequence::NBATeams => &*NBA_TEAMS,
+            LevelSequence::MLBTeams => &*MLB_TEAMS,
+            LevelSequence::NHLTeams => &*NHL_TEAMS,
         };
         levels
     }
@@ -123,6 +153,7 @@ impl LevelSequence {
             LevelSequence::EuropeanCapitals => "European Capitals",
             LevelSequence::EuropeanCountries => "European Countries",
             LevelSequence::SouthAndEastAsianCountries => "S & E Asian Countries",
+            LevelSequence::AfricanCountries => "African Countries",
             LevelSequence::MiddleEasternCountries => "Middle Eastern Countries",
             LevelSequence::MiddleEasternCapitals => "Middle Eastern Capitals",
             LevelSequence::SouthAndEastAsianCapitals => "S & E Asian Capitals",
@@ -134,6 +165,12 @@ impl LevelSequence {
             LevelSequence::Mammals => "Mammals",
             LevelSequence::Birds => "Birds",
             LevelSequence::Fruit => "Fruit",
+            LevelSequence::ReptilesAndAmphibians => "Reptiles & Amphibians",
+
+            LevelSequence::NFLTeams => "NFL Teams",
+            LevelSequence::NBATeams => "NBA Teams",
+            LevelSequence::MLBTeams => "MLB Teams",
+            LevelSequence::NHLTeams => "NHL Teams",
         }
     }
 }

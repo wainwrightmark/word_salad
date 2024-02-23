@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy::reflect::TypeUuid;
 use bevy_param_shaders::prelude::*;
 use bytemuck::Pod;
 use bytemuck::Zeroable;
@@ -35,8 +34,7 @@ impl Plugin for ShapesPlugin {
     }
 }
 
-#[derive(Debug, Clone, Copy, TypeUuid, Default, PartialEq)]
-#[uuid = "a31d800c-02a2-4db7-8aaf-1caa2bd1dc37"]
+#[derive(Debug, Clone, Copy, TypePath, Default, PartialEq)]
 pub struct BoxShader;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
@@ -58,7 +56,7 @@ impl ExtractToShader for ButtonBoxShaderExtraction {
         ShaderProportions,
         ShaderSecondColor,
         ShaderBorder,
-        ButtonInteraction,
+        ButtonInteraction, //todo make interaction optional
     );
     type ResourceParams<'w> = (Res<'w, PressedButton>, Res<'w, Time>);
 
@@ -151,6 +149,8 @@ impl ParameterizedShader for BoxShader {
     }
 
     const FRAME: Frame = Frame::square(1.0);
+
+    const UUID: u128 = 0xa31d800c02a24db78aaf1caa2bd1dc37;
 }
 
 #[repr(C)]
@@ -214,7 +214,7 @@ impl From<f32> for ShaderRounding {
         Self { rounding }
     }
 }
-impl Default for ShaderRounding{
+impl Default for ShaderRounding {
     fn default() -> Self {
         Self { rounding: 0.0 }
     }
@@ -231,7 +231,10 @@ pub struct ShaderProportions {
 
 impl Default for ShaderProportions {
     fn default() -> Self {
-        Self { width: 1.0, height: 1.0 }
+        Self {
+            width: 1.0,
+            height: 1.0,
+        }
     }
 }
 
@@ -244,8 +247,7 @@ impl From<Vec2> for ShaderProportions {
     }
 }
 
-#[derive(Debug, Clone, Copy, TypeUuid, Default, PartialEq)]
-#[uuid = "df3562db-60d2-471a-81ac-616fb633c7e7"]
+#[derive(Debug, Clone, Copy, TypePath, Default, PartialEq)]
 pub struct BoxWithBorderShader;
 
 impl ExtractToShader for BoxWithBorderShader {
@@ -291,6 +293,8 @@ impl ParameterizedShader for BoxWithBorderShader {
     }
 
     const FRAME: Frame = Frame::square(1.0);
+
+    const UUID: u128 = 0xdf3562db60d2471a81ac616fb633c7e7;
 }
 
 #[repr(C)]
@@ -386,8 +390,7 @@ pub struct ColorParams {
 
 impl ShaderParams for ColorParams {}
 
-#[derive(Debug, TypeUuid, Default, PartialEq, Clone, Copy)]
-#[uuid = "a105f872-0a73-4226-a9ee-92518c947847"]
+#[derive(Debug, TypePath, Default, PartialEq, Clone, Copy)]
 pub struct SparkleShader;
 
 impl ExtractToShader for SparkleShader {
@@ -423,6 +426,8 @@ impl ParameterizedShader for SparkleShader {
     }
 
     const FRAME: Frame = Frame::square(1.0);
+
+    const UUID: u128 = 0xa105f8720a734226a9ee92518c947847;
 }
 
 #[repr(C)]
@@ -444,28 +449,28 @@ pub struct SparkleParams {
 impl ShaderParams for SparkleShaderParams {}
 
 pub(crate) const SIMPLE_FILL_IMPORT: FragmentImport = FragmentImport {
-    path: "shaders/fill/simple.wgsl",
+    path: "embedded://ws_game/../../assets/shaders/fill/simple.wgsl",
     import_path: "fill::simple",
 };
 
 pub const HORIZONTAL_GRADIENT_FILL: FragmentImport = FragmentImport {
     //TODO rename
-    path: "shaders/fill/horizontal_gradient.wgsl",
+    path: "embedded://ws_game/../../assets/shaders/fill/horizontal_gradient.wgsl",
     import_path: "fill::horizontal_gradient",
 };
 
 pub const BOX_SDF_IMPORT: FragmentImport = FragmentImport {
-    path: "shaders/sdf/box.wgsl",
+    path: "embedded://ws_game/../../assets/shaders/sdf/box.wgsl",
     import_path: "shaders::box",
 };
 
 const FILL_WITH_OUTLINE_IMPORT: FragmentImport = FragmentImport {
-    path: "shaders/fill/fill_with_outline.wgsl",
+    path: "embedded://ws_game/../../assets/shaders/fill/fill_with_outline.wgsl",
     import_path: "fill::fill_with_outline",
 };
 
 const SPARKLE_IMPORT: FragmentImport = FragmentImport {
-    path: "shaders/fill/sparkle.wgsl",
+    path: "embedded://ws_game/../../assets/shaders/fill/sparkle.wgsl",
     import_path: "fill::sparkle",
 };
 

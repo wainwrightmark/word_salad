@@ -1,14 +1,12 @@
-use bevy::math::Vec2;
+
 use strum::{Display, EnumCount, EnumIs, EnumIter, IntoEnumIterator};
 use ws_core::{
-    font_icons, layout::entities::*, LayoutSizing, LayoutStructure, LayoutStructureWithFont,
-    Spacing,
+    font_icons, layout::entities::*,
 };
-use ws_levels::level_group::LevelGroup;
+
 
 use crate::prelude::*;
 
-use super::{MENU_BUTTON_HEIGHT, MENU_BUTTON_SPACING, MENU_BUTTON_WIDTH};
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Display, EnumIs, EnumCount, EnumIter,
@@ -20,12 +18,25 @@ pub enum WordSaladMenuLayoutEntity {
     NextPuzzle = 4,
 }
 
-impl WordSaladMenuLayoutEntity {
-    pub fn index(&self) -> usize {
+impl MenuButtonsLayout for WordSaladMenuLayoutEntity {
+    type Context = ();
+
+    fn index(&self) -> usize {
         *self as usize
     }
 
-    pub const COUNT: usize = 1 + LevelGroup::COUNT;
+    fn count(_context: &Self::Context) -> usize {
+        Self::COUNT
+    }
+
+    fn iter_all(_context: &Self::Context) -> impl Iterator<Item = Self> {
+        Self::iter()
+    }
+
+    const FONT_SIZE_SMALL: bool = true;
+}
+
+impl WordSaladMenuLayoutEntity {
 
     pub fn get_text(
         &self,
@@ -47,16 +58,22 @@ impl WordSaladMenuLayoutEntity {
         (s1.to_string(), "\u{f096}".to_string())
     }
 
-    pub fn is_complete(&self, completion: &DailyChallengeCompletion, daily_challenges: &DailyChallenges) -> bool {
+    pub fn is_complete(
+        &self,
+        completion: &DailyChallengeCompletion,
+        daily_challenges: &DailyChallenges,
+    ) -> bool {
         let today_index = DailyChallenges::get_today_index();
 
         let index = match self {
             WordSaladMenuLayoutEntity::TodayPuzzle => Some(today_index),
             WordSaladMenuLayoutEntity::YesterdayPuzzle => today_index.checked_sub(1),
             WordSaladMenuLayoutEntity::EreYesterdayPuzzle => today_index.checked_sub(2),
-            WordSaladMenuLayoutEntity::NextPuzzle => today_index
-                .checked_sub(3)
-                .and_then(|x| completion.get_next_incomplete_daily_challenge(x, daily_challenges).level_index()),
+            WordSaladMenuLayoutEntity::NextPuzzle => today_index.checked_sub(3).and_then(|x| {
+                completion
+                    .get_next_incomplete_daily_challenge(x, daily_challenges)
+                    .level_index()
+            }),
         };
 
         let Some(index) = index else {
@@ -77,9 +94,9 @@ impl WordSaladMenuLayoutEntity {
             WordSaladMenuLayoutEntity::TodayPuzzle => today_index,
             WordSaladMenuLayoutEntity::YesterdayPuzzle => today_index.checked_sub(1)?,
             WordSaladMenuLayoutEntity::EreYesterdayPuzzle => today_index.checked_sub(2)?,
-            WordSaladMenuLayoutEntity::NextPuzzle => {
-                completion.get_next_incomplete_daily_challenge(today_index.checked_sub(3)?, daily_challenges).level_index()?
-            }
+            WordSaladMenuLayoutEntity::NextPuzzle => completion
+                .get_next_incomplete_daily_challenge(today_index.checked_sub(3)?, daily_challenges)
+                .level_index()?,
         };
 
         let level: &ws_core::prelude::DesignedLevel = daily_challenges.levels.get(index)?;
@@ -92,37 +109,58 @@ impl WordSaladMenuLayoutEntity {
     }
 }
 
-impl LayoutStructure for WordSaladMenuLayoutEntity {
-    type Context<'a> = SelfieMode;
 
-    fn size(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
-        Vec2 {
-            x: MENU_BUTTON_WIDTH,
-            y: MENU_BUTTON_HEIGHT,
+impl LayoutStructureDoubleTextButton for WordSaladMenuLayoutEntity {
+    type TextContext<'a> = MenuContextWrapper<'a>;
+
+    fn double_text(
+        &self,
+        _context: &Self::Context<'_>,
+        text_context: &Self::TextContext<'_>,
+    ) -> (String, String) {
+        self.get_text(
+            text_context.daily_challenge_completion.as_ref(),
+            text_context.daily_challenges.as_ref(),
+        )
+    }
+
+    fn left_font(&self) -> &'static str {
+        BUTTONS_FONT_PATH
+    }
+
+    fn right_font(&self) -> &'static str {
+        ICON_FONT_PATH
+    }
+
+    fn text_color(
+        &self,
+        _context: &Self::Context<'_>,
+        _text_context: &Self::TextContext<'_>,
+    ) -> BasicColor {
+        palette::MENU_BUTTON_TEXT_REGULAR
+    }
+
+    fn fill_color(
+        &self,
+        background_type: ws_core::prelude::BackgroundType,
+        _context: &Self::Context<'_>,
+        text_context: &Self::TextContext<'_>,
+    ) -> BasicColor {
+        if self.is_complete(
+            &text_context.daily_challenge_completion,
+            &text_context.daily_challenges,
+        ) {
+            background_type.menu_button_complete_fill()
+        } else {
+            background_type.menu_button_incomplete_fill()
         }
     }
 
-    fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
-        Vec2 {
-            x: (IDEAL_WIDTH - MENU_BUTTON_WIDTH) / 2.,
-            y: (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, context))
-                + Spacing::Centre.apply(
-                    IDEAL_HEIGHT - (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, context)),
-                    MENU_BUTTON_HEIGHT + MENU_BUTTON_SPACING,
-                    super::MENU_VIRTUAL_CHILDREN,
-                    self.index(),
-                ),
-        }
-    }
-
-    fn iter_all(_context: &Self::Context<'_>) -> impl Iterator<Item = Self> {
-        Self::iter()
-    }
-}
-
-impl LayoutStructureWithFont for WordSaladMenuLayoutEntity {
-    type FontContext = ();
-    fn font_size(&self, _: &()) -> f32 {
-        MENU_BUTTON_FONT_SIZE_SMALL
+    fn is_disabled(
+        &self,
+        _context: &Self::Context<'_>,
+        _text_context: &Self::TextContext<'_>,
+    )-> bool {
+        false
     }
 }

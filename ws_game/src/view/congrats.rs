@@ -23,7 +23,8 @@ pub struct CongratsContext {
     pub video_resource: VideoResource,
     pub streak: Streak,
     pub level_time: LevelTime,
-    pub daily_challenges: DailyChallenges
+    pub daily_challenges: DailyChallenges,
+    pub menu_state: MenuState,
 }
 
 impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for CongratsContextWrapper<'w> {
@@ -38,7 +39,7 @@ impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for CongratsContextWrapper<'w>
             streak: Res::clone(&value.streak),
             level_time: Res::clone(&value.level_time),
             daily_challenges: Res::clone(&value.daily_challenges),
-
+            menu_state: Res::clone(&value.menu_state),
         }
     }
 }
@@ -142,7 +143,9 @@ impl MavericNode for CongratsView {
                     Vec3::ONE
                 };
                 let transition = TransitionBuilder::default()
-                    .then_wait(Duration::from_secs_f32(TRANSITION_WAIT_SECS + TRANSITION_SECS))
+                    .then_wait(Duration::from_secs_f32(
+                        TRANSITION_WAIT_SECS + TRANSITION_SECS,
+                    ))
                     .then_set_value(Vec3::ONE)
                     //.then_ease(Vec3::ONE, (1.0 / TRANSITION_SECS).into(), Ease::CubicOut)
                     .build();
@@ -232,6 +235,10 @@ impl MavericNode for CongratsView {
                     );
                 }
 
+                if !context.menu_state.is_closed(){
+                    return; //TODO change control flow
+                }
+
                 let button_count = CongratsLayoutEntity::get_button_count(&congrats_context);
 
                 let button_text_color = if selfie_mode.is_selfie_mode {
@@ -259,7 +266,7 @@ impl MavericNode for CongratsView {
                                     &context.daily_challenge_completion,
                                     &context.sequence_completion,
                                     &Purchases::default(), //don't actually worry about purchases here :)
-                                    &context.daily_challenges
+                                    &context.daily_challenges,
                                 );
 
                                 match next_level {
@@ -290,6 +297,7 @@ impl MavericNode for CongratsView {
                             }
                         },
                         CongratsButton::MoreLevels => "More Puzzles".to_string(),
+                        CongratsButton::ResetPuzzle => "Reset Puzzle".to_string(),
                         #[cfg(target_arch = "wasm32")]
                         CongratsButton::Share => "Share".to_string(),
                     };
@@ -358,7 +366,7 @@ impl MavericNode for StatisticNode {
                     font_size: *number_font_size,
                     color: *text_color,
                     font: BUTTONS_FONT_PATH,
-                    alignment: TextAlignment::Center,
+                    justify_text: JustifyText::Center,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     text_2d_bounds: Text2dBounds::default(),
                     text_anchor: Anchor::Center,
@@ -378,7 +386,7 @@ impl MavericNode for StatisticNode {
                     font_size: *text_font_size,
                     color: *text_color,
                     font: BUTTONS_FONT_PATH,
-                    alignment: TextAlignment::Center,
+                    justify_text: JustifyText::Center,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     text_2d_bounds: Text2dBounds::default(),
                     text_anchor: Anchor::BottomCenter,
@@ -427,7 +435,7 @@ impl MavericNode for TimerNode {
                     font_size: *text_font_size,
                     color: *text_color,
                     font: BUTTONS_FONT_PATH,
-                    alignment: TextAlignment::Center,
+                    justify_text: JustifyText::Center,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     text_2d_bounds: Text2dBounds::default(),
                     text_anchor: Anchor::Center,

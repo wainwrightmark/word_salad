@@ -23,6 +23,7 @@ body {
   height: 100%;
   z-index: 10;
   position: relative;
+  outline-style: none;
 }
 
 #videoElement {

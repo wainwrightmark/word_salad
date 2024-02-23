@@ -2,10 +2,10 @@ use std::sync::atomic::AtomicUsize;
 
 pub use crate::prelude::*;
 use crate::{
-    achievements::AchievementsPlugin, input::InputPlugin, motion_blur::MotionBlurPlugin,
-    purchases::PurchasesPlugin,
+    achievements::AchievementsPlugin, input::InputPlugin,
+    motion_blur::MotionBlurPlugin, purchases::PurchasesPlugin,
 };
-use bevy::{log::LogPlugin, window::RequestRedraw};
+use bevy::{asset::embedded_asset, log::LogPlugin, window::RequestRedraw};
 use nice_bevy_utils::{async_event_writer, window_size::WindowSizePlugin, CanRegisterAsyncEvent};
 use ws_core::layout::entities::*;
 
@@ -33,17 +33,10 @@ pub fn go() {
 
     app.insert_resource(Msaa::Off)
         .add_plugins(
-            DefaultPlugins
-                .set(window_plugin)
-                .set(log_plugin)
-                .build()
-                .add_before::<bevy::asset::AssetPlugin, _>(
-                    bevy_embedded_assets::EmbeddedAssetPlugin {
-                        mode: bevy_embedded_assets::PluginMode::ReplaceDefault,
-                    },
-                ),
+            DefaultPlugins.set(window_plugin).set(log_plugin).build(),
         )
         .add_systems(Startup, setup_system);
+    app.add_plugins(EmbeddedAssetPlugin);
 
     app.add_plugins(ClearColorPlugin);
 
@@ -51,6 +44,7 @@ pub fn go() {
     app.register_maveric::<ViewRoot>();
     app.register_maveric::<RecordingButtonRoot>();
     app.register_maveric::<WordSaladLogoRoot>();
+    app.register_maveric::<MenuRoot>();
     app.add_plugins(HintsRemainingPlugin);
     app.add_plugins(StatePlugin);
     app.add_plugins(LevelTimePlugin);
@@ -63,10 +57,10 @@ pub fn go() {
     app.add_plugins(WordsPlugin);
     app.add_plugins(PurchasesPlugin);
     app.add_plugins(AchievementsPlugin);
+
     #[cfg(any(feature = "ios", feature = "android"))]
     app.add_plugins(NotificationPlugin);
 
-    app.register_transition::<BackgroundColorLens>();
     app.register_transition::<TransformRotationYLens>();
     app.register_transition::<TransformTranslationLens>();
     app.register_transition::<TransformScaleLens>();
@@ -101,7 +95,6 @@ pub fn go() {
     app.add_systems(Startup, set_status_bar.after(hide_splash));
 
     app.insert_resource(bevy::winit::WinitSettings {
-        return_from_run: false,
         focused_mode: bevy::winit::UpdateMode::Reactive {
             wait: std::time::Duration::from_secs(1),
         },
@@ -162,8 +155,12 @@ fn choose_level_on_game_load(
                     if let Some(level) = new_level.level(&daily_challenges).left() {
                         return Some(new_level);
                     } else {
-                        return Some(CurrentLevel::NonLevel(NonLevel::DailyChallengeNotLoaded));
+                        return Some(CurrentLevel::NonLevel(NonLevel::DailyChallengeNotLoaded {
+                            goto_level: daily_index,
+                        }));
                     }
+                } else {
+                    return None;
                 }
             }
 
@@ -180,6 +177,8 @@ fn choose_level_on_game_load(
 
                 if !current_level.as_ref().eq(&custom_level) {
                     return Some(custom_level);
+                } else {
+                    return None;
                 }
             }
         }
@@ -255,10 +254,12 @@ async fn disable_back_async<'a>(_writer: async_event_writer::AsyncEventWriter<Ap
     {
         info!("Disabling back");
         let result = capacitor_bindings::app::App::add_back_button_listener(move |_| {
-            //info!("Sending back event");
-            _writer
-                .send_blocking(AppLifeCycleEvent::BackPressed)
-                .unwrap();
+            let writer = _writer.clone();
+            crate::asynchronous::spawn_and_run(async move {
+                writer
+                    .send_async_or_panic(AppLifeCycleEvent::BackPressed)
+                    .await
+            });
         })
         .await;
 
@@ -286,11 +287,11 @@ async fn on_resume(_writer: async_event_writer::AsyncEventWriter<AppLifeCycleEve
     {
         //info!("Setting on_resume");
         let result = capacitor_bindings::app::App::add_state_change_listener(move |x| {
-            _writer
-                .send_blocking(AppLifeCycleEvent::StateChange {
-                    is_active: x.is_active,
-                })
-                .unwrap();
+            let writer = _writer.clone();
+            let event = AppLifeCycleEvent::StateChange {
+                is_active: x.is_active,
+            };
+            crate::asynchronous::spawn_and_run(async move { writer.send_async_or_panic(event).await });
         })
         .await;
 
@@ -302,5 +303,34 @@ async fn on_resume(_writer: async_event_writer::AsyncEventWriter<AppLifeCycleEve
                 crate::logging::try_log_error_message(format!("{err}"));
             }
         }
+    }
+}
+
+pub struct EmbeddedAssetPlugin;
+
+impl Plugin for EmbeddedAssetPlugin {
+    fn build(&self, app: &mut App) {
+        embedded_asset!(app, "", "../../assets/fonts/Montserrat-Bold.ttf");
+        embedded_asset!(app, "", "../../assets/fonts/Montserrat-Regular.ttf");
+        embedded_asset!(app, "", "../../assets/fonts/Montserrat-SemiBold.ttf");
+        embedded_asset!(app, "", "../../assets/fonts/ws_icons.ttf");
+
+        embedded_asset!(app, "", "../../assets/images/logo1024.png");
+        embedded_asset!(app, "", "../../assets/images/steks_button.png");
+
+        embedded_asset!(app, "", "../../assets/shaders/fill/fill_with_outline.wgsl");
+        embedded_asset!(app, "", "../../assets/shaders/fill/fireworks.wgsl");
+        embedded_asset!(app, "", "../../assets/shaders/fill/gradient.wgsl");
+        embedded_asset!(
+            app,
+            "",
+            "../../assets/shaders/fill/horizontal_gradient.wgsl"
+        );
+        embedded_asset!(app, "", "../../assets/shaders/fill/simple.wgsl");
+        embedded_asset!(app, "", "../../assets/shaders/fill/sparkle.wgsl");
+
+        embedded_asset!(app, "", "../../assets/shaders/sdf/box.wgsl");
+        embedded_asset!(app, "", "../../assets/shaders/sdf/circle.wgsl");
+        embedded_asset!(app, "", "../../assets/shaders/sdf/word_line_segment.wgsl");
     }
 }

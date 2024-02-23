@@ -37,7 +37,6 @@ async fn setup_notifications_async(
         .small_icon("notification_icon")
         .large_icon("notification_icon")
         .icon_color("#86AEEA")
-
         .schedule(ScheduleOn::builder().hour(6).build())
         .auto_cancel(true)
         .build();
@@ -58,9 +57,14 @@ async fn setup_notifications_async(
                 CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished)
             };
 
-            writer
-                .send_blocking(level_to_send.into())
-                .expect("Channel closed prematurely");
+            let change_level_event: ChangeLevelEvent = level_to_send.into();
+
+            {
+                let writer = writer.clone();
+                crate::asynchronous::spawn_and_run(async move {
+                    writer.send_async_or_panic(change_level_event).await
+                });
+            }
         }
     };
 

@@ -77,6 +77,24 @@ impl DisplayWord {
     }
 }
 
+impl PartialOrd for DisplayWord{
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.characters
+            .iter()
+            .map(|x| x.as_char())
+            .partial_cmp(other.characters.iter().map(|x| x.as_char()))
+    }
+}
+
+impl Ord for DisplayWord{
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.characters
+            .iter()
+            .map(|x| x.as_char())
+            .cmp(other.characters.iter().map(|x| x.as_char()))
+    }
+}
+
 impl FromStr for DisplayWord {
     type Err = &'static str;
 

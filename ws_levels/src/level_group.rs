@@ -22,12 +22,14 @@ use crate::level_sequence::LevelSequence;
 pub enum LevelGroup {
     Geography,
     NaturalWorld,
+    USSports,
 }
 
 impl LevelGroup {
     pub fn total_count(&self) -> usize {
         self.get_sequences().iter().map(|x| x.level_count()).sum()
     }
+
 
     pub fn get_sequences(&self) -> &'static [LevelSequence] {
         use LevelSequence::*;
@@ -37,14 +39,24 @@ impl LevelGroup {
                 EuropeanCountries,
                 SouthAndEastAsianCountries,
                 MiddleEasternCountries,
+                AfricanCountries,
                 EuropeanCapitals,
                 SouthAndEastAsianCapitals,
                 MiddleEasternCapitals,
             ],
 
             LevelGroup::NaturalWorld => &[
-                Mammals, Birds, Insects, Fruit, Vegetables, Gemstones, Elements,
+                Mammals,
+                Birds,
+                Insects,
+                ReptilesAndAmphibians,
+                Fruit,
+                Vegetables,
+                Gemstones,
+                Elements,
             ],
+
+            LevelGroup::USSports => &[NFLTeams, NBATeams, MLBTeams, NHLTeams],
         }
     }
 
@@ -58,6 +70,7 @@ impl LevelGroup {
         match self {
             LevelGroup::Geography => "Geography",
             LevelGroup::NaturalWorld => "Natural World",
+            LevelGroup::USSports => "US Sports",
         }
     }
 }

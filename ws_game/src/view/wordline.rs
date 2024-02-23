@@ -1,5 +1,4 @@
 use crate::{prelude::*, startup, z_indices};
-use bevy::reflect::TypeUuid;
 use bevy_param_shaders::prelude::*;
 use itertools::Itertools;
 use ws_core::layout::entities::*;
@@ -22,6 +21,7 @@ pub struct WordLine {
     pub should_hide: bool,
     pub close_to_solution: bool,
     pub selfie_mode: SelfieMode,
+    pub special_colors: Option<Vec<BasicColor>>
 }
 
 impl MavericNode for WordLine {
@@ -76,7 +76,7 @@ impl MavericNode for WordLine {
                 let rect = args
                     .context
                     .get_rect(&LayoutGridTile(*tile), &args.node.selfie_mode);
-                let color = index_to_color(0);
+                let color = index_to_color(0, &args.node.special_colors);
 
                 commands.add_child(
                     0,
@@ -113,14 +113,14 @@ impl MavericNode for WordLine {
 
                     let translation =
                         ((rect_f.centre() + rect_t.centre()) * 0.5).extend(z_indices::WORD_LINE);
-                    let color = index_to_color(line_index);
+                    let color = index_to_color(line_index, &args.node.special_colors);
 
                     if Some(direction) != last_direction {
                         last_direction = Some(direction);
                         line_index = line_index.wrapping_add(1);
                     }
 
-                    let color2 = index_to_color(line_index);
+                    let color2 = index_to_color(line_index, &args.node.special_colors);
 
                     commands.add_child(
                         index as u32,
@@ -208,17 +208,22 @@ fn get_direction(from: &Tile, to: &Tile) -> u32 {
     }
 }
 
-fn index_to_color(index: usize) -> Color {
+fn index_to_color(index: usize, special_colors: &Option<Vec<BasicColor>>) -> Color {
     //hsl(140, 62%, 44%)
 
-    let hue = (((index as f32) * 20.0) + 140.0) % 360.0;
+    if let Some(special_colors) = special_colors{
+        special_colors[index % special_colors.len()].convert_color()
+    }else{
+        let hue = (((index as f32) * 20.0) + 140.0) % 360.0;
 
-    Color::hsl(hue, 0.62, 0.44)
+        Color::hsl(hue, 0.62, 0.44)
+    }
+
+
 }
 
 #[repr(C)]
-#[derive(Debug, Reflect, Clone, Copy, TypeUuid, Default, PartialEq)]
-#[uuid = "a68d3916-1385-4269-a512-4561eccd664d"]
+#[derive(Debug, Reflect, Clone, Copy, Default, PartialEq)]
 struct WordLineSegmentShader;
 
 impl ExtractToShader for WordLineSegmentShader {
@@ -264,7 +269,7 @@ impl ParameterizedShader for WordLineSegmentShader {
 
     fn imports() -> impl Iterator<Item = bevy_param_shaders::prelude::FragmentImport> {
         const WORDLINE_IMPORT: FragmentImport = FragmentImport {
-            path: "shaders/sdf/word_line_segment.wgsl",
+            path: "embedded://ws_game/../../assets/shaders/sdf/word_line_segment.wgsl",
             import_path: "sdf::word_line_segment",
         };
 
@@ -272,6 +277,8 @@ impl ParameterizedShader for WordLineSegmentShader {
     }
 
     const FRAME: Frame = Frame::square(1.0); // this seems the lowest we can make it (keep in mind the pulsing)
+
+    const UUID: u128 = 0xa68d391613854269a5124561eccd664d;
 }
 
 #[derive(Debug, Clone, Component, PartialEq, Default)]

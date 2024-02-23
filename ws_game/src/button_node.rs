@@ -55,12 +55,12 @@ impl MavericNode for WsImageButtonNode {
                 let height = rect.height() * ratio;
                 let width = image_aspect_ratio * height;
 
-                let text_translation = centre.extend(crate::z_indices::MENU_BUTTON_TEXT);
+                let sprite_translation = centre.extend(crate::z_indices::MENU_BUTTON_TEXT);
 
                 commands.add_child(
-                    "text",
+                    "sprite",
                     SpriteNode {
-                        texture_path: &image_path,
+                        texture_path: image_path,
                         sprite: Sprite {
                             color: Color::WHITE,
                             flip_x: false,
@@ -73,7 +73,7 @@ impl MavericNode for WsImageButtonNode {
                             }),
                         },
                     }
-                    .with_bundle(Transform::from_translation(text_translation)),
+                    .with_bundle(Transform::from_translation(sprite_translation)),
                     &(),
                 );
 
@@ -144,7 +144,7 @@ impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> Maveri
                         font_size: *font_size,
                         color: *text_color,
                         font: BUTTONS_FONT_PATH,
-                        alignment: TextAlignment::Center,
+                        justify_text: JustifyText::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         text_2d_bounds: Default::default(),
                         text_anchor: Default::default(),
@@ -238,7 +238,7 @@ impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> Maveri
                         font_size: *font_size,
                         color: *text_color,
                         font: left_font,
-                        alignment: TextAlignment::Left,
+                        justify_text: JustifyText::Left,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         text_2d_bounds: Default::default(),
                         text_anchor: bevy::sprite::Anchor::CenterLeft,
@@ -254,7 +254,7 @@ impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> Maveri
                         font_size: *font_size,
                         color: *text_color,
                         font: right_font,
-                        alignment: TextAlignment::Right,
+                        justify_text: JustifyText::Right,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         text_2d_bounds: Default::default(),
                         text_anchor: bevy::sprite::Anchor::CenterRight,

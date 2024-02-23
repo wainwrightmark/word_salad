@@ -35,10 +35,10 @@ pub enum NonLevel {
     BeforeTutorial,
     AfterCustomLevel,
     DailyChallengeFinished,
-    DailyChallengeNotLoaded,
-    DailyChallengeLoading,
+    DailyChallengeNotLoaded { goto_level: usize },
+    DailyChallengeLoading { goto_level: usize },
     DailyChallengeReset,
-    DailyChallengeCountdown { todays_index: usize },
+    DailyChallengeCountdown { todays_index: usize }, //TODO remove
 
     LevelSequenceMustPurchaseGroup(LevelSequence),
     LevelSequenceAllFinished(LevelSequence),
@@ -77,7 +77,7 @@ impl CurrentLevel {
 
     /// Whether this level should be counted to towards total interstitial ads
     pub fn count_for_interstitial_ads(&self, purchases: &Purchases) -> bool {
-        if purchases.avoid_ads_purchased {
+        if purchases.remove_ads_purchased {
             return false;
         }
 
@@ -123,7 +123,7 @@ impl CurrentLevel {
             },
             CurrentLevel::DailyChallenge { index } => match daily_challenges.levels.get(*index) {
                 Some(cl) => Either::Left(cl),
-                None => Either::Right(NonLevel::DailyChallengeNotLoaded),
+                None => Either::Right(NonLevel::DailyChallengeNotLoaded { goto_level: *index }),
             },
             CurrentLevel::NonLevel(nl) => Either::Right(*nl),
         }

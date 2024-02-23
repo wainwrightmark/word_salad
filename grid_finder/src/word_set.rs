@@ -29,4 +29,3 @@ impl<const W: usize> Deref for WordSet<W> {
         &self.0
     }
 }
-

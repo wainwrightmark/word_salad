@@ -30,8 +30,12 @@ impl Plugin for AdsPlugin {
 
 #[derive(Debug, Event)]
 pub enum AdRequestEvent {
-    RequestReward(HintEvent),
+    RequestReward {
+        event: Option<HintEvent>,
+        hints: usize,
+    },
     RequestInterstitial,
+    RequestConsent,
 }
 
 #[derive(Debug, Default, Resource, MavericContext)]
@@ -39,7 +43,7 @@ pub struct AdState {
     pub can_show_ads: Option<bool>,
     pub reward_ad: Option<AdLoadInfo>,
     pub interstitial_ad: Option<AdLoadInfo>,
-    pub hint_wanted: Option<HintEvent>,
+    pub hint_wanted: Option<(usize, Option<HintEvent>)>,
 }
 
 #[derive(Debug, Default, Resource, MavericContext)]
@@ -52,19 +56,25 @@ pub struct InterstitialProgressState {
 fn handle_ad_requests(
     mut events: EventReader<AdRequestEvent>,
     mut ad_state: ResMut<AdState>,
-    writer: AsyncEventWriter<AdEvent>,
+    mut sync_writer:  EventWriter<AdEvent>,
+    async_writer: AsyncEventWriter<AdEvent>,
 ) {
     for event in events.read() {
         match event {
-            AdRequestEvent::RequestReward(hint_event) => {
+            AdRequestEvent::RequestConsent => {
+                #[cfg(any(feature = "android", feature = "ios", feature = "web"))]
+                crate::logging::do_or_report_error(reshow_consent_form());
+            }
+
+            AdRequestEvent::RequestReward { event, hints } => {
                 #[cfg(any(feature = "ios", feature = "android"))]
                 {
                     if ad_state.can_show_ads == Some(true) {
                         if ad_state.reward_ad.is_some() {
                             ad_state.reward_ad = None;
-                            ad_state.hint_wanted = Some(*hint_event);
+                            ad_state.hint_wanted = Some((*hints, *event));
                             asynchronous::spawn_and_run(mobile_only::try_show_reward_ad(
-                                writer.clone(),
+                                async_writer.clone(),
                             ));
                         } else {
                             warn!("Cannot request reward with admob (no reward ad is loaded)")
@@ -76,14 +86,12 @@ fn handle_ad_requests(
 
                 #[cfg(not(any(feature = "ios", feature = "android")))]
                 {
-                    ad_state.hint_wanted = Some(*hint_event);
+                    ad_state.hint_wanted = Some((*hints, *event));
                     crate::platform_specific::show_toast_on_web("We would show a reward ad here");
-                    writer
-                        .send_blocking(AdEvent::RewardAdRewarded(AdMobRewardItem {
-                            reward_type: "blah".to_string(),
-                            amount: 0,
-                        }))
-                        .unwrap();
+                    sync_writer.send(AdEvent::RewardAdRewarded(AdMobRewardItem {
+                        reward_type: "blah".to_string(),
+                        amount: 0,
+                    }));
                 }
             }
             AdRequestEvent::RequestInterstitial => {
@@ -93,7 +101,7 @@ fn handle_ad_requests(
                         if ad_state.interstitial_ad.is_some() {
                             ad_state.interstitial_ad = None;
                             asynchronous::spawn_and_run(mobile_only::try_show_interstitial_ad(
-                                writer.clone(),
+                                async_writer.clone(),
                             ));
                         } else {
                             warn!("Cannot request interstitial with admob (ads are not set up)")
@@ -107,11 +115,22 @@ fn handle_ad_requests(
                     crate::platform_specific::show_toast_on_web(
                         "We would show an interstitial ad here",
                     );
-                    writer.send_blocking(AdEvent::InterstitialShowed).unwrap();
+                    sync_writer.send(AdEvent::InterstitialShowed);
                 }
             }
         }
     }
+}
+
+#[allow(dead_code)]
+async fn reshow_consent_form() -> Result<(), capacitor_bindings::error::Error> {
+    #[cfg(feature = "android")] //todo also ios
+    {
+        let _r = Admob::show_consent_form().await?;
+    }
+    show_toast_on_web("We would show GDPR");
+
+    Ok(())
 }
 
 #[allow(unused_variables)]
@@ -176,15 +195,16 @@ fn handle_ad_events(
             AdEvent::RewardAdRewarded(reward) => {
                 info!("admob Reward ad rewarded {reward:?}",);
 
-                hints.hints_remaining += HINTS_REWARD_AMOUNT;
-                hints.total_bought_hints += HINTS_REWARD_AMOUNT;
-
                 #[cfg(any(feature = "ios", feature = "android"))]
                 {
                     asynchronous::spawn_and_run(mobile_only::try_load_reward_ad(writer.clone()));
                 }
-                if let Some(hint_event) = ad_state.hint_wanted.take() {
-                    hint_events.send(hint_event);
+                if let Some((hint_count, hint_event)) = ad_state.hint_wanted.take() {
+                    hints.hints_remaining += hint_count;
+                    hints.total_bought_hints += hint_count;
+                    if let Some(hint_event) = hint_event {
+                        hint_events.send(hint_event);
+                    }
                 }
             }
             AdEvent::FailedToLoadRewardAd(s) => {
@@ -232,11 +252,11 @@ pub enum AdEvent {
 }
 
 #[allow(dead_code)]
-const BETWEEN_LEVELS_INTERSTITIAL_AD_ID: &'static str = "ca-app-pub-5238923028364185/8193403915";
+const BETWEEN_LEVELS_INTERSTITIAL_AD_ID: &str = "ca-app-pub-5238923028364185/8193403915"; //todo different on ios
 #[allow(dead_code)]
-const BUY_HINTS_REWARD_AD_ID: &'static str = "ca-app-pub-5238923028364185/7292181940";
+const BUY_HINTS_REWARD_AD_ID: &str = "ca-app-pub-5238923028364185/7292181940"; //todo different on ios
 
-const HINTS_REWARD_AMOUNT: usize = 5;
+//const HINTS_REWARD_AMOUNT: usize = 5;
 
 #[cfg(any(feature = "ios", feature = "android"))]
 mod mobile_only {
@@ -286,7 +306,6 @@ mod mobile_only {
             }
         };
 
-
         #[cfg(any(feature = "android"))]
         {
             let consent_info = Admob::request_consent_info(AdmobConsentRequestOptions {
@@ -296,23 +315,22 @@ mod mobile_only {
             })
             .await
             .map_err(|x| x.to_string())?;
-    
+
             info!("Consent Info {consent_info:?}");
-    
+
             if consent_info.is_consent_form_available
                 && consent_info.status == AdmobConsentStatus::Required
             {
-                let consent_info = Admob::show_consent_form()
+                let _consent_info = Admob::show_consent_form()
                     .await
                     .map_err(|x| x.to_string())?;
-                if consent_info.status == AdmobConsentStatus::Required {
-                    return Err("Consent info still required".to_string());
-                } else if consent_info.status == AdmobConsentStatus::Unknown {
-                    return Err("Consent info unknown".to_string());
-                }
+                // if consent_info.status == AdmobConsentStatus::Required {
+                //     return Err("Consent info still required".to_string());
+                // } else if consent_info.status == AdmobConsentStatus::Unknown {
+                //     return Err("Consent info unknown".to_string());
+                // }
             }
         }
-        
 
         Ok(())
     }

@@ -7,7 +7,7 @@ pub struct BasicColor {
 }
 
 impl BasicColor {
-    pub  const fn rgba(r: f32, g: f32, b: f32, a: f32) -> Self {
+    pub const fn rgba(r: f32, g: f32, b: f32, a: f32) -> Self {
         Self {
             red: r,
             green: g,
@@ -33,6 +33,69 @@ impl BasicColor {
     pub(crate) const NONE: BasicColor = BasicColor::rgba(0.0, 0.0, 0.0, 0.0);
     /// <div style="background-color:rgb(100%, 100%, 100%); width: 10px; padding: 10px; border: 1px solid;"></div>
     pub(crate) const WHITE: BasicColor = BasicColor::rgb(1.0, 1.0, 1.0);
+
+    pub fn try_from_str(hex: &str) -> Option<Self> {
+        let hex = hex.strip_prefix('#').unwrap_or(hex);
+
+        let (r,g,b,a) =match *hex.as_bytes() {
+            // RGB
+            [r, g, b] => {
+                let [r, g, b, ..] = Self::decode_hex([r, r, g, g, b, b])?;
+                (r,g,b, u8::MAX)
+            }
+            // RGBA
+            [r, g, b, a] => {
+                let [r, g, b, a, ..] = Self::decode_hex([r, r, g, g, b, b, a, a])?;
+                (r,g,b, a)
+            }
+            // RRGGBB
+            [r1, r2, g1, g2, b1, b2] => {
+                let [r, g, b, ..] = Self::decode_hex([r1, r2, g1, g2, b1, b2])?;
+                (r,g,b, u8::MAX)
+            }
+            // RRGGBBAA
+            [r1, r2, g1, g2, b1, b2, a1, a2] => {
+                let [r, g, b, a, ..] = Self::decode_hex([r1, r2, g1, g2, b1, b2, a1, a2])?;
+                (r,g,b, a)
+            }
+            _ => {return None;},
+        };
+
+        Some(Self::rgba(r as f32 / 255.0, g as f32 / 255.0, b as f32 / 255.0, a as f32 / 255.0))
+
+    }
+
+    const fn decode_hex<const N: usize>(mut bytes: [u8; N]) -> Option<[u8; N]> {
+        /// Parse a single hex digit (a-f/A-F/0-9) as a `u8`
+        const fn hex_value(b: u8) -> Result<u8, u8> {
+            match b {
+                b'0'..=b'9' => Ok(b - b'0'),
+                b'A'..=b'F' => Ok(b - b'A' + 10),
+                b'a'..=b'f' => Ok(b - b'a' + 10),
+                // Wrong hex digit
+                _ => Err(b),
+            }
+        }
+        let mut i = 0;
+        while i < bytes.len() {
+            // Convert single hex digit to u8
+            let val = match hex_value(bytes[i]) {
+                Ok(val) => val,
+                Err(..) => return None,
+            };
+            bytes[i] = val;
+            i += 1;
+        }
+        // Modify the original bytes to give an `N / 2` length result
+        i = 0;
+        while i < bytes.len() / 2 {
+            // Convert pairs of u8 to R/G/B/A
+            // e.g `ff` -> [102, 102] -> [15, 15] = 255
+            bytes[i] = bytes[i * 2] * 16 + bytes[i * 2 + 1];
+            i += 1;
+        }
+        Some(bytes)
+    }
 }
 
 pub mod palette {
@@ -40,9 +103,6 @@ pub mod palette {
 
     pub const ANIMATED_SOLUTION_NEW: Color = GREEN_LIGHT;
     pub const ANIMATED_SOLUTION_OLD: Color = GOLD;
-
-
-
 
     pub const TOP_BAR_LOGO_SELFIE: Color = MY_WHITE;
 
@@ -119,12 +179,24 @@ pub mod palette {
     const MEDIUM_GRAY: Color = Color::rgba(0.37, 0.4, 0.42, 1.0);
 
     const GREEN_LIGHT: Color = Color::rgba(0.17, 0.71, 0.35, 1.);
-    const GREEN_DARK: Color = Color::rgba(0.07, 0.34, 0.27, 1.);
+    pub const GREEN_DARK: Color = Color::rgba(0.07, 0.34, 0.27, 1.);
     const GREEN_OTHER: Color = Color::rgba(0.36, 0.73, 0.28, 1.);
     const GOLD: Color = Color::rgba(1., 0.94, 0.62, 1.);
     #[allow(dead_code)]
     pub const TRANSPARENT: Color = Color::rgba(0., 0., 0., 0.);
+}
+
+#[cfg(test)]
+mod tests{
+    use crate::BasicColor;
 
 
+    #[test]
+    pub fn test_parse(){
+        let hex = "#165b33";
 
+        let actual = BasicColor::try_from_str(hex);
+
+        assert_eq!(actual, Some(BasicColor::rgb(0.08627451, 0.35686275, 0.2)));
+    }
 }

@@ -6,18 +6,20 @@ use ws_core::layout::entities::recording_button::ToggleRecordingButton;
 use ws_core::layout::entities::{
     CongratsButton, CongratsLayoutEntity, LayoutWordTile, WordSaladLogo,
 };
+use ws_levels::level_group::LevelGroup;
 
 use crate::menu_layout::main_menu_back_button::MainMenuBackButton;
 use crate::menu_layout::word_salad_menu_layout::WordSaladMenuLayoutEntity;
 use crate::prelude::level_group_layout::LevelGroupLayoutEntity;
 use crate::prelude::levels_menu_layout::LevelsMenuLayoutEntity;
 use crate::prelude::main_menu_layout::MainMenuLayoutEntity;
-use crate::purchases::{PurchaseEvent, Purchases};
-use crate::{asynchronous, completion::*};
+use crate::purchases::{RequestPurchaseEvent, Purchases};
+use crate::{achievements, asynchronous, completion::*};
 use crate::{input, prelude::*, startup};
 
 use self::hints_menu_layout::HintsLayoutEntity;
-use self::store_menu_layout::StoreLayoutEntity;
+use self::settings_menu_layout::SettingsLayoutEntity;
+use self::store_menu_layout::StoreLayoutStructure;
 
 pub struct ButtonPlugin;
 
@@ -90,7 +92,7 @@ fn handle_button_activations(
     mut event_writers: (
         EventWriter<ChangeLevelEvent>,
         EventWriter<AdRequestEvent>,
-        EventWriter<PurchaseEvent>,
+        EventWriter<RequestPurchaseEvent>,
         EventWriter<HintEvent>,
         AsyncEventWriter<VideoEvent>,
         AsyncEventWriter<DailyChallengeDataLoadedEvent>,
@@ -158,8 +160,7 @@ pub enum PopupInteraction {
     ClickSufferAlone,
     ClickClose,
     ClickWatchAd,
-    ClickBuyPack1,
-    ClickBuyPack2,
+    ClickHintsStore,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Component, EnumIs, Default)]
@@ -170,9 +171,12 @@ pub enum ButtonInteraction {
     LevelsMenu(LevelsMenuLayoutEntity),
     LevelGroupMenu(LevelGroupLayoutEntity),
     WordSaladMenu(WordSaladMenuLayoutEntity),
-    MainStoreMenu(StoreLayoutEntity),
+    MainStoreMenu(StoreLayoutStructure),
+    BuyLevelGroup(LevelGroup),
     HintsMenu(HintsLayoutEntity),
+    SettingsMenu(SettingsLayoutEntity),
     WordButton(LayoutWordTile),
+
     WordSaladLogo,
     ToggleRecordingButton,
     Congrats(CongratsButton),
@@ -193,15 +197,27 @@ impl ButtonInteraction {
     }
 }
 
-impl From<HintsLayoutEntity> for ButtonInteraction{
+impl From<level_group_store_layout::LevelGroupStoreLayoutStructure> for ButtonInteraction {
+    fn from(value: level_group_store_layout::LevelGroupStoreLayoutStructure) -> Self {
+        Self::BuyLevelGroup(value.0)
+    }
+}
+
+impl From<HintsLayoutEntity> for ButtonInteraction {
     fn from(value: HintsLayoutEntity) -> Self {
         ButtonInteraction::HintsMenu(value)
     }
 }
 
-impl From<StoreLayoutEntity> for ButtonInteraction{
-    fn from(value: StoreLayoutEntity) -> Self {
+impl From<StoreLayoutStructure> for ButtonInteraction {
+    fn from(value: StoreLayoutStructure) -> Self {
         ButtonInteraction::MainStoreMenu(value)
+    }
+}
+
+impl From<SettingsLayoutEntity> for ButtonInteraction {
+    fn from(value: SettingsLayoutEntity) -> Self {
+        ButtonInteraction::SettingsMenu(value)
     }
 }
 
@@ -283,7 +299,7 @@ impl ButtonInteraction {
 
         change_level_events: &mut EventWriter<ChangeLevelEvent>,
         ad_request_events: &mut EventWriter<AdRequestEvent>,
-        purchase_events: &mut EventWriter<PurchaseEvent>,
+        purchase_events: &mut EventWriter<RequestPurchaseEvent>,
         hint_events: &mut EventWriter<HintEvent>,
         video_events: &AsyncEventWriter<VideoEvent>,
         daily_challenge_events: &AsyncEventWriter<DailyChallengeDataLoadedEvent>,
@@ -319,6 +335,16 @@ impl ButtonInteraction {
                 change_level_events.send(CurrentLevel::NonLevel(NonLevel::BeforeTutorial).into());
                 menu_state.close();
             }
+            ButtonInteraction::MainMenu(MainMenuLayoutEntity::Settings) => {
+                *menu_state.as_mut() = MenuState::SettingsPage;
+            }
+            ButtonInteraction::SettingsMenu(SettingsLayoutEntity::SeeAchievements) => {
+                achievements::show_achievements();
+            }
+            ButtonInteraction::SettingsMenu(SettingsLayoutEntity::AdsConsent) => {
+                ad_request_events.send(AdRequestEvent::RequestConsent);
+            }
+
             #[cfg(target_arch = "wasm32")]
             ButtonInteraction::MainMenu(MainMenuLayoutEntity::PlaySteks) => {
                 crate::wasm::open_link("https://steks.net");
@@ -360,10 +386,14 @@ impl ButtonInteraction {
                 menu_state.close();
             }
             ButtonInteraction::WordSaladMenu(WordSaladMenuLayoutEntity::NextPuzzle) => {
-
-                if let Some(level) = DailyChallenges::get_today_index()
-                    .checked_sub(3)
-                    .and_then(|x| daily_challenge_completion.get_next_incomplete_daily_challenge(x, daily_challenges).actual_level())
+                if let Some(level) =
+                    DailyChallenges::get_today_index()
+                        .checked_sub(3)
+                        .and_then(|x| {
+                            daily_challenge_completion
+                                .get_next_incomplete_daily_challenge(x, daily_challenges)
+                                .actual_level()
+                        })
                 {
                     change_level_events.send(level.into());
                 } else {
@@ -434,14 +464,14 @@ impl ButtonInteraction {
                             }
                         }
                         NonLevel::LevelSequenceMustPurchaseGroup(sequence) => {
-                            purchase_events.send(PurchaseEvent::BuyLevelGroup(sequence));
+                            purchase_events.send(RequestPurchaseEvent::BuyLevelGroupBySequence(sequence));
                         }
                         NonLevel::DailyChallengeReset => {
                             daily_challenge_completion.reset_daily_challenge_completion();
                             match daily_challenge_completion
                                 .get_next_incomplete_daily_challenge_from_today(daily_challenges)
                             {
-                                NextDailyChallengeResult::Level1(index) => {
+                                NextDailyChallengeResult::Level(index) => {
                                     change_level_events
                                         .send(CurrentLevel::DailyChallenge { index }.into());
                                 }
@@ -492,34 +522,61 @@ impl ButtonInteraction {
 
                             change_level_events.send(new_current_level.into());
                         }
-                        NonLevel::DailyChallengeNotLoaded => {
+                        NonLevel::DailyChallengeNotLoaded { goto_level } => {
                             asynchronous::spawn_and_run(load_levels_async(
                                 daily_challenge_events.clone(),
                                 true,
                             ));
                             change_level_events.send(
-                                CurrentLevel::NonLevel(NonLevel::DailyChallengeLoading).into(),
+                                CurrentLevel::NonLevel(NonLevel::DailyChallengeLoading {
+                                    goto_level,
+                                })
+                                .into(),
                             );
                         }
-                        NonLevel::DailyChallengeLoading => {
+                        NonLevel::DailyChallengeLoading { .. } => {
                             //This button should not exist
                         }
                     }
                 }
             }
-            ButtonInteraction::MainStoreMenu(m)=>{
-                match m{ //TODO!
-                    StoreLayoutEntity::RemoveAds => {},
-                    StoreLayoutEntity::BuyHints => {
-                        *menu_state.as_mut() = MenuState::HintsStorePage;
-                    },
-                    StoreLayoutEntity::BuyLevelGroup(_) => {},
+            ButtonInteraction::BuyLevelGroup(level_group) => {
+                if !purchases.groups_purchased.contains(level_group){
+                    purchase_events.send(RequestPurchaseEvent::BuyLevelGroup(*level_group));
+                    menu_state.close();
                 }
-            }
-            ButtonInteraction::HintsMenu(_)=>{
-                //TODO!
+
             }
 
+            ButtonInteraction::MainStoreMenu(m) => match m {
+                StoreLayoutStructure::RemoveAds => {
+                    purchase_events.send(RequestPurchaseEvent::BuyAvoidAds);
+                    menu_state.close();
+                }
+                StoreLayoutStructure::BuyHints => {
+                    *menu_state.as_mut() = MenuState::HintsStorePage;
+                }
+                StoreLayoutStructure::LevelGroups => {
+                    *menu_state.as_mut() = MenuState::LevelGroupStorePage
+                }
+            },
+            ButtonInteraction::HintsMenu(hints_layout_entity) => {
+                let (method, hints) = hints_layout_entity.hint_data();
+
+                match method {
+                    hints_menu_layout::PurchaseMethod::WatchAd => {
+                        ad_request_events
+                            .send(AdRequestEvent::RequestReward { event: None, hints });
+                    }
+                    hints_menu_layout::PurchaseMethod::Money => {
+                        purchase_events.send(RequestPurchaseEvent::BuyHintsPack {
+                            number_of_hints: hints,
+                        });
+                    }
+                }
+
+                menu_state.close();
+            }
 
             ButtonInteraction::WordSaladLogo => menu_state.toggle(),
             ButtonInteraction::Congrats(CongratsButton::Next) => {
@@ -534,6 +591,9 @@ impl ButtonInteraction {
 
             ButtonInteraction::Congrats(CongratsButton::MoreLevels) => {
                 *menu_state.as_mut() = MenuState::ChooseLevelsPage;
+            }
+            ButtonInteraction::Congrats(CongratsButton::ResetPuzzle) => {
+                change_level_events.send(ChangeLevelEvent::Reset);
             }
 
             #[cfg(target_arch = "wasm32")]
@@ -555,19 +615,16 @@ impl ButtonInteraction {
 
             ButtonInteraction::Popup(PopupInteraction::ClickWatchAd) => {
                 if let Some(PopupType::BuyMoreHints(he)) = popup_state.0.take() {
-                    ad_request_events.send(AdRequestEvent::RequestReward(he))
+                    ad_request_events.send(AdRequestEvent::RequestReward {
+                        event: Some(he),
+                        hints: 5,
+                    });
                 }
             }
 
-            ButtonInteraction::Popup(PopupInteraction::ClickBuyPack1) => {
-                if let Some(PopupType::BuyMoreHints(he)) = popup_state.0.take() {
-                    purchase_events.send(PurchaseEvent::BuyHintsPack1(he))
-                }
-            }
-
-            ButtonInteraction::Popup(PopupInteraction::ClickBuyPack2) => {
-                if let Some(PopupType::BuyMoreHints(he)) = popup_state.0.take() {
-                    purchase_events.send(PurchaseEvent::BuyHintsPack2(he))
+            ButtonInteraction::Popup(PopupInteraction::ClickHintsStore) => {
+                if let Some(PopupType::BuyMoreHints(..)) = popup_state.0.take() {
+                    menu_state.set_if_neq(MenuState::HintsStorePage);
                 }
             }
         }

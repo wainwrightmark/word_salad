@@ -202,19 +202,19 @@ extern "C" {
     async fn screen_recording_state_extern() -> Result<JsValue, JsValue>;
 }
 
-pub async fn stop_screen_record()-> Result<(), capacitor_bindings::error::Error>{
+pub async fn stop_screen_record() -> Result<(), capacitor_bindings::error::Error> {
     capacitor_bindings::helpers::run_unit_unit(stop_screen_record_extern).await
 }
 
-pub async fn start_screen_record()->Result<VideoRecordingState, capacitor_bindings::error::Error> {
+pub async fn start_screen_record() -> Result<VideoRecordingState, capacitor_bindings::error::Error>
+{
     capacitor_bindings::helpers::run_unit_value(start_screen_record_extern).await
 }
 
-
-pub async fn screen_recording_state()->Result<VideoRecordingState, capacitor_bindings::error::Error> {
+pub async fn screen_recording_state(
+) -> Result<VideoRecordingState, capacitor_bindings::error::Error> {
     capacitor_bindings::helpers::run_unit_value(screen_recording_state_extern).await
 }
-
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -233,6 +233,8 @@ pub enum VideoRecordingStateEnum {
     Unknown,
 }
 
+
+
 #[wasm_bindgen::prelude::wasm_bindgen(module = "/video.js")]
 extern "C" {
     #[wasm_bindgen(catch, final, js_name = "startVideo")]
@@ -242,15 +244,13 @@ extern "C" {
     async fn stop_video_extern() -> Result<(), JsValue>;
 }
 
-pub async fn start_selfie_mode_video()->Result<(), capacitor_bindings::error::Error> {
+pub async fn start_selfie_mode_video() -> Result<(), capacitor_bindings::error::Error> {
     capacitor_bindings::helpers::run_unit_unit(start_video_extern).await
 }
 
-
-pub async fn stop_selfie_mode_video()->Result<(), capacitor_bindings::error::Error> {
+pub async fn stop_selfie_mode_video() -> Result<(), capacitor_bindings::error::Error> {
     capacitor_bindings::helpers::run_unit_unit(stop_video_extern).await
 }
-
 
 pub async fn application_start() -> LoggableEvent {
     let search_params = get_url_search_params().await;

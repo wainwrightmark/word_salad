@@ -1,4 +1,4 @@
-use crate::{prelude, Character, Grid};
+use crate::{prelude, Character, DesignedLevel, Grid};
 use const_sized_bit_set::BitSet;
 use itertools::Itertools;
 use std::{cell::Cell, num::NonZeroU8, str::FromStr};
@@ -42,6 +42,21 @@ impl GridResult {
     }
 }
 
+impl From<&DesignedLevel> for GridResult {
+    fn from(value: &DesignedLevel) -> Self {
+        let DesignedLevel { grid, words, .. } = value;
+
+        let letters = LetterCounts::try_from_iter(grid.iter().cloned()).unwrap();
+
+        let words = words.iter().map(|x| x.into()).collect_vec();
+        GridResult {
+            grid: grid.clone(),
+            letters,
+            words,
+        }
+    }
+}
+
 impl FromStr for GridResult {
     type Err = &'static str;
 
@@ -80,8 +95,9 @@ impl std::fmt::Display for GridResult {
         let words_text = self
             .words
             .iter()
-            .map(|x| format!("{:8}", x.text))
             .sorted()
+            .map(|x| format!("{:8}", x.text))
+
             .join("\t");
         let solution = self.grid.iter().join("");
         let size = self.words.len();

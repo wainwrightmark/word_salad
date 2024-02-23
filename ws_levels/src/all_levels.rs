@@ -50,6 +50,14 @@ lazy_static! { //todo data_bake
         "Middle Eastern Countries"
     );
 
+    pub(crate) static ref AFRICAN_COUNTRIES: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/geography/african_countries.tsv")
+            .lines()
+            .map(DesignedLevel::from_tsv_line)
+            .map(|x| x.unwrap()),
+        "African Countries"
+    );
+
     pub(crate) static ref SOUTH_AND_EAST_ASIAN_CAPITALS: Vec<DesignedLevel> = number_levels(
         include_str!("levels/geography/south_and_east_asian_capitals.tsv")
             .lines()
@@ -120,6 +128,46 @@ lazy_static! { //todo data_bake
             .map(|x| x.unwrap()),
         "Birds"
     );
+
+    pub(crate) static ref REPTILES_AND_AMPHIBIANS: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/natural_world/reptiles and amphibians.tsv")
+            .lines()
+            .map(DesignedLevel::from_tsv_line)
+            .map(|x| x.unwrap()),
+        "Reptiles & Amphibians"
+    );
+
+    pub(crate) static ref NFL_TEAMS: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/US Sports/NFL Teams.tsv")
+            .lines()
+            .map(DesignedLevel::from_tsv_line)
+            .map(|x| x.unwrap()),
+        "NFL Teams"
+    );
+
+    pub(crate) static ref NHL_TEAMS: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/US Sports/NHL Teams.tsv")
+            .lines()
+            .map(DesignedLevel::from_tsv_line)
+            .map(|x| x.unwrap()),
+        "NHL Teams"
+    );
+
+    pub(crate) static ref NBA_TEAMS: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/US Sports/NBA Teams.tsv")
+            .lines()
+            .map(DesignedLevel::from_tsv_line)
+            .map(|x| x.unwrap()),
+        "NBA Teams"
+    );
+
+    pub(crate) static ref MLB_TEAMS: Vec<DesignedLevel> = number_levels(
+        include_str!("levels/US Sports/MLB Teams.tsv")
+            .lines()
+            .map(DesignedLevel::from_tsv_line)
+            .map(|x| x.unwrap()),
+        "MLB Teams"
+    );
 }
 
 pub fn number_levels(
@@ -147,9 +195,13 @@ pub mod tests {
 
     use std::str::FromStr;
 
-    use ws_core::finder::{helpers::FinderSingleWord, node::GridResult, orientation};
+    use strum::IntoEnumIterator;
+    use ws_core::finder::{cluster::*, helpers::FinderSingleWord, node::GridResult, orientation};
+
+    use crate::prelude::LevelSequence;
 
     use super::*;
+
     pub fn get_all_levels() -> Vec<DesignedLevel> {
         [
             TUTORIAL.iter(),
@@ -181,7 +233,7 @@ pub mod tests {
 
         assert!(levels.len() > 5);
 
-        let mut taboo_errors: Vec<String> = Default::default();
+        let mut all_errors: Vec<String> = Default::default();
 
         for level in levels {
             let name = &level.name;
@@ -197,46 +249,82 @@ pub mod tests {
             }
 
             if let Err(err) = test_grid_not_taboo(&level) {
-                taboo_errors.push(err);
+                all_errors.push(err);
             }
+
+            test_word_ordering(&level, &mut all_errors);
         }
 
-        for error in taboo_errors.iter() {
+        for error in all_errors.iter() {
             println!("{error}")
         }
 
-        assert!(taboo_errors.is_empty())
+        assert!(all_errors.is_empty())
     }
 
     #[test]
     pub fn test_daily_challenge_levels_valid() {
         assert!(DAILY_CHALLENGE.len() > 10);
 
-        let mut taboo_errors: Vec<String> = Default::default();
+        let mut all_errors: Vec<String> = Default::default();
 
         for level in DAILY_CHALLENGE.clone().into_iter() {
             let name = &level.name;
-            assert!(level.words.len() > 0, "Level {name} should have words");
+            if level.words.len() < 4 {
+                all_errors.push(format!("Level {name} should have at least 4 words"))
+            }
+
             for word in level.words.iter() {
                 let solution = word.find_solution(&level.grid);
                 if solution.is_none() {
-                    panic!(
+                    all_errors.push(format!(
                         "Level '{name}' has no solution for '{word}'",
                         word = word.text
-                    )
+                    ));
                 }
             }
 
             if let Err(err) = test_grid_not_taboo(&level) {
-                taboo_errors.push(err);
+                all_errors.push(err);
+            }
+
+            test_word_ordering(&level, &mut all_errors);
+
+            if let Some(colors) = level.special_colors {
+                if colors.len() < 4 {
+                    all_errors.push(format!(
+                        "Level {name} has custom colors but fewer than four"
+                    ));
+                }
             }
         }
 
-        for error in taboo_errors.iter() {
+        for error in all_errors.iter() {
             println!("{error}")
         }
 
-        assert!(taboo_errors.is_empty())
+        assert!(all_errors.is_empty())
+    }
+
+    #[test]
+    pub fn test_sequence_clustering() {
+        let mut text: String = String::default();
+
+        for sequence in LevelSequence::iter() {
+            let cluster = Cluster::from_levels(&sequence.levels());
+
+            text.push_str(format!("{:50} {}\n", sequence.name(), cluster.header()).as_str());
+        }
+
+        insta::assert_snapshot!(text);
+    }
+
+    fn test_word_ordering(level: &DesignedLevel, errors: &mut Vec<String>) {
+        for (a, b) in level.words.iter().tuple_windows() {
+            if a > b {
+                errors.push(format!("{b} should come before {a}"));
+            }
+        }
     }
 
     fn test_grid_not_taboo(level: &DesignedLevel) -> Result<(), String> {

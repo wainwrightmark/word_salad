@@ -8,12 +8,12 @@ JANVPUEOLRAMYIEB	Months[by mark]	April   	January 	July    	June    	November
 YAMLIBLUWORECNNP	Ivy League[by sam]	Brown   	Columbia 	Cornell 	Penn    	Yale
 GNGEIORTPSAYHBCB	Spice Girls[by mark]	baby    	ginger  	posh    	scary   	sporty
 PRABIGENUTYHCOOA	Maneaters[by sam]	Bear    	Cougar  	Coyote  	Hyena   	Piranha 	Tiger
-KAMALYRNOETOVSHI	Taylor Swift Songs[by mark]	Anti-Hero	Karma   	Love Story	Lover   	Style
+KAMALYRNOETOVSHI	Taylor Swift Songs[by mark]	Anti-Hero	Karma   	Lover	Love Story   	Style
 RNVNOEIOPLAPAPEJ	Pizza Toppings[by mark]	Jalapeno 	Olive   	Onion   	Pepper  	Pepperoni	Pineapple
 FNIDATORCMASENIY	Film Genres[by mark]	Action  	Animation	Drama   	Fantasy 	Noir    	Romance
-VIXRLPECORHNUDAS	Santa's Reindeer[by mark]	Dancer  	Dasher  	Prancer 	Rudolph 	Vixen
-PRELAISAGTNEHRED	It's Christmas[by mark]	Present 	Reindeer	Santa   	Sleigh  	Star    	Tinsel  	Tree
-TOODLBSRYUETCHRE	Things that are Red[by mark]	Beetroot 	Blood   	Lobster 	Lychee  	Rooster 	Ruby    	Rust
+VIXRLPECORHNUDAS	Santa's Reindeer[by mark]{#165732,#126737,#edab27,#e2432e,#b42425}	Dancer  	Dasher  	Prancer 	Rudolph 	Vixen
+PRELAISAGTNEHRED	It's Christmas[by mark]{#165732,#126737,#edab27,#e2432e,#b42425}	Present 	Reindeer	Santa   	Sleigh  	Star    	Tinsel  	Tree
+TOODLBSRYUETCHRE	Things that are Red[by mark]{#c30010,#d1001f,#de0a26,#f01e2c,#ff2c2c}	Beetroot 	Blood   	Lobster 	Lychee  	Rooster 	Ruby    	Rust
 GNPRMAITLDRPYOGE	My True Love Gave to Me[by mark]	Gold Ring	Lady    	Lord    	Maid    	Partridge	Piper
 TIGSTNAEAQIMURUS	Zodiac Signs[by mark]	Aquarius	Aries   	Gemini  	Sagittarius	Taurus
 PHDECIOEAURNSTCB	Things with Rings[by mark]	Bride   	Circus  	Phone   	Saturn  	Sauron  	Tree
@@ -63,9 +63,17 @@ DIENCLAMAREOJDNP	Gemstones[by mark]	Carnelian	Diamond	Emerald	Jade	Pearl
 YPEBRENOJALTAGUS	Car Manufacturers[by samuel]	Bentley	Jaguar	Jeep	Lotus	Renault
 VTANFILDRANEKOMC	European Countries[by mark]	Denmark	Finland	France	Latvia	Malta	Romania
 FUCMPRANIEHLEDSO	Currencies[by mark]	Dirham	Franc	Peso	Real	Rupee
-PEBUOPRYOSPRRATE	Things that are red[by samuel]	Pepper	Poppy	Raspberry	Rooster	Ruby
+PEBUOPRYOSPRRATE	Things that are red[by samuel]{#c30010,#d1001f,#de0a26,#f01e2c,#ff2c2c}	Pepper	Poppy	Raspberry	Rooster	Ruby
 PUFFLAWICRNIOOKE	Birds[by samuel]	Crane	Falcon	Kiwi	Lark	Puffin	Rook
 TENFRNLIGOIABWXS	Olympic Sports[by mark]	Boxing	Golf	Rowing	Sailing	Tennis
 UNISDTOLAKRPCCAI	African Capitals[by samuel]	Accra	Cairo	Dakar	Tripoli	Tunis
 BNGTPEALDRMIUUSH	Languages[by samuel]	Bengali	English	German	Persian	Tamil	Urdu
 MEECTKRHGANIHOPP	Mammals[by mark]	Cheetah	Goat	Hare	Hippo	Meerkat	Rhino	Tapir
+CENTYAUHTROGSNIF	Time Periods[by samuel]	Century	Fortnight	Hour	Instant	Year
+TKOHSECRGUNIBGSK	NBA Teams[by samuel]{#17408B,#FFFFFF,#C9082A,#FFFFFF}	Bucks	Hornets	Kings	Knicks	Nets	Nuggets	Rockets	Suns
+GNUSCRICOHEKBPAW	Famous Scientists[by mark]	Bohr	Copernicus	Crick	Curie	Hawking
+FULKSOBAWITMGNEO	Music Genres[by mark]	Ambient	Folk	Latin	Metal	Motown	Soul	Swing
+MAEGNURTCIBSKLOY	Things that are red[by samuel]{#c30010,#d1001f,#de0a26,#f01e2c,#ff2c2c}	Brick	Geranium	Lobster	Mars	Ruby
+LAOSJPIRANEVMGT_	S & E Asian Countries[by samuel]	Japan	Laos	Nepal	Singapore	Vietnam
+FORAUSENTLAWEHCM	Premier League Teams[by samuel]{#04f9fc,#7573f7,#bf1cf0,#dd16c0,#fd1c59,#ff390a,#ceff10,#36fe48,#04f9a5}	Arsenal	Chelsea	Forest	Fulham	Newcastle	West Ham
+YSKLSNIMEBATURIT	Famous Artists[by mark]	Banksy	Klimt	Matisse	Rubens	Seurat	Titian

@@ -2,11 +2,12 @@
 /ws_game/dist
 
 grid_finder/grids/*.txt
+grid_finder/grids copy/*.txt
 grid_finder/data/*.txt
 grid_finder/done/*.txt
 grid_finder/clusters/*.txt
 grid_finder/master/*.txt
-grid_finder/todo/*.txt
+grid_finder/data todo/*.txt
 
 sheet_reader/**/*.txt
 sheet1.txt
@@ -21,3 +22,6 @@ package.json
 ws_game/saves/bevy_pkv.redb
 netlify/functions/image/*.png
 achievement_icons/*.png
+PromoImages/*.jpeg
+PromoImages/*.png
+ws_game/icon/logo.png

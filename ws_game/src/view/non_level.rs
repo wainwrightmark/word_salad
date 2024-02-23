@@ -52,11 +52,11 @@ impl MavericNode for NonLevelView {
                         ls.group().total_count()
                     )
                 }
-                NonLevel::DailyChallengeNotLoaded => {
-                    format!("Could not load Daily Challenge")
+                NonLevel::DailyChallengeNotLoaded { .. } => {
+                    "Could not load Daily Challenge".to_string()
                 }
-                NonLevel::DailyChallengeLoading => {
-                    format!("Loading Daily Challenges")
+                NonLevel::DailyChallengeLoading { .. } => {
+                    "Loading Daily Challenges".to_string()
                 }
             };
 
@@ -79,7 +79,7 @@ impl MavericNode for NonLevelView {
                     font_size: size.font_size(&NonLevelLayoutEntity::Text, &non_level_type),
                     color: text_color,
                     font: BUTTONS_FONT_PATH,
-                    alignment: TextAlignment::Center,
+                    justify_text: JustifyText::Center,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     text_2d_bounds: Default::default(),
                     text_anchor: Default::default(),
@@ -99,7 +99,7 @@ impl MavericNode for NonLevelView {
                 NonLevel::BeforeTutorial => Some("Ok".to_string()),
                 NonLevel::AfterCustomLevel => Some("Restart".to_string()),
                 NonLevel::DailyChallengeFinished => Some("Next".to_string()),
-                NonLevel::DailyChallengeNotLoaded => Some("Retry".to_string()),
+                NonLevel::DailyChallengeNotLoaded { .. } => Some("Retry".to_string()),
                 NonLevel::DailyChallengeReset | NonLevel::LevelSequenceReset(_) => {
                     Some("Reset".to_string())
                 }
@@ -108,7 +108,7 @@ impl MavericNode for NonLevelView {
                     Some(format!("Replay #{}", todays_index + 1))
                 }
                 NonLevel::LevelSequenceMustPurchaseGroup(_) => Some("Purchase".to_string()),
-                NonLevel::DailyChallengeLoading => None,
+                NonLevel::DailyChallengeLoading { .. } => None,
             };
 
             let (fill_color, border) = if selfie_mode.is_selfie_mode {

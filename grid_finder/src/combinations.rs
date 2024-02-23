@@ -103,7 +103,7 @@ fn get_combinations_inner<const W: usize>(
                 .iter()
                 .enumerate()
                 .any(|(word_index, letter_indices)| {
-                    !new_combination.word_indexes.get_bit(word_index)
+                    !new_combination.word_indexes.contains(word_index)
                         && letter_indices.is_subset(&new_combination.letter_counts)
                 })
             {
@@ -204,7 +204,7 @@ impl<const W: usize> WordCombination<W> {
         other_word_letters: &LetterCounts,
         max_size: u8,
     ) -> bool {
-        if self.word_indexes.get_bit(other_word_index) {
+        if self.word_indexes.contains(other_word_index) {
             return false;
         }
         let Some(letter_counts) = self.letter_counts.try_union(other_word_letters) else {

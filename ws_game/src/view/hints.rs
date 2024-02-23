@@ -50,11 +50,9 @@ fn watch_hints_remaining_linger(
                 until: time.elapsed() + Duration::from_secs_f32(LINGER_SECONDS),
             };
         }
-    } else {
-        if let HintsRemainingLinger::Linger { until } = linger.as_ref() {
-            if time.elapsed() >= *until {
-                *linger = HintsRemainingLinger::None;
-            }
+    } else if let HintsRemainingLinger::Linger { until } = linger.as_ref() {
+        if time.elapsed() >= *until {
+            *linger = HintsRemainingLinger::None;
         }
     }
 }
@@ -104,11 +102,7 @@ impl MavericRootChildren for HintsRemainingRoot {
             return;
         }
 
-        let text = match context.hints.hints_remaining {
-            0 => "No Hints Left".to_string(),
-            1 => " 1 Hint  Left".to_string(),
-            n => format!("{n:>2} Hints Left"),
-        };
+        let text = context.hints.as_text();
 
         let font_size = context.window_size.font_size(&HintsRemainingLayout, &());
         let color = if context.video_resource.is_selfie_mode {
@@ -135,7 +129,7 @@ impl MavericRootChildren for HintsRemainingRoot {
                 font: THEME_FONT_PATH,
                 font_size,
                 color,
-                alignment: TextAlignment::Center,
+                justify_text: JustifyText::Center,
                 linebreak_behavior: bevy::text::BreakLineOn::AnyCharacter,
                 text_anchor: bevy::sprite::Anchor::Center,
                 text_2d_bounds: Text2dBounds::UNBOUNDED,

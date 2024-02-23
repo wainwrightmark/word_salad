@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use bevy::{prelude::*, utils::HashSet};
+use bevy::prelude::*;
 use nice_bevy_utils::{
     async_event_writer::AsyncEventWriter, CanInitTrackedResource, CanRegisterAsyncEvent,
     TrackableResource,
@@ -90,12 +90,13 @@ fn sign_in_user(writer: AsyncEventWriter<SignInEvent>) {
 }
 
 pub fn show_achievements() {
+    info!("Showing achievements");
     #[cfg(any(feature = "android", feature = "ios"))]
     {
-        info!("Showing achievements");
         use capacitor_bindings::game_connect::*;
         do_or_report_error(GameConnect::show_achievements());
     }
+    crate::platform_specific::show_toast_on_web("We would go to achievement page");
 }
 
 fn track_hint_achievements(
@@ -114,12 +115,10 @@ fn track_selfie_achievements(
     mut achievements: ResMut<AchievementsState>,
     video: Res<VideoResource>,
 ) {
-    if video.is_changed() {
-        if video.is_selfie_mode {
-            maybe_unlock(&mut achievements, Achievement::MirrorMirror);
-            if video.is_recording {
-                maybe_unlock(&mut achievements, Achievement::FilmStar);
-            }
+    if video.is_changed() && video.is_selfie_mode {
+        maybe_unlock(&mut achievements, Achievement::MirrorMirror);
+        if video.is_recording {
+            maybe_unlock(&mut achievements, Achievement::FilmStar);
         }
     }
 }
@@ -176,6 +175,9 @@ fn track_level_completion_achievements(
                     ws_levels::level_group::LevelGroup::NaturalWorld => {
                         maybe_unlock(&mut achievements, Achievement::LinnaeusCarl);
                     }
+                    ws_levels::level_group::LevelGroup::USSports => {
+                        //todo maybe have an achievement here
+                    }
                 }
             }
         }
@@ -183,7 +185,7 @@ fn track_level_completion_achievements(
             if daily_challenge_completions.get_next_incomplete_daily_challenge(
                 DailyChallenges::get_today_index(),
                 &daily_challenges,
-            ) == NextDailyChallengeResult::AllFinished1
+            ) == NextDailyChallengeResult::AllFinished
             {
                 maybe_unlock(&mut achievements, Achievement::CaesarSalad);
             }
@@ -291,7 +293,7 @@ fn track_found_words(
 
 #[derive(Debug, Resource, Clone, PartialEq, Serialize, Deserialize, Default)]
 struct AchievementsState {
-    pub unlocked: HashSet<Achievement>,
+    pub unlocked: bevy::utils::HashSet<Achievement>,
 }
 
 impl AchievementsState {
