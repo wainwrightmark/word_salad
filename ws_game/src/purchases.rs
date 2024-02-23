@@ -2,7 +2,7 @@ use crate::prelude::*;
 use bevy::{prelude::*, utils::HashSet};
 use nice_bevy_utils::{CanInitTrackedResource, CanRegisterAsyncEvent, TrackableResource};
 use serde::{Deserialize, Serialize};
-use strum::{EnumString, EnumTable};
+use strum::{Display, EnumString, EnumTable};
 use ws_levels::{level_group::LevelGroup, level_sequence::LevelSequence};
 
 pub struct PurchasesPlugin;
@@ -11,29 +11,34 @@ impl Plugin for PurchasesPlugin {
     fn build(&self, app: &mut App) {
         app.init_tracked_resource::<Purchases>();
         app.init_resource::<Prices>();
-        app.add_event::<PurchaseEvent>();
+        app.add_event::<RequestPurchaseEvent>();
 
         app.add_systems(
             Update,
-            track_purchase_events.run_if(|x: EventReader<PurchaseEvent>| !x.is_empty()),
+            handle_request_purchase_events
+                .run_if(|x: EventReader<RequestPurchaseEvent>| !x.is_empty()),
         );
 
         app.add_systems(Startup, on_startup);
         app.add_systems(
             Update,
-            update_products
-                .run_if(|ev: EventReader<UpdateProductsEvent>| !ev.is_empty()),
+            update_products.run_if(|ev: EventReader<UpdateProductsEvent>| !ev.is_empty()),
+        );
+
+        app.add_systems(
+            Update,
+            handle_product_purchased
+                .run_if(|ev: EventReader<ProductPurchasedEvent>| !ev.is_empty()),
         );
 
         app.register_async_event::<UpdateProductsEvent>();
+        app.register_async_event::<ProductPurchasedEvent>();
     }
 }
 
 #[allow(unused_variables)]
 fn on_startup(
-    get_products_writer: nice_bevy_utils::async_event_writer::AsyncEventWriter<
-        UpdateProductsEvent,
-    >,
+    get_products_writer: nice_bevy_utils::async_event_writer::AsyncEventWriter<UpdateProductsEvent>,
 ) {
     #[cfg(all(target_arch = "wasm32", any(feature = "android", feature = "ios")))]
     {
@@ -69,6 +74,71 @@ pub struct UpdateProductsEvent {
     pub owned_products: Vec<Product>,
 }
 
+#[derive(Debug, Clone, Event)]
+pub struct ProductPurchasedEvent {
+    pub product: Product,
+}
+
+fn handle_product_purchased(
+    mut events: EventReader<ProductPurchasedEvent>,
+    mut purchases: ResMut<Purchases>,
+    mut hints: ResMut<HintState>,
+    sequence_completion: Res<SequenceCompletion>,
+    mut change_level_events: EventWriter<ChangeLevelEvent>,
+) {
+    fn set_level_group(
+        purchases: &mut ResMut<Purchases>,
+        lg: LevelGroup,
+        change_level_events: &mut EventWriter<ChangeLevelEvent>,
+        sequence_completion: &SequenceCompletion,
+    ) {
+        if !purchases.groups_purchased.contains(&lg) {
+            purchases.groups_purchased.insert(lg);
+        }
+
+        let sequence = lg.get_sequences()[0];
+
+        let level: CurrentLevel = sequence_completion
+            .get_next_level_index(sequence, &purchases)
+            .to_level(sequence);
+
+        change_level_events.send(level.into());
+    }
+
+    fn add_hints(hints: &mut ResMut<HintState>, number: usize) {
+        hints.hints_remaining += number;
+        hints.total_bought_hints += number;
+    }
+
+    for ev in events.read() {
+        match ev.product {
+            Product::RemoveAds => purchases.remove_ads_purchased = true,
+            Product::NaturalWorldPack => set_level_group(
+                &mut purchases,
+                LevelGroup::NaturalWorld,
+                &mut change_level_events,
+                &sequence_completion,
+            ),
+            Product::GeographyPack => set_level_group(
+                &mut purchases,
+                LevelGroup::Geography,
+                &mut change_level_events,
+                &sequence_completion,
+            ),
+            Product::USSportsPack => set_level_group(
+                &mut purchases,
+                LevelGroup::USSports,
+                &mut change_level_events,
+                &sequence_completion,
+            ),
+            Product::Hints500 => add_hints(&mut hints, 500),
+            Product::Hints100 => add_hints(&mut hints, 100),
+            Product::Hints50 => add_hints(&mut hints, 50),
+            Product::Hints25 => add_hints(&mut hints, 25),
+        }
+    }
+}
+
 fn update_products(
     mut events: EventReader<UpdateProductsEvent>,
     mut prices: ResMut<Prices>,
@@ -81,6 +151,8 @@ fn update_products(
     }
 
     for ev in events.read() {
+        info!("Updating products");
+
         prices.product_prices = ev.product_prices.clone();
 
         for product in ev.owned_products.iter() {
@@ -101,7 +173,7 @@ fn update_products(
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, EnumString, EnumTable)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, EnumString, EnumTable, Display)]
 pub enum Product {
     //spellchecker:disable
     #[strum(serialize = "removeads")]
@@ -137,65 +209,65 @@ impl TrackableResource for Purchases {
     const KEY: &'static str = "Purchases";
 }
 
-fn track_purchase_events(
-    mut ev: EventReader<PurchaseEvent>,
-    mut purchases: ResMut<Purchases>,
-    mut hints: ResMut<HintState>,
-    sequence_completion: Res<SequenceCompletion>,
-    mut change_level_events: EventWriter<ChangeLevelEvent>,
-    mut hint_events: EventWriter<HintEvent>,
+#[cfg(all(target_arch = "wasm32", any(feature = "android", feature = "ios")))]
+fn handle_request_purchase_events(
+    mut ev: EventReader<RequestPurchaseEvent>,
+    mut product_purchased_event_writer_async: nice_bevy_utils::async_event_writer::AsyncEventWriter<
+        ProductPurchasedEvent,
+    >,
 ) {
     for event in ev.read() {
-        match event {
-            PurchaseEvent::BuyHintsPack {
-                hint_event,
-                number_of_hints,
-            } => {
-                hints.hints_remaining += number_of_hints;
-                hints.total_bought_hints += number_of_hints;
-                show_toast_on_web("In the real app you would pay money");
-                if let Some(hint_event) = hint_event {
-                    hint_events.send(*hint_event);
-                }
-            }
-            PurchaseEvent::BuyLevelGroupBySequence(sequence) => {
-                purchases.groups_purchased.insert(sequence.group());
-                show_toast_on_web("In the real app you would pay money");
+        let product: Product = event.into();
+        let writer = product_purchased_event_writer_async.clone();
 
-                let level: CurrentLevel = sequence_completion
-                    .get_next_level_index(*sequence, &purchases)
-                    .to_level(*sequence);
+        crate::asynchronous::spawn_and_run(purchase_api::purchase_product_async(
+            product, product, writer,
+        ));
+    }
+}
 
-                change_level_events.send(level.into());
-            }
-            PurchaseEvent::BuyAvoidAds => {
-                purchases.remove_ads_purchased = true;
-                show_toast_on_web("In the real app you would pay money");
-            }
-            PurchaseEvent::BuyLevelGroup(lg) => {
-                purchases.groups_purchased.insert(*lg);
-                show_toast_on_web("In the real app you would pay money");
-                let sequence = lg.get_sequences()[0];
+#[cfg(not(all(target_arch = "wasm32", any(feature = "android", feature = "ios"))))]
+fn handle_request_purchase_events(
+    mut ev: EventReader<RequestPurchaseEvent>,
+    mut product_purchased_event_writer_sync: EventWriter<ProductPurchasedEvent>,
+) {
+    for event in ev.read() {
+        let product: Product = event.into();
 
-                let level: CurrentLevel = sequence_completion
-                    .get_next_level_index(sequence, &purchases)
-                    .to_level(sequence);
-
-                change_level_events.send(level.into());
-            }
+        {
+            show_toast_on_web("In the real app you would pay money");
+            product_purchased_event_writer_sync.send(ProductPurchasedEvent { product });
         }
     }
 }
 
+/// Event that is sent when a user requests a purchase
 #[derive(Debug, Event, Clone, PartialEq)]
-pub enum PurchaseEvent {
-    BuyHintsPack {
-        hint_event: Option<HintEvent>,
-        number_of_hints: usize,
-    },
+pub enum RequestPurchaseEvent {
+    BuyHintsPack { number_of_hints: usize },
     BuyLevelGroupBySequence(LevelSequence),
     BuyLevelGroup(LevelGroup),
     BuyAvoidAds,
+}
+
+impl<'a> From<&'a RequestPurchaseEvent> for Product {
+    fn from(val: &'a RequestPurchaseEvent) -> Self {
+        match val {
+            RequestPurchaseEvent::BuyHintsPack { number_of_hints } => match number_of_hints {
+                25 => Product::Hints25,
+                50 => Product::Hints50,
+                100 => Product::Hints100,
+                500 => Product::Hints500,
+                _ => {
+                    warn!("Unexpected number of hints ({})", number_of_hints);
+                    Product::Hints25
+                }
+            },
+            RequestPurchaseEvent::BuyLevelGroupBySequence(ls) => ls.group().into(),
+            RequestPurchaseEvent::BuyLevelGroup(lg) => (*lg).into(),
+            RequestPurchaseEvent::BuyAvoidAds => Product::RemoveAds,
+        }
+    }
 }
 
 mod purchase_api {
@@ -206,18 +278,60 @@ mod purchase_api {
 
     use super::*;
 
-    #[cfg(all(target_arch = "wasm32", any(feature = "android", feature = "ios")))]
-    #[wasm_bindgen::prelude::wasm_bindgen(module = "/purchase.js")]
+    #[cfg(all(target_arch = "wasm32", feature = "android"))]
+    #[wasm_bindgen::prelude::wasm_bindgen(module = "/android_purchase.js")]
     extern "C" {
         #[wasm_bindgen(catch, final, js_name = "get_products")]
         async fn get_products_extern() -> Result<JsValue, JsValue>;
+
+        #[wasm_bindgen(catch, final, js_name = "purchase_product")]
+        async fn purchase_product_extern(
+            product_purchase_options: JsValue,
+        ) -> Result<JsValue, JsValue>;
+    }
+
+    #[cfg(all(target_arch = "wasm32",  feature = "ios"))]
+    #[wasm_bindgen::prelude::wasm_bindgen(module = "/ios_purchase.js")]
+    extern "C" {
+        #[wasm_bindgen(catch, final, js_name = "get_products")]
+        async fn get_products_extern() -> Result<JsValue, JsValue>;
+
+        #[wasm_bindgen(catch, final, js_name = "purchase_product")]
+        async fn purchase_product_extern(
+            product_purchase_options: JsValue,
+        ) -> Result<JsValue, JsValue>;
+    }
+
+    #[cfg(all(target_arch = "wasm32", any(feature = "android", feature = "ios")))]
+    pub async fn purchase_product_async(
+        product: Product,
+        options: impl Into<ProductPurchaseOptions>,
+        writer: nice_bevy_utils::async_event_writer::AsyncEventWriter<super::ProductPurchasedEvent>,
+    ) {
+        let result: Result<ProductPurchaseResult, capacitor_bindings::error::Error> =
+            capacitor_bindings::helpers::run_value_value(options, purchase_product_extern).await;
+
+        match result {
+            Ok(result) => {
+                if result.purchased {
+                    writer
+                        .send_async(ProductPurchasedEvent { product })
+                        .await
+                        .unwrap();
+                } else {
+                    crate::platform_specific::show_toast_async("Product was not purchased").await;
+                }
+            }
+            Err(e) => {
+                bevy::log::error!("purchase_product error: {e}");
+                crate::platform_specific::show_toast_async("Could not load purchase product").await;
+            }
+        }
     }
 
     #[cfg(all(target_arch = "wasm32", any(feature = "android", feature = "ios")))]
     pub async fn get_products(
-        writer: nice_bevy_utils::async_event_writer::AsyncEventWriter<
-            super::UpdateProductsEvent,
-        >,
+        writer: nice_bevy_utils::async_event_writer::AsyncEventWriter<super::UpdateProductsEvent>,
     ) {
         let result: Result<Vec<ExternProduct>, capacitor_bindings::error::Error> =
             capacitor_bindings::helpers::run_unit_value(get_products_extern).await;
@@ -225,7 +339,7 @@ mod purchase_api {
         match result {
             Ok(products) => {
                 for product in products.iter() {
-                    bevy::log::info!("{product:?}");
+                    bevy::log::info!("Got product: {product:?}");
                 }
                 let event = ExternProduct::make_product_price_event(products);
                 writer.send_async(event).await.unwrap();
@@ -235,6 +349,26 @@ mod purchase_api {
                 crate::platform_specific::show_toast_async("Could not load store products").await;
             }
         }
+    }
+
+    #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct ProductPurchaseOptions {
+        #[serde(rename = "id")]
+        pub id: String,
+    }
+
+    impl From<Product> for ProductPurchaseOptions {
+        fn from(value: Product) -> Self {
+            ProductPurchaseOptions {
+                id: value.to_string(),
+            }
+        }
+    }
+
+    #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct ProductPurchaseResult {
+        #[serde(rename = "purchased")]
+        pub purchased: bool,
     }
 
     #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -299,7 +433,7 @@ mod purchase_api {
 
             for extern_product in products.into_iter() {
                 if let Some(product) = extern_product.as_product() {
-                    if extern_product.owned{
+                    if extern_product.owned {
                         owned_products.push(product);
                     }
 
@@ -307,7 +441,10 @@ mod purchase_api {
                 }
             }
 
-            UpdateProductsEvent { product_prices, owned_products }
+            UpdateProductsEvent {
+                product_prices,
+                owned_products,
+            }
         }
     }
 

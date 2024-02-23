@@ -6,40 +6,40 @@ const android_products = [
   {
     type: ProductType.NON_CONSUMABLE,
     id: 'removeads',
-    platform: Platform.GOOGLE_PLAY,
+    platform: Platform.APPLE_APPSTORE,
   },
 
   {
     type: ProductType.NON_CONSUMABLE,
     id: 'geographypack',
-    platform: Platform.GOOGLE_PLAY,
+    platform: Platform.APPLE_APPSTORE,
   }, {
     type: ProductType.NON_CONSUMABLE,
     id: 'naturalworldpack',
-    platform: Platform.GOOGLE_PLAY,
+    platform: Platform.APPLE_APPSTORE,
   }, {
     type: ProductType.NON_CONSUMABLE,
     id: 'ussports',
-    platform: Platform.GOOGLE_PLAY,
+    platform: Platform.APPLE_APPSTORE,
   },
 
 
   {
     type: ProductType.CONSUMABLE,
     id: 'hints500',
-    platform: Platform.GOOGLE_PLAY,
+    platform: Platform.APPLE_APPSTORE,
   }, {
     type: ProductType.CONSUMABLE,
     id: 'hints50',
-    platform: Platform.GOOGLE_PLAY,
+    platform: Platform.APPLE_APPSTORE,
   }, {
     type: ProductType.CONSUMABLE,
     id: 'hints100',
-    platform: Platform.GOOGLE_PLAY,
+    platform: Platform.APPLE_APPSTORE,
   }, {
     type: ProductType.CONSUMABLE,
     id: 'hints25',
-    platform: Platform.GOOGLE_PLAY,
+    platform: Platform.APPLE_APPSTORE,
   },
 ]
 
@@ -52,7 +52,7 @@ function onDeviceReady() {
   store.when()
     .productUpdated(refreshUI)
     .approved(finishPurchase);
-  store.initialize([Platform.GOOGLE_PLAY]);
+  store.initialize([Platform.APPLE_APPSTORE]);
 }
 
 function finishPurchase(transaction) {
@@ -63,14 +63,32 @@ function finishPurchase(transaction) {
 
 
 function refreshUI() {
-
-
-  // var myProduct = store.get('geographypack', Platform.GOOGLE_PLAY);
-  // const myTransaction = store.findInLocalReceipts(myProduct);
-
-  // console.log(`Purchase Plugin: product: ${myProduct} transaction: ${myTransaction}`, );
 }
 
 export async function get_products() {
   return store.products;
+}
+
+export async function purchase_product(options) {
+
+
+
+  const product = store.get(options.id);
+  const offer = product.getOffer();
+
+  console.log(`Request to purchase "${options.id}" "${offer.id}"`);
+
+  var result = await store.order(offer);
+
+  if (result.isError) {
+    console.error(`${result}`)
+    return {
+      purchased: false
+    }
+  } else {
+    return {
+      purchased: true
+    };
+  }
+
 }
