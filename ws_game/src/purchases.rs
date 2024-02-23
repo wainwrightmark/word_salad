@@ -19,17 +19,25 @@ impl Plugin for PurchasesPlugin {
         );
 
         app.add_systems(Startup, on_startup);
-        app.add_systems(Update, update_product_prices.run_if(|ev: EventReader<UpdateProductPricesEvent>| !ev.is_empty()));
+        app.add_systems(
+            Update,
+            update_products
+                .run_if(|ev: EventReader<UpdateProductsEvent>| !ev.is_empty()),
+        );
 
-        app.register_async_event::<UpdateProductPricesEvent>();
+        app.register_async_event::<UpdateProductsEvent>();
     }
 }
 
 #[allow(unused_variables)]
-fn on_startup(writer: nice_bevy_utils::async_event_writer::AsyncEventWriter<UpdateProductPricesEvent>) {
+fn on_startup(
+    get_products_writer: nice_bevy_utils::async_event_writer::AsyncEventWriter<
+        UpdateProductsEvent,
+    >,
+) {
     #[cfg(all(target_arch = "wasm32", any(feature = "android", feature = "ios")))]
     {
-        crate::asynchronous::spawn_and_run(purchase_api::get_products(writer));
+        crate::asynchronous::spawn_and_run(purchase_api::get_products(get_products_writer));
     }
 }
 
@@ -38,18 +46,17 @@ pub struct Purchases {
     /// Level groups which the user has purchased
     pub groups_purchased: HashSet<LevelGroup>,
     /// True is the user has purchased the pack to avoid ads
-    pub avoid_ads_purchased: bool,
+    pub remove_ads_purchased: bool,
 }
 
 #[derive(Debug, PartialEq, MavericContext, Resource, Clone, Default)]
 pub struct Prices {
-    pub product_prices : ProductTable<Option<String>>
+    pub product_prices: ProductTable<Option<String>>,
 }
 
-impl Prices
-{
-    pub fn get_price_string(&self, product: Product)-> String{
-        match &self.product_prices[product]{
+impl Prices {
+    pub fn get_price_string(&self, product: Product) -> String {
+        match &self.product_prices[product] {
             Some(s) => s.to_string(),
             None => "???".to_string(),
         }
@@ -57,13 +64,40 @@ impl Prices
 }
 
 #[derive(Debug, Clone, Event)]
-pub struct UpdateProductPricesEvent{
-    pub product_prices : ProductTable<Option<String>>
+pub struct UpdateProductsEvent {
+    pub product_prices: ProductTable<Option<String>>,
+    pub owned_products: Vec<Product>,
 }
 
-fn update_product_prices(mut events: EventReader<UpdateProductPricesEvent>, mut prices: ResMut<Prices>){
-    for ev in events.read(){
+fn update_products(
+    mut events: EventReader<UpdateProductsEvent>,
+    mut prices: ResMut<Prices>,
+    mut purchases: ResMut<Purchases>,
+) {
+    fn set_level_group(p: &mut ResMut<Purchases>, lg: LevelGroup) {
+        if !p.groups_purchased.contains(&lg) {
+            p.groups_purchased.insert(lg);
+        }
+    }
+
+    for ev in events.read() {
         prices.product_prices = ev.product_prices.clone();
+
+        for product in ev.owned_products.iter() {
+            match product {
+                Product::RemoveAds => {
+                    if !purchases.remove_ads_purchased {
+                        purchases.remove_ads_purchased = true;
+                    }
+                }
+                Product::NaturalWorldPack => {
+                    set_level_group(&mut purchases, LevelGroup::NaturalWorld)
+                }
+                Product::GeographyPack => set_level_group(&mut purchases, LevelGroup::Geography),
+                Product::USSportsPack => set_level_group(&mut purchases, LevelGroup::USSports),
+                Product::Hints500 | Product::Hints100 | Product::Hints50 | Product::Hints25 => {}
+            }
+        }
     }
 }
 
@@ -89,7 +123,7 @@ pub enum Product {
     //spellchecker:enable
 }
 
-impl From<LevelGroup> for Product{
+impl From<LevelGroup> for Product {
     fn from(value: LevelGroup) -> Self {
         match value {
             LevelGroup::Geography => Product::GeographyPack,
@@ -135,7 +169,7 @@ fn track_purchase_events(
                 change_level_events.send(level.into());
             }
             PurchaseEvent::BuyAvoidAds => {
-                purchases.avoid_ads_purchased = true;
+                purchases.remove_ads_purchased = true;
                 show_toast_on_web("In the real app you would pay money");
             }
             PurchaseEvent::BuyLevelGroup(lg) => {
@@ -170,7 +204,7 @@ mod purchase_api {
     #[cfg(all(target_arch = "wasm32", any(feature = "android", feature = "ios")))]
     use wasm_bindgen_futures::wasm_bindgen::JsValue;
 
-    use super::{Product, ProductTable, UpdateProductPricesEvent};
+    use super::*;
 
     #[cfg(all(target_arch = "wasm32", any(feature = "android", feature = "ios")))]
     #[wasm_bindgen::prelude::wasm_bindgen(module = "/purchase.js")]
@@ -180,27 +214,30 @@ mod purchase_api {
     }
 
     #[cfg(all(target_arch = "wasm32", any(feature = "android", feature = "ios")))]
-    pub async fn get_products(writer: nice_bevy_utils::async_event_writer::AsyncEventWriter<super::UpdateProductPricesEvent>) {
-
+    pub async fn get_products(
+        writer: nice_bevy_utils::async_event_writer::AsyncEventWriter<
+            super::UpdateProductsEvent,
+        >,
+    ) {
         let result: Result<Vec<ExternProduct>, capacitor_bindings::error::Error> =
             capacitor_bindings::helpers::run_unit_value(get_products_extern).await;
 
         match result {
             Ok(products) => {
+                for product in products.iter() {
+                    bevy::log::info!("{product:?}");
+                }
                 let event = ExternProduct::make_product_price_event(products);
                 writer.send_async(event).await.unwrap();
-                // for product in products {
-                //     bevy::log::info!("{product:?}");
-                // }
             }
             Err(e) => {
-                bevy::log::error!("Get Products Error: {e}");
+                bevy::log::error!("get_products error: {e}");
+                crate::platform_specific::show_toast_async("Could not load store products").await;
             }
         }
     }
 
     #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-
     pub struct ExternProduct {
         /// Platform this product is available from
         #[serde(rename = "platform")]
@@ -234,34 +271,43 @@ mod purchase_api {
         #[serde(rename = "group")]
         #[serde(default)]
         pub group: Option<String>,
+
+        /// Whether the product is owned
+        #[serde(rename = "owned")]
+        pub owned: bool,
     }
 
     #[allow(dead_code)]
     impl ExternProduct {
         pub fn pricing(&self) -> Option<String> {
-            self
-                .offers
+            self.offers
                 .iter()
                 .flat_map(|x| x.pricing_phases.iter())
                 .map(|x| &x.price)
-                .next().cloned()
+                .next()
+                .cloned()
         }
 
-        pub fn as_product(&self)-> Option<Product>{
+        pub fn as_product(&self) -> Option<Product> {
             use std::str::FromStr;
             Product::from_str(self.id.as_str()).ok()
         }
 
-        pub fn make_product_price_event(products: Vec<Self>)-> UpdateProductPricesEvent{
+        pub fn make_product_price_event(products: Vec<Self>) -> UpdateProductsEvent {
             let mut product_prices: ProductTable<Option<String>> = Default::default();
+            let mut owned_products = vec![];
 
-            for extern_product in products.into_iter(){
-                if let Some(product)= extern_product.as_product(){
-                    product_prices[product] =  extern_product.pricing();
+            for extern_product in products.into_iter() {
+                if let Some(product) = extern_product.as_product() {
+                    if extern_product.owned{
+                        owned_products.push(product);
+                    }
+
+                    product_prices[product] = extern_product.pricing();
                 }
             }
 
-            UpdateProductPricesEvent { product_prices }
+            UpdateProductsEvent { product_prices, owned_products }
         }
     }
 

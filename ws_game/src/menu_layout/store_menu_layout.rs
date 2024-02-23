@@ -103,7 +103,7 @@ impl LayoutStructureDoubleTextButton for StoreLayoutStructure {
         text_context: &Self::TextContext<'_>,
     ) -> bool {
         match self {
-            StoreLayoutStructure::RemoveAds => text_context.purchases.avoid_ads_purchased,
+            StoreLayoutStructure::RemoveAds => text_context.purchases.remove_ads_purchased,
             StoreLayoutStructure::BuyHints => false,
             StoreLayoutStructure::LevelGroups => {
                 text_context.purchases.groups_purchased.len() == LevelGroup::COUNT

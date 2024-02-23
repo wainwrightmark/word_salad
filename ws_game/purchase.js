@@ -61,8 +61,8 @@ function finishPurchase(transaction) {
   refreshUI();
 }
 
+
 function refreshUI() {
-  const { store, ProductType, Platform } = CdvPurchase;
 
 
   // var myProduct = store.get('geographypack', Platform.GOOGLE_PLAY);
@@ -70,8 +70,6 @@ function refreshUI() {
 
   // console.log(`Purchase Plugin: product: ${myProduct} transaction: ${myTransaction}`, );
 }
-
-
 
 export async function get_products() {
   return store.products;
