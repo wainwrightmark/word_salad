@@ -67,6 +67,8 @@ PODS:
     - nanopb/encode (= 2.30909.1)
   - nanopb/decode (2.30909.1)
   - nanopb/encode (2.30909.1)
+  - OpenforgeCapacitorGameConnect (5.0.2):
+    - Capacitor
   - PromisesObjC (2.3.1)
 
 DEPENDENCIES:
@@ -81,6 +83,7 @@ DEPENDENCIES:
   - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
   - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
   - CapgoCapacitorScreenRecorder (from `../../../../capacitor-screen-recorder`)
+  - "OpenforgeCapacitorGameConnect (from `../../node_modules/@openforge/capacitor-game-connect`)"
 
 SPEC REPOS:
   trunk:
@@ -114,6 +117,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/status-bar"
   CapgoCapacitorScreenRecorder:
     :path: "../../../../capacitor-screen-recorder"
+  OpenforgeCapacitorGameConnect:
+    :path: "../../node_modules/@openforge/capacitor-game-connect"
 
 SPEC CHECKSUMS:
   Capacitor: ebfc16cdb8116d04c101686b080342872da42d43
@@ -132,8 +137,9 @@ SPEC CHECKSUMS:
   GoogleUserMessagingPlatform: dce302b8f1b84d6e945812ee7a15c3f65a102cbf
   GoogleUtilities: 0759d1a57ebb953965c2dfe0ba4c82e95ccc2e34
   nanopb: d4d75c12cd1316f4a64e3c6963f879ecd4b5e0d5
+  OpenforgeCapacitorGameConnect: 6c2ab17efbb1373a2a6853816cffe0619767f517
   PromisesObjC: c50d2056b5253dadbd6c2bea79b0674bd5a52fa4
 
-PODFILE CHECKSUM: efacab8566730b5c5f26b7d2da31b02760654873
+PODFILE CHECKSUM: b1f8b97e4edf225f65ba9288a87b715328430b30
 
 COCOAPODS: 1.14.3
