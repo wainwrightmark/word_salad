@@ -19,8 +19,12 @@ PODS:
     - Capacitor
   - CapacitorStatusBar (5.0.6):
     - Capacitor
+  - CapacitorToast (5.0.7):
+    - Capacitor
   - CapgoCapacitorScreenRecorder (8.0.9):
     - Capacitor
+  - CordovaPlugins (5.6.0):
+    - CapacitorCordova
   - Google-Mobile-Ads-SDK (10.1.0):
     - GoogleAppMeasurement (< 11.0, >= 7.0)
     - GoogleUserMessagingPlatform (>= 1.1)
@@ -82,7 +86,9 @@ DEPENDENCIES:
   - "CapacitorShare (from `../../node_modules/@capacitor/share`)"
   - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
   - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
+  - "CapacitorToast (from `../../node_modules/@capacitor/toast`)"
   - CapgoCapacitorScreenRecorder (from `../../../../capacitor-screen-recorder`)
+  - CordovaPlugins (from `../capacitor-cordova-ios-plugins`)
   - "OpenforgeCapacitorGameConnect (from `../../node_modules/@openforge/capacitor-game-connect`)"
 
 SPEC REPOS:
@@ -115,8 +121,12 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/splash-screen"
   CapacitorStatusBar:
     :path: "../../node_modules/@capacitor/status-bar"
+  CapacitorToast:
+    :path: "../../node_modules/@capacitor/toast"
   CapgoCapacitorScreenRecorder:
     :path: "../../../../capacitor-screen-recorder"
+  CordovaPlugins:
+    :path: "../capacitor-cordova-ios-plugins"
   OpenforgeCapacitorGameConnect:
     :path: "../../node_modules/@openforge/capacitor-game-connect"
 
@@ -131,7 +141,9 @@ SPEC CHECKSUMS:
   CapacitorShare: cd41743331cb71d217c029de54b681cbd91e0fcc
   CapacitorSplashScreen: 5fa2ab5e46cf5cc530cf16a51c80c7a986579ccd
   CapacitorStatusBar: 565c0a1ebd79bb40d797606a8992b4a105885309
+  CapacitorToast: c8bb89eeb59a23c1fc298f138cc06c8ff4d90ac1
   CapgoCapacitorScreenRecorder: 253d86288062ab823df2889256fa32a288ef8884
+  CordovaPlugins: af720891c2ab245218e3626fe90551bc7380e2ae
   Google-Mobile-Ads-SDK: 894be2e3e3e8281004bda14381f9af7ad73eeffd
   GoogleAppMeasurement: a65314d316443969ed3d3709b3a187448ed6418f
   GoogleUserMessagingPlatform: dce302b8f1b84d6e945812ee7a15c3f65a102cbf
@@ -140,6 +152,6 @@ SPEC CHECKSUMS:
   OpenforgeCapacitorGameConnect: 6c2ab17efbb1373a2a6853816cffe0619767f517
   PromisesObjC: c50d2056b5253dadbd6c2bea79b0674bd5a52fa4
 
-PODFILE CHECKSUM: b1f8b97e4edf225f65ba9288a87b715328430b30
+PODFILE CHECKSUM: da615c2e2c86785cbbf79e9dfeda281cffe872a6
 
 COCOAPODS: 1.14.3

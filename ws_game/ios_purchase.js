@@ -78,17 +78,29 @@ export async function purchase_product(options) {
 
   console.log(`Request to purchase "${options.id}" "${offer.id}"`);
 
-  var result = await store.order(offer);
+  try
+  {
+    var result = await store.order(offer);
 
-  if (result.isError) {
-    console.error(`${result}`)
+    if (result.isError) {
+      console.error(`${result}`)
+      return {
+        purchased: false
+      }
+    } else {
+      return {
+        purchased: true
+      };
+    }
+  }
+  catch(e)
+  {
+    console.error(`${e}`)
     return {
       purchased: false
     }
-  } else {
-    return {
-      purchased: true
-    };
   }
+
+  
 
 }
