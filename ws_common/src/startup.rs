@@ -2,14 +2,14 @@ use std::sync::atomic::AtomicUsize;
 
 pub use crate::prelude::*;
 use crate::{
-    achievements::AchievementsPlugin, input::InputPlugin,
-    motion_blur::MotionBlurPlugin, purchases::PurchasesPlugin,
+    achievements::AchievementsPlugin, input::InputPlugin, motion_blur::MotionBlurPlugin,
+    purchases::PurchasesPlugin,
 };
 use bevy::{asset::embedded_asset, log::LogPlugin, window::RequestRedraw};
-use nice_bevy_utils::{async_event_writer, window_size::WindowSizePlugin, CanRegisterAsyncEvent};
+use nice_bevy_utils::window_size::WindowSizePlugin;
 use ws_core::layout::entities::*;
 
-pub fn go() {
+pub fn setup_app(extra_setup: impl FnOnce(&mut App)) {
     let mut app = App::new();
 
     let window_plugin = WindowPlugin {
@@ -32,9 +32,7 @@ pub fn go() {
     };
 
     app.insert_resource(Msaa::Off)
-        .add_plugins(
-            DefaultPlugins.set(window_plugin).set(log_plugin).build(),
-        )
+        .add_plugins(DefaultPlugins.set(window_plugin).set(log_plugin).build())
         .add_systems(Startup, setup_system);
     app.add_plugins(EmbeddedAssetPlugin);
 
@@ -57,9 +55,6 @@ pub fn go() {
     app.add_plugins(WordsPlugin);
     app.add_plugins(PurchasesPlugin);
     app.add_plugins(AchievementsPlugin);
-
-    #[cfg(any(feature = "ios", feature = "android"))]
-    app.add_plugins(NotificationPlugin);
 
     app.register_transition::<TransformRotationYLens>();
     app.register_transition::<TransformTranslationLens>();
@@ -87,13 +82,6 @@ pub fn go() {
         app.insert_resource(bevy_pkv::PkvStore::new("bleppo", "word_salad"));
     }
 
-    app.add_systems(Startup, hide_splash);
-
-    app.register_async_event::<AppLifeCycleEvent>();
-    app.add_systems(Startup, begin_lifecycle);
-    app.add_systems(Update, watch_lifecycle);
-    app.add_systems(Startup, set_status_bar.after(hide_splash));
-
     app.insert_resource(bevy::winit::WinitSettings {
         focused_mode: bevy::winit::UpdateMode::Reactive {
             wait: std::time::Duration::from_secs(1),
@@ -106,6 +94,8 @@ pub fn go() {
 
     //app.add_systems(PostUpdate, print_maveric_tracking);
     app.add_systems(PostUpdate, maybe_request_redraw);
+
+    extra_setup(&mut app);
 
     app.run();
 }
@@ -200,109 +190,6 @@ fn choose_level_on_game_load(
     if let Some(level) = get_new_level(current_level, daily_challenge_completion, daily_challenges)
     {
         change_level_events.send(level.into());
-    }
-}
-
-fn hide_splash() {
-    #[cfg(any(feature = "android", feature = "ios"))]
-    {
-        do_or_report_error(capacitor_bindings::splash_screen::SplashScreen::hide(
-            0000.0,
-        ));
-    }
-}
-
-fn set_status_bar() {
-    #[cfg(any(feature = "android", feature = "ios"))]
-    {
-        use capacitor_bindings::status_bar::*;
-
-        do_or_report_error(StatusBar::set_style(Style::Dark));
-        #[cfg(feature = "android")]
-        do_or_report_error(StatusBar::set_background_color("#2bb559"));
-    }
-}
-
-fn watch_lifecycle(
-    mut events: EventReader<AppLifeCycleEvent>,
-    mut menu: ResMut<MenuState>,
-    mut popup: ResMut<PopupState>,
-) {
-    for event in events.read() {
-        match event {
-            AppLifeCycleEvent::StateChange { .. } => {
-                info!("State changed")
-            }
-            AppLifeCycleEvent::BackPressed => {
-                if popup.0.is_some() {
-                    popup.0 = None;
-                } else if !menu.is_closed() {
-                    menu.close();
-                }
-            }
-        }
-    }
-}
-
-fn begin_lifecycle(writer: async_event_writer::AsyncEventWriter<AppLifeCycleEvent>) {
-    spawn_and_run(disable_back_async(writer.clone()));
-    spawn_and_run(on_resume(writer));
-}
-
-async fn disable_back_async<'a>(_writer: async_event_writer::AsyncEventWriter<AppLifeCycleEvent>) {
-    #[cfg(feature = "android")]
-    {
-        info!("Disabling back");
-        let result = capacitor_bindings::app::App::add_back_button_listener(move |_| {
-            let writer = _writer.clone();
-            crate::asynchronous::spawn_and_run(async move {
-                writer
-                    .send_async_or_panic(AppLifeCycleEvent::BackPressed)
-                    .await
-            });
-        })
-        .await;
-
-        match result {
-            Ok(handle) => {
-                //info!("Leading back button");
-                handle.leak();
-            }
-            Err(err) => {
-                crate::logging::try_log_error_message(format!("{err}"));
-            }
-        }
-    }
-}
-
-#[allow(dead_code)]
-#[derive(Debug, Clone, Copy, Event, PartialEq)]
-enum AppLifeCycleEvent {
-    StateChange { is_active: bool },
-    BackPressed,
-}
-
-async fn on_resume(_writer: async_event_writer::AsyncEventWriter<AppLifeCycleEvent>) {
-    #[cfg(any(feature = "android", feature = "ios"))]
-    {
-        //info!("Setting on_resume");
-        let result = capacitor_bindings::app::App::add_state_change_listener(move |x| {
-            let writer = _writer.clone();
-            let event = AppLifeCycleEvent::StateChange {
-                is_active: x.is_active,
-            };
-            crate::asynchronous::spawn_and_run(async move { writer.send_async_or_panic(event).await });
-        })
-        .await;
-
-        match result {
-            Ok(handle) => {
-                handle.leak();
-            }
-            Err(err) => {
-                crate::logging::try_log_error_message(format!("{err}"));
-            }
-        }
     }
 }
 

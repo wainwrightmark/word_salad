@@ -1,18 +1,21 @@
-use bevy::prelude::*;
+//use bevy::prelude::*;
+//use capacitor_bindings::local_notifications::*;
+//use nice_bevy_utils::async_event_writer::AsyncEventWriter;
+
 use capacitor_bindings::local_notifications::*;
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
-
 #[allow(unused_imports)]
-use crate::{logging, prelude::*};
+use ws_common::{logging, prelude::*};
 
-#[cfg(any(feature = "ios", feature = "android"))]
+
+
 const DAILY_CHALLENGE_CLICK_ACTION_ID: &str = "DailyChallengeClick";
 const DAILY_CHALLENGE_ACTION_TYPE_ID: &str = "DailyChallenge";
 
 pub struct NotificationPlugin;
 
 impl Plugin for NotificationPlugin {
-    fn build(&self, app: &mut bevy::prelude::App) {
+    fn build(&self, app: &mut App) {
         #[cfg(any(feature = "ios", feature = "android"))]
         {
             app.add_systems(Startup, setup); //TODO setup at a different time
@@ -43,7 +46,7 @@ async fn setup_notifications_async(
 
     let on_action = move |action: ActionPerformed| {
         if action.action_id == DAILY_CHALLENGE_ACTION_TYPE_ID || action.action_id == "tap" {
-            bevy::log::info!("Clicked Action");
+            info!("Clicked Action");
 
             let new_level = CurrentLevel::DailyChallenge {
                 index: DailyChallenges::get_today_index(),
@@ -61,14 +64,14 @@ async fn setup_notifications_async(
 
             {
                 let writer = writer.clone();
-                crate::asynchronous::spawn_and_run(async move {
+                ws_common::asynchronous::spawn_and_run(async move {
                     writer.send_async_or_panic(change_level_event).await
                 });
             }
         }
     };
 
-    #[cfg(any(feature = "ios", feature = "android"))]
+
     {
         match LocalNotifications::check_permissions().await {
             Ok(permissions) => match permissions.display {
@@ -110,7 +113,7 @@ async fn setup_notifications_async(
         }
 
         bevy::log::debug!("Registering Action Types");
-        crate::logging::do_or_report_error_async({
+        ws_common::logging::do_or_report_error_async({
             let action_type_options = RegisterActionTypesOptions {
                 types: vec![ActionType {
                     id: DAILY_CHALLENGE_ACTION_TYPE_ID.to_string(),

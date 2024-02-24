@@ -17,8 +17,6 @@ pub mod level_time;
 pub mod logging;
 pub mod menu_layout;
 pub mod motion_blur;
-#[cfg(any(feature = "ios", feature = "android"))]
-pub mod notifications;
 pub mod platform_specific;
 pub mod purchases;
 pub mod rounding;
@@ -56,8 +54,7 @@ pub mod prelude {
     pub use crate::level_time::*;
     pub use crate::logging::*;
     pub use crate::menu_layout::*;
-    #[cfg(any(feature = "ios", feature = "android"))]
-    pub use crate::notifications::*;
+
     pub use crate::platform_specific::*;
     pub use crate::shapes::*;
     pub use crate::state::*;
