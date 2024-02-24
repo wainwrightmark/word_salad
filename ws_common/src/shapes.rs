@@ -449,28 +449,28 @@ pub struct SparkleParams {
 impl ShaderParams for SparkleShaderParams {}
 
 pub(crate) const SIMPLE_FILL_IMPORT: FragmentImport = FragmentImport {
-    path: "embedded://ws_game/../../assets/shaders/fill/simple.wgsl",
+    path: "embedded://ws_common/../../assets/shaders/fill/simple.wgsl",
     import_path: "fill::simple",
 };
 
 pub const HORIZONTAL_GRADIENT_FILL: FragmentImport = FragmentImport {
     //TODO rename
-    path: "embedded://ws_game/../../assets/shaders/fill/horizontal_gradient.wgsl",
+    path: "embedded://ws_common/../../assets/shaders/fill/horizontal_gradient.wgsl",
     import_path: "fill::horizontal_gradient",
 };
 
 pub const BOX_SDF_IMPORT: FragmentImport = FragmentImport {
-    path: "embedded://ws_game/../../assets/shaders/sdf/box.wgsl",
+    path: "embedded://ws_common/../../assets/shaders/sdf/box.wgsl",
     import_path: "shaders::box",
 };
 
 const FILL_WITH_OUTLINE_IMPORT: FragmentImport = FragmentImport {
-    path: "embedded://ws_game/../../assets/shaders/fill/fill_with_outline.wgsl",
+    path: "embedded://ws_common/../../assets/shaders/fill/fill_with_outline.wgsl",
     import_path: "fill::fill_with_outline",
 };
 
 const SPARKLE_IMPORT: FragmentImport = FragmentImport {
-    path: "embedded://ws_game/../../assets/shaders/fill/sparkle.wgsl",
+    path: "embedded://ws_common/../../assets/shaders/fill/sparkle.wgsl",
     import_path: "fill::sparkle",
 };
 

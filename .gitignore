@@ -1,5 +1,7 @@
 /target
-/ws_game/dist
+/ws_web/dist
+/ws_mobile/dist
+/ws_web_minimal/dist
 
 grid_finder/grids/*.txt
 grid_finder/grids copy/*.txt
@@ -16,12 +18,18 @@ layout_example.svg
 saves/bevy_pkv.redb
 
 ## Node
-node_modules
-package-lock.json
-package.json
-ws_game/saves/bevy_pkv.redb
+ws_web/node_modules
+ws_web/package-lock.json
+ws_web/package.json
+
+ws_mobile/node_modules
+ws_mobile/package-lock.json
+ws_mobile/package.json
+
+
+## Images
 netlify/functions/image/*.png
 achievement_icons/*.png
 PromoImages/*.jpeg
 PromoImages/*.png
-ws_game/icon/logo.png
+icon/logo.png

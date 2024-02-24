@@ -1,14 +1,13 @@
 [workspace]
 members = [
     "ws_core",
-    "ws_game",
     "ws_levels",
     "grid_finder",
     "sheet_reader",
     "achievement_icons",
-    "netlify/functions/image",
+    "netlify/functions/image", "ws_common", "ws_mobile", "ws_web", "ws_web_minimal",
 ]
-default-members = ["ws_game"]
+default-members = ["ws_web"]
 resolver = "2" # Important! wgpu/Bevy needs this!
 
 # Enable high optimizations for dependencies (incl. Bevy), but not for our code:

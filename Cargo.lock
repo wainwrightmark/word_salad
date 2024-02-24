@@ -1338,9 +1338,9 @@ checksum = "37b2a672a2cb129a2e41c10b1224bb368f9f37a2b16b612598138befd7b37eb5"
 
 [[package]]
 name = "cc"
-version = "1.0.86"
+version = "1.0.87"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f9fa1897e4325be0d68d48df6aa1a71ac2ed4d27723887e7754192705350730"
+checksum = "3286b845d0fccbdd15af433f61c5970e711987036cb468f437ff6badd70f4e24"
 dependencies = [
  "libc",
 ]
@@ -1742,9 +1742,9 @@ dependencies = [
 
 [[package]]
 name = "darling"
-version = "0.20.7"
+version = "0.20.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3a5d17510e4a1a87f323de70b7b1eaac1ee0e37866c6720b2d279452d0edf389"
+checksum = "54e36fcd13ed84ffdfda6f5be89b31287cbb80c439841fe69e04841435464391"
 dependencies = [
  "darling_core",
  "darling_macro",
@@ -1752,9 +1752,9 @@ dependencies = [
 
 [[package]]
 name = "darling_core"
-version = "0.20.7"
+version = "0.20.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a98eea36a7ff910fa751413d0895551143a8ea41d695d9798ec7d665df7f7f5e"
+checksum = "9c2cf1c23a687a1feeb728783b993c4e1ad83d99f351801977dd809b48d0a70f"
 dependencies = [
  "fnv",
  "ident_case",
@@ -1766,9 +1766,9 @@ dependencies = [
 
 [[package]]
 name = "darling_macro"
-version = "0.20.7"
+version = "0.20.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d6a366a3f90c5d59a4b91169775f88e52e8f71a0e7804cc98a8db2932cf4ed57"
+checksum = "a668eda54683121533a393014d8692171709ff57a7d61f187b6e782719f8933f"
 dependencies = [
  "darling_core",
  "quote",
@@ -5823,41 +5823,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ws_core"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "arrayvec",
- "base64 0.21.7",
- "chrono",
- "const_sized_bit_set",
- "criterion",
- "enumset",
- "geometrid",
- "glam",
- "iai-callgrind",
- "insta",
- "itertools 0.12.1",
- "lazy_static",
- "log",
- "num-derive",
- "num-traits",
- "prime_bag",
- "rand",
- "serde",
- "serde_repr",
- "serde_with",
- "serde_yaml",
- "static_assertions",
- "strum",
- "test-case",
- "unicode-normalization",
- "unicode-segmentation",
- "ustr",
-]
-
-[[package]]
-name = "ws_game"
+name = "ws_common"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -5900,6 +5866,40 @@ dependencies = [
 ]
 
 [[package]]
+name = "ws_core"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "arrayvec",
+ "base64 0.21.7",
+ "chrono",
+ "const_sized_bit_set",
+ "criterion",
+ "enumset",
+ "geometrid",
+ "glam",
+ "iai-callgrind",
+ "insta",
+ "itertools 0.12.1",
+ "lazy_static",
+ "log",
+ "num-derive",
+ "num-traits",
+ "prime_bag",
+ "rand",
+ "serde",
+ "serde_repr",
+ "serde_with",
+ "serde_yaml",
+ "static_assertions",
+ "strum",
+ "test-case",
+ "unicode-normalization",
+ "unicode-segmentation",
+ "ustr",
+]
+
+[[package]]
 name = "ws_levels"
 version = "0.1.0"
 dependencies = [
@@ -5925,6 +5925,24 @@ dependencies = [
  "unicode-segmentation",
  "ws_core",
 ]
+
+[[package]]
+name = "ws_mobile"
+version = "0.1.0"
+dependencies = [
+ "ws_common",
+]
+
+[[package]]
+name = "ws_web"
+version = "0.1.0"
+dependencies = [
+ "ws_common",
+]
+
+[[package]]
+name = "ws_web_minimal"
+version = "0.1.0"
 
 [[package]]
 name = "x11-dl"

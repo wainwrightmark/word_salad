@@ -64,7 +64,7 @@ async fn image_request_handler(
 fn level_from_daily_index(index: usize) -> DesignedLevel {
     let daily_index = index.saturating_sub(1);
 
-    let level = include_str!("../../../../ws_game/daily.tsv")
+    let level = include_str!("../../../../ws_web/daily.tsv")
         .lines()
         .nth(daily_index as usize)
         .map(|line| DesignedLevel::from_tsv_line(line).expect("Could not parse level"))

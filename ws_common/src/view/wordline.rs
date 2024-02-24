@@ -269,7 +269,7 @@ impl ParameterizedShader for WordLineSegmentShader {
 
     fn imports() -> impl Iterator<Item = bevy_param_shaders::prelude::FragmentImport> {
         const WORDLINE_IMPORT: FragmentImport = FragmentImport {
-            path: "embedded://ws_game/../../assets/shaders/sdf/word_line_segment.wgsl",
+            path: "embedded://ws_common/../../assets/shaders/sdf/word_line_segment.wgsl",
             import_path: "sdf::word_line_segment",
         };
 

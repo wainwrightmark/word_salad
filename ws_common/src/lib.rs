@@ -37,10 +37,6 @@ pub mod z_indices;
 
 pub mod daily_challenge;
 
-fn main() {
-    crate::startup::go();
-}
-
 pub mod prelude {
 
     pub use crate::ads::*;

@@ -1,0 +1,44 @@
+<html>
+  <head>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta charset="utf-8" />
+    <title>Word Salad</title>
+
+    <link data-trunk rel="inline" href="../styles.css" />
+
+    <style>
+      :root {
+        --sat: env(safe-area-inset-top);
+        --sar: env(safe-area-inset-right);
+        --sab: env(safe-area-inset-bottom);
+        --sal: env(safe-area-inset-left);
+      }
+    </style>
+  </head>
+
+  <body>
+    <link
+      rel="rust"
+      data-trunk
+      href="Cargo.toml"
+      data-bin="ws_mobile"
+      data-cargo-features="ios"
+      data-wasm-opt="0"
+    />
+
+    <video
+      autoplay="true"
+      id="videoElement"
+      playsinline="true"
+      disablepictureinpicture="true"
+      disableremoteplayback="true"
+      preload="none"
+    ></video>
+
+    <canvas id="game" style="position: absolute"> </canvas>
+  </body>
+</html>

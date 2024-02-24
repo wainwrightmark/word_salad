@@ -121,6 +121,6 @@ pub struct FireworksParams {
 impl ShaderParams for FireworksParams {}
 
 const FIREWORKS_IMPORT: FragmentImport = FragmentImport {
-    path: "embedded://ws_game/../../assets/shaders/fill/fireworks.wgsl",
+    path: "embedded://ws_common/../../assets/shaders/fill/fireworks.wgsl",
     import_path: "fill::fireworks",
 };

@@ -1,0 +1,15 @@
+[package]
+name = "ws_web"
+version = "0.1.0"
+edition = "2021"
+
+
+
+[dependencies]
+ws_common = { path = "../ws_common" }
+
+[features]
+steam = []
+web = ["ws_common/web"]
+android = ["ws_common/android"]
+ios = ["ws_common/ios"]

@@ -1,6 +1,6 @@
 [build]
-target = "ws_game/index.html"
-dist = "ws_game/dist"
+target = "ws_web/index.html"
+dist = "ws_web/dist"
 
 [serve]
 port = 8080
