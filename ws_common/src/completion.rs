@@ -8,8 +8,7 @@ use ws_levels::{level_group::LevelGroup, level_sequence::LevelSequence};
 use crate::{
     compatibility::SubmitScoreData,
     level_time::LevelTime,
-    prelude::{CurrentLevel, DailyChallenges, FoundWordsState, NonLevel, Streak},
-    purchases::Purchases,
+    prelude::{CurrentLevel, DailyChallenges, FoundWordsState, NonLevel, Purchases, Streak},
 };
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, Default, Clone, Resource, MavericContext)]

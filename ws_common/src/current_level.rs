@@ -9,7 +9,6 @@ use ws_levels::{all_levels::get_tutorial_level, level_sequence::LevelSequence};
 use crate::{
     completion::{DailyChallengeCompletion, SequenceCompletion},
     prelude::*,
-    purchases::Purchases,
 };
 
 #[derive(Debug, Clone, Resource, PartialEq, Eq, Serialize, Deserialize, MavericContext, EnumIs)]

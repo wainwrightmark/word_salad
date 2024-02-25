@@ -1,11 +1,11 @@
-
 use strum::{Display, EnumCount, EnumIter, IntoEnumIterator};
-use ws_core::{
-    layout::entities::*, palette, LayoutStructureDoubleTextButton,
-};
+use ws_core::{layout::entities::*, palette, LayoutStructureDoubleTextButton};
 use ws_levels::level_group::LevelGroup;
 
-use crate::{prelude::BUTTONS_FONT_PATH, view::MenuContextWrapper};
+use crate::{
+    prelude::{Product, BUTTONS_FONT_PATH},
+    view::MenuContextWrapper,
+};
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Display, EnumIter, EnumCount,
@@ -42,7 +42,6 @@ impl LayoutStructureDoubleTextButton for StoreLayoutStructure {
         context: &Self::Context<'_>,
         text_context: &Self::TextContext<'_>,
     ) -> (String, String) {
-
         let left: String;
         let right: String;
         let disabled = self.is_disabled(context, text_context);
@@ -53,7 +52,7 @@ impl LayoutStructureDoubleTextButton for StoreLayoutStructure {
                 right = if disabled {
                     "Owned".to_string()
                 } else {
-                    text_context.prices.get_price_string(crate::purchases::Product::RemoveAds)
+                    text_context.prices.get_price_string(Product::RemoveAds)
                 };
             }
             StoreLayoutStructure::BuyHints => {
@@ -62,7 +61,6 @@ impl LayoutStructureDoubleTextButton for StoreLayoutStructure {
             }
             StoreLayoutStructure::LevelGroups => {
                 left = "Buy Addons".to_string();
-                let complete = text_context.purchases.groups_purchased.len();
 
                 right = String::new();
             }
@@ -118,12 +116,8 @@ impl LayoutStructureDoubleTextButton for StoreLayoutStructure {
             StoreLayoutStructure::LevelGroups => {
                 text_context.purchases.groups_purchased.len() == LevelGroup::COUNT
             }
-            StoreLayoutStructure::RefreshPrices => {
-                false
-            }
-             StoreLayoutStructure::RestorePurchases => {
-                false
-            }
+            StoreLayoutStructure::RefreshPrices => false,
+            StoreLayoutStructure::RestorePurchases => false,
         }
     }
 }

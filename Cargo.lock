@@ -2517,9 +2517,9 @@ checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
 
 [[package]]
 name = "hermit-abi"
-version = "0.3.6"
+version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bd5256b483761cd23699d0da46cc6fd2ee3be420bbe6d020ae4a091e70b7e9fd"
+checksum = "379dada1584ad501b383485dd706b8afb7a70fcbc7f4da7d780638a5a6124a60"
 
 [[package]]
 name = "hex"
@@ -5974,7 +5974,44 @@ dependencies = [
 name = "ws_web"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
+ "arrayvec",
+ "async-compat",
+ "base64 0.21.7",
+ "bevy",
+ "bevy_param_shaders",
+ "bevy_pkv",
+ "bitfield-struct",
+ "bytemuck",
+ "capacitor_bindings",
+ "chrono",
+ "console_error_panic_hook",
+ "enumset",
+ "fixedbitset",
+ "fmtastic",
+ "geometrid",
+ "insta",
+ "itertools 0.12.1",
+ "js-sys",
+ "lazy_static",
+ "maveric",
+ "nice_bevy_utils",
+ "num-traits",
+ "rand",
+ "reqwest",
+ "serde",
+ "serde-wasm-bindgen",
+ "serde_repr",
+ "serde_with",
+ "serde_yaml",
+ "strum",
+ "test-case",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
  "ws_common",
+ "ws_core",
+ "ws_levels",
 ]
 
 [[package]]

@@ -1,10 +1,7 @@
 use std::sync::atomic::AtomicUsize;
 
 pub use crate::prelude::*;
-use crate::{
-    achievements::AchievementsPlugin, input::InputPlugin, motion_blur::MotionBlurPlugin,
-    purchases::PurchasesPlugin,
-};
+use crate::{achievements::AchievementsPlugin, input::InputPlugin, motion_blur::MotionBlurPlugin};
 use bevy::{asset::embedded_asset, log::LogPlugin, window::RequestRedraw};
 use nice_bevy_utils::window_size::WindowSizePlugin;
 use ws_core::layout::entities::*;
@@ -53,7 +50,7 @@ pub fn setup_app(extra_setup: impl FnOnce(&mut App)) {
     app.add_plugins(StreakPlugin);
     app.add_plugins(MotionBlurPlugin);
     app.add_plugins(WordsPlugin);
-    app.add_plugins(PurchasesPlugin);
+    app.add_plugins(MonetizationPlugin);
     app.add_plugins(AchievementsPlugin);
 
     app.register_transition::<TransformRotationYLens>();

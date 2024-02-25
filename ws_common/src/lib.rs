@@ -18,7 +18,6 @@ pub mod logging;
 pub mod menu_layout;
 pub mod motion_blur;
 pub mod platform_specific;
-pub mod purchases;
 pub mod rounding;
 pub mod shapes;
 pub mod startup;
@@ -34,6 +33,7 @@ pub mod wasm;
 pub mod z_indices;
 
 pub mod daily_challenge;
+pub mod monetization;
 
 pub mod prelude {
 
@@ -62,6 +62,7 @@ pub mod prelude {
     pub use crate::test_res_mut::*;
     pub use crate::video::*;
     pub use crate::view::*;
+    pub use crate::monetization::*;
 
     pub use bevy::prelude::*;
 

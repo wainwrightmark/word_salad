@@ -1,4 +1,4 @@
-use crate::{prelude::*, purchases::Purchases, z_indices};
+use crate::{prelude::*, z_indices};
 use bevy::{sprite::Anchor, text::Text2dBounds};
 
 use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
