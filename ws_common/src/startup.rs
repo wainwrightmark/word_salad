@@ -50,7 +50,7 @@ pub fn setup_app(extra_setup: impl FnOnce(&mut App)) {
     app.add_plugins(StreakPlugin);
     app.add_plugins(MotionBlurPlugin);
     app.add_plugins(WordsPlugin);
-    app.add_plugins(MonetizationPlugin);
+    app.add_plugins(PurchaseCommonPlugin);
     app.add_plugins(AchievementsPlugin);
 
     app.register_transition::<TransformRotationYLens>();
@@ -66,7 +66,7 @@ pub fn setup_app(extra_setup: impl FnOnce(&mut App)) {
     app.add_plugins(crate::wasm::WasmPlugin);
     app.add_plugins(VideoPlugin);
 
-    app.add_plugins(AdsPlugin);
+    app.add_plugins(AdsCommonPlugin);
 
     app.add_systems(PostStartup, choose_level_on_game_load);
 

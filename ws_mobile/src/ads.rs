@@ -1,21 +1,15 @@
-#[cfg(any(feature = "ios", feature = "android"))]
-use crate::asynchronous;
-use crate::prelude::*;
 use bevy::prelude::*;
 use capacitor_bindings::admob::*;
-use nice_bevy_utils::{async_event_writer::AsyncEventWriter, CanRegisterAsyncEvent};
-use strum::EnumIs;
+use nice_bevy_utils::async_event_writer::AsyncEventWriter;
+#[cfg(any(feature = "ios", feature = "android"))]
+use ws_common::asynchronous;
+use ws_common::prelude::*;
 
 pub struct AdsPlugin;
 
 impl Plugin for AdsPlugin {
     fn build(&self, app: &mut App) {
-        app.register_async_event::<AdEvent>();
-        app.add_event::<AdRequestEvent>();
         app.add_systems(Startup, init_everything);
-        app.init_resource::<AdState>();
-        app.init_resource::<InterstitialProgressState>();
-
         app.add_systems(
             Update,
             handle_ad_events.run_if(|x: EventReader<AdEvent>| !x.is_empty()),
@@ -28,94 +22,47 @@ impl Plugin for AdsPlugin {
     }
 }
 
-#[derive(Debug, Event)]
-pub enum AdRequestEvent {
-    RequestReward {
-        event: Option<HintEvent>,
-        hints: usize,
-    },
-    RequestInterstitial,
-    RequestConsent,
-}
-
-#[derive(Debug, Default, Resource, MavericContext)]
-pub struct AdState {
-    pub can_show_ads: Option<bool>,
-    pub reward_ad: Option<AdLoadInfo>,
-    pub interstitial_ad: Option<AdLoadInfo>,
-    pub hint_wanted: Option<(usize, Option<HintEvent>)>,
-}
-
-#[derive(Debug, Default, Resource, MavericContext)]
-pub struct InterstitialProgressState {
-    pub levels_without_interstitial: usize,
-}
-
 #[allow(unused_variables)]
 #[allow(unused_mut)]
 fn handle_ad_requests(
     mut events: EventReader<AdRequestEvent>,
     mut ad_state: ResMut<AdState>,
-    mut sync_writer:  EventWriter<AdEvent>,
+    mut sync_writer: EventWriter<AdEvent>,
     async_writer: AsyncEventWriter<AdEvent>,
 ) {
     for event in events.read() {
         match event {
             AdRequestEvent::RequestConsent => {
-                #[cfg(any(feature = "android", feature = "ios", feature = "web"))]
-                crate::logging::do_or_report_error(reshow_consent_form());
+                ws_common::logging::do_or_report_error(reshow_consent_form());
             }
 
             AdRequestEvent::RequestReward { event, hints } => {
-                #[cfg(any(feature = "ios", feature = "android"))]
-                {
-                    if ad_state.can_show_ads == Some(true) {
-                        if ad_state.reward_ad.is_some() {
-                            ad_state.reward_ad = None;
-                            ad_state.hint_wanted = Some((*hints, *event));
-                            asynchronous::spawn_and_run(mobile_only::try_show_reward_ad(
-                                async_writer.clone(),
-                            ));
-                        } else {
-                            warn!("Cannot request reward with admob (no reward ad is loaded)")
-                        }
+                if ad_state.can_show_ads == Some(true) {
+                    if ad_state.reward_ad.is_some() {
+                        ad_state.reward_ad = None;
+                        ad_state.hint_wanted = Some((*hints, *event));
+                        asynchronous::spawn_and_run(mobile_only::try_show_reward_ad(
+                            async_writer.clone(),
+                        ));
                     } else {
-                        warn!("Cannot request reward with admob (ads are not set up)")
+                        warn!("Cannot request reward with admob (no reward ad is loaded)")
                     }
-                }
-
-                #[cfg(not(any(feature = "ios", feature = "android")))]
-                {
-                    ad_state.hint_wanted = Some((*hints, *event));
-                    crate::platform_specific::show_toast_on_web("We would show a reward ad here");
-                    sync_writer.send(AdEvent::RewardAdRewarded(AdMobRewardItem {
-                        reward_type: "blah".to_string(),
-                        amount: 0,
-                    }));
+                } else {
+                    warn!("Cannot request reward with admob (ads are not set up)")
                 }
             }
             AdRequestEvent::RequestInterstitial => {
-                #[cfg(any(feature = "ios", feature = "android"))]
-                {
-                    if ad_state.can_show_ads == Some(true) {
-                        if ad_state.interstitial_ad.is_some() {
-                            ad_state.interstitial_ad = None;
-                            asynchronous::spawn_and_run(mobile_only::try_show_interstitial_ad(
-                                async_writer.clone(),
-                            ));
-                        } else {
-                            warn!("Cannot request interstitial with admob (ads are not set up)")
-                        }
+                if ad_state.can_show_ads == Some(true) {
+                    if ad_state.interstitial_ad.is_some() {
+                        ad_state.interstitial_ad = None;
+                        asynchronous::spawn_and_run(mobile_only::try_show_interstitial_ad(
+                            async_writer.clone(),
+                        ));
                     } else {
                         warn!("Cannot request interstitial with admob (ads are not set up)")
                     }
-                }
-                #[cfg(not(any(feature = "ios", feature = "android")))]
-                {
-                    crate::platform_specific::show_toast_on_web(
-                        "We would show an interstitial ad here",
-                    );
-                    sync_writer.send(AdEvent::InterstitialShowed);
+                } else {
+                    warn!("Cannot request interstitial with admob (ads are not set up)")
                 }
             }
         }
@@ -124,11 +71,7 @@ fn handle_ad_requests(
 
 #[allow(dead_code)]
 async fn reshow_consent_form() -> Result<(), capacitor_bindings::error::Error> {
-    #[cfg(any(feature = "android", feature = "ios"))]
-    {
-        let _r = Admob::show_consent_form().await?;
-    }
-    show_toast_on_web("We would show GDPR");
+    let _r = Admob::show_consent_form().await?;
 
     Ok(())
 }
@@ -148,15 +91,10 @@ fn handle_ad_events(
                 info!("Admob ads initialized");
                 if ad_state.can_show_ads != Some(true) {
                     ad_state.can_show_ads = Some(true);
-                    #[cfg(any(feature = "ios", feature = "android"))]
-                    {
-                        asynchronous::spawn_and_run(mobile_only::try_load_reward_ad(
-                            writer.clone(),
-                        ));
-                        asynchronous::spawn_and_run(mobile_only::try_load_interstitial_ad(
-                            writer.clone(),
-                        ));
-                    }
+                    asynchronous::spawn_and_run(mobile_only::try_load_reward_ad(writer.clone()));
+                    asynchronous::spawn_and_run(mobile_only::try_load_interstitial_ad(
+                        writer.clone(),
+                    ));
                 }
             }
             AdEvent::AdsInitError(err) => {
@@ -171,12 +109,7 @@ fn handle_ad_events(
             }
             AdEvent::InterstitialShowed => {
                 interstitial_state.levels_without_interstitial = 0;
-                #[cfg(any(feature = "ios", feature = "android"))]
-                {
-                    asynchronous::spawn_and_run(mobile_only::try_load_interstitial_ad(
-                        writer.clone(),
-                    ));
-                }
+                asynchronous::spawn_and_run(mobile_only::try_load_interstitial_ad(writer.clone()));
             }
             AdEvent::FailedToShowInterstitialAd(err) => {
                 bevy::log::error!("{}", err);
@@ -195,10 +128,7 @@ fn handle_ad_events(
             AdEvent::RewardAdRewarded(reward) => {
                 info!("admob Reward ad rewarded {reward:?}",);
 
-                #[cfg(any(feature = "ios", feature = "android"))]
-                {
-                    asynchronous::spawn_and_run(mobile_only::try_load_reward_ad(writer.clone()));
-                }
+                asynchronous::spawn_and_run(mobile_only::try_load_reward_ad(writer.clone()));
                 if let Some((hint_count, hint_event)) = ad_state.hint_wanted.take() {
                     hints.hints_remaining += hint_count;
                     hints.total_bought_hints += hint_count;
@@ -226,29 +156,7 @@ fn handle_ad_events(
 
 #[allow(unused_variables)]
 fn init_everything(writer: AsyncEventWriter<AdEvent>) {
-    #[cfg(any(feature = "ios", feature = "android"))]
-    {
-        asynchronous::spawn_and_run(mobile_only::init_everything_async(writer));
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Event, EnumIs)]
-pub enum AdEvent {
-    AdsInit,
-    // RewardEventsSetUp,
-    // RewardEventsSetUpError(String),
-    AdsInitError(String),
-
-    FailedToLoadRewardAd(String),
-    FailedToShowRewardAd(String),
-
-    FailedToLoadInterstitialAd(String),
-    FailedToShowInterstitialAd(String),
-
-    InterstitialLoaded(AdLoadInfo),
-    InterstitialShowed,
-    RewardAdLoaded(AdLoadInfo),
-    RewardAdRewarded(AdMobRewardItem),
+    asynchronous::spawn_and_run(mobile_only::init_everything_async(writer));
 }
 
 #[allow(dead_code)]
@@ -258,7 +166,6 @@ const BUY_HINTS_REWARD_AD_ID: &str = "ca-app-pub-5238923028364185/7292181940"; /
 
 //const HINTS_REWARD_AMOUNT: usize = 5;
 
-#[cfg(any(feature = "ios", feature = "android"))]
 mod mobile_only {
     use super::*;
 

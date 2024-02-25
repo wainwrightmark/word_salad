@@ -1,5 +1,6 @@
 pub mod achievements;
-pub mod ads;
+
+pub mod ads_common;
 pub mod animated_solutions;
 pub mod asynchronous;
 pub mod button;
@@ -33,11 +34,12 @@ pub mod wasm;
 pub mod z_indices;
 
 pub mod daily_challenge;
-pub mod monetization;
+pub mod purchase_common;
 
 pub mod prelude {
 
-    pub use crate::ads::*;
+
+    pub use crate::ads_common::*;
     pub use crate::animated_solutions::*;
     pub use crate::asynchronous::*;
     pub use crate::button::*;
@@ -62,7 +64,7 @@ pub mod prelude {
     pub use crate::test_res_mut::*;
     pub use crate::video::*;
     pub use crate::view::*;
-    pub use crate::monetization::*;
+    pub use crate::purchase_common::*;
 
     pub use bevy::prelude::*;
 

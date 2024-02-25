@@ -5,9 +5,9 @@ use serde::{Deserialize, Serialize};
 use strum::{Display, EnumString, EnumTable};
 use ws_levels::{level_group::LevelGroup, level_sequence::LevelSequence};
 
-pub struct MonetizationPlugin;
+pub struct PurchaseCommonPlugin;
 
-impl Plugin for MonetizationPlugin {
+impl Plugin for PurchaseCommonPlugin {
     fn build(&self, app: &mut App) {
         app.init_tracked_resource::<Purchases>();
         app.init_resource::<Prices>();
