@@ -3232,7 +3232,7 @@ dependencies = [
 [[package]]
 name = "nice_bevy_utils"
 version = "0.1.0"
-source = "git+https://github.com/wainwrightmark/nice_bevy_utils#f8442e43723256d75f05839ec5b90bff9ba06581"
+source = "git+https://github.com/wainwrightmark/nice_bevy_utils#06bf74d21136582c90005b0ed8e74bcd60863d0c"
 dependencies = [
  "async-channel",
  "bevy",

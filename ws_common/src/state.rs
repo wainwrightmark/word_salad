@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use strum::EnumIs;
 use ws_core::layout::entities::SelfieMode;
 use ws_levels::level_sequence::LevelSequence;
+use nice_bevy_utils::any_event_writer::*;
 
 pub struct StatePlugin;
 
@@ -949,10 +950,11 @@ pub mod tests {
     use std::num::NonZeroUsize;
 
     use ws_core::layout::entities::SelfieMode;
+    use nice_bevy_utils::any_event_writer::TestEventWriter;
 
     use crate::{
         chosen_state::ChosenState,
-        prelude::{Completion, DesignedLevel, FoundWordsState, TestEventWriter},
+        prelude::{Completion, DesignedLevel, FoundWordsState},
         state::HintState,
         view::PopupState,
     };

@@ -15,45 +15,58 @@ impl Plugin for WasmPlugin {
 }
 
 #[derive(Default)]
-struct LastSize {
+pub struct WindowSize {
     pub width: f32,
     pub height: f32,
+    pub device_pixel_ratio: f32,
 }
+
+
 
 fn resizer(
     //TODO move to nice bevy utils
     mut windows: Query<(Entity, &mut Window), With<PrimaryWindow>>,
+    //mut rescale_events: EventWriter<bevy::window::>
     mut window_resized_events: EventWriter<bevy::window::WindowResized>,
-    mut last_size: Local<LastSize>,
+    mut last_size: Local<WindowSize>,
 ) {
-    let window = web_sys::window().expect("no global `window` exists");
-    let mut width: f32 = window.inner_width().unwrap().as_f64().unwrap() as f32;
-    let mut height: f32 = window.inner_height().unwrap().as_f64().unwrap() as f32;
-    if width != last_size.width || height != last_size.height {
+    let web_window = web_sys::window().expect("no global `window` exists");
+    let mut width: f32 = web_window.inner_width().unwrap().as_f64().unwrap() as f32;
+    let mut height: f32 = web_window.inner_height().unwrap().as_f64().unwrap() as f32;
+    let device_pixel_ratio: f32 = web_window.device_pixel_ratio() as f32;
+    if width != last_size.width
+        || height != last_size.height
+        || device_pixel_ratio != last_size.device_pixel_ratio
+    {
         if let Ok((window_entity, mut window)) = windows.get_single_mut() {
-            *last_size = LastSize { width, height };
+            *last_size = WindowSize {
+                width,
+                height,
+                device_pixel_ratio,
+            };
 
             let constraints = window.resize_constraints;
 
             width = width.clamp(constraints.min_width, constraints.max_width);
             height = height.clamp(constraints.min_height, constraints.max_height);
 
-            let p_width = width * window.scale_factor() as f32;
-            let p_height = height * window.scale_factor() as f32;
-            window
-                .resolution
-                .set_physical_resolution(p_width.floor() as u32, p_height.floor() as u32);
+            window.resolution.set_scale_factor(device_pixel_ratio);
+            //window.resolution.set_scale_factor_override(Some(device_pixel_ratio));
+            window.resolution.set(width, height);
+
+            // window
+            //     .resolution
+            //     .set_physical_resolution(( width * device_pixel_ratio).floor() as u32, (height * device_pixel_ratio).floor() as u32);
+
             window_resized_events.send(bevy::window::WindowResized {
                 window: window_entity,
                 height,
                 width,
             });
 
-            debug!(
-                "Resizing to {:?},{:?} with scale factor of {}",
-                width,
-                height,
-                window.scale_factor()
+            info!(
+                "Resizing to {:?} ({:?}) ,{:?} ({:?}) with scale factor of {} ({})",
+                width, window.resolution.width(), height, window.resolution.height(), device_pixel_ratio, window.resolution.scale_factor()
             );
         }
     }
@@ -232,8 +245,6 @@ pub enum VideoRecordingStateEnum {
     Error,
     Unknown,
 }
-
-
 
 #[wasm_bindgen::prelude::wasm_bindgen(module = "/video.js")]
 extern "C" {

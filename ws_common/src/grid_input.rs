@@ -1,5 +1,6 @@
 use crate::prelude::*;
 use ws_core::Tile;
+use nice_bevy_utils ::any_res_mut::*;
 
 #[derive(Debug, Default)]
 pub struct GridInputState {
@@ -185,6 +186,7 @@ pub mod tests {
     use std::str::FromStr;
 
     use itertools::Itertools;
+    use nice_bevy_utils::any_res_mut::TestResMut;
 
     use crate::prelude::*;
     use test_case::test_case;
