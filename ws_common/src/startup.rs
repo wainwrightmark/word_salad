@@ -2,7 +2,7 @@ use std::sync::atomic::AtomicUsize;
 
 pub use crate::prelude::*;
 use crate::{achievements::AchievementsPlugin, input::InputPlugin, motion_blur::MotionBlurPlugin};
-use bevy::{asset::embedded_asset, log::LogPlugin, window::{RequestRedraw}};
+use bevy::{asset::embedded_asset, log::LogPlugin, window::RequestRedraw};
 use nice_bevy_utils::window_size::WindowSizePlugin;
 use ws_core::layout::entities::*;
 
@@ -20,8 +20,7 @@ pub fn setup_app(extra_setup: impl FnOnce(&mut App)) {
             present_mode: bevy::window::PresentMode::default(),
             prevent_default_event_handling,
 
-
-            resizable: true,
+            resizable: false,
             ..Default::default()
         }),
         ..Default::default()

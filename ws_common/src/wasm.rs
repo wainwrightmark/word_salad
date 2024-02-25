@@ -14,14 +14,27 @@ impl Plugin for WasmPlugin {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, PartialEq, Clone, Copy)]
 pub struct WindowSize {
     pub width: f32,
     pub height: f32,
     pub device_pixel_ratio: f32,
 }
 
+impl WindowSize {
+    pub fn from_web_window() -> Self {
+        let web_window = web_sys::window().expect("no global `window` exists");
+        let width: f32 = web_window.inner_width().unwrap().as_f64().unwrap() as f32;
+        let height: f32 = web_window.inner_height().unwrap().as_f64().unwrap() as f32;
+        let device_pixel_ratio: f32 = web_window.device_pixel_ratio() as f32;
 
+        Self {
+            width,
+            height,
+            device_pixel_ratio,
+        }
+    }
+}
 
 fn resizer(
     //TODO move to nice bevy utils
@@ -30,20 +43,17 @@ fn resizer(
     mut window_resized_events: EventWriter<bevy::window::WindowResized>,
     mut last_size: Local<WindowSize>,
 ) {
-    let web_window = web_sys::window().expect("no global `window` exists");
-    let mut width: f32 = web_window.inner_width().unwrap().as_f64().unwrap() as f32;
-    let mut height: f32 = web_window.inner_height().unwrap().as_f64().unwrap() as f32;
-    let device_pixel_ratio: f32 = web_window.device_pixel_ratio() as f32;
-    if width != last_size.width
-        || height != last_size.height
-        || device_pixel_ratio != last_size.device_pixel_ratio
-    {
+    let current_size = WindowSize::from_web_window();
+
+    if current_size != *last_size {
         if let Ok((window_entity, mut window)) = windows.get_single_mut() {
-            *last_size = WindowSize {
-                width,
-                height,
+            *last_size = current_size;
+
+            let WindowSize {
+                mut width,
+                mut height,
                 device_pixel_ratio,
-            };
+            } = current_size;
 
             let constraints = window.resize_constraints;
 
@@ -66,7 +76,12 @@ fn resizer(
 
             info!(
                 "Resizing to {:?} ({:?}) ,{:?} ({:?}) with scale factor of {} ({})",
-                width, window.resolution.width(), height, window.resolution.height(), device_pixel_ratio, window.resolution.scale_factor()
+                width,
+                window.resolution.width(),
+                height,
+                window.resolution.height(),
+                device_pixel_ratio,
+                window.resolution.scale_factor()
             );
         }
     }
