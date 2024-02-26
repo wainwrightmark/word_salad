@@ -1,0 +1,26 @@
+{
+  "dependencies": {
+    "@awesome-cordova-plugins/in-app-purchase-2": "^6.6.0",
+    "@capacitor-community/admob": "^5.3.1",
+    "@capacitor/android": "^5.7.0",
+    "@capacitor/app": "^5.0.6",
+    "@capacitor/core": "^5.5.1",
+    "@capacitor/device": "^5.0.6",
+    "@capacitor/haptics": "^5.0.6",
+    "@capacitor/ios": "^5.7.0",
+    "@capacitor/local-notifications": "^5.0.6",
+    "@capacitor/share": "^5.0.6",
+    "@capacitor/splash-screen": "^5.0.6",
+    "@capacitor/status-bar": "^5.0.6",
+    "@capacitor/toast": "^5.0.7",
+    "@capgo/capacitor-screen-recorder": "file:../../../random/capacitor-screen-recorder",
+    "@openforge/capacitor-game-connect": "^5.0.2",
+    "capacitor-rate-app": "^4.0.3",
+    "cordova-plugin-android-notch": "^1.0.3",
+    "cordova-plugin-purchase": "^13.10.1"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.4",
+    "@capacitor/cli": "^5.5.1"
+  }
+}

@@ -20,11 +20,9 @@ saves/bevy_pkv.redb
 ## Node
 ws_web/node_modules
 ws_web/package-lock.json
-ws_web/package.json
 
 ws_mobile/node_modules
 ws_mobile/package-lock.json
-ws_mobile/package.json
 
 
 ## Images
