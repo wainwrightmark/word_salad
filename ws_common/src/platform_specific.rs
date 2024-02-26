@@ -9,6 +9,11 @@ pub fn show_toast_on_web(options: impl Into<capacitor_bindings::toast::ShowOptio
 }
 
 #[allow(unused_variables)]
+pub fn show_toast_sync(options: impl Into<capacitor_bindings::toast::ShowOptions> + 'static) {
+    crate::logging::do_or_report_error(capacitor_bindings::toast::Toast::show(options));
+}
+
+#[allow(unused_variables)]
 pub async fn show_toast_async(
     options: impl Into<capacitor_bindings::toast::ShowOptions> + 'static,
 ) {

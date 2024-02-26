@@ -28,6 +28,7 @@ ws_mobile/package-lock.json
 ## Images
 netlify/functions/image/*.png
 achievement_icons/*.png
-PromoImages/*.jpeg
-PromoImages/*.png
+PromoImages/*/*.jpeg
+PromoImages/*/*.png
 icon/logo.png
+PromoImages/FeatureGraphic1.png

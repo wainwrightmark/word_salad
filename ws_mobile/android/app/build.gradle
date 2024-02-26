@@ -9,12 +9,12 @@ configurations {
 
 android {
     signingConfigs {
-        // debug {
-        //     storeFile file('C:\\Users\\wainw\\Desktop\\word_salad_key.jks')
-        //     storePassword '' //Westminster
-        //     keyAlias 'key0'
-        //     keyPassword '' //Westminster
-        // }
+        debug {
+            storeFile file('C:\\Users\\wainw\\Desktop\\word_salad_key.jks')
+            storePassword '' //Westminster
+            keyAlias 'key0'
+            keyPassword '' //Westminster
+        }
     }
     namespace "com.wordsalad.app"
     compileSdkVersion rootProject.ext.compileSdkVersion

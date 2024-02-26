@@ -153,6 +153,7 @@ mod purchase_api {
 
         match result {
             Ok(products) => {
+                bevy::log::info!("get_products success - found {} products", products.len());
                 for product in products.iter() {
                     bevy::log::info!("Got product: {product:?}");
                 }

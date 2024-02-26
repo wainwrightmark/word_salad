@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{platform_specific, prelude::*};
 use bevy::utils::HashSet;
 use nice_bevy_utils::{CanInitTrackedResource, CanRegisterAsyncEvent, TrackableResource};
 use serde::{Deserialize, Serialize};
@@ -125,12 +125,16 @@ fn handle_product_purchased(
             .get_next_level_index(sequence, &purchases)
             .to_level(sequence);
 
+            platform_specific::show_toast_sync(format!("{lg} Addon Purchased"));
+
         change_level_events.send(level.into());
     }
 
     fn add_hints(hints: &mut ResMut<HintState>, number: usize) {
         hints.hints_remaining += number;
         hints.total_bought_hints += number;
+
+        platform_specific::show_toast_sync(format!("{number} Hints Purchased"));
     }
 
     for ev in events.read() {

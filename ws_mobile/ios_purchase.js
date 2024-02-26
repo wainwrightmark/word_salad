@@ -43,6 +43,7 @@ const android_products = [
   },
 ]
 
+
 function onDeviceReady() {
 
   console.log("Purchases OnDeviceReady");
@@ -52,11 +53,11 @@ function onDeviceReady() {
   store.when()
     .productUpdated(refreshUI)
     .approved(finishPurchase);
-  store.initialize([Platform.APPLE_APPSTORE]);
+  store.initialize([Platform.GOOGLE_PLAY]);
 }
 
 function finishPurchase(transaction) {
-  console.log("Purchase Plugin: transaction complete ${transaction}");
+  console.log(`Purchase Plugin: transaction complete ${transaction}`);
   transaction.finish();
   refreshUI();
 }
@@ -76,37 +77,25 @@ export async function refresh_and_get_products() {
 }
 
 export async function purchase_product(options) {
-
-
-
   const product = store.get(options.id);
   const offer = product.getOffer();
 
   console.log(`Request to purchase "${options.id}" "${offer.id}"`);
 
-  try
-  {
-    var result = await store.order(offer);
+  var result = await store.order(offer);
 
-    if (result.isError) {
-      console.error(`${result}`)
-      return {
-        purchased: false
-      }
-    } else {
-      return {
-        purchased: true
-      };
-    }
+  if (result == undefined) {
+    console.info("Purchase Succeeded");
+    return {
+      purchased: true
+    };
   }
-  catch(e)
-  {
-    console.error(`${e}`)
+  else {
+    console.error("Purchase Failed");
+    console.error(`${result}`);
     return {
       purchased: false
     }
   }
-
-  
 
 }

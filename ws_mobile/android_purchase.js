@@ -56,7 +56,7 @@ function onDeviceReady() {
 }
 
 function finishPurchase(transaction) {
-  console.log("Purchase Plugin: transaction complete ${transaction}");
+  console.log(`Purchase Plugin: transaction complete ${transaction}`);
   transaction.finish();
   refreshUI();
 }
@@ -66,6 +66,7 @@ function refreshUI() {
 }
 
 export async function get_products() {
+  console.info("Getting products from the store");
   return store.products;
 }
 
@@ -76,9 +77,6 @@ export async function refresh_and_get_products() {
 }
 
 export async function purchase_product(options) {
-
-
-
   const product = store.get(options.id);
   const offer = product.getOffer();
 
@@ -86,15 +84,18 @@ export async function purchase_product(options) {
 
   var result = await store.order(offer);
 
-  if (result.isError) {
-    console.error(`${result}`)
-    return {
-      purchased: false
-    }
-  } else {
+  if (result == undefined) {
+    console.info("Purchase Succeeded");
     return {
       purchased: true
     };
+  }
+  else {
+    console.error("Purchase Failed");
+    console.error(`${result}`);
+    return {
+      purchased: false
+    }
   }
 
 }
