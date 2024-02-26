@@ -6,8 +6,6 @@ use nice_bevy_utils ::any_res_mut::*;
 pub struct GridInputState {
     last_tile: Option<Tile>,
     multi_click: Option<MultiClick>,
-
-    //his4 his1b hie1 his4
     last_truncate: Option<Tile>,
 }
 
