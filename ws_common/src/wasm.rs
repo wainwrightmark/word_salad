@@ -13,7 +13,7 @@ pub struct WasmPlugin;
 
 impl Plugin for WasmPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, resizer);
+        app.add_systems(Update, resizer.run_if(|e: EventReader<WebWindowResizedEvent>| !e.is_empty()));
         app.add_systems(Startup, register_on_window_resized);
 
         app.register_async_event::<WebWindowResizedEvent>();

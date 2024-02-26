@@ -1,9 +1,5 @@
-use crate::{platform_specific, prelude::*};
-use bevy::{prelude::*, utils::HashSet};
-use nice_bevy_utils::{CanInitTrackedResource, CanRegisterAsyncEvent, TrackableResource};
-use serde::{Deserialize, Serialize};
-use strum::{Display, EnumString, EnumTable};
-use ws_levels::{level_group::LevelGroup, level_sequence::LevelSequence};
+use bevy::prelude::*;
+use ws_common::purchase_common::*;
 
 pub struct PurchasesPlugin;
 
@@ -29,7 +25,7 @@ impl Plugin for PurchasesPlugin {
 fn on_startup(
     get_products_writer: nice_bevy_utils::async_event_writer::AsyncEventWriter<UpdateProductsEvent>,
 ) {
-    crate::asynchronous::spawn_and_run(purchase_api::get_products(get_products_writer));
+    ws_common::asynchronous::spawn_and_run(purchase_api::get_products(get_products_writer));
 }
 
 #[allow(unused_variables)]
@@ -39,13 +35,13 @@ fn handle_refresh_and_restore(
 ) {
     for event in ev.read() {
         let writer = get_products_writer.clone();
-        crate::asynchronous::spawn_and_run(purchase_api::refresh_and_get_products(writer));
+        ws_common::asynchronous::spawn_and_run(purchase_api::refresh_and_get_products(writer));
     }
 }
 
 fn handle_request_purchase_events(
     mut ev: EventReader<RequestPurchaseEvent>,
-    mut product_purchased_event_writer_async: nice_bevy_utils::async_event_writer::AsyncEventWriter<
+    product_purchased_event_writer_async: nice_bevy_utils::async_event_writer::AsyncEventWriter<
         ProductPurchasedEvent,
     >,
 ) {
@@ -53,7 +49,7 @@ fn handle_request_purchase_events(
         let product: Product = event.into();
         let writer = product_purchased_event_writer_async.clone();
 
-        crate::asynchronous::spawn_and_run(purchase_api::purchase_product_async(
+        ws_common::asynchronous::spawn_and_run(purchase_api::purchase_product_async(
             product, product, writer,
         ));
     }
@@ -96,6 +92,32 @@ mod purchase_api {
         ) -> Result<JsValue, JsValue>;
     }
 
+    #[cfg(not(any(
+        all(target_arch = "wasm32", feature = "ios"),
+        all(target_arch = "wasm32", feature = "android")
+    )))]
+    async fn get_products_extern() -> Result<JsValue, JsValue> {
+        panic!("Not build with ios or android")
+    }
+
+    #[cfg(not(any(
+        all(target_arch = "wasm32", feature = "ios"),
+        all(target_arch = "wasm32", feature = "android")
+    )))]
+    async fn refresh_and_get_products_extern() -> Result<JsValue, JsValue> {
+        panic!("Not build with ios or android")
+    }
+
+    #[cfg(not(any(
+        all(target_arch = "wasm32", feature = "ios"),
+        all(target_arch = "wasm32", feature = "android")
+    )))]
+    async fn purchase_product_extern(
+        _product_purchase_options: JsValue,
+    ) -> Result<JsValue, JsValue> {
+        panic!("Not build with ios or android")
+    }
+
     pub async fn purchase_product_async(
         product: Product,
         options: impl Into<ProductPurchaseOptions>,
@@ -112,12 +134,13 @@ mod purchase_api {
                         .await
                         .unwrap();
                 } else {
-                    crate::platform_specific::show_toast_async("Product was not purchased").await;
+                    ws_common::platform_specific::show_toast_async("Product was not purchased")
+                        .await;
                 }
             }
             Err(e) => {
                 bevy::log::error!("purchase_product error: {e}");
-                crate::platform_specific::show_toast_async("Could not purchase product").await;
+                ws_common::platform_specific::show_toast_async("Could not purchase product").await;
             }
         }
     }
@@ -138,7 +161,8 @@ mod purchase_api {
             }
             Err(e) => {
                 bevy::log::error!("get_products error: {e}");
-                crate::platform_specific::show_toast_async("Could not load store products").await;
+                ws_common::platform_specific::show_toast_async("Could not load store products")
+                    .await;
             }
         }
     }
@@ -159,7 +183,8 @@ mod purchase_api {
             }
             Err(e) => {
                 bevy::log::error!("get_products error: {e}");
-                crate::platform_specific::show_toast_async("Could not load store products").await;
+                ws_common::platform_specific::show_toast_async("Could not load store products")
+                    .await;
             }
         }
     }
