@@ -1,31 +1,33 @@
 PODS:
-  - Capacitor (5.6.0):
+  - Capacitor (5.7.0):
     - CapacitorCordova
-  - CapacitorApp (5.0.6):
+  - CapacitorApp (5.0.7):
     - Capacitor
-  - CapacitorCommunityAdmob (5.0.0):
+  - CapacitorCommunityAdmob (5.3.1):
     - Capacitor
-    - Google-Mobile-Ads-SDK (= 10.1.0)
-  - CapacitorCordova (5.6.0)
-  - CapacitorDevice (5.0.6):
+    - Google-Mobile-Ads-SDK (= 10.12.0)
+  - CapacitorCordova (5.7.0)
+  - CapacitorDevice (5.0.7):
     - Capacitor
-  - CapacitorHaptics (5.0.6):
+  - CapacitorHaptics (5.0.7):
     - Capacitor
-  - CapacitorLocalNotifications (5.0.6):
+  - CapacitorLocalNotifications (5.0.7):
     - Capacitor
-  - CapacitorShare (5.0.6):
+  - CapacitorRateApp (4.0.3):
     - Capacitor
-  - CapacitorSplashScreen (5.0.6):
+  - CapacitorShare (5.0.7):
     - Capacitor
-  - CapacitorStatusBar (5.0.6):
+  - CapacitorSplashScreen (5.0.7):
+    - Capacitor
+  - CapacitorStatusBar (5.0.7):
     - Capacitor
   - CapacitorToast (5.0.7):
     - Capacitor
   - CapgoCapacitorScreenRecorder (8.0.9):
     - Capacitor
-  - CordovaPlugins (5.6.0):
+  - CordovaPlugins (5.7.0):
     - CapacitorCordova
-  - Google-Mobile-Ads-SDK (10.1.0):
+  - Google-Mobile-Ads-SDK (10.12.0):
     - GoogleAppMeasurement (< 11.0, >= 7.0)
     - GoogleUserMessagingPlatform (>= 1.1)
   - GoogleAppMeasurement (10.21.0):
@@ -48,7 +50,7 @@ PODS:
     - GoogleUtilities/Network (~> 7.11)
     - "GoogleUtilities/NSData+zlib (~> 7.11)"
     - nanopb (< 2.30910.0, >= 2.30908.0)
-  - GoogleUserMessagingPlatform (2.1.0)
+  - GoogleUserMessagingPlatform (2.2.0)
   - GoogleUtilities/AppDelegateSwizzler (7.12.0):
     - GoogleUtilities/Environment
     - GoogleUtilities/Logger
@@ -73,7 +75,7 @@ PODS:
   - nanopb/encode (2.30909.1)
   - OpenforgeCapacitorGameConnect (5.0.2):
     - Capacitor
-  - PromisesObjC (2.3.1)
+  - PromisesObjC (2.4.0)
 
 DEPENDENCIES:
   - "Capacitor (from `../../node_modules/@capacitor/ios`)"
@@ -83,11 +85,12 @@ DEPENDENCIES:
   - "CapacitorDevice (from `../../node_modules/@capacitor/device`)"
   - "CapacitorHaptics (from `../../node_modules/@capacitor/haptics`)"
   - "CapacitorLocalNotifications (from `../../node_modules/@capacitor/local-notifications`)"
+  - CapacitorRateApp (from `../../node_modules/capacitor-rate-app`)
   - "CapacitorShare (from `../../node_modules/@capacitor/share`)"
   - "CapacitorSplashScreen (from `../../node_modules/@capacitor/splash-screen`)"
   - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
   - "CapacitorToast (from `../../node_modules/@capacitor/toast`)"
-  - CapgoCapacitorScreenRecorder (from `../../../../capacitor-screen-recorder`)
+  - "CapgoCapacitorScreenRecorder (from `../../node_modules/@capgo/capacitor-screen-recorder`)"
   - CordovaPlugins (from `../capacitor-cordova-ios-plugins`)
   - "OpenforgeCapacitorGameConnect (from `../../node_modules/@openforge/capacitor-game-connect`)"
 
@@ -115,6 +118,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/haptics"
   CapacitorLocalNotifications:
     :path: "../../node_modules/@capacitor/local-notifications"
+  CapacitorRateApp:
+    :path: "../../node_modules/capacitor-rate-app"
   CapacitorShare:
     :path: "../../node_modules/@capacitor/share"
   CapacitorSplashScreen:
@@ -124,34 +129,35 @@ EXTERNAL SOURCES:
   CapacitorToast:
     :path: "../../node_modules/@capacitor/toast"
   CapgoCapacitorScreenRecorder:
-    :path: "../../../../capacitor-screen-recorder"
+    :path: "../../node_modules/@capgo/capacitor-screen-recorder"
   CordovaPlugins:
     :path: "../capacitor-cordova-ios-plugins"
   OpenforgeCapacitorGameConnect:
     :path: "../../node_modules/@openforge/capacitor-game-connect"
 
 SPEC CHECKSUMS:
-  Capacitor: ebfc16cdb8116d04c101686b080342872da42d43
-  CapacitorApp: 024e1b1bea5f883d79f6330d309bc441c88ad04a
-  CapacitorCommunityAdmob: dfa5cf8cdd1d78c27b685d87413c51a91c761c69
-  CapacitorCordova: 931b48fcdbc9bc985fc2f16cec9f77c794a27729
-  CapacitorDevice: 2c968f98a1ec4d22357418c1521e7ddc46c675e6
-  CapacitorHaptics: 1fffc1217c7e64a472d7845be50fb0c2f7d4204c
-  CapacitorLocalNotifications: c2d8b14794064fd4814b1d6c4ddbac8029afa295
-  CapacitorShare: cd41743331cb71d217c029de54b681cbd91e0fcc
-  CapacitorSplashScreen: 5fa2ab5e46cf5cc530cf16a51c80c7a986579ccd
-  CapacitorStatusBar: 565c0a1ebd79bb40d797606a8992b4a105885309
+  Capacitor: fc155ee2ee45a2093d716f13cf5aa5a865e2d85a
+  CapacitorApp: 17fecd0e6cb23feafac7eb0939417389038b0979
+  CapacitorCommunityAdmob: 1e377ccfb6236c38591f23759334fa12668fb2e0
+  CapacitorCordova: e825fce1a2e14e4b5730641c7e098dccf74397b7
+  CapacitorDevice: fc91bdb484dc0e70755e9b621cd557afe642613a
+  CapacitorHaptics: 7c7c206f0c96a628fed073830c96d28c4b2e772e
+  CapacitorLocalNotifications: c58afadd159f6bc540ef9b3cbdbc82510a2bf112
+  CapacitorRateApp: 896df7ec6a237fea72d1955e0cb26394654b00db
+  CapacitorShare: c6a1ebbf0114ff9e863b966cd6052678fa25d480
+  CapacitorSplashScreen: dd3de3f3644710fa2a697cfb91ec262eece4d242
+  CapacitorStatusBar: f390fbb49b82ffb754ea4b3cf71dc8b048baf3e7
   CapacitorToast: c8bb89eeb59a23c1fc298f138cc06c8ff4d90ac1
   CapgoCapacitorScreenRecorder: 253d86288062ab823df2889256fa32a288ef8884
-  CordovaPlugins: af720891c2ab245218e3626fe90551bc7380e2ae
-  Google-Mobile-Ads-SDK: 894be2e3e3e8281004bda14381f9af7ad73eeffd
+  CordovaPlugins: 146ec091cc8c269c045cf030520df3c6da81db2a
+  Google-Mobile-Ads-SDK: 976fdf273815674eed30b8aafffedb3c25b055e4
   GoogleAppMeasurement: a65314d316443969ed3d3709b3a187448ed6418f
-  GoogleUserMessagingPlatform: dce302b8f1b84d6e945812ee7a15c3f65a102cbf
+  GoogleUserMessagingPlatform: d31dbfb40ec02c5d9683029815c5d5a7f46389ee
   GoogleUtilities: 0759d1a57ebb953965c2dfe0ba4c82e95ccc2e34
   nanopb: d4d75c12cd1316f4a64e3c6963f879ecd4b5e0d5
   OpenforgeCapacitorGameConnect: 6c2ab17efbb1373a2a6853816cffe0619767f517
-  PromisesObjC: c50d2056b5253dadbd6c2bea79b0674bd5a52fa4
+  PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
 
-PODFILE CHECKSUM: da615c2e2c86785cbbf79e9dfeda281cffe872a6
+PODFILE CHECKSUM: 2944dd3581df15eb84c7713445e81d8207b7b9b7
 
-COCOAPODS: 1.14.3
+COCOAPODS: 1.15.2
