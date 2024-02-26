@@ -2,12 +2,33 @@ use std::sync::atomic::AtomicUsize;
 
 pub use crate::prelude::*;
 use crate::{achievements::AchievementsPlugin, input::InputPlugin, motion_blur::MotionBlurPlugin};
-use bevy::{asset::embedded_asset, log::LogPlugin, window::RequestRedraw};
+use bevy::{
+    asset::embedded_asset,
+    log::LogPlugin,
+    window::{RequestRedraw, WindowResolution},
+};
 use nice_bevy_utils::window_size::WindowSizePlugin;
-use ws_core::layout::entities::*;
 
 pub fn setup_app(extra_setup: impl FnOnce(&mut App)) {
     let mut app = App::new();
+
+    let resolution: WindowResolution;
+    let resize_constraints = WindowResizeConstraints::default();
+
+    #[cfg(target_arch = "wasm32")]
+    {
+        let mut ws = crate::wasm::WindowSize::from_web_window();
+        ws.clamp_to_resize_constraints(&resize_constraints);
+
+        resolution = ws.to_window_resolution();
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        resolution = bevy::window::WindowResolution::new(
+            ws_core::layout::entities::IDEAL_WIDTH,
+            ws_core::layout::entities::IDEAL_HEIGHT,
+        );
+    }
 
     let prevent_default_event_handling = !cfg!(debug_assertions);
 
@@ -15,8 +36,8 @@ pub fn setup_app(extra_setup: impl FnOnce(&mut App)) {
         primary_window: Some(Window {
             title: "Word Salad".to_string(),
             canvas: Some("#game".to_string()),
-            resolution: bevy::window::WindowResolution::new(IDEAL_WIDTH, IDEAL_HEIGHT),
-            resize_constraints: WindowResizeConstraints::default(),
+            resolution,
+            resize_constraints,
             present_mode: bevy::window::PresentMode::default(),
             prevent_default_event_handling,
 
@@ -96,6 +117,8 @@ pub fn setup_app(extra_setup: impl FnOnce(&mut App)) {
     app.add_systems(PostUpdate, maybe_request_redraw);
 
     extra_setup(&mut app);
+
+    // info!("initial window size {window_size:?}");
     app.run();
 }
 

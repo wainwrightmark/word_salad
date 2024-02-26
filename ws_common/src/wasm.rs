@@ -2,8 +2,11 @@ use crate::{asynchronous, prelude::*};
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use capacitor_bindings::{device::Device, share::ShareOptions};
+use nice_bevy_utils::async_event_writer;
+use nice_bevy_utils::CanRegisterAsyncEvent;
 use serde::{Deserialize, Serialize};
-use wasm_bindgen::JsValue;
+use wasm_bindgen::JsCast;
+use wasm_bindgen::{closure::Closure, JsValue};
 use web_sys::UrlSearchParams;
 
 pub struct WasmPlugin;
@@ -11,10 +14,31 @@ pub struct WasmPlugin;
 impl Plugin for WasmPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, resizer);
+        app.add_systems(Startup, register_on_window_resized);
+
+        app.register_async_event::<WebWindowResizedEvent>();
     }
 }
 
-#[derive(Default, PartialEq, Clone, Copy)]
+#[derive(Default, PartialEq, Clone, Copy, Debug, Event)]
+struct WebWindowResizedEvent;
+
+fn register_on_window_resized(writer: async_event_writer::AsyncEventWriter<WebWindowResizedEvent>) {
+    let web_window = web_sys::window().expect("no global `window` exists");
+
+    let closure = Closure::<dyn Fn()>::new(move || {
+        let writer = writer.clone();
+        let fut = async move { writer.send_async_or_panic(WebWindowResizedEvent).await };
+
+        spawn_and_run(fut);
+    });
+
+    web_window.set_onresize(Some(closure.as_ref().unchecked_ref()));
+
+    std::mem::forget(closure);
+}
+
+#[derive(Default, PartialEq, Clone, Copy, Debug)]
 pub struct WindowSize {
     pub width: f32,
     pub height: f32,
@@ -34,55 +58,47 @@ impl WindowSize {
             device_pixel_ratio,
         }
     }
+
+    pub fn to_window_resolution(&self) -> bevy::window::WindowResolution {
+        let mut res = bevy::window::WindowResolution::default();
+
+        res.set_scale_factor(self.device_pixel_ratio);
+        res.set(self.width, self.height);
+
+        res
+    }
+
+    pub fn clamp_to_resize_constraints(&mut self, constraints: &WindowResizeConstraints){
+        self.width = self.width.clamp(constraints.min_width, constraints.max_width);
+        self.height = self.height.clamp(constraints.min_height, constraints.max_height);
+    }
 }
 
 fn resizer(
+    mut events: EventReader<WebWindowResizedEvent>,
     //TODO move to nice bevy utils
     mut windows: Query<(Entity, &mut Window), With<PrimaryWindow>>,
-    //mut rescale_events: EventWriter<bevy::window::>
     mut window_resized_events: EventWriter<bevy::window::WindowResized>,
-    mut last_size: Local<WindowSize>,
 ) {
-    let current_size = WindowSize::from_web_window();
+    for (index, _) in events.read().enumerate() {
+        if index > 0 {
+            continue;
+        }
 
-    if current_size != *last_size {
         if let Ok((window_entity, mut window)) = windows.get_single_mut() {
-            *last_size = current_size;
+            let mut current_size = WindowSize::from_web_window();
+            current_size.clamp_to_resize_constraints(&window.resize_constraints);
 
-            let WindowSize {
-                mut width,
-                mut height,
-                device_pixel_ratio,
-            } = current_size;
+            window.resolution = current_size.to_window_resolution();
 
-            let constraints = window.resize_constraints;
-
-            width = width.clamp(constraints.min_width, constraints.max_width);
-            height = height.clamp(constraints.min_height, constraints.max_height);
-
-            window.resolution.set_scale_factor(device_pixel_ratio);
-            //window.resolution.set_scale_factor_override(Some(device_pixel_ratio));
-            window.resolution.set(width, height);
-
-            // window
-            //     .resolution
-            //     .set_physical_resolution(( width * device_pixel_ratio).floor() as u32, (height * device_pixel_ratio).floor() as u32);
 
             window_resized_events.send(bevy::window::WindowResized {
                 window: window_entity,
-                height,
-                width,
+                height: current_size.height,
+                width: current_size.width,
             });
 
-            info!(
-                "Resizing to {:?} ({:?}) ,{:?} ({:?}) with scale factor of {} ({})",
-                width,
-                window.resolution.width(),
-                height,
-                window.resolution.height(),
-                device_pixel_ratio,
-                window.resolution.scale_factor()
-            );
+            info!("Resizing to {current_size:?}");
         }
     }
 }
