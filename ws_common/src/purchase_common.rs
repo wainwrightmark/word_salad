@@ -117,17 +117,17 @@ fn handle_product_purchased(
     ) {
         if !purchases.groups_purchased.contains(&lg) {
             purchases.groups_purchased.insert(lg);
-        }
 
-        let sequence = lg.get_sequences()[0];
+            let sequence = lg.get_sequences()[0];
 
-        let level: CurrentLevel = sequence_completion
-            .get_next_level_index(sequence, &purchases)
-            .to_level(sequence);
+            let level: CurrentLevel = sequence_completion
+                .get_next_level_index(sequence, &purchases)
+                .to_level(sequence);
 
             platform_specific::show_toast_sync(format!("{lg} Addon Purchased"));
 
-        change_level_events.send(level.into());
+            change_level_events.send(level.into());
+        }
     }
 
     fn add_hints(hints: &mut ResMut<HintState>, number: usize) {
@@ -139,7 +139,12 @@ fn handle_product_purchased(
 
     for ev in events.read() {
         match ev.product {
-            Product::RemoveAds => purchases.remove_ads_purchased = true,
+            Product::RemoveAds => {
+                if !purchases.remove_ads_purchased {
+                    purchases.remove_ads_purchased = true;
+                    platform_specific::show_toast_sync("Remove Ads purchased");
+                }
+            }
             Product::NaturalWorldPack => set_level_group(
                 &mut purchases,
                 LevelGroup::NaturalWorld,

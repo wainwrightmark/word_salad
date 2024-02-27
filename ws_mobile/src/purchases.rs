@@ -184,7 +184,7 @@ mod purchase_api {
                 for product in products.iter() {
                     bevy::log::info!("Got product: {product:?}");
                 }
-                let event = ExternProduct::make_product_price_event(products);
+                let event = ExternProduct::make_update_products_event(products);
                 writer.send_or_panic(event);
             }
             Err(e) => {
@@ -206,7 +206,7 @@ mod purchase_api {
                 for product in products.iter() {
                     bevy::log::info!("Got product: {product:?}");
                 }
-                let event = ExternProduct::make_product_price_event(products);
+                let event = ExternProduct::make_update_products_event(products);
                 writer.send_or_panic(event);
             }
             Err(e) => {
@@ -292,7 +292,7 @@ mod purchase_api {
             Product::from_str(self.id.as_str()).ok()
         }
 
-        pub fn make_product_price_event(products: Vec<Self>) -> UpdateProductsEvent {
+        pub fn make_update_products_event(products: Vec<Self>) -> UpdateProductsEvent {
             let mut product_prices: ProductTable<Option<String>> = Default::default();
             let mut owned_products = vec![];
 
