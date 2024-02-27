@@ -195,9 +195,9 @@ mod mobile_only {
     pub async fn init_everything_async(writer: AsyncEventWriter<AdEvent>) {
         match try_init_ads_async().await {
             Ok(()) => {
-                writer.send_async(AdEvent::AdsInit).await.unwrap();
+                writer.send_or_panic(AdEvent::AdsInit);
             }
-            Err(err) => writer.send_async(AdEvent::AdsInitError(err)).await.unwrap(),
+            Err(err) => writer.send_or_panic(AdEvent::AdsInitError(err)),
         }
     }
 
@@ -272,27 +272,15 @@ mod mobile_only {
         };
 
         match Admob::prepare_interstitial(options).await {
-            Ok(load_info) => writer
-                .send_async(AdEvent::InterstitialLoaded(load_info))
-                .await
-                .unwrap(),
-            Err(err) => writer
-                .send_async(AdEvent::FailedToShowInterstitialAd(err.to_string()))
-                .await
-                .unwrap(),
+            Ok(load_info) => writer.send_or_panic(AdEvent::InterstitialLoaded(load_info)),
+            Err(err) => writer.send_or_panic(AdEvent::FailedToShowInterstitialAd(err.to_string())),
         }
     }
 
     pub async fn try_show_interstitial_ad(writer: AsyncEventWriter<AdEvent>) {
         match Admob::show_interstitial().await {
-            Ok(()) => writer
-                .send_async(AdEvent::InterstitialShowed)
-                .await
-                .unwrap(),
-            Err(err) => writer
-                .send_async(AdEvent::FailedToShowInterstitialAd(err.to_string()))
-                .await
-                .unwrap(),
+            Ok(()) => writer.send_or_panic(AdEvent::InterstitialShowed),
+            Err(err) => writer.send_or_panic(AdEvent::FailedToShowInterstitialAd(err.to_string())),
         }
     }
 
@@ -306,27 +294,15 @@ mod mobile_only {
         };
 
         match Admob::prepare_reward_video_ad(options).await {
-            Ok(load_info) => writer
-                .send_async(AdEvent::RewardAdLoaded(load_info))
-                .await
-                .unwrap(),
-            Err(err) => writer
-                .send_async(AdEvent::FailedToLoadRewardAd(err.to_string()))
-                .await
-                .unwrap(),
+            Ok(load_info) => writer.send_or_panic(AdEvent::RewardAdLoaded(load_info)),
+            Err(err) => writer.send_or_panic(AdEvent::FailedToLoadRewardAd(err.to_string())),
         }
     }
 
     pub async fn try_show_reward_ad(writer: AsyncEventWriter<AdEvent>) {
         match Admob::show_reward_video_ad().await {
-            Ok(item) => writer
-                .send_async(AdEvent::RewardAdRewarded(item))
-                .await
-                .unwrap(),
-            Err(err) => writer
-                .send_async(AdEvent::FailedToShowRewardAd(err.to_string()))
-                .await
-                .unwrap(),
+            Ok(item) => writer.send_or_panic(AdEvent::RewardAdRewarded(item)),
+            Err(err) => writer.send_or_panic(AdEvent::FailedToShowRewardAd(err.to_string())),
         };
     }
 }

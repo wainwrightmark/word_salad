@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use ws_common::purchase_common::*;
 
-use self::purchase_api::PurchasePlatform;
+use self::purchase_api::{PurchasePlatform, Transaction};
 
 pub struct PurchasesPlugin;
 
@@ -26,20 +26,35 @@ impl Plugin for PurchasesPlugin {
 #[allow(unused_variables)]
 fn on_startup(
     get_products_writer: nice_bevy_utils::async_event_writer::AsyncEventWriter<UpdateProductsEvent>,
+    product_purchased_event_writer_async: nice_bevy_utils::async_event_writer::AsyncEventWriter<
+        ProductPurchasedEvent,
+    >,
 ) {
-
     let platform: PurchasePlatform;
 
-    #[cfg(feature= "android")]
+    #[cfg(feature = "android")]
     {
         platform = PurchasePlatform::GooglePlay;
     }
-    #[cfg(all(not(feature= "android"),feature= "ios" ) )]
+    #[cfg(all(not(feature = "android"), feature = "ios"))]
     {
         platform = PurchasePlatform::AppleAppstore;
     }
 
-    ws_common::asynchronous::spawn_and_run(purchase_api::initialize_and_get_products(platform, get_products_writer));
+    ws_common::asynchronous::spawn_and_run(purchase_api::initialize_and_get_products(
+        platform,
+        get_products_writer,
+        move |t: Transaction| {
+            bevy::log::info!("Transaction Approved: {t:?}");
+
+            //std::sync::mpsc::channel()
+
+            for transaction_product in t.products.iter() {
+                let product: Product = transaction_product.into();
+                product_purchased_event_writer_async.send_or_panic(ProductPurchasedEvent { product })
+            }
+        },
+    ));
 }
 
 #[allow(unused_variables)]
@@ -53,26 +68,21 @@ fn handle_refresh_and_restore(
     }
 }
 
-fn handle_request_purchase_events(
-    mut ev: EventReader<RequestPurchaseEvent>,
-    product_purchased_event_writer_async: nice_bevy_utils::async_event_writer::AsyncEventWriter<
-        ProductPurchasedEvent,
-    >,
-) {
+fn handle_request_purchase_events(mut ev: EventReader<RequestPurchaseEvent>) {
     for event in ev.read() {
         let product: Product = event.into();
-        let writer = product_purchased_event_writer_async.clone();
 
-        ws_common::asynchronous::spawn_and_run(purchase_api::purchase_product_async(
-            product, product, writer,
-        ));
+        ws_common::asynchronous::spawn_and_run(purchase_api::purchase_product_async(product));
     }
 }
 
 mod purchase_api {
+    #[allow(unused_imports)]
+    use capacitor_bindings::error::Error;
     use serde::{Deserialize, Serialize};
-
-    use wasm_bindgen_futures::wasm_bindgen::JsValue;
+    use std::str::FromStr;
+    #[allow(unused_imports)]
+    use wasm_bindgen_futures::wasm_bindgen::{self, closure::Closure, JsValue};
 
     use super::*;
 
@@ -80,7 +90,10 @@ mod purchase_api {
     #[wasm_bindgen::prelude::wasm_bindgen(module = "/purchase.js")]
     extern "C" {
         #[wasm_bindgen(catch, final, js_name = "initialize_and_get_products")]
-        async fn initialize_and_get_products_extern(platform: JsValue) -> Result<JsValue, JsValue>;
+        async fn initialize_and_get_products_extern(
+            platform: JsValue,
+            func: &Closure<dyn Fn(JsValue)>,
+        ) -> Result<JsValue, JsValue>;
 
         #[wasm_bindgen(catch, final, js_name = "refresh_and_get_products")]
         async fn refresh_and_get_products_extern() -> Result<JsValue, JsValue>;
@@ -91,10 +104,10 @@ mod purchase_api {
         ) -> Result<JsValue, JsValue>;
     }
 
-    #[cfg(not(target_arch = "wasm32"))]
-    async fn initialize_and_get_products_extern(_platform: JsValue) -> Result<JsValue, JsValue> {
-        panic!("Purchase plugin only works on wasm");
-    }
+    // #[cfg(not(target_arch = "wasm32"))]
+    // async fn initialize_and_get_products_extern(_platform: JsValue) -> Result<JsValue, JsValue> {
+    //     panic!("Purchase plugin only works on wasm");
+    // }
 
     #[cfg(not(target_arch = "wasm32"))]
     async fn refresh_and_get_products_extern() -> Result<JsValue, JsValue> {
@@ -108,42 +121,63 @@ mod purchase_api {
         panic!("Purchase plugin only works on wasm");
     }
 
-    pub async fn purchase_product_async(
-        product: Product,
-        options: impl Into<ProductPurchaseOptions>,
-        writer: nice_bevy_utils::async_event_writer::AsyncEventWriter<super::ProductPurchasedEvent>,
-    ) {
+    pub async fn purchase_product_async(options: impl Into<ProductPurchaseOptions>) {
         let result: Result<ProductPurchaseResult, capacitor_bindings::error::Error> =
             capacitor_bindings::helpers::run_value_value(options, purchase_product_extern).await;
 
         match result {
             Ok(result) => {
-                if result.purchased {
-                    writer
-                        .send_async(ProductPurchasedEvent { product })
-                        .await
-                        .unwrap();
+                if result.success {
+                    ws_common::platform_specific::show_toast_async("Purchase Pending").await;
                 } else {
-                    ws_common::platform_specific::show_toast_async("Product was not purchased")
-                        .await;
+                    ws_common::platform_specific::show_toast_async("Purchase Cancelled").await;
                 }
             }
             Err(e) => {
                 bevy::log::error!("purchase_product error: {e}");
-                ws_common::platform_specific::show_toast_async("Could not purchase product").await;
+                ws_common::platform_specific::show_toast_async("Purchase Error").await;
             }
         }
     }
 
+    #[allow(unused_variables)]
     pub async fn initialize_and_get_products(
-        platform: impl Into<PurchasePlatform>,
+        platform: PurchasePlatform,
         writer: nice_bevy_utils::async_event_writer::AsyncEventWriter<super::UpdateProductsEvent>,
+        func: impl Fn(Transaction) + 'static,
     ) {
+        let result: Result<Vec<ExternProduct>, capacitor_bindings::error::Error>;
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            panic!("Purchase plugin only works on wasm");
+        }
 
+        #[cfg(target_arch = "wasm32")]
+        {
+            let js_input_value: JsValue = serde_wasm_bindgen::to_value(&platform)
+                .map_err(|e| Error::serializing::<PurchasePlatform>(e))
+                .unwrap();
 
-        let result: Result<Vec<ExternProduct>, capacitor_bindings::error::Error> =
-            capacitor_bindings::helpers::run_value_value(platform, initialize_and_get_products_extern).await;
+            let func2 = move |js_value: JsValue| {
+                let schema: Transaction = serde_wasm_bindgen::from_value(js_value).unwrap(); //deserialize should always succeed assuming I have done everything else right
+                func(schema)
+            };
+            let closure = Closure::new(func2);
+            let box_closure = Box::new(closure);
+            let closure_ref = Box::leak(box_closure);
 
+            result = initialize_and_get_products_extern(js_input_value, closure_ref)
+                .await
+                .map_err(|e| Error::from(e))
+                .and_then(|js_output_value| {
+                    let o: Result<Vec<ExternProduct>, capacitor_bindings::error::Error> =
+                        serde_wasm_bindgen::from_value(js_output_value)
+                            .map_err(|e| Error::deserializing::<Vec<ExternProduct>>(e));
+                    o
+                });
+        }
+
+        #[allow(unreachable_code)]
         match result {
             Ok(products) => {
                 bevy::log::info!("get_products success - found {} products", products.len());
@@ -151,7 +185,7 @@ mod purchase_api {
                     bevy::log::info!("Got product: {product:?}");
                 }
                 let event = ExternProduct::make_product_price_event(products);
-                writer.send_async(event).await.unwrap();
+                writer.send_or_panic(event);
             }
             Err(e) => {
                 bevy::log::error!("get_products error: {e}");
@@ -173,7 +207,7 @@ mod purchase_api {
                     bevy::log::info!("Got product: {product:?}");
                 }
                 let event = ExternProduct::make_product_price_event(products);
-                writer.send_async(event).await.unwrap();
+                writer.send_or_panic(event);
             }
             Err(e) => {
                 bevy::log::error!("get_products error: {e}");
@@ -199,8 +233,8 @@ mod purchase_api {
 
     #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
     pub struct ProductPurchaseResult {
-        #[serde(rename = "purchased")]
-        pub purchased: bool,
+        #[serde(rename = "success")]
+        pub success: bool,
     }
 
     #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -255,7 +289,6 @@ mod purchase_api {
         }
 
         pub fn as_product(&self) -> Option<Product> {
-            use std::str::FromStr;
             Product::from_str(self.id.as_str()).ok()
         }
 
@@ -317,6 +350,22 @@ mod purchase_api {
         APPLICATION,
     }
 
+    #[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
+    pub enum TransactionState {
+        #[serde(rename = "initiated")]
+        Initiated,
+        #[serde(rename = "pending")]
+        Pending,
+        #[serde(rename = "approved")]
+        Approved,
+        #[serde(rename = "cancelled")]
+        Cancelled,
+        #[serde(rename = "finished")]
+        Finished,
+        #[default]
+        UnknownState,
+    }
+
     #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
     #[serde(default)]
 
@@ -352,5 +401,61 @@ mod purchase_api {
         // #[serde(rename ="billingCycles")]
         // #[serde(default)]
         // pub billing_cycles: Option<u64>,
+    }
+
+    #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct Transaction {
+        /** Platform this transaction was created on */
+        #[serde(rename = "platform")]
+        pub platform: PurchasePlatform,
+        /** Transaction identifier. */
+        #[serde(rename = "transactionId")]
+        pub transaction_id: String,
+        /** Identifier for the purchase this transaction is a part of. */
+        #[serde(rename = "purchaseId")]
+        #[serde(default)]
+        pub purchase_id: Option<String>,
+
+        /** True when the transaction has been acknowledged to the platform. */
+        #[serde(rename = "isAcknowledged")]
+        #[serde(default)]
+        pub is_acknowledged: Option<bool>,
+
+        /** True when the transaction is still pending payment. */
+        #[serde(rename = "isPending")]
+        #[serde(default)]
+        pub is_pending: Option<bool>,
+
+        /** True when the transaction was consumed. */
+        #[serde(rename = "isConsumed")]
+        #[serde(default)]
+        pub is_consumed: Option<bool>,
+
+        /** State this transaction is in */
+        #[serde(rename = "state")]
+        #[serde(default)]
+        pub state: TransactionState,
+
+        /** Purchased products */
+        #[serde(rename = "products")]
+        #[serde(default)]
+        pub products: Vec<TransactionProduct>,
+    }
+
+    #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+    pub struct TransactionProduct {
+        /** Product identifier */
+        #[serde(rename = "id")]
+        pub id: String,
+        /** Offer identifier, if known */
+        #[serde(rename = "offer_id")]
+        #[serde(default)]
+        pub offer_id: Option<String>,
+    }
+
+    impl<'a> Into<Product> for &'a TransactionProduct {
+        fn into(self) -> Product {
+            Product::from_str(&self.id).unwrap()
+        }
     }
 }

@@ -27,10 +27,7 @@ fn register_on_window_resized(writer: async_event_writer::AsyncEventWriter<WebWi
     let web_window = web_sys::window().expect("no global `window` exists");
 
     let closure = Closure::<dyn Fn()>::new(move || {
-        let writer = writer.clone();
-        let fut = async move { writer.send_async_or_panic(WebWindowResizedEvent).await };
-
-        spawn_and_run(fut);
+        writer.send_or_panic(WebWindowResizedEvent);
     });
 
     web_window.set_onresize(Some(closure.as_ref().unchecked_ref()));

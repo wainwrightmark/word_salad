@@ -7,8 +7,6 @@ use nice_bevy_utils::async_event_writer::AsyncEventWriter;
 #[allow(unused_imports)]
 use ws_common::{logging, prelude::*};
 
-
-
 const DAILY_CHALLENGE_CLICK_ACTION_ID: &str = "DailyChallengeClick";
 const DAILY_CHALLENGE_ACTION_TYPE_ID: &str = "DailyChallenge";
 
@@ -62,15 +60,9 @@ async fn setup_notifications_async(
 
             let change_level_event: ChangeLevelEvent = level_to_send.into();
 
-            {
-                let writer = writer.clone();
-                ws_common::asynchronous::spawn_and_run(async move {
-                    writer.send_async_or_panic(change_level_event).await
-                });
-            }
+            writer.send_or_panic(change_level_event)
         }
     };
-
 
     {
         match LocalNotifications::check_permissions().await {

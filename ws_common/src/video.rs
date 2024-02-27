@@ -93,18 +93,14 @@ pub async fn start_screen_record(writer: AsyncEventWriter<VideoEvent>) {
                 match r.value {
                     crate::wasm::VideoRecordingStateEnum::Recording => {
                         writer
-                            .send_async(VideoEvent::RecordingStarted)
-                            .await
-                            .unwrap();
+                            .send_or_panic(VideoEvent::RecordingStarted);
                     }
 
                     _ => {
                         crate::platform_specific::show_toast_async("Failed to start Screen Record")
                             .await;
                         writer
-                            .send_async(VideoEvent::RecordingStopped)
-                            .await
-                            .unwrap();
+                            .send_or_panic(VideoEvent::RecordingStopped);
                     }
                 }
             }
@@ -125,9 +121,7 @@ pub async fn stop_screen_record(writer: AsyncEventWriter<VideoEvent>) {
         match r {
             Ok(()) => {
                 writer
-                    .send_async(VideoEvent::RecordingStopped)
-                    .await
-                    .unwrap();
+                    .send_or_panic(VideoEvent::RecordingStopped);
             }
             Err(err) => {
                 crate::platform_specific::show_toast_async("Could not stop Screen Record").await;
@@ -146,9 +140,7 @@ async fn start_selfie_mode_async(writer: AsyncEventWriter<VideoEvent>) {
         crate::startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         match result {
             Ok(()) => writer
-                .send_async(VideoEvent::SelfieModeStarted)
-                .await
-                .unwrap(),
+                .send_or_panic(VideoEvent::SelfieModeStarted),
             Err(err) => {
                 crate::platform_specific::show_toast_async("Could not start Selfie Mode").await;
                 error!("{}", err)
@@ -166,9 +158,7 @@ async fn stop_selfie_mode_async(writer: AsyncEventWriter<VideoEvent>) {
         crate::startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         match result {
             Ok(()) => writer
-                .send_async(VideoEvent::SelfieModeStopped)
-                .await
-                .unwrap(),
+                .send_or_panic(VideoEvent::SelfieModeStopped),
             Err(err) => {
                 crate::platform_specific::show_toast_async("Could not stop Selfie Mode").await;
                 error!("{}", err)

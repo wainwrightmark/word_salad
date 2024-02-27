@@ -75,7 +75,7 @@ fn sign_in_user(writer: AsyncEventWriter<SignInEvent>) {
         ) -> Result<(), capacitor_bindings::error::Error> {
             let user = capacitor_bindings::game_connect::GameConnect::sign_in().await?;
             info!("User signed in: {user:?}");
-            let _ = writer.send_async(SignInEvent).await;
+            writer.send_or_panic(SignInEvent);
 
             Ok(())
         }

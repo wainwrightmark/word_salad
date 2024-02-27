@@ -66,17 +66,12 @@ fn begin_lifecycle(writer: async_event_writer::AsyncEventWriter<AppLifeCycleEven
     spawn_and_run(on_resume(writer));
 }
 
-async fn disable_back_async<'a>(_writer: async_event_writer::AsyncEventWriter<AppLifeCycleEvent>) {
+async fn disable_back_async<'a>(writer: async_event_writer::AsyncEventWriter<AppLifeCycleEvent>) {
     #[cfg(feature = "android")]
     {
         info!("Disabling back");
         let result = capacitor_bindings::app::App::add_back_button_listener(move |_| {
-            let writer = _writer.clone();
-            ws_common::asynchronous::spawn_and_run(async move {
-                writer
-                    .send_async_or_panic(AppLifeCycleEvent::BackPressed)
-                    .await
-            });
+            writer.send_or_panic(AppLifeCycleEvent::BackPressed);
         })
         .await;
 
@@ -92,18 +87,16 @@ async fn disable_back_async<'a>(_writer: async_event_writer::AsyncEventWriter<Ap
     }
 }
 
-async fn on_resume(_writer: async_event_writer::AsyncEventWriter<AppLifeCycleEvent>) {
+async fn on_resume(writer: async_event_writer::AsyncEventWriter<AppLifeCycleEvent>) {
     #[cfg(any(feature = "android", feature = "ios"))]
     {
         //info!("Setting on_resume");
         let result = capacitor_bindings::app::App::add_state_change_listener(move |x| {
-            let writer = _writer.clone();
+
             let event = AppLifeCycleEvent::StateChange {
                 is_active: x.is_active,
             };
-            ws_common::asynchronous::spawn_and_run(
-                async move { writer.send_async_or_panic(event).await },
-            );
+            writer.send_or_panic(event);
         })
         .await;
 

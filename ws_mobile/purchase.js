@@ -82,7 +82,7 @@ const ios_products = [
   },
 ]
 
-export async function initialize_and_get_products(platform) {
+export async function initialize_and_get_products(platform, on_approved) {
 
   console.log("Purchases OnDeviceReady");
 
@@ -95,25 +95,18 @@ export async function initialize_and_get_products(platform) {
     throw new Error(`Unexpected platform "${platform}"`);
   }
 
-  store.when()
-    .productUpdated(refreshUI)
-    .approved(finishPurchase);
-
   await store.initialize([platform]);
+
+  store.when()
+    //.productUpdated(refreshUI)
+    .approved(function (transaction) {
+      console.log(`Purchase Plugin: transaction complete ${transaction}`);
+      on_approved(transaction);
+      transaction.finish();
+    });
 
   return store.products;
 }
-
-function finishPurchase(transaction) {
-  console.log(`Purchase Plugin: transaction complete ${transaction}`);
-  transaction.finish();
-  refreshUI();
-}
-
-
-function refreshUI() {
-}
-
 
 export async function refresh_and_get_products() {
   await store.update();
@@ -132,14 +125,14 @@ export async function purchase_product(options) {
   if (result == undefined) {
     console.info("Purchase Succeeded");
     return {
-      purchased: true
+      success: true
     };
   }
   else {
     console.error("Purchase Failed");
     console.error(`${result}`);
     return {
-      purchased: false
+      success: false
     }
   }
 
