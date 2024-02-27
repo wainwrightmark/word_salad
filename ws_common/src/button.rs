@@ -565,7 +565,7 @@ impl ButtonInteraction {
                 StoreLayoutStructure::LevelGroups => {
                     *menu_state.as_mut() = MenuState::LevelGroupStorePage
                 }
-                StoreLayoutStructure::RefreshPrices | StoreLayoutStructure::RestorePurchases =>{
+                StoreLayoutStructure::RestorePurchases =>{
                     refresh_and_restore_events.send(RefreshAndRestoreEvent);
                 }
             },

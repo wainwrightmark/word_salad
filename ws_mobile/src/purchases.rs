@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use ws_common::purchase_common::*;
 
+use self::purchase_api::PurchasePlatform;
+
 pub struct PurchasesPlugin;
 
 impl Plugin for PurchasesPlugin {
@@ -25,7 +27,19 @@ impl Plugin for PurchasesPlugin {
 fn on_startup(
     get_products_writer: nice_bevy_utils::async_event_writer::AsyncEventWriter<UpdateProductsEvent>,
 ) {
-    ws_common::asynchronous::spawn_and_run(purchase_api::get_products(get_products_writer));
+
+    let platform: PurchasePlatform;
+
+    #[cfg(feature= "android")]
+    {
+        platform = PurchasePlatform::GooglePlay;
+    }
+    #[cfg(all(not(feature= "android"),feature= "ios" ) )]
+    {
+        platform = PurchasePlatform::AppleAppstore;
+    }
+
+    ws_common::asynchronous::spawn_and_run(purchase_api::initialize_and_get_products(platform, get_products_writer));
 }
 
 #[allow(unused_variables)]
@@ -62,11 +76,11 @@ mod purchase_api {
 
     use super::*;
 
-    #[cfg(all(target_arch = "wasm32", feature = "android"))]
-    #[wasm_bindgen::prelude::wasm_bindgen(module = "/android_purchase.js")]
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen::prelude::wasm_bindgen(module = "/purchase.js")]
     extern "C" {
-        #[wasm_bindgen(catch, final, js_name = "get_products")]
-        async fn get_products_extern() -> Result<JsValue, JsValue>;
+        #[wasm_bindgen(catch, final, js_name = "initialize_and_get_products")]
+        async fn initialize_and_get_products_extern(platform: JsValue) -> Result<JsValue, JsValue>;
 
         #[wasm_bindgen(catch, final, js_name = "refresh_and_get_products")]
         async fn refresh_and_get_products_extern() -> Result<JsValue, JsValue>;
@@ -77,45 +91,21 @@ mod purchase_api {
         ) -> Result<JsValue, JsValue>;
     }
 
-    #[cfg(all(target_arch = "wasm32", feature = "ios"))]
-    #[wasm_bindgen::prelude::wasm_bindgen(module = "/ios_purchase.js")]
-    extern "C" {
-        #[wasm_bindgen(catch, final, js_name = "get_products")]
-        async fn get_products_extern() -> Result<JsValue, JsValue>;
-
-        #[wasm_bindgen(catch, final, js_name = "refresh_and_get_products")]
-        async fn refresh_and_get_products_extern() -> Result<JsValue, JsValue>;
-
-        #[wasm_bindgen(catch, final, js_name = "purchase_product")]
-        async fn purchase_product_extern(
-            product_purchase_options: JsValue,
-        ) -> Result<JsValue, JsValue>;
+    #[cfg(not(target_arch = "wasm32"))]
+    async fn initialize_and_get_products_extern(_platform: JsValue) -> Result<JsValue, JsValue> {
+        panic!("Purchase plugin only works on wasm");
     }
 
-    #[cfg(not(any(
-        all(target_arch = "wasm32", feature = "ios"),
-        all(target_arch = "wasm32", feature = "android")
-    )))]
-    async fn get_products_extern() -> Result<JsValue, JsValue> {
-        panic!("Not build with ios or android")
-    }
-
-    #[cfg(not(any(
-        all(target_arch = "wasm32", feature = "ios"),
-        all(target_arch = "wasm32", feature = "android")
-    )))]
+    #[cfg(not(target_arch = "wasm32"))]
     async fn refresh_and_get_products_extern() -> Result<JsValue, JsValue> {
-        panic!("Not build with ios or android")
+        panic!("Purchase plugin only works on wasm");
     }
 
-    #[cfg(not(any(
-        all(target_arch = "wasm32", feature = "ios"),
-        all(target_arch = "wasm32", feature = "android")
-    )))]
+    #[cfg(not(target_arch = "wasm32"))]
     async fn purchase_product_extern(
         _product_purchase_options: JsValue,
     ) -> Result<JsValue, JsValue> {
-        panic!("Not build with ios or android")
+        panic!("Purchase plugin only works on wasm");
     }
 
     pub async fn purchase_product_async(
@@ -145,11 +135,14 @@ mod purchase_api {
         }
     }
 
-    pub async fn get_products(
+    pub async fn initialize_and_get_products(
+        platform: impl Into<PurchasePlatform>,
         writer: nice_bevy_utils::async_event_writer::AsyncEventWriter<super::UpdateProductsEvent>,
     ) {
+
+
         let result: Result<Vec<ExternProduct>, capacitor_bindings::error::Error> =
-            capacitor_bindings::helpers::run_unit_value(get_products_extern).await;
+            capacitor_bindings::helpers::run_value_value(platform, initialize_and_get_products_extern).await;
 
         match result {
             Ok(products) => {
@@ -291,7 +284,6 @@ mod purchase_api {
     pub enum PurchasePlatform {
         #[serde(rename = "test")]
         Test,
-
         #[serde(rename = "ios-appstore")]
         AppleAppstore,
         #[serde(rename = "android-playstore")]

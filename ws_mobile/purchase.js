@@ -1,5 +1,3 @@
-document.addEventListener('deviceready', onDeviceReady);
-
 const { store, ProductType, Platform } = CdvPurchase;
 
 const android_products = [
@@ -43,16 +41,67 @@ const android_products = [
   },
 ]
 
-function onDeviceReady() {
+const ios_products = [
+  {
+    type: ProductType.NON_CONSUMABLE,
+    id: 'removeads',
+    platform: Platform.APPLE_APPSTORE,
+  },
+
+  {
+    type: ProductType.NON_CONSUMABLE,
+    id: 'geographypack',
+    platform: Platform.APPLE_APPSTORE,
+  }, {
+    type: ProductType.NON_CONSUMABLE,
+    id: 'naturalworldpack',
+    platform: Platform.APPLE_APPSTORE,
+  }, {
+    type: ProductType.NON_CONSUMABLE,
+    id: 'ussports',
+    platform: Platform.APPLE_APPSTORE,
+  },
+
+
+  {
+    type: ProductType.CONSUMABLE,
+    id: 'hints500',
+    platform: Platform.APPLE_APPSTORE,
+  }, {
+    type: ProductType.CONSUMABLE,
+    id: 'hints50',
+    platform: Platform.APPLE_APPSTORE,
+  }, {
+    type: ProductType.CONSUMABLE,
+    id: 'hints100',
+    platform: Platform.APPLE_APPSTORE,
+  }, {
+    type: ProductType.CONSUMABLE,
+    id: 'hints25',
+    platform: Platform.APPLE_APPSTORE,
+  },
+]
+
+export async function initialize_and_get_products(platform) {
 
   console.log("Purchases OnDeviceReady");
 
-  // refreshUI();
-  store.register(android_products);
+  if (platform == Platform.GOOGLE_PLAY) {
+    store.register(android_products);
+  }
+  else if (platform == Platform.APPLE_APPSTORE) {
+    store.register(ios_products);
+  } else {
+    throw new Error(`Unexpected platform "${platform}"`);
+  }
+
   store.when()
     .productUpdated(refreshUI)
     .approved(finishPurchase);
-  store.initialize([Platform.GOOGLE_PLAY]);
+
+  await store.initialize([platform]);
+
+  return store.products;
 }
 
 function finishPurchase(transaction) {
@@ -65,10 +114,6 @@ function finishPurchase(transaction) {
 function refreshUI() {
 }
 
-export async function get_products() {
-  console.info("Getting products from the store");
-  return store.products;
-}
 
 export async function refresh_and_get_products() {
   await store.update();
