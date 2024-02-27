@@ -3,7 +3,7 @@ use capacitor_bindings::admob::*;
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
 #[cfg(any(feature = "ios", feature = "android"))]
 use ws_common::asynchronous;
-use ws_common::prelude::*;
+use ws_common::{platform_specific, prelude::*};
 
 const MARK_IOS_DEVICE_ID: &str = "d3f1ad44252cdc0f1278cf7347063f07";
 const MARK_ANDROID_DEVICE_ID: &str = "806EEBB5152549F81255DD01CDA931D9";
@@ -48,7 +48,9 @@ fn handle_ad_requests(
                             async_writer.clone(),
                         ));
                     } else {
-                        warn!("Cannot request reward with admob (no reward ad is loaded)")
+                        asynchronous::spawn_and_run(mobile_only::load_and_show_reward_ad(
+                            async_writer.clone(),
+                        ));
                     }
                 } else {
                     warn!("Cannot request reward with admob (ads are not set up)")
@@ -62,7 +64,9 @@ fn handle_ad_requests(
                             async_writer.clone(),
                         ));
                     } else {
-                        warn!("Cannot request interstitial with admob (ads are not set up)")
+                        asynchronous::spawn_and_run(mobile_only::load_and_show_interstitial_ad(
+                            async_writer.clone(),
+                        ));
                     }
                 } else {
                     warn!("Cannot request interstitial with admob (ads are not set up)")
@@ -107,6 +111,7 @@ fn handle_ad_events(
     mut hints: ResMut<HintState>,
     mut interstitial_state: ResMut<InterstitialProgressState>,
     mut hint_events: EventWriter<HintEvent>,
+    purchases: Res<Purchases>,
 ) {
     for event in events.read() {
         match event {
@@ -114,10 +119,18 @@ fn handle_ad_events(
                 info!("Admob ads initialized");
                 if ad_state.can_show_ads != Some(true) {
                     ad_state.can_show_ads = Some(true);
-                    asynchronous::spawn_and_run(mobile_only::try_load_reward_ad(writer.clone()));
-                    asynchronous::spawn_and_run(mobile_only::try_load_interstitial_ad(
-                        writer.clone(),
-                    ));
+
+                    if hints.hints_remaining <= INITIAL_HINTS {
+                        asynchronous::spawn_and_run(mobile_only::try_load_reward_ad(
+                            writer.clone(),
+                        ));
+                    }
+
+                    if !purchases.remove_ads_purchased {
+                        asynchronous::spawn_and_run(mobile_only::try_load_interstitial_ad(
+                            writer.clone(),
+                        ));
+                    }
                 }
             }
             AdEvent::AdsInitError(err) => {
@@ -158,9 +171,12 @@ fn handle_ad_events(
                     if let Some(hint_event) = hint_event {
                         hint_events.send(hint_event);
                     }
+
+                    platform_specific::show_toast_sync(format!("{hint_count} Hints Rewarded"));
                 }
             }
             AdEvent::FailedToLoadRewardAd(s) => {
+                platform_specific::show_toast_sync("Failed to load reward ad");
                 bevy::log::error!("{s}");
             }
             AdEvent::FailedToShowRewardAd(s) => {
@@ -277,6 +293,20 @@ mod mobile_only {
         }
     }
 
+    pub async fn load_and_show_interstitial_ad(writer: AsyncEventWriter<AdEvent>) {
+        let options: AdOptions = AdOptions {
+            ad_id: BETWEEN_LEVELS_INTERSTITIAL_AD_ID.to_string(),
+            is_testing: true,
+            margin: 0.0,
+            npa: false,
+        };
+
+        match Admob::prepare_interstitial(options).await {
+            Ok(..) => try_show_interstitial_ad(writer).await,
+            Err(err) => writer.send_or_panic(AdEvent::FailedToShowInterstitialAd(err.to_string())),
+        }
+    }
+
     pub async fn try_show_interstitial_ad(writer: AsyncEventWriter<AdEvent>) {
         match Admob::show_interstitial().await {
             Ok(()) => writer.send_or_panic(AdEvent::InterstitialShowed),
@@ -304,5 +334,22 @@ mod mobile_only {
             Ok(item) => writer.send_or_panic(AdEvent::RewardAdRewarded(item)),
             Err(err) => writer.send_or_panic(AdEvent::FailedToShowRewardAd(err.to_string())),
         };
+    }
+
+    pub async fn load_and_show_reward_ad(writer: AsyncEventWriter<AdEvent>) {
+        let options = RewardAdOptions {
+            ssv: None,
+            ad_id: BUY_HINTS_REWARD_AD_ID.to_string(),
+            is_testing: true,
+            margin: 0.0,
+            npa: false,
+        };
+
+        match Admob::prepare_reward_video_ad(options).await {
+            Ok(..) => {
+                try_show_reward_ad(writer).await;
+            }
+            Err(err) => writer.send_or_panic(AdEvent::FailedToLoadRewardAd(err.to_string())),
+        }
     }
 }

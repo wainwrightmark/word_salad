@@ -268,7 +268,7 @@ impl TrackableResource for SavedLevelsState {
     const KEY: &'static str = "SavedLevelsState";
 }
 
-const INITIAL_HINTS: usize = 3;
+pub const INITIAL_HINTS: usize = 3;
 
 #[derive(Debug, Clone, Resource, Serialize, Deserialize, MavericContext, PartialEq)]
 pub struct HintState {
