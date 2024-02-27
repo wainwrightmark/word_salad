@@ -32,3 +32,4 @@ PromoImages/*/*.jpeg
 PromoImages/*/*.png
 icon/logo.png
 PromoImages/FeatureGraphic1.png
+ws_mobile/android/app/credentials.gradle
