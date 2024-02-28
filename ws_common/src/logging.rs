@@ -324,6 +324,7 @@ impl LoggableEvent {
             "Js Exception: Notifications not enabled on this device",
             "Js Exception: Notifications not supported in this browser.",
             "Js Exception: Player is not authenticated",
+            "Js Exception: Browser does not support the vibrate API"
         ];
 
         if MESSAGES_TO_IGNORE.contains(&message.as_str()) {
