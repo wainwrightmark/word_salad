@@ -12,7 +12,7 @@ function = "og-param-proxy-game"
 path = "/game/*"
 
 [build]
-publish = "ws_Web/dist"
+publish = "ws_web/dist"
 command = "rustup default stable; rustup target add wasm32-unknown-unknown; rustup update stable; cargo install trunk --locked; trunk build ws_web/index.html --release --no-minification"
 
 
