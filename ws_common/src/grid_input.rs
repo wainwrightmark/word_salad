@@ -1,6 +1,6 @@
 use crate::prelude::*;
+use nice_bevy_utils::any_res_mut::*;
 use ws_core::Tile;
-use nice_bevy_utils ::any_res_mut::*;
 
 #[derive(Debug, Default)]
 pub struct GridInputState {

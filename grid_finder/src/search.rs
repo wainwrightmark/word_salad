@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use indicatif::{ProgressBar, ProgressStyle};
 use log::info;
-use ws_core::{finder::word_trait::WordTrait, DesignedLevel, Word};
+use ws_core::{prelude::*, DesignedLevel, Word};
 
 pub fn do_search(search: &str) {
     let folder = std::fs::read_dir("grids").unwrap();

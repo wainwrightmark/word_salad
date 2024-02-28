@@ -1,12 +1,7 @@
-
 use strum::{Display, EnumCount, EnumIs, EnumIter, IntoEnumIterator};
-use ws_core::{
-    font_icons, layout::entities::*,
-};
-
+use ws_core::{font_icons, layout::entities::*};
 
 use crate::prelude::*;
-
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Display, EnumIs, EnumCount, EnumIter,
@@ -37,7 +32,6 @@ impl MenuButtonsLayout for WordSaladMenuLayoutEntity {
 }
 
 impl WordSaladMenuLayoutEntity {
-
     pub fn get_text(
         &self,
         completion: &DailyChallengeCompletion,
@@ -109,7 +103,6 @@ impl WordSaladMenuLayoutEntity {
     }
 }
 
-
 impl LayoutStructureDoubleTextButton for WordSaladMenuLayoutEntity {
     type TextContext<'a> = MenuContextWrapper<'a>;
 
@@ -160,7 +153,7 @@ impl LayoutStructureDoubleTextButton for WordSaladMenuLayoutEntity {
         &self,
         _context: &Self::Context<'_>,
         _text_context: &Self::TextContext<'_>,
-    )-> bool {
+    ) -> bool {
         false
     }
 }

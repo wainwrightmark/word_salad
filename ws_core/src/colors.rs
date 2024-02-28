@@ -37,32 +37,38 @@ impl BasicColor {
     pub fn try_from_str(hex: &str) -> Option<Self> {
         let hex = hex.strip_prefix('#').unwrap_or(hex);
 
-        let (r,g,b,a) =match *hex.as_bytes() {
+        let (r, g, b, a) = match *hex.as_bytes() {
             // RGB
             [r, g, b] => {
                 let [r, g, b, ..] = Self::decode_hex([r, r, g, g, b, b])?;
-                (r,g,b, u8::MAX)
+                (r, g, b, u8::MAX)
             }
             // RGBA
             [r, g, b, a] => {
                 let [r, g, b, a, ..] = Self::decode_hex([r, r, g, g, b, b, a, a])?;
-                (r,g,b, a)
+                (r, g, b, a)
             }
             // RRGGBB
             [r1, r2, g1, g2, b1, b2] => {
                 let [r, g, b, ..] = Self::decode_hex([r1, r2, g1, g2, b1, b2])?;
-                (r,g,b, u8::MAX)
+                (r, g, b, u8::MAX)
             }
             // RRGGBBAA
             [r1, r2, g1, g2, b1, b2, a1, a2] => {
                 let [r, g, b, a, ..] = Self::decode_hex([r1, r2, g1, g2, b1, b2, a1, a2])?;
-                (r,g,b, a)
+                (r, g, b, a)
             }
-            _ => {return None;},
+            _ => {
+                return None;
+            }
         };
 
-        Some(Self::rgba(r as f32 / 255.0, g as f32 / 255.0, b as f32 / 255.0, a as f32 / 255.0))
-
+        Some(Self::rgba(
+            r as f32 / 255.0,
+            g as f32 / 255.0,
+            b as f32 / 255.0,
+            a as f32 / 255.0,
+        ))
     }
 
     const fn decode_hex<const N: usize>(mut bytes: [u8; N]) -> Option<[u8; N]> {
@@ -187,12 +193,11 @@ pub mod palette {
 }
 
 #[cfg(test)]
-mod tests{
+mod tests {
     use crate::BasicColor;
 
-
     #[test]
-    pub fn test_parse(){
+    pub fn test_parse() {
         let hex = "#165b33";
 
         let actual = BasicColor::try_from_str(hex);

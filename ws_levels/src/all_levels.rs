@@ -196,7 +196,10 @@ pub mod tests {
     use std::str::FromStr;
 
     use strum::IntoEnumIterator;
-    use ws_core::finder::{cluster::*, helpers::FinderSingleWord, node::GridResult, orientation, word_trait::WordTrait};
+    use ws_core::{
+        finder::{cluster::*, helpers::FinderSingleWord, node::GridResult, orientation},
+        prelude::*,
+    };
 
     use crate::prelude::LevelSequence;
 
@@ -364,11 +367,10 @@ pub mod tests {
     }
 
     lazy_static! {
-        pub(crate) static ref DAILY_CHALLENGE: Vec<DesignedLevel> =
-            include_str!("../../daily.tsv")
-                .lines()
-                .map(DesignedLevel::from_tsv_line)
-                .map(|x| x.unwrap())
-                .collect_vec();
+        pub(crate) static ref DAILY_CHALLENGE: Vec<DesignedLevel> = include_str!("../../daily.tsv")
+            .lines()
+            .map(DesignedLevel::from_tsv_line)
+            .map(|x| x.unwrap())
+            .collect_vec();
     }
 }

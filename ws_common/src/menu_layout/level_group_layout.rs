@@ -1,9 +1,6 @@
 use crate::{completion::SequenceCompletion, prelude::BUTTONS_FONT_PATH, view::MenuContextWrapper};
 
-
-use ws_core::{
-    layout::entities::*, palette, LayoutStructureDoubleTextButton,
-};
+use ws_core::{layout::entities::*, palette, LayoutStructureDoubleTextButton};
 use ws_levels::level_group::LevelGroup;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]

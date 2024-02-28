@@ -4,7 +4,10 @@ use ws_core::{
 };
 use ws_levels::level_group::LevelGroup;
 
-use crate::{prelude::{Product, BUTTONS_FONT_PATH},  view::MenuContextWrapper};
+use crate::{
+    prelude::{Product, BUTTONS_FONT_PATH},
+    view::MenuContextWrapper,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct LevelGroupStoreLayoutStructure(pub LevelGroup);

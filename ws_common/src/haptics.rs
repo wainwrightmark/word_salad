@@ -11,7 +11,10 @@ pub enum HapticEvent {
 impl HapticEvent {
     pub fn try_activate(&self, selfie_mode: SelfieMode) {
         if selfie_mode.is_selfie_mode {}
-        #[cfg(all(target_arch = "wasm32", any(feature = "android", feature = "ios", feature = "web")) )]
+        #[cfg(all(
+            target_arch = "wasm32",
+            any(feature = "android", feature = "ios", feature = "web")
+        ))]
         {
             //bevy::log::info!("Haptic event {self}");
             use capacitor_bindings::haptics::{ImpactOptions, ImpactStyle};

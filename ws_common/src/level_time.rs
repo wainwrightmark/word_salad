@@ -194,8 +194,6 @@ pub fn format_seconds(total_seconds: u64) -> String {
     let mm = (total_seconds / 60) % 60;
     let ss = total_seconds % 60;
 
-    
-
     if hh > 0 {
         format!("{hh:02}:{mm:02}:{ss:02}")
     } else {

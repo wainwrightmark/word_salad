@@ -1,12 +1,10 @@
 use std::{cmp::Reverse, str::FromStr};
 
-use crate::prelude::*;
+use crate::{prelude::*, word_trait::WordTrait};
 use const_sized_bit_set::BitSet;
 use itertools::Itertools;
 use prime_bag::PrimeBag128;
 use ustr::ustr;
-
-use super::word_trait::WordTrait;
 
 pub type LetterCounts = PrimeBag128<Character>;
 

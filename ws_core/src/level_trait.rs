@@ -1,5 +1,5 @@
-use super::{helpers::LetterCounts, word_trait::WordTrait};
-use crate::{Character, Grid, GridSet};
+use super::word_trait::WordTrait;
+use crate::{finder::helpers::LetterCounts, Character, Grid, GridSet};
 
 pub trait LevelTrait {
     type Word: WordTrait;

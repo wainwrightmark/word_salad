@@ -78,6 +78,5 @@ pub trait LayoutStructureDoubleTextButton:
         &self,
         context: &Self::Context<'_>,
         text_context: &Self::TextContext<'_>,
-    )-> bool;
-
+    ) -> bool;
 }

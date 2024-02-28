@@ -1,7 +1,7 @@
 use arrayvec::ArrayVec;
 use geometrid::vector::Vector;
 
-use super::helpers::LetterCounts;
+use crate::finder::helpers::LetterCounts;
 use crate::{Character, CharsArray, Grid, GridSet, Solution, Tile};
 pub trait WordTrait {
     fn characters(&self) -> &CharsArray;
@@ -167,6 +167,4 @@ pub trait WordTrait {
         }
         Self::find_solution(self, &grid)
     }
-
-
 }

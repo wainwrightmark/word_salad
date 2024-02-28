@@ -76,7 +76,7 @@ pub fn create_firework(
 }
 
 #[repr(C)]
-#[derive(Debug, Reflect, Clone, Copy,  Default, PartialEq)]
+#[derive(Debug, Reflect, Clone, Copy, Default, PartialEq)]
 pub struct FireworksShader;
 
 impl ExtractToShader for FireworksShader {

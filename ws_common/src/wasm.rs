@@ -13,7 +13,10 @@ pub struct WasmPlugin;
 
 impl Plugin for WasmPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, resizer.run_if(|e: EventReader<WebWindowResizedEvent>| !e.is_empty()));
+        app.add_systems(
+            Update,
+            resizer.run_if(|e: EventReader<WebWindowResizedEvent>| !e.is_empty()),
+        );
         app.add_systems(Startup, register_on_window_resized);
 
         app.register_async_event::<WebWindowResizedEvent>();
@@ -65,9 +68,13 @@ impl WindowSize {
         res
     }
 
-    pub fn clamp_to_resize_constraints(&mut self, constraints: &WindowResizeConstraints){
-        self.width = self.width.clamp(constraints.min_width, constraints.max_width);
-        self.height = self.height.clamp(constraints.min_height, constraints.max_height);
+    pub fn clamp_to_resize_constraints(&mut self, constraints: &WindowResizeConstraints) {
+        self.width = self
+            .width
+            .clamp(constraints.min_width, constraints.max_width);
+        self.height = self
+            .height
+            .clamp(constraints.min_height, constraints.max_height);
     }
 }
 
@@ -87,7 +94,6 @@ fn resizer(
             current_size.clamp_to_resize_constraints(&window.resize_constraints);
 
             window.resolution = current_size.to_window_resolution();
-
 
             window_resized_events.send(bevy::window::WindowResized {
                 window: window_entity,

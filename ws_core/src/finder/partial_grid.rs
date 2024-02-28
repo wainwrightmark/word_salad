@@ -1,9 +1,7 @@
 use crate::finder::node::*;
-use crate::finder::*;
+use crate::{finder::*, WordTrait};
 use crate::{Character, Grid, GridSet};
 use arrayvec::ArrayVec;
-
-use self::word_trait::WordTrait;
 
 use super::counter::{Counter, SolutionCollector};
 use super::helpers::FinderSingleWord;
@@ -48,7 +46,7 @@ impl PartialGrid {
 
         //println!("Solution found:\n{solution_grid}");
         for word in words {
-            if word.find_solution( &solution_grid).is_none() {
+            if word.find_solution(&solution_grid).is_none() {
                 return false;
             }
         }

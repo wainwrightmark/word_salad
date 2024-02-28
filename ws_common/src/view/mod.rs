@@ -99,7 +99,7 @@ impl MavericRootChildren for ViewRoot {
                             should_hide: context.chosen_state.is_just_finished,
                             close_to_solution,
                             selfie_mode,
-                            special_colors: level.special_colors.clone()
+                            special_colors: level.special_colors.clone(),
                         },
                         &context.window_size,
                     );

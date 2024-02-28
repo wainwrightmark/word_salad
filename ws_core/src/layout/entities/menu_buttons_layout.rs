@@ -37,7 +37,8 @@ impl<T: MenuButtonsLayout> LayoutStructure for T {
                     IDEAL_HEIGHT - (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, &context.0)),
                     (MENU_BUTTON_HEIGHT + MENU_BUTTON_SPACING) * 0.5,
                     super::MENU_VIRTUAL_CHILDREN * 2,
-                    (self.index() * 2) + super::MENU_VIRTUAL_CHILDREN - (Self::count(&context.1) + 1),
+                    (self.index() * 2) + super::MENU_VIRTUAL_CHILDREN
+                        - (Self::count(&context.1) + 1),
                 ),
         }
     }
@@ -51,11 +52,10 @@ impl<T: MenuButtonsLayout> LayoutStructureWithFont for T {
     type FontContext = ();
 
     fn font_size(&self, _context: &Self::FontContext) -> f32 {
-        if Self::FONT_SIZE_SMALL{
+        if Self::FONT_SIZE_SMALL {
             MENU_BUTTON_FONT_SIZE_SMALL
-        }else{
+        } else {
             MENU_BUTTON_FONT_SIZE
         }
-
     }
 }

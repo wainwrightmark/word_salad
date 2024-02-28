@@ -55,9 +55,7 @@ impl MavericNode for NonLevelView {
                 NonLevel::DailyChallengeNotLoaded { .. } => {
                     "Could not load Daily Challenge".to_string()
                 }
-                NonLevel::DailyChallengeLoading { .. } => {
-                    "Loading Daily Challenges".to_string()
-                }
+                NonLevel::DailyChallengeLoading { .. } => "Loading Daily Challenges".to_string(),
             };
 
             let text_color = if selfie_mode.is_selfie_mode {

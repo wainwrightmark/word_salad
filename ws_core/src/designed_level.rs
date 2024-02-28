@@ -1,10 +1,6 @@
 use std::str::FromStr;
 
-use crate::{
-    finder::{helpers::LetterCounts, level_trait::LevelTrait},
-    prelude::*,
-    Grid,
-};
+use crate::{finder::helpers::LetterCounts, prelude::*, Grid};
 use itertools::Itertools;
 use log::warn;
 use ustr::Ustr;
@@ -156,7 +152,7 @@ impl LevelTrait for DesignedLevel {
 
 #[cfg(test)]
 pub mod tests {
-    use crate::{finder::level_trait::LevelTrait, prelude::*};
+    use crate::prelude::*;
 
     #[test]
     pub fn test_calculate_needed_tiles() {

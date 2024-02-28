@@ -68,14 +68,14 @@ impl HintStatus {
 #[derive(Debug, Clone, PartialEq)]
 pub struct GridTiles {
     pub is_level_complete: bool,
-    pub pause_type: PauseType
+    pub pause_type: PauseType,
 }
 
 #[derive(Debug, Clone, PartialEq, EnumIs)]
-pub enum PauseType{
+pub enum PauseType {
     NotPaused,
     Blank,
-    BlankWithPlay
+    BlankWithPlay,
 }
 
 const TILE_SCALE_SPEED: LinearSpeed = LinearSpeed {

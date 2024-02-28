@@ -1,7 +1,7 @@
 use std::{num::NonZeroUsize, str::FromStr};
 use ustr::Ustr;
 
-use crate::{finder::word_trait::WordTrait, prelude::*};
+use crate::prelude::*;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DisplayWord {

@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 use ustr::ustr;
 
-use crate::{finder::word_trait::WordTrait, prelude::*};
+use crate::prelude::*;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Word {
@@ -39,7 +39,7 @@ mod tests {
 
     use arrayvec::ArrayVec;
 
-    use crate::{finder::word_trait::WordTrait, prelude::*};
+    use crate::prelude::*;
 
     #[test]
     pub fn test_find_path() {

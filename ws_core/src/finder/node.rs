@@ -1,9 +1,9 @@
-use crate::{prelude, Character, DesignedLevel, Grid};
+use crate::{prelude::*, Character, DesignedLevel, Grid};
 use const_sized_bit_set::BitSet;
 use itertools::Itertools;
 use std::{cell::Cell, num::NonZeroU8, str::FromStr};
 
-use self::{helpers::FinderGroup, level_trait::LevelTrait};
+use self::helpers::FinderGroup;
 
 use super::{
     counter::{Counter, SolutionCollector},
@@ -78,7 +78,7 @@ impl FromStr for GridResult {
         let chars: &str = iter.next().ok_or("Level should have a grid")?;
         let _name: &str = iter.next().ok_or("Level should have name")?;
 
-        let grid = prelude::try_make_grid(chars).ok_or("Should be able to make grid")?;
+        let grid = crate::prelude::try_make_grid(chars).ok_or("Should be able to make grid")?;
 
         let mut words: Vec<FinderSingleWord> = iter
             .map(|x| FinderSingleWord::from_str(x.trim()))
@@ -669,12 +669,9 @@ impl Node {
 
 #[cfg(test)]
 mod tests {
-    use std::time::Instant;
-
-    use crate::finder::counter::RealCounter;
-
     use super::*;
-    use node::word_trait::WordTrait;
+    use crate::finder::counter::RealCounter;
+    use std::time::Instant;
     use test_case::test_case;
     // spellchecker:disable
     #[test_case("SILVER\nORANGE\nGREEN\nIVORY\nCORAL\nOLIVE\nTEAL\nGRAY\nCYAN\nRED")]

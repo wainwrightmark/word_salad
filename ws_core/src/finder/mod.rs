@@ -1,4 +1,4 @@
-use crate::CharacterSet;
+use crate::{CharacterSet, Tile};
 
 pub mod cluster;
 pub mod cluster_ordering;
@@ -7,10 +7,6 @@ pub mod helpers;
 pub mod node;
 pub mod orientation;
 pub mod partial_grid;
-pub mod level_trait;
-pub mod word_trait;
-
-pub type Tile = geometrid::tile::Tile<4, 4>;
 
 pub(crate) type NodeId = geometrid::tile::Tile<16, 1>;
 pub(crate) type NodeIdSet = geometrid::tile_set::TileSet16<16, 1, 16>;

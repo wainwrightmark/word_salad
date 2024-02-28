@@ -8,8 +8,6 @@ use crate::{
 use itertools::Itertools;
 use lazy_static::lazy_static;
 
-use super::word_trait::WordTrait;
-
 lazy_static! {
     static ref TABOO_WORDS: HashSet<CharsArray> = {
         let text = include_str!("taboo.txt");

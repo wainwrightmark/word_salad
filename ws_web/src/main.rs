@@ -1,5 +1,5 @@
-pub mod purchases;
 pub mod ads;
+pub mod purchases;
 
 use ads::AdsPlugin;
 use purchases::PurchasesPlugin;
