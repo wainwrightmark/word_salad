@@ -7,6 +7,7 @@ pub mod helpers;
 pub mod node;
 pub mod orientation;
 pub mod partial_grid;
+pub mod falling_probability;
 
 pub(crate) type NodeId = geometrid::tile::Tile<16, 1>;
 pub(crate) type NodeIdSet = geometrid::tile_set::TileSet16<16, 1, 16>;

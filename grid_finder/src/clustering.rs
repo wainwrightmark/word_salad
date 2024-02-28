@@ -202,35 +202,29 @@ fn segment_into_ranges<const W: usize>(all_points: &[BitSet<W>]) -> Vec<(u32, &[
 
 #[cfg(test)]
 pub mod test {
-    use std::str::FromStr;
 
     use itertools::Itertools;
-    use ws_core::{
-        finder::{helpers::FinderSingleWord, node::GridResult},
-        TileMap,
-    };
+    use ws_core::{finder::node::GridResult, DesignedLevel, LevelTrait};
 
     use super::cluster_words;
 
     #[test]
     pub fn test_clustering() {
-        let months = include_str!("../grids/planets.txt");
-        let word_vectors = get_words_vectors(months, 5);
-        let all_words = word_vectors
+        let planets = include_str!("planets.txt");
+
+        let grs = planets
+            .lines()
+            .map(|l| DesignedLevel::from_tsv_line(l).unwrap())
+            .map(|x| GridResult::from(&x))
+            .collect_vec();
+
+        //let word_vectors = get_words_vectors(planets, 5);
+        let all_words = grs
             .iter()
-            .flat_map(|x| x.iter())
+            .flat_map(|x| x.words())
             .cloned()
             .sorted()
             .dedup()
-            .collect_vec();
-
-        let grs = word_vectors
-            .into_iter()
-            .map(|words| GridResult {
-                words,
-                grid: TileMap::from_fn(|_| ws_core::Character::Blank),
-                letters: Default::default(),
-            })
             .collect_vec();
 
         let clusters = cluster_words::<1>(grs, &all_words, 10, None);
@@ -238,19 +232,5 @@ pub mod test {
         assert_eq!(clusters.len(), 9);
         let text = clusters.into_iter().join("\n");
         insta::assert_snapshot!(text);
-    }
-
-    fn get_words_vectors(file: &str, min_words: usize) -> Vec<Vec<FinderSingleWord>> {
-        file.lines()
-            .map(|line| {
-                let words = line
-                    .split('\t')
-                    .skip(2)
-                    .map(|x| FinderSingleWord::from_str(x).unwrap())
-                    .collect_vec();
-                words
-            })
-            .filter(|x| x.len() >= min_words)
-            .collect_vec()
     }
 }

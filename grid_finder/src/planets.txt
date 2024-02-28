@@ -1,0 +1,36 @@
+VENMOUAULTRSHPEN	7	Earth	Mars	Neptune	Pluto	Saturn	Uranus	Venus
+ENMJUAUISRTP_NEH	6	Earth	Jupiter	Mars	Neptune	Saturn	Uranus
+VANSMERUNUTIJEPH	6	Earth	Jupiter	Mars	Neptune	Uranus	Venus
+VANSMERUOTULHIPJ	6	Earth	Jupiter	Mars	Pluto	Uranus	Venus
+VNSJEAUIURTP_NEH	6	Earth	Jupiter	Neptune	Saturn	Uranus	Venus
+UNEHSATPMRURENCY	6	Earth	Mars	Mercury	Neptune	Saturn	Uranus
+MUS_NARNEUTEJVPI	6	Jupiter	Mars	Neptune	Saturn	Uranus	Venus
+VENUPTASRURMYCNE	6	Mars	Mercury	Neptune	Saturn	Uranus	Venus
+VENCMARUTUSROLPY	6	Mars	Mercury	Pluto	Saturn	Uranus	Venus
+MASYOERRITUCHPLJ	5	Earth	Jupiter	Mars	Mercury	Pluto
+_MSYEARNRTUPHCIJ	5	Earth	Jupiter	Mars	Mercury	Saturn
+MACUNERRUSTYJPIH	5	Earth	Jupiter	Mars	Mercury	Uranus
+JNAMLUERNPTSEOIH	5	Earth	Jupiter	Mars	Neptune	Pluto
+MS__ARNLETUPHOIJ	5	Earth	Jupiter	Mars	Pluto	Saturn
+YNUSJRACUTERPIHM	5	Earth	Jupiter	Mercury	Saturn	Uranus
+NEIHLPTOSUREJUNA	5	Earth	Jupiter	Neptune	Pluto	Uranus
+JNAVSUERLPTONEIH	5	Earth	Jupiter	Neptune	Pluto	Venus
+NPRHMETCARUEYSNV	5	Earth	Mars	Mercury	Neptune	Venus
+_MSYEARNRTULHCOP	5	Earth	Mars	Mercury	Pluto	Saturn
+MANYEORURTUSHCLP	5	Earth	Mars	Mercury	Pluto	Uranus
+_CRSUAEURMNVYTH_	5	Earth	Mars	Mercury	Uranus	Venus
+NEPHSATMRUREYCNV	5	Earth	Mercury	Neptune	Saturn	Venus
+PLRYSUNOCATMUREH	5	Earth	Mercury	Pluto	Saturn	Uranus
+CRY_URNMTAEU_HSV	5	Earth	Mercury	Saturn	Uranus	Venus
+SANEMRTPYEUIRCNJ	5	Jupiter	Mars	Mercury	Neptune	Saturn
+REIOMCTPNAULYRSJ	5	Jupiter	Mars	Mercury	Pluto	Saturn
+JUP_SNMIRATEYUCR	5	Jupiter	Mars	Mercury	Saturn	Uranus
+VIPJTENURAMSCURY	5	Jupiter	Mars	Mercury	Uranus	Venus
+_NRSJUEALPTMNEIO	5	Jupiter	Mars	Neptune	Pluto	Saturn
+MARUONESETUNIPLJ	5	Jupiter	Mars	Neptune	Pluto	Uranus
+MARVONESETUNIPLJ	5	Jupiter	Mars	Neptune	Pluto	Venus
+JUPIRETLNAUOENS_	5	Jupiter	Neptune	Pluto	Saturn	Uranus
+VNRJEEULNTPSOIA_	5	Jupiter	Neptune	Pluto	Saturn	Venus
+VNUSAETLRIPOJUNE	5	Jupiter	Neptune	Pluto	Uranus	Venus
+OIPJVTULERAS_NU_	5	Jupiter	Pluto	Saturn	Uranus	Venus
+NSRMECAEPTUNOLRY	5	Mars	Mercury	Neptune	Pluto	Saturn
