@@ -6,7 +6,7 @@ use hashbrown::hash_set;
 use indicatif::{ProgressBar, ProgressStyle};
 use itertools::Itertools;
 use log::info;
-use ws_core::{ArrayVec, Character, DesignedLevel, DynamicTile, Vector, Word};
+use ws_core::{ArrayVec, Character, DesignedLevel, Vector, Word};
 
 #[derive(Args, Debug)]
 pub struct ObviousArgs {
@@ -43,7 +43,6 @@ pub fn do_obvious(args: ObviousArgs) {
         .with_message("Grid files");
 
     let mut total_solutions = 0usize;
-    let mut possible_solutions = 0usize;
 
     for path in paths.iter() {
         let grids_path = path.as_ref().unwrap().path();

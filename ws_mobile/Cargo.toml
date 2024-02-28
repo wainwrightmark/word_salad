@@ -102,5 +102,6 @@ bevy = { version = "0.13", default_features = false, features = [
 ] }
 
 [features]
+default=["android"]
 android = ["ws_common/android", "capacitor_bindings/android"]
 ios = ["ws_common/ios", "capacitor_bindings/ios"]
