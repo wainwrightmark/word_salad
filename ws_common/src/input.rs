@@ -11,7 +11,7 @@ use crate::{
 };
 use bevy::{prelude::*, window::PrimaryWindow};
 use strum::EnumIs;
-use ws_core::layout::entities::{recording_button::ToggleRecordingButton, *};
+use ws_core::layout::entities::{level_info_entity::LevelInfoLayoutEntity, recording_button::ToggleRecordingButton, *};
 
 use self::{
     hints_menu_layout::HintsLayoutEntity, settings_menu_layout::SettingsLayoutEntity,
@@ -163,7 +163,17 @@ impl InteractionEntity {
                             if current_level.is_tutorial() {
                                 None
                             } else {
-                                Some(InteractionEntity::Button(ButtonInteraction::TimerButton))
+                                match size.try_pick::<LevelInfoLayoutEntity>(*position, &selfie_mode)
+                                {
+                                    Some(LevelInfoLayoutEntity::Timer) => Some(InteractionEntity::Button(ButtonInteraction::TimerButton)),
+                                    Some(LevelInfoLayoutEntity::ThemeAndNumber) => None,
+                                    Some(LevelInfoLayoutEntity::ThemeInfo) => None,
+                                    None => None,
+                                }
+
+
+
+
                             }
                         }
                     }

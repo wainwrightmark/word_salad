@@ -155,27 +155,27 @@ fn animate_solution(
 
         let parent_entity = commands.spawn(components).id();
 
-        //info!("{speed_one_translation}");
+        if !selfie_mode.is_selfie_mode {
+            let mut scale = speed_one_translation.units_per_second / 300.0; //300.0; //scale the amount of blur with the speed
+            let mut a = 0.6; //300.0; //scale the amount of blur with the speed
+            for frame_offset in 1..=3 {
+                let mut text = text.clone();
+                for section in text.sections.iter_mut() {
+                    section.style.color = section.style.color.with_a(a);
+                }
+                a *= 0.8;
+                scale *= 0.8;
 
-        let mut scale = speed_one_translation.units_per_second / 300.0; //300.0; //scale the amount of blur with the speed
-        let mut a = 0.6; //300.0; //scale the amount of blur with the speed
-        for frame_offset in 1..=3 {
-            let mut text = text.clone();
-            for section in text.sections.iter_mut() {
-                section.style.color = section.style.color.with_a(a);
+                commands.spawn((
+                    Text2dBundle {
+                        text,
+                        transform: Transform::from_scale(Vec3::ONE * scale),
+                        ..Default::default()
+                    },
+                    MotionBlur::new(frame_offset * 2, parent_entity),
+                    AnimatedSolutionMarker,
+                ));
             }
-            a *= 0.8;
-            scale *= 0.8;
-
-            commands.spawn((
-                Text2dBundle {
-                    text,
-                    transform: Transform::from_scale(Vec3::ONE * scale),
-                    ..Default::default()
-                },
-                MotionBlur::new(frame_offset * 2, parent_entity),
-                AnimatedSolutionMarker,
-            ));
         }
     }
 }
