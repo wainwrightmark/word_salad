@@ -234,6 +234,7 @@ pub fn track_level_completion(
     found_words: Res<FoundWordsState>,
     mut streak: ResMut<Streak>,
     level_time: Res<LevelTime>,
+    daily_challenges: Res<DailyChallenges>,
 ) {
     if !found_words.is_changed()
         || !found_words.is_level_complete()
@@ -241,6 +242,8 @@ pub fn track_level_completion(
     {
         return;
     }
+
+    let first_time: bool;
 
     match current_level.as_ref() {
         CurrentLevel::Fixed {
@@ -255,16 +258,20 @@ pub fn track_level_completion(
                 .or_default();
             completion.current_index += 1;
             if completion.total_complete < number_complete {
+                first_time = true;
                 completion.total_complete = number_complete;
 
                 if completion.total_complete % 5 == 0 {
                     crate::platform_specific::request_review();
                 }
+            } else {
+                first_time = false;
             }
         }
 
         CurrentLevel::Custom { .. } => {
             // No need to track custom level completion
+            first_time = false;
         }
         CurrentLevel::Tutorial { index } => {
             const TUTORIAL_LEVEL_COUNT: usize = 2;
@@ -274,15 +281,20 @@ pub fn track_level_completion(
             let completion = &mut tutorial_completion.inner;
             completion.current_index = (completion.current_index + 1) % TUTORIAL_LEVEL_COUNT;
             if completion.total_complete < number_complete {
+                first_time = true;
                 completion.total_complete = number_complete;
+            } else {
+                first_time = false;
             }
         }
 
         CurrentLevel::DailyChallenge { index } => {
             if !daily_challenge_completion.total_completion.contains(*index) {
+                first_time = true;
                 daily_challenge_completion
                     .total_completion
                     .grow(index.saturating_add(1));
+
                 daily_challenge_completion.total_completion.insert(*index);
 
                 let index = DailyChallenges::get_today_index();
@@ -306,6 +318,8 @@ pub fn track_level_completion(
                     streak.last_completed = Some(index);
                     streak.longest = streak.current.max(streak.longest);
                 }
+            } else {
+                first_time = false;
             }
             daily_challenge_completion.results.insert(
                 *index,
@@ -315,7 +329,25 @@ pub fn track_level_completion(
                 },
             );
         }
-        CurrentLevel::NonLevel(..) => {}
+        CurrentLevel::NonLevel(..) => first_time = false,
+    }
+    if !current_level.is_changed() {
+        // if current level was changed, it was because we loaded the game
+        let level = current_level.level(&daily_challenges);
+        match level {
+            itertools::Either::Left(designed_level) => {
+                let seconds = level_time.total_elapsed().as_secs();
+                let event = crate::logging::LoggableEvent::FinishGameLevel {
+                    level: designed_level.full_name().to_string(),
+                    seconds,
+                    hints_used: found_words.hints_used,
+                    word_order: found_words.completed_words_ordered(designed_level),
+                    first_time,
+                };
+                event.try_log1();
+            }
+            itertools::Either::Right(..) => {}
+        }
     }
 }
 

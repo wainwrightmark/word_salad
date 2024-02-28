@@ -1,6 +1,6 @@
 use std::{num::NonZeroUsize, time::Duration};
 
-use crate::{completion::*, prelude::*};
+use crate::{completion::*, logging, prelude::*};
 use itertools::{Either, Itertools};
 use nice_bevy_utils::any_event_writer::*;
 use nice_bevy_utils::{CanInitTrackedResource, CanRegisterAsyncEvent, TrackableResource};
@@ -116,6 +116,25 @@ fn handle_change_level_event(
             }
             ChangeLevelEvent::Reset => {
                 if let Either::Left(level) = current_level.level(daily_challenges.as_ref()) {
+                    let mut words_complete = 0;
+                    let mut words_incomplete = 0;
+
+                    for completion in found_words.word_completions.iter() {
+                        if completion.is_complete() {
+                            words_complete += 1;
+                        } else {
+                            words_incomplete += 1
+                        }
+                    }
+
+                    logging::LoggableEvent::ResetLevel {
+                        level: level.full_name().to_string(),
+                        seconds: time.total_elapsed().as_secs(),
+                        hints_used: found_words.hints_used,
+                        words_complete,
+                        words_incomplete,
+                    }
+                    .try_log1();
                     *time = LevelTime::default();
                     *found_words = FoundWordsState::new_from_level(level);
                     *chosen = ChosenState::default();
@@ -313,6 +332,32 @@ impl TrackableResource for FoundWordsState {
 }
 
 impl FoundWordsState {
+    pub fn completed_words_ordered(&self, level: &DesignedLevel) -> String {
+        let mut result = String::default();
+
+        for word_index in self
+            .word_completions
+            .iter()
+            .enumerate()
+            .filter_map(|(word_index, completion)| match completion {
+                Completion::Unstarted => None,
+                Completion::ManualHinted(_) => None,
+                Completion::Complete { index } => Some((word_index, index)),
+            })
+            .sorted_by_key(|x| x.1)
+            .map(|x| x.0)
+        {
+            if let Some(word) = level.words.get(word_index) {
+                if !result.is_empty() {
+                    result.push_str(", ");
+                }
+                result.push_str(word.text.as_str());
+            }
+        }
+
+        result
+    }
+
     pub fn new_from_level(level: &DesignedLevel) -> Self {
         Self {
             unneeded_tiles: GridSet::EMPTY,

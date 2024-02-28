@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use bevy::{log, prelude::*};
 //use capacitor_bindings::{app::AppInfo, device::*};
 use crate::prelude::*;
@@ -13,52 +15,29 @@ impl Plugin for LogWatchPlugin {
     fn build(&self, app: &mut App) {
         //info!("Log watch plugin");
         app.add_systems(Update, watch_level_changes);
-        app.add_systems(Update, watch_level_completion);
+        // app.add_systems(Update, watch_level_completion);
         app.add_systems(PostStartup, on_start);
     }
 }
 
-fn watch_level_changes(current_level: Res<CurrentLevel>, daily_challenges: Res<DailyChallenges>) {
-    if current_level.is_changed() {
+fn watch_level_changes(
+    current_level: Res<CurrentLevel>,
+    daily_challenges: Res<DailyChallenges>,
+    found_words: Res<FoundWordsState>,
+) {
+    if current_level.is_changed() && !found_words.is_level_started() {
         //info!("Logging level changed");
         let level = current_level.level(&daily_challenges);
-        let level = level
-            .left()
-            .map(|x| x.full_name())
-            .unwrap_or_else(|| Ustr::from("Unknown"))
-            .to_string();
 
-        let event: LoggableEvent = LoggableEvent::StartLevel { level };
-        event.try_log1();
-    }
-}
-
-fn watch_level_completion(
-    state: Res<FoundWordsState>,
-    current_level: Res<CurrentLevel>,
-    timer: Res<LevelTime>,
-    daily_challenges: Res<DailyChallenges>,
-) {
-    if !state.is_changed() || state.is_added() {
-        return;
-    }
-    if state.is_level_complete() {
-        //info!("Logging level complete");
-        let seconds = timer.total_elapsed().as_secs();
-
-        let level = current_level.level(&daily_challenges);
-        let level = level
-            .left()
-            .map(|x| x.full_name())
-            .unwrap_or_else(|| Ustr::from("Unknown"))
-            .to_string();
-
-        let event = LoggableEvent::FinishLevel {
-            level,
-            seconds,
-            hints_used: state.hints_used,
-        };
-        event.try_log1();
+        match level {
+            itertools::Either::Left(level) => {
+                let event: LoggableEvent = LoggableEvent::StartLevel {
+                    level: level.full_name().to_string(),
+                };
+                event.try_log1();
+            }
+            itertools::Either::Right(_) => {}
+        }
     }
 }
 
@@ -202,12 +181,23 @@ pub enum LoggableEvent {
     StartLevel {
         level: String,
     },
-
-    FinishLevel {
+    ResetLevel {
         level: String,
         seconds: u64,
-        hints_used: usize, //TODO permutation
-    }, // GoAppStore {
+        hints_used: usize,
+        words_complete: usize,
+        words_incomplete: usize,
+    },
+
+    FinishGameLevel {
+        level: String,
+        seconds: u64,
+        hints_used: usize,
+        word_order: String,
+        first_time: bool,
+    },
+
+    // GoAppStore {
     //     store: String,
     //     level: String,
     //     max_demo_level: u8,
@@ -324,7 +314,8 @@ impl LoggableEvent {
             "Js Exception: Notifications not enabled on this device",
             "Js Exception: Notifications not supported in this browser.",
             "Js Exception: Player is not authenticated",
-            "Js Exception: Browser does not support the vibrate API"
+            "Js Exception: Browser does not support the vibrate API",
+            "Js Exception: not implemented", //todo find what this is :)
         ];
 
         if MESSAGES_TO_IGNORE.contains(&message.as_str()) {
@@ -404,7 +395,8 @@ impl EventLog {
         Self::log_async(self).await
     }
 
-    async fn try_log<T: Serialize>(data: &T) -> Result<(), reqwest::Error> {
+    async fn try_log<T: Serialize + Debug>(data: &T) -> Result<(), reqwest::Error> {
+        //only log when not in debug mode
         if !cfg!(debug_assertions) {
             //todo make this work properly on steam
             let client = reqwest::Client::new();
@@ -419,6 +411,8 @@ impl EventLog {
 
             res.error_for_status().map(|_| ())
         } else {
+            info!("We would log: {data:?}");
+
             Ok(())
         }
     }
