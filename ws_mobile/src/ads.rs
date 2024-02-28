@@ -41,9 +41,10 @@ fn handle_ad_requests(
 
             AdRequestEvent::RequestReward { event, hints } => {
                 if ad_state.can_show_ads == Some(true) {
+                    ad_state.hint_wanted = Some((*hints, *event));
                     if ad_state.reward_ad.is_some() {
                         ad_state.reward_ad = None;
-                        ad_state.hint_wanted = Some((*hints, *event));
+                        
                         asynchronous::spawn_and_run(mobile_only::try_show_reward_ad(
                             async_writer.clone(),
                         ));
