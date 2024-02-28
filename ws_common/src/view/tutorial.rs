@@ -343,8 +343,8 @@ impl TutorialText {
                 0 => Self {
                     top: Some(
                         "\
-                    To beat this puzzle, find six planets\n\
-                    The 4-letter word is 'Mars'",
+                    Find six planets\n\
+                    The 4-letter planet is 'Mars'",
                     ),
                     middle: None,
                     bottom: None,
@@ -360,7 +360,7 @@ impl TutorialText {
                     ),
                 },
                 2 => Self {
-                    top: None,
+                    top: Some("Hints are free in the tutorial"),
                     middle: None,
                     bottom: Some(
                         "\
@@ -374,11 +374,86 @@ impl TutorialText {
                     middle: None,
                     bottom: None,
                 },
-                5 => Self {
-                    top: Some("One planet to go!"),
-                    middle: None,
-                    bottom: None,
-                },
+                5 => {
+                    let incomplete_index = found_words
+                        .word_completions
+                        .iter()
+                        .find_position(|completion| !completion.is_complete())
+                        .map(|x| x.0)
+                        .unwrap_or_default();
+
+                    let bottom = match incomplete_index {
+                        0 =>
+                        // Mars
+                        {
+                            "\
+                        \n\
+                        Because the labels are alphabetical\n\
+                        This word starts with 'A' or 'MA'"
+                        }
+
+                        1 =>
+                        // Mercury
+                        {
+                            "\
+                        \n\
+                        Because the labels are alphabetical\n\
+                        This word starts with 'M'"
+                        }
+
+                        2 =>
+                        // Neptune
+                        {
+                            "\
+                        \n\
+                        Because the labels are alphabetical\n\
+                        This word must start with 'N' or 'P'"
+                        }
+
+                        3 =>
+                        // Saturn
+                        {
+                            "\
+                        \n\
+                        Because the labels are alphabetical\n\
+                        This word cannot start with 'A'"
+                        }
+
+                        4 =>
+                        // Uranus
+                        {
+                            "\
+                            \n\
+                            Because the labels are alphabetical\n\
+                            This word must start with 'S' or 'U'"
+                        }
+
+                        _ =>
+                        // Venus
+                        {
+                            "\
+                            \n\
+                            Because the labels are alphabetical\n\
+                            This word must start with 'U' or 'V'"
+                        }
+                    };
+
+                    Self {
+                        top: Some(
+                            "\
+                            Just one Chess Piece left\n\
+                            See below for a clue!",
+                        ),
+                        middle: None,
+                        bottom: Some(bottom),
+                    };
+
+                    Self {
+                        top: Some("One planet to go!"),
+                        middle: None,
+                        bottom: Some(bottom),
+                    }
+                }
                 _ => {
                     //Completed
                     Self {

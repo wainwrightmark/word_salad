@@ -28,7 +28,7 @@ pub struct WordsContext {
     pub window_size: MyWindowSize,
     pub video_resource: VideoResource,
     pub daily_challenges: DailyChallenges,
-    pub menu_state: MenuState
+    pub menu_state: MenuState,
 }
 
 impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for WordsContextWrapper<'w> {
@@ -39,7 +39,7 @@ impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for WordsContextWrapper<'w> {
             window_size: Res::clone(&value.window_size),
             video_resource: Res::clone(&value.video_resource),
             daily_challenges: Res::clone(&value.daily_challenges),
-            menu_state: Res::clone(&value.menu_state)
+            menu_state: Res::clone(&value.menu_state),
         }
     }
 }
@@ -99,7 +99,7 @@ impl MavericNode for WordsNode {
                             rect,
                             font_size,
                             selfie_mode,
-                            menu_closed: context.menu_state.is_closed()
+                            menu_closed: context.menu_state.is_closed(),
                         },
                         &(),
                     );
@@ -116,7 +116,7 @@ pub struct WordNode {
     pub rect: LayoutRectangle,
     pub font_size: f32,
     pub selfie_mode: SelfieMode,
-    pub menu_closed: bool
+    pub menu_closed: bool,
 }
 
 impl MavericNode for WordNode {
@@ -134,7 +134,6 @@ impl MavericNode for WordNode {
         commands.unordered(|args, commands| {
             let node = args.node;
 
-
             let completion = node.completion;
 
             let progress = match completion {
@@ -145,7 +144,7 @@ impl MavericNode for WordNode {
 
             let centre = node.rect.centre();
 
-            if node.menu_closed{
+            if node.menu_closed {
                 let text = match node.completion {
                     Completion::Unstarted => node.word.hidden_text.to_string(),
                     Completion::ManualHinted(hints) => node.word.hinted_text(hints).to_uppercase(),
@@ -188,7 +187,6 @@ impl MavericNode for WordNode {
                     &(),
                 );
             }
-
 
             let shape_translation = centre.extend(crate::z_indices::WORD_BACKGROUND);
             let _shape_border_translation = centre.extend(crate::z_indices::WORD_BACKGROUND + 1.0);

@@ -15,6 +15,7 @@ pub const THEME_HEIGHT: f32 = 24.;
 
 pub const THEME_INFO_HEIGHT: f32 = 18.;
 pub const TIMER_HEIGHT: f32 = 10.;
+pub const TIMER_WIDTH: f32 = 60.;
 
 pub const GRID_TILE_SIZE: f32 = 64.;
 pub const GRID_GAP: f32 = 12.;

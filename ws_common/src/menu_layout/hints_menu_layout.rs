@@ -3,7 +3,10 @@ use ws_core::{
     layout::entities::*, palette, LayoutStructureDoubleTextButton, LayoutStructureWithTextOrImage,
 };
 
-use crate::{prelude::{Product, BUTTONS_FONT_PATH},  view::MenuContextWrapper};
+use crate::{
+    prelude::{Product, BUTTONS_FONT_PATH},
+    view::MenuContextWrapper,
+};
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Display, EnumIter, EnumCount,

@@ -7,13 +7,52 @@
    style="line-height:1;-inkscape-font-specification:'Montserrat, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center"
    id="svg1"
    sodipodi:docname="achievement.svg"
-   inkscape:version="1.3.2 (091e20e, 2023-11-25, custom)"
+   inkscape:version="1.3 (0e150ed6c4, 2023-07-21)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
   <defs
-     id="defs1" />
+     id="defs1">
+    <filter
+       style="color-interpolation-filters:sRGB;"
+       inkscape:label="Drop Shadow"
+       id="filter28"
+       x="-0.20909794"
+       y="-0.20909793"
+       width="1.4617579"
+       height="1.4617579">
+      <feFlood
+         result="flood"
+         in="SourceGraphic"
+         flood-opacity="0.498039"
+         flood-color="rgb(0,0,0)"
+         id="feFlood27" />
+      <feGaussianBlur
+         result="blur"
+         in="SourceGraphic"
+         stdDeviation="8.000000"
+         id="feGaussianBlur27" />
+      <feOffset
+         result="offset"
+         in="blur"
+         dx="4.000000"
+         dy="4.000000"
+         id="feOffset27" />
+      <feComposite
+         result="comp1"
+         operator="in"
+         in="flood"
+         in2="offset"
+         id="feComposite27" />
+      <feComposite
+         result="comp2"
+         operator="over"
+         in="SourceGraphic"
+         in2="comp1"
+         id="feComposite28" />
+    </filter>
+  </defs>
   <sodipodi:namedview
      id="namedview1"
      pagecolor="#ffffff"
@@ -26,10 +65,10 @@
      inkscape:zoom="1.0896626"
      inkscape:cx="317.52948"
      inkscape:cy="322.57692"
-     inkscape:window-width="1920"
-     inkscape:window-height="1027"
-     inkscape:window-x="3832"
-     inkscape:window-y="727"
+     inkscape:window-width="2400"
+     inkscape:window-height="1261"
+     inkscape:window-x="3191"
+     inkscape:window-y="425"
      inkscape:window-maximized="1"
      inkscape:current-layer="g1" />
   <g
@@ -43,16 +82,17 @@
        x="0"
        y="0" />
     <path
-       d="m20.792 8.4667h93.883a12.325 12.325 45 0 1 12.325 12.325v93.883a12.325 12.325 135 0 1-12.325 12.325h-93.883a12.325 12.325 45 0 1-12.325-12.325v-93.883a12.325 12.325 135 0 1 12.325-12.325z"
+       d="M 31.371208,21.823498 H 104.0988 a 9.5477085,9.5477085 0 0 1 9.5477,9.547709 v 72.727583 a 9.5477085,9.5477085 0 0 1 -9.5477,9.54771 H 31.371208 A 9.5477085,9.5477085 0 0 1 21.8235,104.09879 V 31.371207 a 9.5477085,9.5477085 0 0 1 9.547708,-9.547709 z"
        fill="#e8e3e3"
-       id="path1" />
+       id="path1"
+       style="stroke-width:0.20496;filter:url(#filter28)" />
     <text
-       x="67.779778"
-       y="101.03601"
+       x="67.699043"
+       y="92.921494"
        font-size="92.894px"
        text-align="center"
        text-anchor="middle"
        id="text1"
-       style="-inkscape-font-specification:'Montserrat, Bold';font-family:Montserrat;font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal;font-size:92.894px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle">A</text>
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:71.9614px;font-family:Montserrat;-inkscape-font-specification:'Montserrat, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;stroke-width:0.20496">A</text>
   </g>
 </svg>

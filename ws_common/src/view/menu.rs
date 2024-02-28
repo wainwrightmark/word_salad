@@ -17,11 +17,14 @@ use crate::{
         main_menu_back_button::MainMenuBackButton,
         word_salad_menu_layout::WordSaladMenuLayoutEntity,
     },
-    prelude::*, shapes, z_indices,
+    prelude::*,
+    shapes, z_indices,
 };
 
 use self::{
-    level_group_layout::LevelGroupLayoutEntity, level_group_store_layout::LevelGroupStoreLayoutStructure, levels_menu_layout::LevelsMenuLayoutEntity, main_menu_layout::MainMenuLayoutEntity
+    level_group_layout::LevelGroupLayoutEntity,
+    level_group_store_layout::LevelGroupStoreLayoutStructure,
+    levels_menu_layout::LevelsMenuLayoutEntity, main_menu_layout::MainMenuLayoutEntity,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Resource, EnumIs, MavericContext)]
@@ -79,7 +82,7 @@ pub struct MenuContext {
     pub hint_state: HintState,
     pub current_level: CurrentLevel,
     pub found_words_state: FoundWordsState,
-    pub prices: Prices
+    pub prices: Prices,
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, MavericRoot)]

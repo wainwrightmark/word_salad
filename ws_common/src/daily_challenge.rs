@@ -156,10 +156,7 @@ pub async fn load_levels_async(
 
     startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 
-    match writer
-        .send_async(DailyChallengeDataLoadedEvent { data })
-        .await
-    {
+    match writer.send(DailyChallengeDataLoadedEvent { data }) {
         Ok(()) => {}
         Err(err) => {
             error!("{err}");

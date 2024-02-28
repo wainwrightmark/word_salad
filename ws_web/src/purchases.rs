@@ -41,7 +41,7 @@ fn handle_request_purchase_events(
         let product: Product = event.into();
 
         {
-            show_toast_on_web("In the real app you would pay money");
+            //show_toast_on_web("In the real app you would pay money");
             product_purchased_event_writer_sync.send(ProductPurchasedEvent { product });
         }
     }

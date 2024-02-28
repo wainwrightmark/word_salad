@@ -117,7 +117,6 @@ fn handle_button_activations(
             &mut event_writers.3,
             &event_writers.4,
             &mut event_writers.5,
-
         )
     }
 }
@@ -470,7 +469,8 @@ impl ButtonInteraction {
                             }
                         }
                         NonLevel::LevelSequenceMustPurchaseGroup(sequence) => {
-                            purchase_events.send(RequestPurchaseEvent::BuyLevelGroupBySequence(sequence));
+                            purchase_events
+                                .send(RequestPurchaseEvent::BuyLevelGroupBySequence(sequence));
                         }
                         NonLevel::DailyChallengeReset => {
                             daily_challenge_completion.reset_daily_challenge_completion();
@@ -547,11 +547,10 @@ impl ButtonInteraction {
                 }
             }
             ButtonInteraction::BuyLevelGroup(level_group) => {
-                if !purchases.groups_purchased.contains(level_group){
+                if !purchases.groups_purchased.contains(level_group) {
                     purchase_events.send(RequestPurchaseEvent::BuyLevelGroup(*level_group));
                     menu_state.close();
                 }
-
             }
 
             ButtonInteraction::MainStoreMenu(m) => match m {
@@ -565,7 +564,7 @@ impl ButtonInteraction {
                 StoreLayoutStructure::LevelGroups => {
                     *menu_state.as_mut() = MenuState::LevelGroupStorePage
                 }
-                StoreLayoutStructure::RefreshPrices | StoreLayoutStructure::RestorePurchases =>{
+                StoreLayoutStructure::RestorePurchases => {
                     refresh_and_restore_events.send(RefreshAndRestoreEvent);
                 }
             },

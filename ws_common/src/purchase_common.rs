@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{platform_specific, prelude::*};
 use bevy::utils::HashSet;
 use nice_bevy_utils::{CanInitTrackedResource, CanRegisterAsyncEvent, TrackableResource};
 use serde::{Deserialize, Serialize};
@@ -89,6 +89,11 @@ impl Prices {
             None => "???".to_string(),
         }
     }
+
+    pub fn try_get_price_string(&self, product: Product) -> Option<String> {
+
+        self.product_prices[product].clone()
+    }
 }
 
 #[derive(Debug, Clone, Event)]
@@ -117,25 +122,34 @@ fn handle_product_purchased(
     ) {
         if !purchases.groups_purchased.contains(&lg) {
             purchases.groups_purchased.insert(lg);
+
+            let sequence = lg.get_sequences()[0];
+
+            let level: CurrentLevel = sequence_completion
+                .get_next_level_index(sequence, &purchases)
+                .to_level(sequence);
+
+            platform_specific::show_toast_sync(format!("{lg} add-on Purchased"));
+
+            change_level_events.send(level.into());
         }
-
-        let sequence = lg.get_sequences()[0];
-
-        let level: CurrentLevel = sequence_completion
-            .get_next_level_index(sequence, &purchases)
-            .to_level(sequence);
-
-        change_level_events.send(level.into());
     }
 
     fn add_hints(hints: &mut ResMut<HintState>, number: usize) {
         hints.hints_remaining += number;
         hints.total_bought_hints += number;
+
+        platform_specific::show_toast_sync(format!("{number} Hints Purchased"));
     }
 
     for ev in events.read() {
         match ev.product {
-            Product::RemoveAds => purchases.remove_ads_purchased = true,
+            Product::RemoveAds => {
+                if !purchases.remove_ads_purchased {
+                    purchases.remove_ads_purchased = true;
+                    platform_specific::show_toast_sync("Remove Ads purchased");
+                }
+            }
             Product::NaturalWorldPack => set_level_group(
                 &mut purchases,
                 LevelGroup::NaturalWorld,

@@ -11,8 +11,8 @@ impl LayoutStructure for WordSaladLogo {
 
     fn size(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
         Vec2 {
-            x: (TOP_BAR_HEIGHT_BASE ),
-            y: (TOP_BAR_HEIGHT_BASE ),
+            x: (TOP_BAR_HEIGHT_BASE),
+            y: (TOP_BAR_HEIGHT_BASE),
         }
     }
 

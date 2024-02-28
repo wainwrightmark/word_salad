@@ -14,8 +14,8 @@ pub enum StoreLayoutStructure {
     RemoveAds = 0,
     BuyHints = 1,
     LevelGroups = 2,
-    RefreshPrices = 4,
-    RestorePurchases = 5,
+
+    RestorePurchases = 4,
 }
 
 impl MenuButtonsLayout for StoreLayoutStructure {
@@ -60,12 +60,8 @@ impl LayoutStructureDoubleTextButton for StoreLayoutStructure {
                 right = String::new();
             }
             StoreLayoutStructure::LevelGroups => {
-                left = "Buy Addons".to_string();
+                left = "Buy Add-ons (ad-free)".to_string();
 
-                right = String::new();
-            }
-            StoreLayoutStructure::RefreshPrices => {
-                left = "Refresh Prices".to_string();
                 right = String::new();
             }
             StoreLayoutStructure::RestorePurchases => {
@@ -116,7 +112,6 @@ impl LayoutStructureDoubleTextButton for StoreLayoutStructure {
             StoreLayoutStructure::LevelGroups => {
                 text_context.purchases.groups_purchased.len() == LevelGroup::COUNT
             }
-            StoreLayoutStructure::RefreshPrices => false,
             StoreLayoutStructure::RestorePurchases => false,
         }
     }

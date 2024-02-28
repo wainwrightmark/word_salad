@@ -1,5 +1,7 @@
 apply plugin: 'com.android.application'
 
+apply from: "./credentials.gradle"
+
 configurations {
     all {
         exclude group: 'androidx.lifecycle', module: 'lifecycle-runtime-ktx'
@@ -9,12 +11,12 @@ configurations {
 
 android {
     signingConfigs {
-        // debug {
-        //     storeFile file('C:\\Users\\wainw\\Desktop\\word_salad_key.jks')
-        //     storePassword '' //Westminster
-        //     keyAlias 'key0'
-        //     keyPassword '' //Westminster
-        // }
+        debug {
+            storeFile file('C:\\Users\\wainw\\Desktop\\word_salad_key.jks')
+            storePassword project.ext.storePassword
+            keyAlias project.ext.keyAlias
+            keyPassword project.ext.keyPassword
+        }
     }
     namespace "com.wordsalad.app"
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -22,8 +24,8 @@ android {
         applicationId "com.wordsalad.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1005
-        versionName "1.0.5"
+        versionCode 1006
+        versionName "1.0.6"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

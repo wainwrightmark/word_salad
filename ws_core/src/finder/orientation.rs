@@ -142,7 +142,7 @@ pub fn calculate_best_word(grid_result: &GridResult) -> (FinderSingleWord, i32) 
 pub fn find_single_row_word(grid_result: &GridResult) -> Option<FinderSingleWord> {
     for word in grid_result.words.iter() {
         if word.array.len() == 4 {
-            for s in find_solutions(&word.array, &grid_result.grid) {
+            for s in word.find_solutions(&grid_result.grid) {
                 if s.iter().map(|t| t.x()).all_equal() || s.iter().map(|t| t.y()).all_equal() {
                     return Some(word.clone());
                 }
@@ -163,7 +163,7 @@ fn calculate_max_score(grid: &Grid, words: &[FinderSingleWord]) -> i32 {
 }
 
 fn calculate_score(word: &FinderSingleWord, grid: &Grid) -> i32 {
-    find_solutions(&word.array, grid)
+    word.find_solutions(grid)
         .into_iter()
         .map(|x| {
             let score = score_solution(&x);

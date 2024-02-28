@@ -46,7 +46,6 @@ maveric = { git = 'https://github.com/wainwrightmark/maveric', features = [
     "bevy_text",
 ] }
 nice_bevy_utils = { git = "https://github.com/wainwrightmark/nice_bevy_utils", features = [
-    "async-channel",
     "bevy_pkv",
 ] }
 serde_repr = "0.1"
@@ -58,7 +57,7 @@ num-traits = "0.2"
 bevy_param_shaders = { git = "https://github.com/wainwrightmark/bevy_param_shaders/" }
 bitfield-struct = "0.6"
 reqwest = { version = "0.11", default-features = false, features = ["json"] }
-fixedbitset = { version = "0.4.2", features = ["serde"] }
+fixedbitset = { version = "0.5", features = ["serde"] }
 fmtastic = "0.2.0"
 bytemuck = { version = "1.14.0", features = ["derive"] }
 [target.'cfg(target_arch = "wasm32")'.dependencies]

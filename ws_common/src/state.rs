@@ -2,12 +2,12 @@ use std::{num::NonZeroUsize, time::Duration};
 
 use crate::{completion::*, prelude::*};
 use itertools::{Either, Itertools};
+use nice_bevy_utils::any_event_writer::*;
 use nice_bevy_utils::{CanInitTrackedResource, CanRegisterAsyncEvent, TrackableResource};
 use serde::{Deserialize, Serialize};
 use strum::EnumIs;
-use ws_core::layout::entities::SelfieMode;
+use ws_core::{layout::entities::SelfieMode, prelude::*};
 use ws_levels::level_sequence::LevelSequence;
-use nice_bevy_utils::any_event_writer::*;
 
 pub struct StatePlugin;
 
@@ -268,7 +268,7 @@ impl TrackableResource for SavedLevelsState {
     const KEY: &'static str = "SavedLevelsState";
 }
 
-const INITIAL_HINTS: usize = 3;
+pub const INITIAL_HINTS: usize = 3;
 
 #[derive(Debug, Clone, Resource, Serialize, Deserialize, MavericContext, PartialEq)]
 pub struct HintState {
@@ -289,8 +289,8 @@ impl TrackableResource for HintState {
     const KEY: &'static str = "HintState";
 }
 
-impl HintState{
-    pub fn as_text(&self)-> String{
+impl HintState {
+    pub fn as_text(&self) -> String {
         match self.hints_remaining {
             0 => "No Hints Left".to_string(),
             1 => " 1 Hint  Left".to_string(),
@@ -343,8 +343,6 @@ impl FoundWordsState {
     pub fn manual_hint_set(&self, level: &DesignedLevel, solution: &Solution) -> GridSet {
         self.hint_set::<true>(level, solution)
     }
-
-
 
     fn hint_set<const MANUAL: bool>(&self, level: &DesignedLevel, solution: &Solution) -> GridSet {
         let mut set = GridSet::default();
@@ -949,8 +947,8 @@ fn count_hints(
 pub mod tests {
     use std::num::NonZeroUsize;
 
-    use ws_core::layout::entities::SelfieMode;
     use nice_bevy_utils::any_event_writer::TestEventWriter;
+    use ws_core::layout::entities::SelfieMode;
 
     use crate::{
         chosen_state::ChosenState,

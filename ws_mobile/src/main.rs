@@ -4,9 +4,9 @@ use notifications::NotificationPlugin;
 use purchases::PurchasesPlugin;
 use ws_common::prelude::*;
 
+pub mod ads;
 pub mod app_lifecycle;
 pub mod notifications;
-pub mod ads;
 pub mod purchases;
 
 fn main() {

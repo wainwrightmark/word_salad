@@ -1,4 +1,4 @@
-use crate::{prelude, Character, DesignedLevel, Grid};
+use crate::{prelude::*, Character, DesignedLevel, Grid};
 use const_sized_bit_set::BitSet;
 use itertools::Itertools;
 use std::{cell::Cell, num::NonZeroU8, str::FromStr};
@@ -19,6 +19,18 @@ pub struct GridResult {
     pub grid: Grid,
     pub letters: LetterCounts,
     pub words: Vec<FinderSingleWord>,
+}
+
+impl LevelTrait for GridResult {
+    type Word = FinderSingleWord;
+
+    fn grid(&self) -> Grid {
+        self.grid
+    }
+
+    fn words(&self) -> &[Self::Word] {
+        self.words.as_slice()
+    }
 }
 
 impl GridResult {
@@ -66,7 +78,7 @@ impl FromStr for GridResult {
         let chars: &str = iter.next().ok_or("Level should have a grid")?;
         let _name: &str = iter.next().ok_or("Level should have name")?;
 
-        let grid = prelude::try_make_grid(chars).ok_or("Should be able to make grid")?;
+        let grid = crate::prelude::try_make_grid(chars).ok_or("Should be able to make grid")?;
 
         let mut words: Vec<FinderSingleWord> = iter
             .map(|x| FinderSingleWord::from_str(x.trim()))
@@ -97,7 +109,6 @@ impl std::fmt::Display for GridResult {
             .iter()
             .sorted()
             .map(|x| format!("{:8}", x.text))
-
             .join("\t");
         let solution = self.grid.iter().join("");
         let size = self.words.len();
@@ -658,11 +669,9 @@ impl Node {
 
 #[cfg(test)]
 mod tests {
-    use std::time::Instant;
-
-    use crate::finder::counter::RealCounter;
-
     use super::*;
+    use crate::finder::counter::RealCounter;
+    use std::time::Instant;
     use test_case::test_case;
     // spellchecker:disable
     #[test_case("SILVER\nORANGE\nGREEN\nIVORY\nCORAL\nOLIVE\nTEAL\nGRAY\nCYAN\nRED")]
@@ -734,7 +743,7 @@ mod tests {
                 println!("Found after {} tries", counter.current);
 
                 for word in words.into_iter() {
-                    if crate::word::find_solution(&word.array, &grid).is_none() {
+                    if word.find_solution(&grid).is_none() {
                         panic!("No solution for word '{}'", word.text)
                     }
                 }

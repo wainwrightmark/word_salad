@@ -37,7 +37,6 @@ pub mod purchase_common;
 
 pub mod prelude {
 
-
     pub use crate::ads_common::*;
     pub use crate::animated_solutions::*;
     pub use crate::asynchronous::*;
@@ -57,12 +56,12 @@ pub mod prelude {
     pub use crate::menu_layout::*;
 
     pub use crate::platform_specific::*;
+    pub use crate::purchase_common::*;
     pub use crate::shapes::*;
     pub use crate::state::*;
     pub use crate::streak::*;
     pub use crate::video::*;
     pub use crate::view::*;
-    pub use crate::purchase_common::*;
 
     pub use bevy::prelude::*;
 

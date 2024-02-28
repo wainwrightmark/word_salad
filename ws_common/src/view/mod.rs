@@ -42,6 +42,7 @@ pub struct ViewContext {
     pub video_resource: VideoResource,
     pub daily_challenges: DailyChallenges,
     pub streak: Streak,
+    pub prices: Prices,
 }
 
 #[derive(MavericRoot)]
@@ -99,7 +100,7 @@ impl MavericRootChildren for ViewRoot {
                             should_hide: context.chosen_state.is_just_finished,
                             close_to_solution,
                             selfie_mode,
-                            special_colors: level.special_colors.clone()
+                            special_colors: level.special_colors.clone(),
                         },
                         &context.window_size,
                     );
@@ -134,7 +135,7 @@ impl MavericRootChildren for ViewRoot {
                             non_level,
                             selfie_mode,
                         },
-                        &context.window_size,
+                        &context.into(),
                     );
                 }
             }

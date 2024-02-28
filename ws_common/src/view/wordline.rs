@@ -21,7 +21,7 @@ pub struct WordLine {
     pub should_hide: bool,
     pub close_to_solution: bool,
     pub selfie_mode: SelfieMode,
-    pub special_colors: Option<Vec<BasicColor>>
+    pub special_colors: Option<Vec<BasicColor>>,
 }
 
 impl MavericNode for WordLine {
@@ -211,15 +211,13 @@ fn get_direction(from: &Tile, to: &Tile) -> u32 {
 fn index_to_color(index: usize, special_colors: &Option<Vec<BasicColor>>) -> Color {
     //hsl(140, 62%, 44%)
 
-    if let Some(special_colors) = special_colors{
+    if let Some(special_colors) = special_colors {
         special_colors[index % special_colors.len()].convert_color()
-    }else{
+    } else {
         let hue = (((index as f32) * 20.0) + 140.0) % 360.0;
 
         Color::hsl(hue, 0.62, 0.44)
     }
-
-
 }
 
 #[repr(C)]

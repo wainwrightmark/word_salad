@@ -1,9 +1,5 @@
-
 use strum::{Display, EnumCount, EnumIter, IntoEnumIterator};
-use ws_core::{
-    layout::entities::*,
-    LayoutStructureWithTextOrImage,
-};
+use ws_core::{layout::entities::*, LayoutStructureWithTextOrImage};
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Display, EnumIter, EnumCount,
@@ -12,7 +8,7 @@ pub enum SettingsLayoutEntity {
     AdsConsent,
     SeeAchievements,
     //SyncAchievements  //todo
-    RestorePurchases  //todo
+    RestorePurchases, //todo
 }
 
 impl MenuButtonsLayout for SettingsLayoutEntity {

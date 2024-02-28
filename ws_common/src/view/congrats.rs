@@ -235,7 +235,7 @@ impl MavericNode for CongratsView {
                     );
                 }
 
-                if !context.menu_state.is_closed(){
+                if !context.menu_state.is_closed() {
                     return; //TODO change control flow
                 }
 

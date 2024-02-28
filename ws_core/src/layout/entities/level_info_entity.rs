@@ -34,7 +34,7 @@ impl LayoutStructure for LevelInfoLayoutEntity {
                 y: THEME_INFO_HEIGHT,
             },
             LevelInfoLayoutEntity::Timer => Vec2 {
-                x: GRID_SIZE,
+                x: TIMER_WIDTH,
                 y: THEME_INFO_HEIGHT,
             },
         }
@@ -55,7 +55,7 @@ impl LayoutStructure for LevelInfoLayoutEntity {
             },
 
             LevelInfoLayoutEntity::Timer => Vec2 {
-                x: base_location.x,
+                x: (IDEAL_WIDTH - TIMER_WIDTH) * 0.5,
                 y: base_location.y + THEME_HEIGHT + THEME_INFO_HEIGHT,
             },
         }
