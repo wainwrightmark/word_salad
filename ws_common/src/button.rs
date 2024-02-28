@@ -440,7 +440,7 @@ impl ButtonInteraction {
 
             ButtonInteraction::ToggleRecordingButton => {
                 if video_resource.is_selfie_mode {
-                    if video_resource.is_recording {
+                    if video_resource.is_recording() {
                         asynchronous::spawn_and_run(crate::video::stop_screen_record(
                             video_events.clone(),
                         ));

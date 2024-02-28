@@ -46,7 +46,7 @@ impl MavericRootChildren for RecordingButtonRoot {
         };
         let inner_rounding: f32;
 
-        if context.video_resource.is_recording {
+        if context.video_resource.is_recording() {
             inner_color = palette::RECORDING_BUTTON_RECORDING.convert_color();
             inner_rounding = 0.1;
         } else {

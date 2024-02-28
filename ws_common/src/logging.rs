@@ -210,6 +210,14 @@ pub enum LoggableEvent {
     // NotificationClick,
 
     // ActedInTutorial
+
+    SelfieModeStarted,
+    SelfieModeStopped,
+    RecordingStarted,
+    RecordingNotStarted,
+    RecordingStopped{
+        recording_seconds: i64
+    }
 }
 
 #[cfg(any(feature = "android", feature = "ios", feature = "web"))]
@@ -327,6 +335,10 @@ impl LoggableEvent {
 
     pub async fn try_log_async1(self, device_id: DeviceIdentifier) {
         Self::try_log_async(self, device_id).await
+    }
+
+    pub async fn try_log_async2(self) {
+        Self::try_get_device_id_and_log_async(self).await
     }
 
     /// Either logs the message or sends it to be retried later

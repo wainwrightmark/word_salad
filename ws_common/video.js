@@ -27,12 +27,12 @@ export async function startVideo() {
         video.play();
     };
 
-    console.log("Starting video");
+    console.log("Starting Selfie Mode (js)");
 
     return;
 }
 
-export function stopVideo() {
+export async function stopVideo() {
 
     if (!Object.is(media_stream, null)) {
 
@@ -46,7 +46,7 @@ export function stopVideo() {
             for (const track of tracks) {
                 track.stop();
             }
-            console.info("Stopping video");
+            console.info("Stopping Selfie Mode (js)");
         }
         else {
             console.warn("Video tracks were null so could not be stopped");

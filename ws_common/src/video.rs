@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use chrono::{DateTime, Utc};
 use maveric::helpers::MavericContext;
 use nice_bevy_utils::{async_event_writer::AsyncEventWriter, CanRegisterAsyncEvent};
 
@@ -12,10 +13,6 @@ impl Plugin for VideoPlugin {
 
         app.register_async_event::<VideoEvent>();
         app.add_systems(Update, handle_video_event);
-        // app.add_systems(
-        //     Update,
-        //     check_recording.run_if(|v: Res<VideoResource>| v.is_recording),
-        // );
     }
 }
 
@@ -31,7 +28,7 @@ pub enum VideoEvent {
 #[derive(Debug, Default, Resource, MavericContext)]
 pub struct VideoResource {
     pub is_selfie_mode: bool,
-    pub is_recording: bool,
+    pub recording_since: Option<DateTime<Utc>>,
 }
 
 impl VideoResource {
@@ -44,6 +41,10 @@ impl VideoResource {
     pub fn show_recording_button(&self) -> bool {
         cfg!(any(feature = "android", feature = "ios")) && self.is_selfie_mode
     }
+
+    pub fn is_recording(&self) -> bool {
+        self.recording_since.is_some()
+    }
 }
 
 // #[allow(unused_variables)]
@@ -52,15 +53,28 @@ fn handle_video_event(mut res: ResMut<VideoResource>, mut events: EventReader<Vi
     for ev in events.read() {
         match ev {
             VideoEvent::SelfieModeStarted => {
+                crate::logging::LoggableEvent::SelfieModeStarted.try_log1();
                 res.is_selfie_mode = true;
             }
-            VideoEvent::SelfieModeStopped => res.is_selfie_mode = false,
+            VideoEvent::SelfieModeStopped => {
+                if res.is_selfie_mode {
+                    res.is_selfie_mode = false;
+                    crate::logging::LoggableEvent::SelfieModeStopped.try_log1();
+                }
+            }
             VideoEvent::RecordingStarted => {
-                res.is_recording = true;
+                res.recording_since = Some(chrono::Utc::now());
             }
-            VideoEvent::RecordingStopped => {
-                res.is_recording = false;
-            }
+            VideoEvent::RecordingStopped => match res.recording_since {
+                Some(since) => {
+                    res.recording_since = None;
+                    let elapsed = chrono::Utc::now().signed_duration_since(since);
+                    let recording_seconds = elapsed.num_seconds();
+
+                    crate::logging::LoggableEvent::RecordingStopped { recording_seconds }.try_log1()
+                }
+                None => {}
+            },
         }
         crate::startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     }
@@ -93,12 +107,18 @@ pub async fn start_screen_record(writer: AsyncEventWriter<VideoEvent>) {
                 match r.value {
                     crate::wasm::VideoRecordingStateEnum::Recording => {
                         writer.send_or_panic(VideoEvent::RecordingStarted);
+                        crate::logging::LoggableEvent::RecordingStarted
+                            .try_log_async2()
+                            .await
                     }
 
                     _ => {
                         crate::platform_specific::show_toast_async("Failed to start Screen Record")
                             .await;
                         writer.send_or_panic(VideoEvent::RecordingStopped);
+                        crate::logging::LoggableEvent::RecordingNotStarted
+                            .try_log_async2()
+                            .await
                     }
                 }
             }
