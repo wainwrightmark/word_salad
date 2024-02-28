@@ -197,7 +197,7 @@ pub mod tests {
 
     use strum::IntoEnumIterator;
     use ws_core::{
-        finder::{cluster::*, helpers::FinderSingleWord, node::GridResult, orientation},
+        finder::{cluster::*, falling_probability, helpers::FinderSingleWord, node::GridResult, orientation},
         prelude::*,
     };
 
@@ -317,6 +317,28 @@ pub mod tests {
             let cluster = Cluster::from_levels(&sequence.levels());
 
             text.push_str(format!("{:50} {}\n", sequence.name(), cluster.header()).as_str());
+        }
+
+        insta::assert_snapshot!(text);
+    }
+
+    #[test]
+    pub fn test_daily_challenge_data(){
+        let mut text = "Name\tInfo\tWord Count\tUtilization\tChance to fall after 1st word\tChance to fall after 2nd word\tChance to have fallen after 2 words\tWords\n".to_string();
+
+
+
+        for level in (*DAILY_CHALLENGE).iter(){
+            let fa1 = falling_probability::calculate_falling_probability_1(level) * 100.0;
+            let fa2 = falling_probability::calculate_falling_probability_2(level) * 100.0;
+            let fac2 = falling_probability::calculate_cumulative_falling_probability_2(level) * 100.0;
+            let words_count = level.words.len();
+            let utilization = level.words.iter().map(|x|x.characters.len()).sum::<usize>() as f32 / level.grid.iter().filter(|x|!x.is_blank()).count() as f32;
+            let data = format!("{words_count:2}\t{utilization:1.2}\t{fa1:3.1}%\t{fa2:3.1}%\t{fac2:3.1}%");
+
+            let words = level.words.iter().map(|x|x.text).join("\t");
+
+            text.push_str(format!("{name:30}\t{info:20}\t{data}\t{words}\n", name = level.full_name().as_str(), info = level.extra_info.unwrap_or_default().as_str() ).as_str());
         }
 
         insta::assert_snapshot!(text);

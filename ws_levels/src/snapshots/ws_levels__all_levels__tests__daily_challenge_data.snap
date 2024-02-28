@@ -1,0 +1,91 @@
+---
+source: ws_levels/src/all_levels.rs
+expression: text
+---
+Name	Info	Word Count	Utilization	Chance to fall after 1st word	Chance to fall after 2nd word	Chance to have fallen after 2 words	Words
+The Beatles                   	by mark             	 4	1.36	100.0%	100.0%	100.0%	George	John	Paul	Ringo
+Best Picture Winner           	by sam              	 7	2.25	57.1%	69.0%	85.7%	Amadeus	Argo	CODA	Crash	Hamlet	Marty	Rocky
+Collective Nouns              	by sam              	 7	2.31	42.9%	61.9%	81.0%	brood	charm	cloud	clutch	colony	party	troop
+Disney Movies                 	by sam              	 6	2.00	83.3%	86.7%	100.0%	Bambi	Dumbo	Frozen	Moana	Mulan	Tarzan
+Fellowship Members            	by mark             	 5	2.12	60.0%	75.0%	90.0%	Aragorn	Boromir	Frodo	Gandalf	Meriadoc
+Friends Characters            	by mark             	 5	1.75	80.0%	85.0%	100.0%	Chandler	Joey	Phoebe	Rachel	Ross
+Months                        	by mark             	 5	1.75	60.0%	75.0%	90.0%	April	January	July	June	November
+Ivy League                    	by sam              	 5	1.75	100.0%	100.0%	100.0%	Brown	Columbia	Cornell	Penn	Yale
+Spice Girls                   	by mark             	 5	1.56	100.0%	100.0%	100.0%	baby	ginger	posh	scary	sporty
+Maneaters                     	by sam              	 6	2.06	66.7%	83.3%	93.3%	Bear	Cougar	Coyote	Hyena	Piranha	Tiger
+Taylor Swift Songs            	by mark             	 5	2.00	40.0%	65.0%	90.0%	Anti-Hero	Karma	Lover	Love Story	Style
+Pizza Toppings                	by mark             	 6	2.62	50.0%	60.0%	86.7%	Jalapeno	Olive	Onion	Pepper	Pepperoni	Pineapple
+Film Genres                   	by mark             	 6	2.38	66.7%	70.0%	93.3%	Action	Animation	Drama	Fantasy	Noir	Romance
+Santa's Reindeer              	by mark             	 5	1.94	80.0%	85.0%	100.0%	Dancer	Dasher	Prancer	Rudolph	Vixen
+It's Christmas                	by mark             	 7	2.50	57.1%	64.3%	85.7%	Present	Reindeer	Santa	Sleigh	Star	Tinsel	Tree
+Things that are Red           	by mark             	 7	2.56	42.9%	52.4%	76.2%	Beetroot	Blood	Lobster	Lychee	Rooster	Ruby	Rust
+My True Love Gave to Me       	by mark             	 6	2.12	83.3%	86.7%	100.0%	Gold Ring	Lady	Lord	Maid	Partridge	Piper
+Zodiac Signs                  	by mark             	 5	2.25	60.0%	80.0%	90.0%	Aquarius	Aries	Gemini	Sagittarius	Taurus
+Things with Rings             	by mark             	 6	2.00	66.7%	80.0%	100.0%	Bride	Circus	Phone	Saturn	Sauron	Tree
+Star Wars Characters          	by fran             	 6	2.00	66.7%	76.7%	93.3%	Han Solo	Lando	Leia	Luke	Obi-Wan	Yoda
+New Year's Eve                	by mark             	 5	1.69	100.0%	100.0%	100.0%	Ball drop	Drink	Kiss	Party	Toast
+Authors Entering Public Domain	by mark             	 6	2.25	66.7%	76.7%	93.3%	Barrie	Brecht	Christie	Du Bois	Frost	Hecht
+Hipster Starter Pack          	by vicky            	 6	2.12	66.7%	80.0%	93.3%	beard	denim	fedora	flannel	man bun	vinyl
+Amounts of Time               	by samuel           	 6	1.88	66.7%	80.0%	93.3%	Century	Decade	Epoch	Hour	Week	Year
+Places of Worship             	by samuel           	 5	1.81	60.0%	90.0%	100.0%	Chapel	Church	Mosque	Stupa	Temple
+Dairy Products                	by mark             	 6	1.75	100.0%	100.0%	100.0%	cheese	cream	ghee	kefir	milk	whey
+Classic Board Games           	by mark             	 6	2.06	83.3%	86.7%	100.0%	Checkers	Chess	Clue	Reversi	Risk	Shogi
+Weather                       	by stan             	10	3.00	30.0%	36.7%	57.8%	frost	gust	monsoon	rain	smog	snow	storm	tornado	warm	wind
+Cold Soft Drinks              	by sheena           	 6	2.20	50.0%	66.7%	86.7%	cordial	juice	milk	mocktail	soda	water
+French Foods                  	by stan             	 6	2.31	50.0%	70.0%	86.7%	cheese	crêpe	frites	quiche	souffle	truffle
+Caesars                       	by mark             	 5	2.19	80.0%	95.0%	100.0%	Augustus	Caligula	Claudius	Julius	Titus
+Disney Villains               	by mark             	 5	1.87	100.0%	100.0%	100.0%	Gaston	Jafar	Ratigan	Scar	Ursula
+Juggling Props                	by mark             	 6	1.69	83.3%	90.0%	100.0%	ball	club	knife	plate	ring	scarf
+Surrealists                   	by samuel           	 5	1.75	80.0%	90.0%	100.0%	Breton	Dali	Delvaux	Ernst	Masson
+Cakes                         	by samuel           	 5	1.88	80.0%	90.0%	100.0%	Carrot	Fruit	Orange	Walnut	Wedding
+Supernatural Creatures        	by mark             	 7	2.44	71.4%	76.2%	95.2%	Dragon	Fairy	Faun	Giant	Gorgon	Manticore	Ogre
+2D Shapes                     	by mark             	 7	2.75	71.4%	73.8%	95.2%	Circle	Octagon	Oval	Rectangle	Spiral	Star	Triangle
+Breakfast Foods               	by mark             	 6	2.06	50.0%	76.7%	93.3%	Bacon	Bagel	Cereal	Eggs	Granola	Waffle
+Opposites                     	by mark             	10	2.81	30.0%	38.9%	60.0%	close	here	left	loose	open	poor	rich	right	there	tight
+Pokemon                       	by mark             	10	3.94	40.0%	40.0%	66.7%	Diglett	Ditto	Gloom	Golem	Meowth	Metapod	Mewtwo	Pidgeot	Pidgeotto	Pidgey
+Car Manufacturers             	by samuel           	 6	2.47	50.0%	66.7%	86.7%	Alfa Romeo	Ferrari	Fiat	Ford	Maserati	Tesla
+Music Genres                  	by samuel           	 9	2.56	44.4%	52.8%	80.6%	Blues	Folk	Funk	Gospel	K-Pop	Opera	Punk	Salsa	Soul
+Sports Equipment              	by samuel           	 9	2.56	44.4%	51.4%	75.0%	Ball	Boot	Glove	Goal	Hoop	Horse	Pole	Shoe	Snorkel
+US States                     	by mark             	 7	2.25	57.1%	66.7%	85.7%	Hawaii	Iowa	Maine	Ohio	Oregon	Utah	Vermont
+Colors                        	by mark             	10	3.25	10.0%	18.9%	28.9%	Black	Claret	Cyan	Gray	Green	Ivory	Orange	Scarlet	Silver	Teal
+Famous Scientists             	by mark             	 6	2.19	66.7%	86.7%	100.0%	Crick	Curie	Darwin	Hawking	Newton	Turing
+Mammals                       	by samuel           	 9	2.75	33.3%	38.9%	61.1%	Bear	Hare	Horse	Lemur	Possum	Seal	Tiger	Walrus	Whale
+Signs of the Zodiac           	by samuel           	 5	1.69	80.0%	90.0%	100.0%	Aries	Gemini	Libra	Pisces	Virgo
+South American Countries      	by samuel           	 5	2.06	60.0%	75.0%	90.0%	Ecuador	Guyana	Paraguay	Peru	Suriname
+US Presidents                 	by samuel           	 6	2.00	83.3%	93.3%	100.0%	Adams	Biden	Ford	Harding	Obama	Truman
+Gemstones                     	by mark             	 5	1.81	80.0%	90.0%	100.0%	Garnet	Opal	Pearl	Quartz	Sapphire
+Parts of the Body             	by mark             	13	3.62	23.1%	26.3%	44.9%	Ankle	Cheek	Chest	Chin	Feet	Head	Heel	Knee	Navel	Shin	Spine	Teeth	Vein
+Elements                      	by samuel           	 8	2.81	37.5%	42.9%	64.3%	Iodine	Neon	Radium	Radon	Silver	Sodium	Uranium	Xenon
+Vegetables                    	by samuel           	 7	2.38	42.9%	52.4%	71.4%	Artichoke	Carrot	Chard	Corn	Leek	Okra	Turnip
+Common US Girls Names         	by samuel           	 9	2.81	33.3%	44.4%	69.4%	Amber	Anna	Ashley	Erin	Haley	Hannah	Leah	Morgan	Sarah
+African Countries             	by samuel           	 8	2.88	25.0%	37.5%	57.1%	Angola	Gambia	Mali	Namibia	Niger	Nigeria	Senegal	Togo
+Supernatural creatures        	by samuel           	 7	2.44	71.4%	73.8%	95.2%	Centaur	Dragon	Faun	Gnome	Gorgon	Ogre	Unicorn
+Animals that might eat you    	by samuel           	 5	1.88	80.0%	85.0%	100.0%	Alligator	Hyena	Lion	Piranha	Shark
+Insects                       	by mark             	 6	2.00	83.3%	90.0%	100.0%	Gnat	Locust	Mantis	Mosquito	Moth	Wasp
+Figures from Greek myth       	by samuel           	 5	2.06	100.0%	100.0%	100.0%	Achilles	Aegeus	Jason	Menelaus	Peleus
+Famous Couples                	by mark and samuel  	 6	1.94	83.3%	93.3%	100.0%	Bella	Edward	Harry	Rachel	Ross	Sally
+Gemstones                     	by mark             	 5	2.00	100.0%	100.0%	100.0%	Carnelian	Diamond	Emerald	Jade	Pearl
+Car Manufacturers             	by samuel           	 5	1.81	80.0%	90.0%	100.0%	Bentley	Jaguar	Jeep	Lotus	Renault
+European Countries            	by mark             	 6	2.38	83.3%	86.7%	100.0%	Denmark	Finland	France	Latvia	Malta	Romania
+Currencies                    	by mark             	 5	1.50	100.0%	100.0%	100.0%	Dirham	Franc	Peso	Real	Rupee
+Things that are red           	by samuel           	 5	1.94	60.0%	85.0%	100.0%	Pepper	Poppy	Raspberry	Rooster	Ruby
+Birds                         	by samuel           	 6	1.81	66.7%	83.3%	100.0%	Crane	Falcon	Kiwi	Lark	Puffin	Rook
+Olympic Sports                	by mark             	 5	1.81	100.0%	100.0%	100.0%	Boxing	Golf	Rowing	Sailing	Tennis
+African Capitals              	by samuel           	 5	1.69	80.0%	90.0%	100.0%	Accra	Cairo	Dakar	Tripoli	Tunis
+Languages                     	by samuel           	 6	2.25	83.3%	86.7%	100.0%	Bengali	English	German	Persian	Tamil	Urdu
+Mammals                       	by mark             	 7	2.31	71.4%	76.2%	95.2%	Cheetah	Goat	Hare	Hippo	Meerkat	Rhino	Tapir
+Time Periods                  	by samuel           	 5	1.94	60.0%	80.0%	90.0%	Century	Fortnight	Hour	Instant	Year
+NBA Teams                     	by samuel           	 8	2.81	37.5%	48.2%	71.4%	Bucks	Hornets	Kings	Knicks	Nets	Nuggets	Rockets	Suns
+Famous Scientists             	by mark             	 5	1.94	60.0%	75.0%	90.0%	Bohr	Copernicus	Crick	Curie	Hawking
+Music Genres                  	by mark             	 7	2.25	71.4%	73.8%	95.2%	Ambient	Folk	Latin	Metal	Motown	Soul	Swing
+Things that are red           	by samuel           	 5	1.75	80.0%	90.0%	100.0%	Brick	Geranium	Lobster	Mars	Ruby
+S & E Asian Countries         	by samuel           	 5	2.00	60.0%	75.0%	100.0%	Japan	Laos	Nepal	Singapore	Vietnam
+Premier League Teams          	by samuel           	 6	2.62	50.0%	70.0%	93.3%	Arsenal	Chelsea	Forest	Fulham	Newcastle	West Ham
+Famous Artists                	by mark             	 6	2.25	50.0%	73.3%	93.3%	Banksy	Klimt	Matisse	Rubens	Seurat	Titian
+Fruit                         	by mark             	 8	2.44	50.0%	55.4%	82.1%	Apple	Banana	Grape	Lime	Mango	Orange	Pear	Plum
+Breakfast Foods               	by samuel           	 5	1.75	100.0%	100.0%	100.0%	Cereal	Eggs	Granola	Toast	Yogurt
+Packing For School            	by samuel           	 5	1.75	100.0%	100.0%	100.0%	Apple	Eraser	Folder	Pencil	Ruler
+Elements                      	by mark             	11	3.81	27.3%	31.8%	52.7%	Argon	Arsenic	Barium	Boron	Bromine	Carbon	Iodine	Iron	Neon	Radium	Radon
+US States                     	by mark             	 5	2.12	40.0%	85.0%	90.0%	Colorado	Maine	Maryland	Oregon	Wyoming
+Signs of the Zodiac           	by samuel           	 5	2.19	80.0%	90.0%	100.0%	Aquarius	Aries	Sagittarius	Taurus	Virgo
+Marvel's Avengers             	by mark             	 5	1.69	60.0%	90.0%	100.0%	Ant-Man	Hulk	Iron Man	Thor	Vision
