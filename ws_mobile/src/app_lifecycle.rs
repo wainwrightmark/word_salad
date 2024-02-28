@@ -92,7 +92,6 @@ async fn on_resume(writer: async_event_writer::AsyncEventWriter<AppLifeCycleEven
     {
         //info!("Setting on_resume");
         let result = capacitor_bindings::app::App::add_state_change_listener(move |x| {
-
             let event = AppLifeCycleEvent::StateChange {
                 is_active: x.is_active,
             };

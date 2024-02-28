@@ -5,7 +5,7 @@ use itertools::{Either, Itertools};
 use nice_bevy_utils::{CanInitTrackedResource, CanRegisterAsyncEvent, TrackableResource};
 use serde::{Deserialize, Serialize};
 use strum::EnumIs;
-use ws_core::layout::entities::SelfieMode;
+use ws_core::{finder::{level_trait::LevelTrait, word_trait::WordTrait}, layout::entities::SelfieMode};
 use ws_levels::level_sequence::LevelSequence;
 use nice_bevy_utils::any_event_writer::*;
 

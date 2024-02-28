@@ -7,6 +7,8 @@ pub mod helpers;
 pub mod node;
 pub mod orientation;
 pub mod partial_grid;
+pub mod level_trait;
+pub mod word_trait;
 
 pub type Tile = geometrid::tile::Tile<4, 4>;
 

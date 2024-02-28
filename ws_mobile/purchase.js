@@ -1,5 +1,7 @@
 const { store, ProductType, Platform } = CdvPurchase;
 
+//spellchecker:disable
+
 const android_products = [
   {
     type: ProductType.NON_CONSUMABLE,
@@ -81,6 +83,8 @@ const ios_products = [
     platform: Platform.APPLE_APPSTORE,
   },
 ]
+
+//spellchecker:enable
 
 export async function initialize_and_get_products(platform, on_approved) {
 

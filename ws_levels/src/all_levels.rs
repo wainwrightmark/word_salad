@@ -196,7 +196,7 @@ pub mod tests {
     use std::str::FromStr;
 
     use strum::IntoEnumIterator;
-    use ws_core::finder::{cluster::*, helpers::FinderSingleWord, node::GridResult, orientation};
+    use ws_core::finder::{cluster::*, helpers::FinderSingleWord, node::GridResult, orientation, word_trait::WordTrait};
 
     use crate::prelude::LevelSequence;
 

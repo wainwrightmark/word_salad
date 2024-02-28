@@ -1,7 +1,7 @@
 use std::{num::NonZeroUsize, str::FromStr};
 use ustr::Ustr;
 
-use crate::{finder::helpers::LetterCounts, prelude::*};
+use crate::{finder::word_trait::WordTrait, prelude::*};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DisplayWord {
@@ -27,37 +27,13 @@ pub struct CharGrapheme {
     pub grapheme: Ustr,
 }
 
+impl WordTrait for DisplayWord {
+    fn characters(&self) -> &CharsArray {
+        &self.characters
+    }
+}
+
 impl DisplayWord {
-    pub fn find_solution(&self, grid: &Grid) -> Option<Solution> {
-        //TODO more efficient path if word has no duplicate letters
-
-        find_solution(&self.characters, grid)
-    }
-
-    pub fn find_solution_with_tiles(
-        &self,
-        grid: &Grid,
-        unneeded_tiles: GridSet,
-    ) -> Option<Solution> {
-        let mut grid = grid.clone();
-        for tile in unneeded_tiles.iter_true_tiles() {
-            grid[tile] = Character::Blank;
-        }
-
-        find_solution(&self.characters, &grid)
-    }
-
-    pub fn find_solutions(&self, grid: &Grid) -> Vec<Solution> {
-        //TODO return iter
-        //TODO more efficient path if word has no duplicate letters
-
-        find_solutions(&self.characters, grid)
-    }
-
-    pub fn letter_counts(&self) -> Option<LetterCounts> {
-        LetterCounts::try_from_iter(self.characters.iter().cloned())
-    }
-
     pub fn hinted_text(&self, hints: NonZeroUsize) -> String {
         let mut result: String = Default::default();
         let mut hints_left = hints.get();
@@ -77,7 +53,7 @@ impl DisplayWord {
     }
 }
 
-impl PartialOrd for DisplayWord{
+impl PartialOrd for DisplayWord {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         self.characters
             .iter()
@@ -86,7 +62,7 @@ impl PartialOrd for DisplayWord{
     }
 }
 
-impl Ord for DisplayWord{
+impl Ord for DisplayWord {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.characters
             .iter()

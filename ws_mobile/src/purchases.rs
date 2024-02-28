@@ -51,7 +51,8 @@ fn on_startup(
 
             for transaction_product in t.products.iter() {
                 let product: Product = transaction_product.into();
-                product_purchased_event_writer_async.send_or_panic(ProductPurchasedEvent { product })
+                product_purchased_event_writer_async
+                    .send_or_panic(ProductPurchasedEvent { product })
             }
         },
     ));

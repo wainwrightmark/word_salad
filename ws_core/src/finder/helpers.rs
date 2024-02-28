@@ -6,6 +6,8 @@ use itertools::Itertools;
 use prime_bag::PrimeBag128;
 use ustr::ustr;
 
+use super::word_trait::WordTrait;
+
 pub type LetterCounts = PrimeBag128<Character>;
 
 pub fn make_finder_group_vec_from_file(text: &str) -> Vec<FinderGroup> {
@@ -75,7 +77,17 @@ pub struct FinderSingleWord {
     pub counts: PrimeBag128<Character>,
 }
 
-impl PartialOrd for FinderSingleWord{
+impl WordTrait for FinderSingleWord {
+    fn characters(&self) -> &CharsArray {
+        &self.array
+    }
+
+    fn letter_counts(&self) -> Option<LetterCounts> {
+        Some(self.counts)
+    }
+}
+
+impl PartialOrd for FinderSingleWord {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         self.array
             .iter()
@@ -84,7 +96,7 @@ impl PartialOrd for FinderSingleWord{
     }
 }
 
-impl Ord for FinderSingleWord{
+impl Ord for FinderSingleWord {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.array
             .iter()
@@ -92,7 +104,6 @@ impl Ord for FinderSingleWord{
             .cmp(other.array.iter().map(|x| x.as_char()))
     }
 }
-
 
 impl FinderSingleWord {
     pub fn is_strict_substring(&self, super_string: &Self) -> bool {

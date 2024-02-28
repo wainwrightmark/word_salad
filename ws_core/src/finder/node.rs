@@ -3,7 +3,7 @@ use const_sized_bit_set::BitSet;
 use itertools::Itertools;
 use std::{cell::Cell, num::NonZeroU8, str::FromStr};
 
-use self::helpers::FinderGroup;
+use self::{helpers::FinderGroup, level_trait::LevelTrait};
 
 use super::{
     counter::{Counter, SolutionCollector},
@@ -19,6 +19,18 @@ pub struct GridResult {
     pub grid: Grid,
     pub letters: LetterCounts,
     pub words: Vec<FinderSingleWord>,
+}
+
+impl LevelTrait for GridResult {
+    type Word = FinderSingleWord;
+
+    fn grid(&self) -> Grid {
+        self.grid
+    }
+
+    fn words(&self) -> &[Self::Word] {
+        self.words.as_slice()
+    }
 }
 
 impl GridResult {
@@ -97,7 +109,6 @@ impl std::fmt::Display for GridResult {
             .iter()
             .sorted()
             .map(|x| format!("{:8}", x.text))
-
             .join("\t");
         let solution = self.grid.iter().join("");
         let size = self.words.len();
@@ -663,6 +674,7 @@ mod tests {
     use crate::finder::counter::RealCounter;
 
     use super::*;
+    use node::word_trait::WordTrait;
     use test_case::test_case;
     // spellchecker:disable
     #[test_case("SILVER\nORANGE\nGREEN\nIVORY\nCORAL\nOLIVE\nTEAL\nGRAY\nCYAN\nRED")]
@@ -734,7 +746,7 @@ mod tests {
                 println!("Found after {} tries", counter.current);
 
                 for word in words.into_iter() {
-                    if crate::word::find_solution(&word.array, &grid).is_none() {
+                    if word.find_solution(&grid).is_none() {
                         panic!("No solution for word '{}'", word.text)
                     }
                 }
