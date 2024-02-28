@@ -1,6 +1,24 @@
 use crate::prelude::*;
 use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
 use ws_core::{layout::entities::*, palette::BUTTON_CLICK_FILL};
+
+
+#[derive(Debug, NodeContext)]
+pub struct NonLevelContext {
+    pub size: MyWindowSize,
+    pub prices: Prices
+}
+
+impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for NonLevelContextWrapper<'w> {
+    fn from(value: &'a ViewContextWrapper<'w>) -> Self {
+        Self {
+            size: Res::clone(&value.window_size),
+            prices: Res::clone(&value.prices),
+        }
+    }
+}
+
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct NonLevelView {
     pub non_level: NonLevel,
@@ -11,7 +29,7 @@ pub struct NonLevelView {
 pub struct NonLevelText;
 
 impl MavericNode for NonLevelView {
-    type Context = MyWindowSize;
+    type Context = NonLevelContext;
 
     fn set_components(mut commands: SetComponentCommands<Self, Self::Context>) {
         commands.insert_static_bundle(SpatialBundle::default());
@@ -19,22 +37,23 @@ impl MavericNode for NonLevelView {
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
-            let size = &context;
+            let size = &context.size;
 
             let selfie_mode = node.selfie_mode;
 
             let text = match node.non_level {
                 NonLevel::BeforeTutorial => {
-                    "Welcome to Word Salad\nLet's find some Chess Pieces".to_string()
+                    "Welcome to Word Salad\nLet's find some chess pieces".to_string()
                 }
                 NonLevel::AfterCustomLevel => "Custom Level Complete".to_string(),
                 NonLevel::DailyChallengeFinished => {
-                    "You have completed\nAll daily challenges".to_string()
+                    "Well Done!\nThat's all the daily challenges\nWe'll see you tomorrow".to_string()
                 }
                 NonLevel::DailyChallengeReset => {
                     "You have completed\nAll daily challenges".to_string()
                 }
                 NonLevel::LevelSequenceAllFinished(ls) => {
+                    //TODO text here samuel please
                     format!("You have completed\nAll {}", ls.name())
                 }
                 NonLevel::LevelSequenceReset(ls) => {
@@ -46,8 +65,7 @@ impl MavericNode for NonLevelView {
                 }
                 NonLevel::LevelSequenceMustPurchaseGroup(ls) => {
                     format!(
-                        "Buy the {} addon
-                    \nTo unlock all {} levels",
+                        "Buy the {} add-on\nTo unlock all {} ad-free levels",
                         ls.group().name(),
                         ls.group().total_count()
                     )
@@ -105,7 +123,9 @@ impl MavericNode for NonLevelView {
                 NonLevel::DailyChallengeCountdown { todays_index } => {
                     Some(format!("Replay #{}", todays_index + 1))
                 }
-                NonLevel::LevelSequenceMustPurchaseGroup(_) => Some("Purchase".to_string()),
+                NonLevel::LevelSequenceMustPurchaseGroup(ls) => {
+                    context.prices.try_get_price_string(ls.group().into()).or_else(||Some("???".to_string()))
+                },
                 NonLevel::DailyChallengeLoading { .. } => None,
             };
 

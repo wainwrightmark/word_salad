@@ -60,7 +60,7 @@ impl LayoutStructureDoubleTextButton for StoreLayoutStructure {
                 right = String::new();
             }
             StoreLayoutStructure::LevelGroups => {
-                left = "Buy Addons".to_string();
+                left = "Buy Add-ons (ad-free)".to_string();
 
                 right = String::new();
             }

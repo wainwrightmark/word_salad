@@ -89,6 +89,11 @@ impl Prices {
             None => "???".to_string(),
         }
     }
+
+    pub fn try_get_price_string(&self, product: Product) -> Option<String> {
+
+        self.product_prices[product].clone()
+    }
 }
 
 #[derive(Debug, Clone, Event)]
@@ -124,7 +129,7 @@ fn handle_product_purchased(
                 .get_next_level_index(sequence, &purchases)
                 .to_level(sequence);
 
-            platform_specific::show_toast_sync(format!("{lg} Addon Purchased"));
+            platform_specific::show_toast_sync(format!("{lg} add-on Purchased"));
 
             change_level_events.send(level.into());
         }
