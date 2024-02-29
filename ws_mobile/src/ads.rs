@@ -44,7 +44,7 @@ fn handle_ad_requests(
                     ad_state.hint_wanted = Some((*hints, *event));
                     if ad_state.reward_ad.is_some() {
                         ad_state.reward_ad = None;
-                        
+
                         asynchronous::spawn_and_run(mobile_only::try_show_reward_ad(
                             async_writer.clone(),
                         ));
@@ -201,12 +201,19 @@ fn init_everything(writer: AsyncEventWriter<AdEvent>) {
     asynchronous::spawn_and_run(mobile_only::init_everything_async(writer));
 }
 
-#[allow(dead_code)]
-const BETWEEN_LEVELS_INTERSTITIAL_AD_ID: &str = "ca-app-pub-5238923028364185/8193403915"; //todo different on ios
-#[allow(dead_code)]
-const BUY_HINTS_REWARD_AD_ID: &str = "ca-app-pub-5238923028364185/7292181940"; //todo different on ios
 
-//const HINTS_REWARD_AMOUNT: usize = 5;
+#[cfg(feature = "android")]
+const BETWEEN_LEVELS_INTERSTITIAL_AD_ID: &str = "ca-app-pub-5238923028364185/8193403915";
+#[cfg(feature = "android")]
+const BUY_HINTS_REWARD_AD_ID: &str = "ca-app-pub-5238923028364185/7292181940";
+
+#[cfg(all(not(feature = "android"), feature = "ios"))]
+const BETWEEN_LEVELS_INTERSTITIAL_AD_ID: &str = "ca-app-pub-5238923028364185/9413401068";
+#[cfg(all(not(feature = "android"), feature = "ios"))]
+const BUY_HINTS_REWARD_AD_ID: &str = "ca-app-pub-5238923028364185/4515517358";
+
+
+
 
 mod mobile_only {
     use super::*;
