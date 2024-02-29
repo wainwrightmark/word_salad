@@ -2,14 +2,15 @@
 let media_stream = null;
 
 export async function startVideo() {
-    const aspect_ratio = window.innerWidth / window.innerHeight;
+    // const aspect_ratio = window.innerWidth / window.innerHeight;
+    const aspect_ratio= 16.0 / 9.0;
     const constraints = {
         audio: false,
         video: {
-            // width: { ideal: window.innerWidth },
-             height: { max: window.innerHeight },
+//            width: { max: window.innerWidth },
+            // height: { max: window.innerHeight },
             aspect_ratio: { exact: aspect_ratio },
-            resizeMode: "crop-and-scale",
+            resizeMode: "none",
             facingMode: "user"
         },
     };

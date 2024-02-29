@@ -47,7 +47,7 @@ impl Plugin for AchievementsPlugin {
     }
 }
 
-#[derive(Debug, Resource, Default, Clone, PartialEq, Eq, MavericContext)]
+#[derive(Debug, Resource, Default, Clone, PartialEq, Eq, MavericContext, Copy)]
 pub struct UserSignedIn {
     pub is_signed_in: bool,
 }
@@ -55,14 +55,9 @@ pub struct UserSignedIn {
 #[derive(Debug, Event, Clone, Copy, Eq, PartialEq)]
 pub struct SignInEvent;
 
-fn check_for_sign_in(
-    mut ev: EventReader<SignInEvent>,
-    mut signed_in: ResMut<UserSignedIn>,
-    achievements: Res<AchievementsState>,
-) {
+fn check_for_sign_in(mut ev: EventReader<SignInEvent>, mut signed_in: ResMut<UserSignedIn>) {
     for _ in ev.read() {
         signed_in.is_signed_in = true;
-        achievements.resync();
     }
 }
 
@@ -75,6 +70,7 @@ fn sign_in_user(writer: AsyncEventWriter<SignInEvent>) {
         ) -> Result<(), capacitor_bindings::error::Error> {
             let user = capacitor_bindings::game_connect::GameConnect::sign_in().await?;
             info!("User signed in: {user:?}");
+
             writer.send_or_panic(SignInEvent);
 
             Ok(())
@@ -83,7 +79,7 @@ fn sign_in_user(writer: AsyncEventWriter<SignInEvent>) {
         spawn_and_run(async move {
             match sign_in_async(writer).await {
                 Ok(()) => {}
-                Err(err) => error!("{err}"),
+                Err(err) => error!("Failed to sign in: {err}"),
             }
         });
     }
@@ -292,7 +288,7 @@ fn track_found_words(
 }
 
 #[derive(Debug, Resource, Clone, PartialEq, Serialize, Deserialize, Default)]
-struct AchievementsState {
+pub struct AchievementsState {
     pub unlocked: bevy::utils::HashSet<Achievement>,
 }
 

@@ -11,8 +11,8 @@ impl LayoutStructure for ToggleRecordingButton {
 
     fn size(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
         let default_size = Vec2 {
-            x: RECORDING_BUTTON_MIN_SIZE * 2.0,
-            y: RECORDING_BUTTON_MIN_SIZE * 2.0,
+            x: RECORDING_BUTTON_MIN_SIZE,
+            y: RECORDING_BUTTON_MIN_SIZE,
         };
         let bottom_padding = extra_bottom_space(sizing, context);
 
@@ -28,8 +28,9 @@ impl LayoutStructure for ToggleRecordingButton {
     fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
         let extra_top_bar_height = extra_top_bar_height(sizing, context);
         let default_location = Vec2 {
-            x: RECORDING_BUTTON_MIN_SIZE * 0.5,
-            y: ((TOP_BAR_HEIGHT_BASE + extra_top_bar_height) * 0.5) - RECORDING_BUTTON_MIN_SIZE,
+            x: IDEAL_WIDTH - RECORDING_BUTTON_MIN_SIZE - ((IDEAL_WIDTH - GRID_SIZE) * 0.5),
+            y: ((TOP_BAR_HEIGHT_BASE + extra_top_bar_height) * 0.5)
+                - (RECORDING_BUTTON_MIN_SIZE * 0.5),
         };
         let bottom_padding = extra_bottom_space(sizing, context);
 
@@ -41,7 +42,7 @@ impl LayoutStructure for ToggleRecordingButton {
 
         Vec2 {
             x: (IDEAL_WIDTH - size) * 0.5,
-            y: IDEAL_HEIGHT + extra_top_bar_height,
+            y: IDEAL_HEIGHT + extra_top_bar_height + (extra_bottom_space(sizing, context) * 0.5) - (size * 0.5),
         }
     }
 

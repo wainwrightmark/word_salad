@@ -8,6 +8,7 @@ use ws_core::layout::entities::{
 };
 use ws_levels::level_group::LevelGroup;
 
+use crate::achievements::AchievementsState;
 use crate::menu_layout::main_menu_back_button::MainMenuBackButton;
 use crate::menu_layout::word_salad_menu_layout::WordSaladMenuLayoutEntity;
 use crate::prelude::level_group_layout::LevelGroupLayoutEntity;
@@ -86,6 +87,7 @@ fn handle_button_activations(
     mut video_resource: ResMut<VideoResource>,
 
     daily_challenges: Res<DailyChallenges>,
+    achievements: Res<AchievementsState>,
     mut level_time: ResMut<LevelTime>,
 
     mut event_writers: (
@@ -117,6 +119,7 @@ fn handle_button_activations(
             &mut event_writers.3,
             &event_writers.4,
             &mut event_writers.5,
+            &achievements,
         )
     }
 }
@@ -305,6 +308,7 @@ impl ButtonInteraction {
         hint_events: &mut EventWriter<HintEvent>,
         video_events: &AsyncEventWriter<VideoEvent>,
         daily_challenge_events: &AsyncEventWriter<DailyChallengeDataLoadedEvent>,
+        achievements: &crate::achievements::AchievementsState,
     ) {
         match self {
             ButtonInteraction::None => {}
@@ -348,6 +352,9 @@ impl ButtonInteraction {
             }
             ButtonInteraction::SettingsMenu(SettingsLayoutEntity::AdsConsent) => {
                 ad_request_events.send(AdRequestEvent::RequestConsent);
+            }
+            ButtonInteraction::SettingsMenu(SettingsLayoutEntity::SyncAchievements) => {
+                achievements.resync()
             }
 
             #[cfg(target_arch = "wasm32")]

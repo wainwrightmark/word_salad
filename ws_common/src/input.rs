@@ -1,13 +1,11 @@
 use crate::{
-    menu_layout::{
+    achievements::UserSignedIn, menu_layout::{
         main_menu_back_button::MainMenuBackButton,
         word_salad_menu_layout::WordSaladMenuLayoutEntity,
-    },
-    prelude::{
+    }, prelude::{
         level_group_layout::LevelGroupLayoutEntity, levels_menu_layout::LevelsMenuLayoutEntity,
         main_menu_layout::MainMenuLayoutEntity, *,
-    },
-    startup,
+    }, startup
 };
 use bevy::{prelude::*, window::PrimaryWindow};
 use strum::EnumIs;
@@ -63,6 +61,7 @@ impl InteractionEntity {
         is_level_complete: bool,
         is_game_paused: bool,
         grid_tolerance: Option<f32>,
+        user_signed_in: &UserSignedIn,
     ) -> Option<Self> {
         let selfie_mode = &video_resource.selfie_mode();
         //info!("Try find input");
@@ -201,7 +200,7 @@ impl InteractionEntity {
                     Self::try_get_button::<SettingsLayoutEntity>(
                         position,
                         size,
-                        &(selfie_mode, ()),
+                        &(selfie_mode, *user_signed_in),
                     )
                     .unwrap_or(InteractionEntity::Button(ButtonInteraction::CloseMenu)),
                 )
@@ -328,6 +327,7 @@ impl InputType {
         event_writer: &mut EventWriter<ButtonActivated>,
         timer: &LevelTime,
         time: &Time,
+        user_signed_in: &UserSignedIn
     ) {
         startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 
@@ -358,6 +358,7 @@ impl InputType {
                     is_level_complete,
                     timer.is_paused(),
                     None,
+                    user_signed_in
                 ) {
                     match interaction {
                         InteractionEntity::Button(button) => Some(button),
@@ -389,6 +390,7 @@ impl InputType {
                     is_level_complete,
                     timer.is_paused(),
                     Some(MOVE_TOLERANCE),
+                    user_signed_in
                 ) {
                     match interaction {
                         InteractionEntity::Button(button) => Some(button),
@@ -421,6 +423,7 @@ impl InputType {
                     is_level_complete,
                     timer.is_paused(),
                     None,
+                    user_signed_in
                 ) {
                     match interaction {
                         InteractionEntity::Button(button) => {
@@ -531,6 +534,7 @@ pub fn handle_mouse_input(
     timer: Res<LevelTime>,
     mut event_writer: EventWriter<ButtonActivated>,
     time: Res<Time>,
+    user_signed_in: Res<UserSignedIn>
 ) {
     let input_type = if mouse_input.just_released(MouseButton::Left) {
         let position_option = get_cursor_position(q_windows);
@@ -563,6 +567,7 @@ pub fn handle_mouse_input(
         &mut event_writer,
         &timer,
         &time,
+        &user_signed_in
     );
 }
 
@@ -583,6 +588,7 @@ pub fn handle_touch_input(
     timer: Res<LevelTime>,
     mut event_writer: EventWriter<ButtonActivated>,
     time: Res<Time>,
+    user_signed_in: Res<UserSignedIn>
 ) {
     for ev in touch_events.read() {
         let input_type: InputType = match ev.phase {
@@ -619,6 +625,7 @@ pub fn handle_touch_input(
             &mut event_writer,
             &timer,
             &time,
+            &user_signed_in
         );
     }
 }
