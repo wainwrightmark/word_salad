@@ -88,12 +88,13 @@ const ios_products = [
 
 export async function initialize_and_get_products(platform, on_approved) {
 
-  console.log("Purchases OnDeviceReady");
 
   if (platform == Platform.GOOGLE_PLAY) {
+    console.log("Purchases OnDeviceReady (android");
     store.register(android_products);
   }
   else if (platform == Platform.APPLE_APPSTORE) {
+    console.log("Purchases OnDeviceReady (ios");
     store.register(ios_products);
   } else {
     throw new Error(`Unexpected platform "${platform}"`);
@@ -104,7 +105,7 @@ export async function initialize_and_get_products(platform, on_approved) {
   store.when()
     //.productUpdated(refreshUI)
     .approved(function (transaction) {
-      console.log(`Purchase Plugin: transaction complete ${transaction}`);
+      console.log(`Purchase Plugin: transaction complete ${JSON.stringify(transaction)}`);
       on_approved(transaction);
       transaction.finish();
     });

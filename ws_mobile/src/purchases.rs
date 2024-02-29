@@ -50,9 +50,11 @@ fn on_startup(
             //std::sync::mpsc::channel()
 
             for transaction_product in t.products.iter() {
-                let product: Product = transaction_product.into();
-                product_purchased_event_writer_async
+                if let Ok(product)  = transaction_product.try_into(){
+                    product_purchased_event_writer_async
                     .send_or_panic(ProductPurchasedEvent { product })
+                }
+                
             }
         },
     ));
@@ -454,9 +456,19 @@ mod purchase_api {
         pub offer_id: Option<String>,
     }
 
-    impl<'a> Into<Product> for &'a TransactionProduct {
-        fn into(self) -> Product {
-            Product::from_str(&self.id).unwrap()
+
+
+    // impl<'a> Into<Product> for &'a TransactionProduct {
+    //     fn into(self) -> Product {
+    //         Product::from_str(&self.id).unwrap()
+    //     }
+    // }
+
+    impl<'a> TryInto<Product> for &'a TransactionProduct {
+        type Error = strum::ParseError;
+    
+        fn try_into(self) -> Result<Product, Self::Error> {
+            Product::from_str(&self.id)
         }
     }
 }
