@@ -3,7 +3,7 @@ use capacitor_bindings::admob::*;
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
 #[cfg(any(feature = "ios", feature = "android"))]
 use ws_common::asynchronous;
-use ws_common::{platform_specific, prelude::*};
+use ws_common::{logging, platform_specific, prelude::*};
 
 const MARK_IOS_DEVICE_ID: &str = "d3f1ad44252cdc0f1278cf7347063f07";
 const MARK_ANDROID_DEVICE_ID: &str = "806EEBB5152549F81255DD01CDA931D9";
@@ -147,6 +147,7 @@ fn handle_ad_events(
             AdEvent::InterstitialShowed => {
                 interstitial_state.levels_without_interstitial = 0;
                 asynchronous::spawn_and_run(mobile_only::try_load_interstitial_ad(writer.clone()));
+                logging::LoggableEvent::InterstitialAdShown.try_log1();
             }
             AdEvent::FailedToShowInterstitialAd(err) => {
                 bevy::log::error!("{}", err);
@@ -174,6 +175,7 @@ fn handle_ad_events(
                     }
 
                     platform_specific::show_toast_sync(format!("{hint_count} Hints Rewarded"));
+                    logging::LoggableEvent::RewardAdShown.try_log1();
                 }
             }
             AdEvent::FailedToLoadRewardAd(s) => {

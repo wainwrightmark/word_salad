@@ -217,7 +217,12 @@ pub enum LoggableEvent {
     RecordingNotStarted,
     RecordingStopped{
         recording_seconds: i64
-    }
+    },
+    ProductPurchased{
+        product: Product
+    },
+    RewardAdShown,
+    InterstitialAdShown
 }
 
 #[cfg(any(feature = "android", feature = "ios", feature = "web"))]
