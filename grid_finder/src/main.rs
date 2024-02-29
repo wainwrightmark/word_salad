@@ -21,10 +21,7 @@ use std::{
     str::FromStr,
 };
 use ws_core::finder::{
-    cluster::Cluster,
-    helpers::*,
-    node::GridResult,
-    orientation::{self, *},
+    cluster::Cluster, falling_probability, helpers::*, node::GridResult, orientation::{self, *}
 };
 
 use crate::clustering::cluster_words;
@@ -69,11 +66,15 @@ pub struct ClusterArgs {
 
     /// Minimum number of words in a grid
     #[arg(short, long, default_value = "5")]
-    pub minimum: u32,
+    pub minimum_words: u32,
 
     /// Maximum number of grids to return
     #[arg(short, long, default_value = "0")]
-    grids: u32,
+    pub grids: u32,
+
+    /// All grids should have at least this cumulative falling probability
+    #[arg( long, default_value = "0.0")]
+    pub min_falling: f32
 }
 
 #[derive(Args, Debug)]
@@ -332,7 +333,8 @@ fn cluster_files(options: &ClusterArgs) {
         let grids = grid_file_text
             .lines()
             .map(|l| GridResult::from_str(l).unwrap())
-            .filter(|x| x.words.len() >= options.minimum as usize)
+            .filter(|x| x.words.len() >= options.minimum_words as usize)
+            .filter(|x| options.min_falling == 0.0 || falling_probability::calculate_cumulative_falling_probability_2(x) >= options.min_falling)
             .filter(|grid| {
                 if let Some(..) = orientation::find_taboo_word(&grid.grid) {
                     taboo_grids += 1;
