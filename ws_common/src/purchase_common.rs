@@ -30,7 +30,9 @@ impl Plugin for PurchaseCommonPlugin {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, EnumString, EnumTable, Display, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, EnumString, EnumTable, Display, Serialize, Deserialize,
+)]
 pub enum Product {
     //spellchecker:disable
     #[strum(serialize = "removeads")]
@@ -91,7 +93,6 @@ impl Prices {
     }
 
     pub fn try_get_price_string(&self, product: Product) -> Option<String> {
-
         self.product_prices[product].clone()
     }
 }
@@ -113,33 +114,39 @@ fn handle_product_purchased(
     mut hints: ResMut<HintState>,
     sequence_completion: Res<SequenceCompletion>,
     mut change_level_events: EventWriter<ChangeLevelEvent>,
+    level: Res<CurrentLevel>,
 ) {
     fn set_level_group(
         purchases: &mut ResMut<Purchases>,
         lg: LevelGroup,
         change_level_events: &mut EventWriter<ChangeLevelEvent>,
         sequence_completion: &SequenceCompletion,
-    ) -> bool{
+        level: &CurrentLevel,
+    ) -> bool {
         if !purchases.groups_purchased.contains(&lg) {
             purchases.groups_purchased.insert(lg);
 
-            let sequence = lg.get_sequences()[0];
-
-            let level: CurrentLevel = sequence_completion
-                .get_next_level_index(sequence, &purchases)
-                .to_level(sequence);
+            match level {
+                CurrentLevel::NonLevel(NonLevel::LevelSequenceMustPurchaseGroup(sequence)) => {
+                    if sequence.group() == lg {
+                        let next_level: CurrentLevel = sequence_completion
+                            .get_next_level_index(*sequence, &purchases)
+                            .to_level(*sequence);
+                        change_level_events.send(next_level.into());
+                    }
+                }
+                _ => {}
+            }
 
             platform_specific::show_toast_sync(format!("{lg} add-on Purchased"));
 
-            change_level_events.send(level.into());
             true
-        }
-        else{
+        } else {
             false
         }
     }
 
-    fn add_hints(hints: &mut ResMut<HintState>, number: usize)-> bool {
+    fn add_hints(hints: &mut ResMut<HintState>, number: usize) -> bool {
         hints.hints_remaining += number;
         hints.total_bought_hints += number;
 
@@ -148,15 +155,13 @@ fn handle_product_purchased(
     }
 
     for ev in events.read() {
-        let purchased =
-        match ev.product {
+        let purchased = match ev.product {
             Product::RemoveAds => {
                 if !purchases.remove_ads_purchased {
                     purchases.remove_ads_purchased = true;
                     platform_specific::show_toast_sync("Remove Ads purchased");
                     true
-                }
-                else{
+                } else {
                     false
                 }
             }
@@ -165,18 +170,21 @@ fn handle_product_purchased(
                 LevelGroup::NaturalWorld,
                 &mut change_level_events,
                 &sequence_completion,
+                level.as_ref(),
             ),
             Product::GeographyPack => set_level_group(
                 &mut purchases,
                 LevelGroup::Geography,
                 &mut change_level_events,
                 &sequence_completion,
+                level.as_ref(),
             ),
             Product::USSportsPack => set_level_group(
                 &mut purchases,
                 LevelGroup::USSports,
                 &mut change_level_events,
                 &sequence_completion,
+                level.as_ref(),
             ),
             Product::Hints500 => add_hints(&mut hints, 500),
             Product::Hints100 => add_hints(&mut hints, 100),
@@ -184,8 +192,11 @@ fn handle_product_purchased(
             Product::Hints25 => add_hints(&mut hints, 25),
         };
 
-        if purchased{
-            crate::logging::LoggableEvent::ProductPurchased { product: ev.product }.try_log1();
+        if purchased {
+            crate::logging::LoggableEvent::ProductPurchased {
+                product: ev.product,
+            }
+            .try_log1();
         }
     }
 }
