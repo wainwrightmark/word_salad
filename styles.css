@@ -10,7 +10,7 @@ html {
 body {
   overscroll-behavior-x: none;
   touch-action: none;
-  background-color: #2bb559;
+  background-color: #ffffff;
 }
 
 #game {
