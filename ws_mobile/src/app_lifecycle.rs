@@ -47,8 +47,14 @@ fn watch_lifecycle(
 ) {
     for event in events.read() {
         match event {
-            AppLifeCycleEvent::StateChange { .. } => {
-                info!("State changed")
+            AppLifeCycleEvent::StateChange { is_active } => {
+                if *is_active {
+                    info!("State changed to active")
+                }else{
+                    info!("State changed to inactive")
+                }
+
+
             }
             AppLifeCycleEvent::BackPressed => {
                 if popup.0.is_some() {
