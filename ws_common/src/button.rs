@@ -366,34 +366,10 @@ impl ButtonInteraction {
                 *menu_state.as_mut() = MenuState::WordSaladLevels;
             }
 
-            ButtonInteraction::WordSaladMenu(WordSaladMenuLayoutEntity::TodayPuzzle) => {
+            ButtonInteraction::WordSaladMenu(WordSaladMenuLayoutEntity::DaysAgo(x)) => {
                 let index = DailyChallenges::get_today_index();
                 {
-                    change_level_events.send(CurrentLevel::DailyChallenge { index }.into());
-                }
-                menu_state.close();
-            }
-            ButtonInteraction::WordSaladMenu(WordSaladMenuLayoutEntity::YesterdayPuzzle) => {
-                let index = DailyChallenges::get_today_index();
-                {
-                    change_level_events.send(
-                        CurrentLevel::DailyChallenge {
-                            index: index.saturating_sub(1),
-                        }
-                        .into(),
-                    );
-                }
-                menu_state.close();
-            }
-            ButtonInteraction::WordSaladMenu(WordSaladMenuLayoutEntity::EreYesterdayPuzzle) => {
-                let index = DailyChallenges::get_today_index();
-                {
-                    change_level_events.send(
-                        CurrentLevel::DailyChallenge {
-                            index: index.saturating_sub(2),
-                        }
-                        .into(),
-                    );
+                    change_level_events.send(CurrentLevel::DailyChallenge { index: index.saturating_sub(*x) }.into());
                 }
                 menu_state.close();
             }

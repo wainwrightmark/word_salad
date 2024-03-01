@@ -1,31 +1,34 @@
-use strum::{Display, EnumCount, EnumIs, EnumIter, IntoEnumIterator};
+use strum::{Display, EnumIs};
 use ws_core::{font_icons, layout::entities::*};
 
 use crate::prelude::*;
 
-#[derive(
-    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Display, EnumIs, EnumCount, EnumIter,
-)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Display, EnumIs)]
 pub enum WordSaladMenuLayoutEntity {
-    TodayPuzzle = 0,
-    YesterdayPuzzle = 1,
-    EreYesterdayPuzzle = 2,
-    NextPuzzle = 4,
+    DaysAgo(usize),
+    NextPuzzle,
 }
+
+const DAYS_AGO: usize = 5;
 
 impl MenuButtonsLayout for WordSaladMenuLayoutEntity {
     type Context = ();
 
     fn index(&self) -> usize {
-        *self as usize
+        match self {
+            WordSaladMenuLayoutEntity::DaysAgo(x) => *x,
+            WordSaladMenuLayoutEntity::NextPuzzle => DAYS_AGO + 1,
+        }
     }
 
     fn count(_context: &Self::Context) -> usize {
-        Self::COUNT
+        DAYS_AGO + 2
     }
 
     fn iter_all(_context: &Self::Context) -> impl Iterator<Item = Self> {
-        Self::iter()
+        (0..DAYS_AGO)
+            .map(|x| WordSaladMenuLayoutEntity::DaysAgo(x))
+            .chain(std::iter::once(WordSaladMenuLayoutEntity::NextPuzzle))
     }
 
     const FONT_SIZE_SMALL: bool = true;
@@ -43,10 +46,10 @@ impl WordSaladMenuLayoutEntity {
 
         let s1 = match self {
             //TODO better text
-            WordSaladMenuLayoutEntity::TodayPuzzle => "Today's Puzzle",
-            WordSaladMenuLayoutEntity::YesterdayPuzzle => "Yesterday's Puzzle",
-            WordSaladMenuLayoutEntity::EreYesterdayPuzzle => "Ere-yesterday's Puzzle",
-            WordSaladMenuLayoutEntity::NextPuzzle => "Next Incomplete",
+            WordSaladMenuLayoutEntity::DaysAgo(0) => "Today's Puzzle".to_string(),
+            WordSaladMenuLayoutEntity::DaysAgo(1) => "Yesterday's Puzzle".to_string(),
+            WordSaladMenuLayoutEntity::DaysAgo(x) => format!("{x} Days Ago Puzzle"),
+            WordSaladMenuLayoutEntity::NextPuzzle => "Next Incomplete".to_string(),
         };
 
         (s1.to_string(), "\u{f096}".to_string())
@@ -60,10 +63,8 @@ impl WordSaladMenuLayoutEntity {
         let today_index = DailyChallenges::get_today_index();
 
         let index = match self {
-            WordSaladMenuLayoutEntity::TodayPuzzle => Some(today_index),
-            WordSaladMenuLayoutEntity::YesterdayPuzzle => today_index.checked_sub(1),
-            WordSaladMenuLayoutEntity::EreYesterdayPuzzle => today_index.checked_sub(2),
-            WordSaladMenuLayoutEntity::NextPuzzle => today_index.checked_sub(3).and_then(|x| {
+            WordSaladMenuLayoutEntity::DaysAgo(x) => today_index.checked_sub(*x),
+            WordSaladMenuLayoutEntity::NextPuzzle => today_index.checked_sub(DAYS_AGO).and_then(|x| {
                 completion
                     .get_next_incomplete_daily_challenge(x, daily_challenges)
                     .level_index()
@@ -85,11 +86,9 @@ impl WordSaladMenuLayoutEntity {
         let today_index = DailyChallenges::get_today_index();
 
         let index = match self {
-            WordSaladMenuLayoutEntity::TodayPuzzle => today_index,
-            WordSaladMenuLayoutEntity::YesterdayPuzzle => today_index.checked_sub(1)?,
-            WordSaladMenuLayoutEntity::EreYesterdayPuzzle => today_index.checked_sub(2)?,
+            WordSaladMenuLayoutEntity::DaysAgo(x) => today_index.checked_sub(*x)?,
             WordSaladMenuLayoutEntity::NextPuzzle => completion
-                .get_next_incomplete_daily_challenge(today_index.checked_sub(3)?, daily_challenges)
+                .get_next_incomplete_daily_challenge(today_index.checked_sub(DAYS_AGO)?, daily_challenges)
                 .level_index()?,
         };
 
