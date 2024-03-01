@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use nice_bevy_utils::{async_event_writer, CanRegisterAsyncEvent};
 use ws_common::prelude::*;
 
@@ -8,7 +9,10 @@ impl Plugin for AppLifecyclePlugin {
 
         app.register_async_event::<AppLifeCycleEvent>();
         app.add_systems(Startup, begin_lifecycle);
-        app.add_systems(Update, watch_lifecycle);
+        app.add_systems(
+            Update,
+            watch_lifecycle.run_if(|ev: EventReader<AppLifeCycleEvent>| !ev.is_empty()),
+        );
         app.add_systems(Startup, set_status_bar.after(hide_splash));
     }
 }
@@ -16,7 +20,10 @@ impl Plugin for AppLifecyclePlugin {
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, Event, PartialEq)]
 enum AppLifeCycleEvent {
-    StateChange { is_active: bool },
+    StateChange {
+        is_active: bool,
+        time_sent: DateTime<Utc>,
+    },
     BackPressed,
 }
 
@@ -44,17 +51,35 @@ fn watch_lifecycle(
     mut events: EventReader<AppLifeCycleEvent>,
     mut menu: ResMut<MenuState>,
     mut popup: ResMut<PopupState>,
+    mut level_time: ResMut<LevelTime>,
 ) {
     for event in events.read() {
         match event {
-            AppLifeCycleEvent::StateChange { is_active } => {
+            AppLifeCycleEvent::StateChange {
+                is_active,
+                time_sent,
+            } => {
                 if *is_active {
-                    info!("State changed to active")
-                }else{
-                    info!("State changed to inactive")
+                    info!("State changed to active {time_sent}")
+                } else {
+                    info!("State changed to inactive {time_sent}");
+
+                    match level_time.as_ref() {
+                        LevelTime::Running { since, additional } => {
+                            let additional = chrono::Duration::from_std(*additional)
+                                .unwrap_or(chrono::Duration::zero())
+                                + time_sent.signed_duration_since(since);
+
+                            let additional = additional.to_std().unwrap_or_default();
+                            *level_time = LevelTime::Running {
+                                since: chrono::Utc::now(),
+                                additional,
+                            };
+                        }
+                        LevelTime::Paused { .. } => {}
+                        LevelTime::Finished { .. } => {}
+                    }
                 }
-
-
             }
             AppLifeCycleEvent::BackPressed => {
                 if popup.0.is_some() {
@@ -100,6 +125,7 @@ async fn on_resume(writer: async_event_writer::AsyncEventWriter<AppLifeCycleEven
         let result = capacitor_bindings::app::App::add_state_change_listener(move |x| {
             let event = AppLifeCycleEvent::StateChange {
                 is_active: x.is_active,
+                time_sent: chrono::Utc::now(),
             };
             writer.send_or_panic(event);
         })
