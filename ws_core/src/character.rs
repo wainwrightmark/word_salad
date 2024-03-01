@@ -200,9 +200,9 @@ impl TryFrom<char> for Character {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
-pub struct CharacterSet<T>([T; 27]);
+pub struct CharacterMap<T>([T; 27]);
 
-impl<T> CharacterSet<T> {
+impl<T> CharacterMap<T> {
     pub fn get(&self, c: Character) -> &T {
         &self.0[c.into_prime_index()]
     }

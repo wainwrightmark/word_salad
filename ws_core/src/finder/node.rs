@@ -169,7 +169,7 @@ pub fn try_make_grid_with_blank_filling<Collector: SolutionCollector<GridResult>
 }
 
 struct WordUniquenessHelper {
-    constraining_words: CharacterSet<Option<NonZeroU8>>,
+    constraining_words: CharacterMap<Option<NonZeroU8>>,
     pub character_multi_constraints: CharacterMultiConstraints,
     pub character_nodes: CharacterNodes,
 }
@@ -180,7 +180,7 @@ impl WordUniquenessHelper {
         character_nodes: CharacterNodes,
         character_multi_constraints: CharacterMultiConstraints,
     ) -> Self {
-        let mut constraining_words: CharacterSet<Option<NonZeroU8>> = Default::default();
+        let mut constraining_words: CharacterMap<Option<NonZeroU8>> = Default::default();
 
         for (character, set) in character_nodes.enumerate() {
             if set.count() > 1 {

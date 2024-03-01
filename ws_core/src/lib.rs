@@ -10,7 +10,9 @@ pub mod level_trait;
 pub mod level_type;
 pub mod word;
 pub mod word_trait;
+pub mod complete_solve;
 pub use crate::prelude::*;
+
 
 pub mod prelude {
 

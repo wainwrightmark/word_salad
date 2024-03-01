@@ -20,9 +20,9 @@ use std::{
     path::{Path, PathBuf},
     str::FromStr,
 };
-use ws_core::finder::{
+use ws_core::{complete_solve, finder::{
     cluster::Cluster, falling_probability, helpers::*, node::GridResult, orientation::{self, *}
-};
+}, try_make_grid};
 
 use crate::clustering::cluster_words;
 
@@ -53,6 +53,10 @@ pub enum Commands {
 
     /// Remove duplicate grids
     RemoveDuplicates {},
+
+    CheckWords{
+        grid: String
+    }
 }
 
 #[derive(Args, Debug)]
@@ -135,6 +139,9 @@ fn main() {
         }
         Some(Commands::RemoveDuplicates {}) => {
             remove_duplicate_grids(&options);
+        }
+        Some(Commands::CheckWords { grid })=>{
+            check_words(grid);
         }
         None => do_finder(FindGridsArgs::default()),
     }
@@ -438,6 +445,24 @@ impl FinderCase {
             stem,
         }
     }
+}
+
+fn check_words(grid: String){
+    let grid = try_make_grid(&grid).expect("Expected a valid grid string");
+    //https://github.com/dwyl/english-words
+    let english_words = std::fs::read_to_string("english_words.txt").expect("Expected a file named 'english_words.txt'");
+
+    let results = complete_solve::do_complete_solve(&grid, english_words.as_str(), 4);
+    //https://raw.githubusercontent.com/dwyl/english-words/master/words.txt
+    
+    let found_words = results
+            .iter()
+            .map(|x| x.iter().map(|c| c.as_char().to_ascii_lowercase()).join("")).sorted()
+            .join(", ");
+
+            info!("{found_words}");
+
+
 }
 
 fn do_finder(options: FindGridsArgs) {
