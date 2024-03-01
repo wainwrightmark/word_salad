@@ -3,7 +3,7 @@ use capacitor_bindings::admob::*;
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
 #[cfg(any(feature = "ios", feature = "android"))]
 use ws_common::asynchronous;
-use ws_common::{logging, platform_specific, prelude::*};
+use ws_common::{ads_common, logging, platform_specific, prelude::*};
 
 const MARK_IOS_DEVICE_ID: &str = "d3f1ad44252cdc0f1278cf7347063f07";
 const MARK_ANDROID_DEVICE_ID: &str = "806EEBB5152549F81255DD01CDA931D9";
@@ -113,6 +113,8 @@ fn handle_ad_events(
     mut interstitial_state: ResMut<InterstitialProgressState>,
     mut hint_events: EventWriter<HintEvent>,
     purchases: Res<Purchases>,
+    current_level: Res<CurrentLevel>,
+    mut change_level_events: EventWriter<ChangeLevelEvent>,
 ) {
     for event in events.read() {
         match event {
@@ -142,21 +144,23 @@ fn handle_ad_events(
                 ad_state.interstitial_ad = Some(i.clone());
             }
             AdEvent::FailedToLoadInterstitialAd(err) => {
+                ads_common::on_interstitial_failed(&current_level, &mut change_level_events);
                 bevy::log::error!("{}", err);
             }
             AdEvent::InterstitialShowed => {
-                interstitial_state.levels_without_interstitial = 0;
+                ads_common::on_interstitial_showed(
+                    &mut interstitial_state,
+                    &current_level,
+                    &mut change_level_events,
+                );
+
                 asynchronous::spawn_and_run(mobile_only::try_load_interstitial_ad(writer.clone()));
                 logging::LoggableEvent::InterstitialAdShown.try_log1();
             }
             AdEvent::FailedToShowInterstitialAd(err) => {
+                ads_common::on_interstitial_failed(&current_level, &mut change_level_events);
+
                 bevy::log::error!("{}", err);
-                // #[cfg(any(feature = "ios", feature = "android"))] //todo fix
-                // {
-                //     asynchronous::spawn_and_run(mobile_only::try_load_interstitial_ad(
-                //         writer.clone(),
-                //     ));
-                // }
             }
 
             AdEvent::RewardAdLoaded(ad) => {
@@ -186,6 +190,7 @@ fn handle_ad_events(
                 bevy::log::error!("{s}");
 
                 ad_state.hint_wanted = None;
+                platform_specific::show_toast_sync("Failed to show reward ad");
 
                 // #[cfg(any(feature = "ios", feature = "android"))] //TODO request differently
                 // {
@@ -201,7 +206,6 @@ fn init_everything(writer: AsyncEventWriter<AdEvent>) {
     asynchronous::spawn_and_run(mobile_only::init_everything_async(writer));
 }
 
-
 #[cfg(feature = "android")]
 const BETWEEN_LEVELS_INTERSTITIAL_AD_ID: &str = "ca-app-pub-5238923028364185/8193403915";
 #[cfg(feature = "android")]
@@ -211,9 +215,6 @@ const BUY_HINTS_REWARD_AD_ID: &str = "ca-app-pub-5238923028364185/7292181940";
 const BETWEEN_LEVELS_INTERSTITIAL_AD_ID: &str = "ca-app-pub-5238923028364185/9413401068";
 #[cfg(all(not(feature = "android"), feature = "ios"))]
 const BUY_HINTS_REWARD_AD_ID: &str = "ca-app-pub-5238923028364185/4515517358";
-
-
-
 
 mod mobile_only {
     use super::*;

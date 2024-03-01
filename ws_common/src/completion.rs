@@ -6,9 +6,7 @@ use serde::{Deserialize, Serialize};
 use ws_levels::{level_group::LevelGroup, level_sequence::LevelSequence};
 
 use crate::{
-    compatibility::SubmitScoreData,
-    level_time::LevelTime,
-    prelude::{CurrentLevel, DailyChallenges, FoundWordsState, NonLevel, Purchases, Streak},
+    ads_common::InterstitialProgressState, compatibility::SubmitScoreData, level_time::LevelTime, prelude::{CurrentLevel, DailyChallenges, FoundWordsState, NonLevel, Purchases, Streak}
 };
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, Default, Clone, Resource, MavericContext)]
@@ -235,6 +233,8 @@ pub fn track_level_completion(
     mut streak: ResMut<Streak>,
     level_time: Res<LevelTime>,
     daily_challenges: Res<DailyChallenges>,
+    mut ips: ResMut<InterstitialProgressState>,
+    purchases: Res<Purchases>
 ) {
     if !found_words.is_changed()
         || !found_words.is_level_complete()
@@ -332,6 +332,11 @@ pub fn track_level_completion(
         CurrentLevel::NonLevel(..) => first_time = false,
     }
     if !current_level.is_changed() {
+
+        if current_level.count_for_interstitial_ads(&purchases){
+            ips.levels_without_interstitial += 1;
+        }
+
         // if current level was changed, it was because we loaded the game
         let level = current_level.level(&daily_challenges);
         match level {

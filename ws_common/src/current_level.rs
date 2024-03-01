@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use itertools::Either;
 use nice_bevy_utils::TrackableResource;
 use serde::{Deserialize, Serialize};
@@ -42,6 +43,41 @@ pub enum NonLevel {
     LevelSequenceMustPurchaseGroup(LevelSequence),
     LevelSequenceAllFinished(LevelSequence),
     LevelSequenceReset(LevelSequence),
+
+    AdBreak(NextLevel),
+    AdFailed{
+        next_level: NextLevel,
+        since: Option<DateTime<Utc>>
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, EnumIs)]
+pub enum NextLevel{
+    DailyChallenge{index: usize},
+    LevelSequence{sequence: LevelSequence, level_index: usize}
+}
+
+impl From<NextLevel> for CurrentLevel{
+    fn from(value: NextLevel) -> Self {
+        match value {
+            NextLevel::DailyChallenge { index } => CurrentLevel::DailyChallenge { index },
+            NextLevel::LevelSequence { sequence, level_index } => CurrentLevel::Fixed { level_index, sequence },
+        }
+    }
+}
+
+impl<'a> TryFrom<&'a CurrentLevel> for NextLevel{
+    type Error = ();
+
+    fn try_from(value: &'a CurrentLevel) -> Result<Self, Self::Error> {
+        match value{
+            CurrentLevel::Tutorial { .. } => Err(()),
+            CurrentLevel::Fixed { level_index, sequence } => Ok(NextLevel::LevelSequence { sequence: *sequence, level_index: *level_index }) ,
+            CurrentLevel::DailyChallenge { index } => Ok(NextLevel::DailyChallenge { index: *index }),
+            CurrentLevel::Custom { .. } => Err(()),
+            CurrentLevel::NonLevel(_) => Err(()),
+        }
+    }
 }
 
 impl From<NonLevel> for CurrentLevel {

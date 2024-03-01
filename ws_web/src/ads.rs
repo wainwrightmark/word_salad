@@ -3,7 +3,7 @@ use capacitor_bindings::admob::*;
 use nice_bevy_utils::async_event_writer::AsyncEventWriter;
 #[cfg(any(feature = "ios", feature = "android"))]
 use ws_common::asynchronous;
-use ws_common::prelude::*;
+use ws_common::{ads_common, prelude::*};
 
 pub struct AdsPlugin;
 
@@ -45,6 +45,7 @@ fn handle_ad_requests(
                 ws_common::platform_specific::show_toast_on_web(
                     "We would show an interstitial ad here",
                 );
+                //sync_writer.send(AdEvent::FailedToShowInterstitialAd("Testing".to_string()));
                 sync_writer.send(AdEvent::InterstitialShowed);
             }
         }
@@ -66,6 +67,8 @@ fn handle_ad_events(
     mut hints: ResMut<HintState>,
     mut interstitial_state: ResMut<InterstitialProgressState>,
     mut hint_events: EventWriter<HintEvent>,
+    current_level: Res<CurrentLevel>,
+    mut change_level_events: EventWriter<ChangeLevelEvent>,
 ) {
     for event in events.read() {
         match event {
@@ -83,12 +86,18 @@ fn handle_ad_events(
                 ad_state.interstitial_ad = Some(i.clone());
             }
             AdEvent::FailedToLoadInterstitialAd(err) => {
+                ads_common::on_interstitial_failed(&current_level, &mut change_level_events);
                 bevy::log::error!("{}", err);
             }
             AdEvent::InterstitialShowed => {
-                interstitial_state.levels_without_interstitial = 0;
+                ads_common::on_interstitial_showed(
+                    &mut interstitial_state,
+                    &current_level,
+                    &mut change_level_events,
+                );
             }
             AdEvent::FailedToShowInterstitialAd(err) => {
+                ads_common::on_interstitial_failed(&current_level, &mut change_level_events);
                 bevy::log::error!("{}", err);
             }
 

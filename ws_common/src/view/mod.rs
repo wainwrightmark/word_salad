@@ -28,6 +28,10 @@ pub use words::*;
 use crate::{completion::*, prelude::*};
 use maveric::prelude::*;
 
+/// Resource that will touched when a redraw is requested
+#[derive(Debug, Resource, MavericContext, Default, Clone, Copy)]
+pub struct RedrawMarker{}
+
 #[derive(Debug, NodeContext)]
 pub struct ViewContext {
     pub chosen_state: ChosenState,
@@ -43,6 +47,7 @@ pub struct ViewContext {
     pub daily_challenges: DailyChallenges,
     pub streak: Streak,
     pub prices: Prices,
+    pub redraw_marker: RedrawMarker
 }
 
 #[derive(MavericRoot)]

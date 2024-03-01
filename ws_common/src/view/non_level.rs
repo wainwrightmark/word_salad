@@ -2,11 +2,11 @@ use crate::prelude::*;
 use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
 use ws_core::{layout::entities::*, palette::BUTTON_CLICK_FILL};
 
-
 #[derive(Debug, NodeContext)]
 pub struct NonLevelContext {
     pub size: MyWindowSize,
-    pub prices: Prices
+    pub prices: Prices,
+    pub redraw_marker: RedrawMarker
 }
 
 impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for NonLevelContextWrapper<'w> {
@@ -14,15 +14,16 @@ impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for NonLevelContextWrapper<'w>
         Self {
             size: Res::clone(&value.window_size),
             prices: Res::clone(&value.prices),
+            redraw_marker: Res::clone(&value.redraw_marker)
         }
     }
 }
-
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct NonLevelView {
     pub non_level: NonLevel,
     pub selfie_mode: SelfieMode,
+
 }
 
 #[derive(Debug, Component, PartialEq, Clone, Copy)]
@@ -74,6 +75,20 @@ impl MavericNode for NonLevelView {
                     "Could not load Daily Challenge".to_string()
                 }
                 NonLevel::DailyChallengeLoading { .. } => "Loading Daily Challenges".to_string(),
+
+                NonLevel::AdBreak(_)=> "Ad Break".to_string(),
+                NonLevel::AdFailed{since,..}=>{
+
+                    if let Some(since) = since{
+                        let seconds_remaining = AD_FAILED_SECONDS - chrono::Utc::now().signed_duration_since(since).num_seconds();
+                        format!("Hate interruptions?\nRemove ads on the store page\n{seconds_remaining:2}")
+                    }else{
+                        format!("Hate interruptions?\nRemove ads on the store page\n")
+                    }
+
+
+
+                },
             };
 
             let text_color = if selfie_mode.is_selfie_mode {
@@ -127,6 +142,15 @@ impl MavericNode for NonLevelView {
                     context.prices.try_get_price_string(ls.group().into()).or_else(||Some("???".to_string()))
                 },
                 NonLevel::DailyChallengeLoading { .. } => None,
+                NonLevel::AdBreak(_)=> None,
+                NonLevel::AdFailed{since, ..}=> {
+                    if  since.is_none(){
+                        Some("Continue".to_string())
+                    }
+                    else{
+                        None
+                    }
+                },
             };
 
             let (fill_color, border) = if selfie_mode.is_selfie_mode {

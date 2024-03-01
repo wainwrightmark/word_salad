@@ -60,6 +60,7 @@ pub fn setup_app(extra_setup: impl FnOnce(&mut App)) {
     app.add_plugins(ClearColorPlugin);
 
     app.add_plugins(WordlinePlugin);
+    app.init_resource::<RedrawMarker>();
     app.register_maveric::<ViewRoot>();
     app.register_maveric::<RecordingButtonRoot>();
     app.register_maveric::<WordSaladLogoRoot>();

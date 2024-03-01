@@ -550,6 +550,16 @@ impl ButtonInteraction {
                         NonLevel::DailyChallengeLoading { .. } => {
                             //This button should not exist
                         }
+                        NonLevel::AdBreak(..)=>{}
+                        NonLevel::AdFailed{next_level, since}=>{
+
+                            if since.is_none()
+                            {
+                                let next_level: CurrentLevel = next_level.into();
+                                change_level_events.send(next_level.into());
+                            }
+                        }
+
                     }
                 }
             }

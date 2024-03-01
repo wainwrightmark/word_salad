@@ -102,7 +102,7 @@ fn handle_change_level_event(
     mut saved_levels: ResMut<SavedLevelsState>,
 
     mut time: ResMut<LevelTime>,
-    mut interstitial_progress_state: ResMut<InterstitialProgressState>,
+    interstitial_progress_state: Res<InterstitialProgressState>,
     mut request_ad_events: EventWriter<AdRequestEvent>,
     purchases: Res<Purchases>,
 ) {
@@ -112,7 +112,19 @@ fn handle_change_level_event(
                 if new_level == current_level.as_ref() {
                     continue;
                 }
-                new_level
+
+                if interstitial_progress_state.levels_without_interstitial >= 2
+                    && new_level.count_for_interstitial_ads(&purchases)
+                {
+                    if let Ok(nl) = TryInto::<NextLevel>::try_into(new_level) {
+                        request_ad_events.send(AdRequestEvent::RequestInterstitial);
+                        CurrentLevel::NonLevel(NonLevel::AdBreak(nl))
+                    } else {
+                        new_level.clone()
+                    }
+                } else {
+                    new_level.clone()
+                }
             }
             ChangeLevelEvent::Reset => {
                 if let Either::Left(level) = current_level.level(daily_challenges.as_ref()) {
@@ -145,7 +157,7 @@ fn handle_change_level_event(
         };
 
         let previous_key = SavedLevelKey::try_from_current(&current_level);
-        let new_key = SavedLevelKey::try_from_current(new_level);
+        let new_key = SavedLevelKey::try_from_current(&new_level);
 
         if let Some(previous_key) = previous_key {
             // Save the current progress
@@ -162,7 +174,7 @@ fn handle_change_level_event(
 
         if let CurrentLevel::DailyChallenge { index } = new_level {
             if let Either::Left(level) = new_level.level(&daily_challenges) {
-                if let Some(level_result) = daily_challenge_completions.results.get(index) {
+                if let Some(level_result) = daily_challenge_completions.results.get(&index) {
                     *current_level = new_level.clone();
                     *found_words = FoundWordsState::new_level_complete(
                         level,
@@ -202,14 +214,6 @@ fn handle_change_level_event(
         time.resume_timer();
 
         *chosen = ChosenState::default();
-
-        if current_level.count_for_interstitial_ads(&purchases) {
-            interstitial_progress_state.levels_without_interstitial += 1;
-
-            if interstitial_progress_state.levels_without_interstitial >= 2 {
-                request_ad_events.send(AdRequestEvent::RequestInterstitial);
-            }
-        }
     }
 }
 
