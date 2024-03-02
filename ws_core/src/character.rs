@@ -199,7 +199,7 @@ impl TryFrom<char> for Character {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Default, Hash, Eq)]
 pub struct CharacterMap<T>([T; 27]);
 
 impl<T> CharacterMap<T> {

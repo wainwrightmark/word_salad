@@ -1,17 +1,27 @@
-use std::str::FromStr;
+use std::{
+    collections::{HashMap, HashSet},
+    iter::FusedIterator,
+    str::FromStr,
+};
 
-use crate::{CharacterMap, CharsArray, Grid, GridSet,  WordTrait};
+use itertools::Itertools;
+use prime_bag::PrimeBagElement;
+use strum::IntoEnumIterator;
 
-pub fn do_complete_solve(grid: &Grid, all_words_text: &str, min_word_length: usize) -> Vec<CharsArray> {
+use crate::{layout::rect, Character, CharacterMap, CharsArray, Grid, GridSet, WordTrait};
+
+pub fn do_complete_solve(
+    grid: &Grid,
+    all_words_text: &str,
+    min_word_length: usize,
+) -> Vec<CharsArray> {
     let mut wa = WordAutomata::default();
     for line in all_words_text.lines() {
-        if let Ok(word) = RawWord::from_str(line){
-            if word.characters.len() >= min_word_length{
+        if let Ok(word) = RawWord::from_str(line) {
+            if word.characters.len() >= min_word_length {
                 wa.add_word(&word);
             }
         }
-
-
     }
 
     wa.find_all_words(grid)
@@ -32,10 +42,153 @@ impl Default for WordAutomata {
 
 #[derive(Debug, Default)]
 struct State {
-    pub inner: CharacterMap<Option<usize>>,
+    pub inner: CharacterMap<Option<usize>>, //todo option<nonzerou32>
+}
+
+struct AutomataIterator<'a> {
+    automata: &'a WordAutomata,
+    stack: Vec<(usize, Character)>,
+}
+
+impl<'a> FusedIterator for AutomataIterator<'a> {}
+
+impl<'a> Iterator for AutomataIterator<'a> {
+    type Item = String;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        fn increment_last(stack: &mut Vec<(usize, Character)>) {
+            loop {
+                match stack.last_mut() {
+                    Some((_, Character::Z)) => {
+                        stack.pop();
+                    }
+                    Some(other) => {
+                        if other.1.is_blank() {
+                            other.1 = Character::from_prime_index(0);
+                        } else {
+                            other.1 = Character::from_prime_index(other.1.into_prime_index() + 1);
+                        }
+                        return;
+                    }
+                    None => return,
+                }
+            }
+        }
+
+        loop {
+            let (top_state_index, character) = self.stack.last()?.clone();
+
+            // println!(
+            //     "{}",
+            //     self.stack.iter().map(|x|x.1.as_char()).join("")
+            // );
+
+            match self.automata.slab[top_state_index].inner.get(character) {
+                Some(next_state_index) => {
+                    if character.is_blank() {
+                        //this is a valid word
+                        let word = self
+                            .stack
+                            .iter()
+                            .take(self.stack.len() - 1)
+                            .map(|x| x.1.as_char())
+                            .join("");
+                        increment_last(&mut self.stack);
+
+                        return Some(word);
+                    } else {
+                        //Make the stack bigger, exploring the next state
+                        self.stack.push((*next_state_index, Character::Blank));
+                    }
+                }
+                None => {
+                    increment_last(&mut self.stack);
+                }
+            }
+        }
+    }
 }
 
 impl WordAutomata {
+    pub fn iter<'a>(&'a self) -> AutomataIterator<'a> {
+        AutomataIterator {
+            automata: self,
+            stack: vec![(0, Character::Blank)],
+        }
+    }
+
+    //todo prevent adding new entries after compression
+    pub fn compress(&mut self) {
+        let mut leaves: HashMap<CharacterMap<Option<usize>>, usize> = Default::default();
+        let mut replacements: HashMap<usize, usize> = Default::default();
+        let mut removed: HashSet<usize> = Default::default();
+        loop {
+            leaves.clear();
+            replacements.clear();
+
+            for (index, state) in self.slab.iter().enumerate() {
+                match leaves.entry(state.inner) {
+                    std::collections::hash_map::Entry::Occupied(o) => {
+                        replacements.insert(index, *o.get());
+                        removed.insert(index);
+                    }
+                    std::collections::hash_map::Entry::Vacant(v) => {
+                        v.insert(index);
+                    }
+                }
+            }
+
+            if replacements.is_empty() {
+                break;
+            }
+            let mut changed = false;
+            for state in self.slab.iter_mut() {
+                for c in Character::iter() {
+                    if let Some(old_index) = state.inner.get(c) {
+                        if let Some(new_index) = replacements.get(old_index) {
+                            state.inner.set(c, Some(*new_index));
+                            changed = true;
+                        }
+                    }
+                }
+            }
+            if !changed {
+                break;
+            }
+        }
+
+        if removed.is_empty() {
+            return;
+        }
+
+        replacements.clear();
+        let mut new_slab: Vec<State> = Default::default();
+        let mut next_index = 0;
+
+        for (old_index, state) in self.slab.drain(..).enumerate() {
+            if removed.contains(&old_index) {
+                continue;
+            }
+
+            new_slab.push(state);
+            if old_index != next_index {
+                replacements.insert(old_index, next_index);
+            }
+            next_index += 1;
+        }
+        self.slab = new_slab;
+
+        for state in self.slab.iter_mut() {
+            for c in Character::iter() {
+                if let Some(old_index) = state.inner.get(c) {
+                    if let Some(new_index) = replacements.get(old_index) {
+                        state.inner.set(c, Some(*new_index));
+                    }
+                }
+            }
+        }
+    }
+
     pub fn contains(&self, w: &impl WordTrait) -> bool {
         let mut state = self.slab.get(0).unwrap();
 
@@ -192,7 +345,7 @@ mod tests {
     }
 
     #[test]
-    pub fn test_on_grid() {
+    pub fn test_iter() {
         let mut wa = WordAutomata::default();
 
         for word in [
@@ -203,13 +356,40 @@ mod tests {
             wa.add_word(&word);
         }
 
+        wa.compress();
+
+        let v = wa.iter().collect_vec();
+
+        let joined = v.join(", ");
+
+        assert_eq!(
+            joined,
+            "EARTH, NEPTUNE, SATURN, SOME, RANDOM, URANUS, MARS, WORD, PLUTO, VENUS"
+        );
+    }
+
+    #[test]
+    pub fn test_on_grid() {
+        let mut wa = WordAutomata::default();
+
+        for word in [
+            "Earth", "Mars", "Neptune", "Pluto", "Saturn", "Uranus", "Venus", "Some", "Random",
+            "Word",
+        ] {
+            let word = RawWord::from_str(word).unwrap();
+            wa.add_word(&word);
+        }
+        println!("Uncompressed - {} states", wa.slab.len());
+        wa.compress();
+        println!("Compressed - {} states", wa.slab.len());
+
         let grid = try_make_grid("VENMOUAULTRSHPEN").unwrap();
 
         let grid_words = wa.find_all_words(&grid);
 
         let found_words = grid_words
             .iter()
-            .map(|x| x.iter().map(|c| c.as_char().to_ascii_lowercase()).join(""))
+            .map(|x| x.iter().map(|c| c.as_char()).join(""))
             .join(", ");
 
         assert_eq!(
