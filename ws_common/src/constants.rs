@@ -113,7 +113,7 @@ pub const TILE_FONT_PATH: &str = BOLD_FONT;
 
 pub const THEME_FONT_PATH: &str = SEMIBOLD_FONT;
 pub const BUTTONS_FONT_PATH: &str = SEMIBOLD_FONT;
-pub const THEME_INFO_FONT_PATH: &str = REGULAR_FONT;
+pub const THEME_INFO_FONT_PATH: &str = SEMIBOLD_FONT;
 
 pub const TIMER_FONT_PATH: &str = SEMIBOLD_FONT;
 

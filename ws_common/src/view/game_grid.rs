@@ -283,7 +283,7 @@ impl MavericNode for GridTile {
                     tile_size,
                     Vec3::new(0.0, 0.0, crate::z_indices::GRID_TILE),
                     fill,
-                    0.1,
+                    0.0,
                 ),
                 &(),
             );

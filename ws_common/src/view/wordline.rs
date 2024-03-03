@@ -214,9 +214,9 @@ fn index_to_color(index: usize, special_colors: &Option<Vec<BasicColor>>) -> Col
     if let Some(special_colors) = special_colors {
         special_colors[index % special_colors.len()].convert_color()
     } else {
-        let hue = (((index as f32) * 20.0) + 140.0) % 360.0;
+        let hue = (((index as f32) * 20.0) + 134.0) % 360.0;
 
-        Color::hsl(hue, 0.62, 0.44)
+        Color::hsl(hue, 0.57, 0.42)
     }
 }
 

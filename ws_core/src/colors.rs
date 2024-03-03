@@ -112,9 +112,16 @@ pub mod palette {
 
     pub const TOP_BAR_LOGO_SELFIE: Color = MY_WHITE;
 
-    pub const THEME_TEXT_COLOR_INCOMPLETE_NORMAL: Color = MEDIUM_GRAY;
-    pub const THEME_TEXT_COLOR_COMPLETE_NORMAL: Color = MY_BLACK;
-    pub const THEME_TEXT_COLOR_SELFIE: Color = LIGHT_GRAY;
+    pub const THEME_TITLE_COLOR_INCOMPLETE_NORMAL: Color = GREEN_LIGHT;
+    pub const THEME_TITLE_COLOR_COMPLETE_NORMAL: Color = MY_WHITE;
+    pub const THEME_TITLE_COLOR_SELFIE: Color = LIGHT_GRAY;
+
+    pub const THEME_INFO_COLOR_INCOMPLETE_NORMAL: Color = MEDIUM_GRAY;
+    pub const THEME_INFO_COLOR_COMPLETE_NORMAL: Color = MY_WHITE;
+    pub const THEME_INFO_COLOR_SELFIE: Color = LIGHT_GRAY;
+
+    pub const TIMER_COLOR_NORMAL: Color = MEDIUM_GRAY;
+    pub const TIMER_COLOR_SELFIE: Color = LIGHT_GRAY;
 
     pub const CONGRATS_BUTTON_TEXT_NORMAL: Color = MY_WHITE;
     pub const CONGRATS_BUTTON_FILL_NORMAL: Color = GREEN_LIGHT;
@@ -177,20 +184,20 @@ pub mod palette {
     const MY_BLACK: Color = Color::rgba(0.12, 0., 0., 1.);
     const MY_WHITE: Color = Color::rgba(1.0, 1.0, 1.0, 1.);
 
-    //pub const MY_BLUE: Color = Color::rgba(0.17, 0.48, 0.71, 1.0);
-
     const LIGHT_GRAY: Color = Color::rgba(0.90, 0.90, 0.90, 1.);
-    //const DARK_GRAY: Color = Color::rgba(0.4, 0.4, 0.4, 1.);
 
-    const MEDIUM_GRAY: Color = Color::rgba(0.37, 0.4, 0.42, 1.0);
+    const MEDIUM_GRAY: Color = Color::rgba(0.4, 0.42, 0.44, 1.0);
 
-    const GREEN_LIGHT: Color = Color::rgba(0.17, 0.71, 0.35, 1.);
-    pub const GREEN_DARK: Color = Color::rgba(0.07, 0.34, 0.27, 1.);
+    const GREEN_LIGHT: Color = Color::rgba(0.18, 0.66, 0.29, 1.0);
+    pub const GREEN_DARK: Color = Color::rgba(0.16, 0.33, 0.27, 1.);
     const GREEN_OTHER: Color = Color::rgba(0.36, 0.73, 0.28, 1.);
     const GOLD: Color = Color::rgba(1., 0.94, 0.62, 1.);
     #[allow(dead_code)]
     pub const TRANSPARENT: Color = Color::rgba(0., 0., 0., 0.);
 }
+
+
+
 
 #[cfg(test)]
 mod tests {

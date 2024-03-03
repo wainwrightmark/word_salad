@@ -34,11 +34,10 @@ impl MavericNode for ThemeView {
                 },
             );
 
-            let color = match node.background_type {
-                BackgroundType::Congrats => palette::THEME_TEXT_COLOR_COMPLETE_NORMAL,
-                BackgroundType::NonLevel => palette::THEME_TEXT_COLOR_SELFIE,
-                BackgroundType::Selfie => palette::THEME_TEXT_COLOR_COMPLETE_NORMAL,
-                BackgroundType::Normal => palette::THEME_TEXT_COLOR_INCOMPLETE_NORMAL,
+            let title_color = match node.background_type {
+                BackgroundType::Congrats | BackgroundType::NonLevel => palette::THEME_TITLE_COLOR_COMPLETE_NORMAL,
+                BackgroundType::Selfie => palette::THEME_TITLE_COLOR_SELFIE,
+                BackgroundType::Normal => palette::THEME_TITLE_COLOR_INCOMPLETE_NORMAL,
             }
             .convert_color();
 
@@ -47,7 +46,7 @@ impl MavericNode for ThemeView {
                 Text2DNode {
                     text: node.full_name.to_string(),
                     font_size: theme_font_size,
-                    color,
+                    color: title_color,
                     font: THEME_FONT_PATH,
                     justify_text: JustifyText::Left,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -71,12 +70,20 @@ impl MavericNode for ThemeView {
             );
 
             if let Some(info) = node.info {
+
+                let theme_color = match node.background_type {
+                    BackgroundType::Congrats | BackgroundType::NonLevel => palette::THEME_INFO_COLOR_COMPLETE_NORMAL,
+                    BackgroundType::Selfie => palette::THEME_INFO_COLOR_SELFIE,
+                    BackgroundType::Normal => palette::THEME_INFO_COLOR_INCOMPLETE_NORMAL,
+                }
+                .convert_color();
+
                 commands.add_child(
                     "info",
                     Text2DNode {
                         text: info.to_string(),
                         font_size: info_font_size,
-                        color,
+                        color: theme_color,
                         font: THEME_INFO_FONT_PATH,
                         justify_text: JustifyText::Left,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -94,12 +101,20 @@ impl MavericNode for ThemeView {
             }
 
             if !node.is_level_complete {
+
+                let timer_color = match node.background_type {
+                    BackgroundType::Congrats | BackgroundType::NonLevel => palette::TIMER_COLOR_NORMAL,
+                    BackgroundType::Selfie => palette::TIMER_COLOR_SELFIE,
+                    BackgroundType::Normal => palette::TIMER_COLOR_NORMAL,
+                }
+                .convert_color();
+
                 commands.add_child(
                     "timer",
                     Text2DNode {
                         text: "00:00",
                         font_size: info_font_size,
-                        color,
+                        color: timer_color,
                         font: TIMER_FONT_PATH,
                         justify_text: JustifyText::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
