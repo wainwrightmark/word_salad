@@ -369,7 +369,12 @@ impl ButtonInteraction {
             ButtonInteraction::WordSaladMenu(WordSaladMenuLayoutEntity::DaysAgo(x)) => {
                 let index = DailyChallenges::get_today_index();
                 {
-                    change_level_events.send(CurrentLevel::DailyChallenge { index: index.saturating_sub(*x) }.into());
+                    change_level_events.send(
+                        CurrentLevel::DailyChallenge {
+                            index: index.saturating_sub(*x),
+                        }
+                        .into(),
+                    );
                 }
                 menu_state.close();
             }
@@ -443,12 +448,8 @@ impl ButtonInteraction {
                         }
                         NonLevel::AfterCustomLevel => {
                             if let Some(l) = CUSTOM_LEVEL.get() {
-                                change_level_events.send(
-                                    CurrentLevel::Custom {
-                                        name: l.name.to_string(),
-                                    }
-                                    .into(),
-                                );
+                                change_level_events
+                                    .send(CurrentLevel::Custom { name: l.name }.into());
                             }
                         }
                         NonLevel::LevelSequenceMustPurchaseGroup(sequence) => {
@@ -526,16 +527,13 @@ impl ButtonInteraction {
                         NonLevel::DailyChallengeLoading { .. } => {
                             //This button should not exist
                         }
-                        NonLevel::AdBreak(..)=>{}
-                        NonLevel::AdFailed{next_level, since}=>{
-
-                            if since.is_none()
-                            {
+                        NonLevel::AdBreak(..) => {}
+                        NonLevel::AdFailed { next_level, since } => {
+                            if since.is_none() {
                                 let next_level: CurrentLevel = next_level.into();
                                 change_level_events.send(next_level.into());
                             }
                         }
-
                     }
                 }
             }

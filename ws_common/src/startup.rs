@@ -181,7 +181,7 @@ fn choose_level_on_game_load(
                 info!("Loaded custom level from path");
 
                 let custom_level = CurrentLevel::Custom {
-                    name: level.clone().full_name().to_string(),
+                    name: level.clone().full_name(),
                 };
 
                 if let Err(err) = CUSTOM_LEVEL.set(level) {

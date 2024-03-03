@@ -25,7 +25,7 @@ pub enum CurrentLevel {
         index: usize,
     },
     Custom {
-        name: String,
+        name: Ustr,
     },
     NonLevel(NonLevel),
 }

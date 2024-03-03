@@ -8,7 +8,7 @@ use itertools::Itertools;
 use prime_bag::PrimeBagElement;
 use strum::IntoEnumIterator;
 
-use crate::{layout::rect, Character, CharacterMap, CharsArray, Grid, GridSet, WordTrait};
+use crate::{Character, CharacterMap, CharsArray, Grid, GridSet, WordTrait};
 
 pub fn do_complete_solve(
     grid: &Grid,
@@ -109,6 +109,7 @@ impl<'a> Iterator for AutomataIterator<'a> {
     }
 }
 
+#[allow(dead_code)]
 impl WordAutomata {
     pub fn iter<'a>(&'a self) -> AutomataIterator<'a> {
         AutomataIterator {
