@@ -23,15 +23,15 @@ impl LayoutStructure for GameLayoutEntity {
 
     //const ROOT: Self = GameLayoutEntity::Root;
     ///The size on a 320x568 canvas
-    fn size(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
+    fn size(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
         match self {
             GameLayoutEntity::TopBar => Vec2 {
                 x: IDEAL_WIDTH,
-                y: (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, context)),
+                y: (TOP_BAR_HEIGHT),
             },
             GameLayoutEntity::LevelInfo => Vec2 {
                 x: GRID_SIZE,
-                y: THEME_HEIGHT + THEME_INFO_HEIGHT + TIMER_HEIGHT,
+                y: THEME_HEIGHT + THEME_INFO_HEIGHT,
             },
             GameLayoutEntity::Grid => Vec2 {
                 x: GRID_SIZE,
@@ -46,26 +46,24 @@ impl LayoutStructure for GameLayoutEntity {
     }
     fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
         match self {
-            GameLayoutEntity::TopBar => Vec2::ZERO,
+            GameLayoutEntity::TopBar => Vec2 { x: 0.0, y: TOP_BAR_OFFSET },
 
             GameLayoutEntity::LevelInfo => Vec2 {
                 x: LEFT_MARGIN,
-                y: (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, context)),
+                y: TOP_BAR_HEIGHT + TOP_BAR_OFFSET + (extra_top_height(sizing, context) * 0.25),
             },
 
             GameLayoutEntity::Grid => Vec2 {
                 x: LEFT_MARGIN,
-                y: (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, context))
+                y: (TOP_BAR_HEIGHT + TOP_BAR_OFFSET + extra_top_height(sizing, context))
                     + THEME_HEIGHT
                     + THEME_INFO_HEIGHT
-                    + TIMER_HEIGHT
                     + GRID_THEME_SPACER,
             },
             GameLayoutEntity::WordList => {
-                let y = (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, context))
+                let y = (TOP_BAR_HEIGHT + TOP_BAR_OFFSET + extra_top_height(sizing, context))
                     + THEME_HEIGHT
                     + THEME_INFO_HEIGHT
-                    + TIMER_HEIGHT
                     + GRID_SIZE
                     + GRID_THEME_SPACER
                     + GRID_WORD_LIST_SPACER;

@@ -111,8 +111,8 @@ impl LayoutStructure for CongratsLayoutEntity {
                     + CONGRATS_BUTTON_GAP_SELFIE
                     + ((stat_size + CONGRATS_ENTITY_SPACING) * 2.0))
         } else {
-            TOP_BAR_HEIGHT_BASE
-                + extra_top_bar_height(sizing, &context.0)
+            TOP_BAR_HEIGHT + TOP_BAR_OFFSET
+                + extra_top_height(sizing, &context.0)
                 + THEME_HEIGHT
                 + GRID_WORD_LIST_SPACER
                 + GRID_THEME_SPACER

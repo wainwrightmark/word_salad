@@ -184,7 +184,7 @@ pub mod palette {
     const MY_BLACK: Color = Color::rgba(0.12, 0., 0., 1.);
     const MY_WHITE: Color = Color::rgba(1.0, 1.0, 1.0, 1.);
 
-    const LIGHT_GRAY: Color = Color::rgba(0.90, 0.90, 0.90, 1.);
+    const LIGHT_GRAY: Color = Color::rgba(0.98, 0.97, 0.97, 1.);
 
     const MEDIUM_GRAY: Color = Color::rgba(0.4, 0.42, 0.44, 1.0);
 

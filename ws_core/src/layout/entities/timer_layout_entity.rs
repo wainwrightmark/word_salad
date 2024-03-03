@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use glam::Vec2;
 
-use super::{consts::*, SelfieMode};
+use super::{consts::*, GameLayoutEntity, SelfieMode};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct TimerLayoutEntity;
@@ -18,7 +18,7 @@ impl LayoutStructure for TimerLayoutEntity {
     fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
         Vec2 {
             x: (IDEAL_WIDTH - TIMER_WIDTH) * 0.5,
-            y: (extra_top_bar_height(sizing, context) + WORD_SALAD_LOGO_SIZE) / 2.,
+            y: GameLayoutEntity::TopBar.location(context, sizing).y + (WORD_SALAD_LOGO_SIZE / 2.),
         }
     }
 

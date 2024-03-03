@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use glam::Vec2;
 
-use super::{consts::*, SelfieMode};
+use super::{consts::*, GameLayoutEntity, SelfieMode};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct WordSaladLogo;
@@ -19,7 +19,7 @@ impl LayoutStructure for WordSaladLogo {
     fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
         Vec2 {
             x: LEFT_MARGIN,
-            y: extra_top_bar_height(sizing, context) / 2.,
+            y: GameLayoutEntity::TopBar.location(context, sizing).y,
         }
     }
 
