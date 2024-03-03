@@ -4,7 +4,7 @@ use std::time::Duration;
 use strum::EnumIs;
 use ws_core::layout::entities::recording_button::ToggleRecordingButton;
 use ws_core::layout::entities::{
-    CongratsButton, CongratsLayoutEntity, LayoutWordTile, WordSaladLogo,
+    CongratsButton, CongratsLayoutEntity, LayoutWordTile, TimerLayoutEntity, WordSaladLogo
 };
 use ws_levels::level_group::LevelGroup;
 
@@ -264,6 +264,12 @@ impl From<ToggleRecordingButton> for ButtonInteraction {
 impl From<CongratsButton> for ButtonInteraction {
     fn from(val: CongratsButton) -> Self {
         ButtonInteraction::Congrats(val)
+    }
+}
+
+impl From<TimerLayoutEntity> for ButtonInteraction{
+    fn from(_value: TimerLayoutEntity) -> Self {
+        ButtonInteraction::TimerButton
     }
 }
 

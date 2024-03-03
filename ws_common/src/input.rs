@@ -1,15 +1,18 @@
 use crate::{
-    achievements::UserSignedIn, menu_layout::{
+    achievements::UserSignedIn,
+    menu_layout::{
         main_menu_back_button::MainMenuBackButton,
         word_salad_menu_layout::WordSaladMenuLayoutEntity,
-    }, prelude::{
+    },
+    prelude::{
         level_group_layout::LevelGroupLayoutEntity, levels_menu_layout::LevelsMenuLayoutEntity,
         main_menu_layout::MainMenuLayoutEntity, *,
-    }, startup
+    },
+    startup,
 };
 use bevy::{prelude::*, window::PrimaryWindow};
 use strum::EnumIs;
-use ws_core::layout::entities::{level_info_entity::LevelInfoLayoutEntity, recording_button::ToggleRecordingButton, *};
+use ws_core::layout::entities::{recording_button::ToggleRecordingButton, *};
 
 use self::{
     hints_menu_layout::HintsLayoutEntity, settings_menu_layout::SettingsLayoutEntity,
@@ -138,7 +141,19 @@ impl InteractionEntity {
 
                     match layout_entity {
                         GameLayoutEntity::TopBar => {
-                            Self::try_get_button::<WordSaladLogo>(position, size, &selfie_mode)
+                            if let Some(x) =
+                                Self::try_get_button::<WordSaladLogo>(position, size, &selfie_mode)
+                            {
+                                Some(x)
+                            } else if let Some(x) = Self::try_get_button::<TimerLayoutEntity>(
+                                position,
+                                size,
+                                &selfie_mode,
+                            ) {
+                                Some(x)
+                            } else {
+                                None
+                            }
                         }
 
                         GameLayoutEntity::Grid => match grid_tolerance {
@@ -158,23 +173,7 @@ impl InteractionEntity {
                             size,
                             &(level.words.as_slice(), selfie_mode),
                         ),
-                        GameLayoutEntity::LevelInfo => {
-                            if current_level.is_tutorial() {
-                                None
-                            } else {
-                                match size.try_pick::<LevelInfoLayoutEntity>(*position, &selfie_mode)
-                                {
-                                    Some(LevelInfoLayoutEntity::Timer) => Some(InteractionEntity::Button(ButtonInteraction::TimerButton)),
-                                    Some(LevelInfoLayoutEntity::ThemeAndNumber) => None,
-                                    Some(LevelInfoLayoutEntity::ThemeInfo) => None,
-                                    None => None,
-                                }
-
-
-
-
-                            }
-                        }
+                        GameLayoutEntity::LevelInfo => None,
                     }
                 }
                 itertools::Either::Right(..) => {
@@ -327,7 +326,7 @@ impl InputType {
         event_writer: &mut EventWriter<ButtonActivated>,
         timer: &LevelTime,
         time: &Time,
-        user_signed_in: &UserSignedIn
+        user_signed_in: &UserSignedIn,
     ) {
         startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 
@@ -358,7 +357,7 @@ impl InputType {
                     is_level_complete,
                     timer.is_paused(),
                     None,
-                    user_signed_in
+                    user_signed_in,
                 ) {
                     match interaction {
                         InteractionEntity::Button(button) => Some(button),
@@ -390,7 +389,7 @@ impl InputType {
                     is_level_complete,
                     timer.is_paused(),
                     Some(MOVE_TOLERANCE),
-                    user_signed_in
+                    user_signed_in,
                 ) {
                     match interaction {
                         InteractionEntity::Button(button) => Some(button),
@@ -423,7 +422,7 @@ impl InputType {
                     is_level_complete,
                     timer.is_paused(),
                     None,
-                    user_signed_in
+                    user_signed_in,
                 ) {
                     match interaction {
                         InteractionEntity::Button(button) => {
@@ -534,7 +533,7 @@ pub fn handle_mouse_input(
     timer: Res<LevelTime>,
     mut event_writer: EventWriter<ButtonActivated>,
     time: Res<Time>,
-    user_signed_in: Res<UserSignedIn>
+    user_signed_in: Res<UserSignedIn>,
 ) {
     let input_type = if mouse_input.just_released(MouseButton::Left) {
         let position_option = get_cursor_position(q_windows);
@@ -567,7 +566,7 @@ pub fn handle_mouse_input(
         &mut event_writer,
         &timer,
         &time,
-        &user_signed_in
+        &user_signed_in,
     );
 }
 
@@ -588,7 +587,7 @@ pub fn handle_touch_input(
     timer: Res<LevelTime>,
     mut event_writer: EventWriter<ButtonActivated>,
     time: Res<Time>,
-    user_signed_in: Res<UserSignedIn>
+    user_signed_in: Res<UserSignedIn>,
 ) {
     for ev in touch_events.read() {
         let input_type: InputType = match ev.phase {
@@ -625,7 +624,7 @@ pub fn handle_touch_input(
             &mut event_writer,
             &timer,
             &time,
-            &user_signed_in
+            &user_signed_in,
         );
     }
 }

@@ -49,12 +49,12 @@ impl LayoutStructure for GameLayoutEntity {
             GameLayoutEntity::TopBar => Vec2::ZERO,
 
             GameLayoutEntity::LevelInfo => Vec2 {
-                x: (IDEAL_WIDTH - GRID_SIZE) * 0.5,
+                x: LEFT_MARGIN,
                 y: (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, context)),
             },
 
             GameLayoutEntity::Grid => Vec2 {
-                x: (IDEAL_WIDTH - GRID_SIZE) * 0.5,
+                x: LEFT_MARGIN,
                 y: (TOP_BAR_HEIGHT_BASE + extra_top_bar_height(sizing, context))
                     + THEME_HEIGHT
                     + THEME_INFO_HEIGHT
@@ -71,7 +71,7 @@ impl LayoutStructure for GameLayoutEntity {
                     + GRID_WORD_LIST_SPACER;
 
                 Vec2 {
-                    x: (IDEAL_WIDTH - GRID_SIZE) / 2.,
+                    x: LEFT_MARGIN,
                     y,
                 }
             }

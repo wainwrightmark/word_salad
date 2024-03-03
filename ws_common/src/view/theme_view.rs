@@ -2,7 +2,7 @@ use crate::prelude::*;
 use maveric::widgets::text2d_node::Text2DNode;
 use maveric::with_bundle::CanWithBundle;
 use ws_core::layout::entities::level_info_entity::{LevelInfoLayoutEntity, ThemeLengths};
-use ws_core::layout::entities::SelfieMode;
+use ws_core::layout::entities::{SelfieMode, TimerLayoutEntity};
 use ws_core::prelude::*;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -49,15 +49,15 @@ impl MavericNode for ThemeView {
                     font_size: theme_font_size,
                     color,
                     font: THEME_FONT_PATH,
-                    justify_text: JustifyText::Center,
+                    justify_text: JustifyText::Left,
                     linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                     text_2d_bounds: Default::default(),
-                    text_anchor: bevy::sprite::Anchor::Center,
+                    text_anchor: bevy::sprite::Anchor::CenterLeft,
                 }
                 .with_bundle(Transform::from_translation(
                     context
                         .get_rect(&LevelInfoLayoutEntity::ThemeAndNumber, &node.selfie_mode)
-                        .centre()
+                        .centre_left()
                         .extend(crate::z_indices::THEME),
                 )),
                 &(),
@@ -78,15 +78,15 @@ impl MavericNode for ThemeView {
                         font_size: info_font_size,
                         color,
                         font: THEME_INFO_FONT_PATH,
-                        justify_text: JustifyText::Center,
+                        justify_text: JustifyText::Left,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         text_2d_bounds: Default::default(),
-                        text_anchor: bevy::sprite::Anchor::Center,
+                        text_anchor: bevy::sprite::Anchor::CenterLeft,
                     }
                     .with_bundle((Transform::from_translation(
                         context
                             .get_rect(&LevelInfoLayoutEntity::ThemeInfo, &node.selfie_mode)
-                            .centre()
+                            .centre_left()
                             .extend(crate::z_indices::THEME),
                     ),)),
                     &(),
@@ -100,7 +100,7 @@ impl MavericNode for ThemeView {
                         text: "00:00",
                         font_size: info_font_size,
                         color,
-                        font: THEME_INFO_FONT_PATH,
+                        font: TIMER_FONT_PATH,
                         justify_text: JustifyText::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                         text_2d_bounds: Default::default(),
@@ -109,8 +109,8 @@ impl MavericNode for ThemeView {
                     .with_bundle((
                         Transform::from_translation(
                             context
-                                .get_rect(&LevelInfoLayoutEntity::Timer, &node.selfie_mode)
-                                .centre()
+                                .get_rect(&TimerLayoutEntity, &node.selfie_mode)
+                                .top_centre()
                                 .extend(crate::z_indices::THEME),
                         ),
                         TimeCounterMarker,

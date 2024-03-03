@@ -105,23 +105,26 @@ pub const DEFAULT_WINDOW_HEIGHT: f32 = 800f32;
 
 pub const TILE_MULTIPLIER: f32 = 0.9;
 
-pub const TILE_FONT_PATH: &str = "embedded://ws_common/../../assets/fonts/Montserrat-Bold.ttf";
+pub const BOLD_FONT: &str = "embedded://ws_common/../../assets/fonts/Montserrat-Bold.ttf";
+pub const SEMIBOLD_FONT: &str = "embedded://ws_common/../../assets/fonts/Montserrat-SemiBold.ttf";
+pub const REGULAR_FONT: &str = "embedded://ws_common/../../assets/fonts/Montserrat-Regular.ttf";
 
-pub const THEME_FONT_PATH: &str = "embedded://ws_common/../../assets/fonts/Montserrat-SemiBold.ttf";
-pub const BUTTONS_FONT_PATH: &str =
-    "embedded://ws_common/../../assets/fonts/Montserrat-SemiBold.ttf";
-pub const THEME_INFO_FONT_PATH: &str =
-    "embedded://ws_common/../../assets/fonts/Montserrat-Regular.ttf";
-pub const TIMER_FONT_PATH: &str = "embedded://ws_common/../../assets/fonts/Montserrat-Regular.ttf";
-pub const TUTORIAL_FONT_PATH: &str =
-    "embedded://ws_common/../../assets/fonts/Montserrat-Regular.ttf";
-pub const POPUP_FONT_PATH: &str = "embedded://ws_common/../../assets/fonts/Montserrat-Regular.ttf";
+pub const TILE_FONT_PATH: &str = BOLD_FONT;
 
-pub const SOLUTIONS_FONT_PATH: &str =
-    "embedded://ws_common/../../assets/fonts/Montserrat-SemiBold.ttf";
+pub const THEME_FONT_PATH: &str = SEMIBOLD_FONT;
+pub const BUTTONS_FONT_PATH: &str = SEMIBOLD_FONT;
+pub const THEME_INFO_FONT_PATH: &str = REGULAR_FONT;
+
+pub const TIMER_FONT_PATH: &str = SEMIBOLD_FONT;
+
+pub const TUTORIAL_FONT_PATH: &str = REGULAR_FONT;
+pub const POPUP_FONT_PATH: &str = REGULAR_FONT;
+
+pub const SOLUTIONS_FONT_PATH: &str = SEMIBOLD_FONT;
+
+pub const WORD_SALAD_LOGO_FONT_PATH: &str = BOLD_FONT;
+
 pub const ICON_FONT_PATH: &str = "embedded://ws_common/../../assets/fonts/ws_icons.ttf";
-pub const WORD_SALAD_LOGO_FONT_PATH: &str =
-    "embedded://ws_common/../../assets/fonts/Montserrat-Bold.ttf";
 
 pub const ICON_BUTTON_SIZE: f32 = 40f32; //40 pixels
 pub const TOOLBAR_SIZE: f32 = 40f32; //40 pixels

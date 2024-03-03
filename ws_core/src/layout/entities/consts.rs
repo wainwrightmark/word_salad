@@ -7,6 +7,7 @@ pub const IDEAL_HEIGHT: f32 = 568.;
 pub const IDEAL_RATIO: f32 = IDEAL_WIDTH as f32 / IDEAL_HEIGHT as f32;
 
 pub const TOP_BAR_HEIGHT_BASE: f32 = 60.;
+pub const WORD_SALAD_LOGO_SIZE: f32 = 40.;
 pub const RECORDING_BUTTON_MIN_SIZE: f32 = 25.0;
 pub const RECORDING_BUTTON_MAX_SIZE: f32 = 50.0;
 //pub const WORD_SALAD_LOGO_WIDTH: f32 = 160.;
@@ -20,6 +21,8 @@ pub const TIMER_WIDTH: f32 = 60.;
 pub const GRID_TILE_SIZE: f32 = 64.;
 pub const GRID_GAP: f32 = 12.;
 pub const GRID_SIZE: f32 = (GRID_TILE_SIZE * 4.0) + GRID_GAP;
+
+pub const LEFT_MARGIN: f32 = (IDEAL_WIDTH - GRID_SIZE) * 0.5;
 
 pub const GRID_WORD_LIST_SPACER: f32 = GRID_TILE_SIZE * 0.5;
 pub const GRID_THEME_SPACER: f32 = GRID_TILE_SIZE * 0.5;

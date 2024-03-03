@@ -10,11 +10,7 @@ use super::{consts::*, GameLayoutEntity, SelfieMode};
 pub enum LevelInfoLayoutEntity {
     ThemeAndNumber,
     ThemeInfo,
-    Timer,
 }
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct IsDailyChallenge(bool);
 
 impl LayoutStructure for LevelInfoLayoutEntity {
     type Context<'a> = SelfieMode;
@@ -33,10 +29,6 @@ impl LayoutStructure for LevelInfoLayoutEntity {
                 x: GRID_SIZE,
                 y: THEME_INFO_HEIGHT,
             },
-            LevelInfoLayoutEntity::Timer => Vec2 {
-                x: TIMER_WIDTH,
-                y: THEME_INFO_HEIGHT,
-            },
         }
     }
     fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
@@ -52,11 +44,6 @@ impl LayoutStructure for LevelInfoLayoutEntity {
             LevelInfoLayoutEntity::ThemeInfo => Vec2 {
                 x: base_location.x,
                 y: base_location.y + THEME_HEIGHT,
-            },
-
-            LevelInfoLayoutEntity::Timer => Vec2 {
-                x: (IDEAL_WIDTH - TIMER_WIDTH) * 0.5,
-                y: base_location.y + THEME_HEIGHT + THEME_INFO_HEIGHT,
             },
         }
     }
@@ -79,7 +66,7 @@ impl LayoutStructureWithFont for LevelInfoLayoutEntity {
                     THEME_FONT_SIZE_SMALL
                 }
             }
-            LevelInfoLayoutEntity::ThemeInfo | LevelInfoLayoutEntity::Timer => THEME_INFO_FONT_SIZE,
+            LevelInfoLayoutEntity::ThemeInfo => THEME_INFO_FONT_SIZE,
         }
     }
 }
