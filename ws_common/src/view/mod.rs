@@ -91,25 +91,27 @@ impl MavericRootChildren for ViewRoot {
                     commands.add_child("congrats", CongratsView, &context.into());
                 } else {
                     commands.add_child("words", WordsNode, &context.into());
+
+                    if !context.level_time.is_paused() {
+                        let close_to_solution = context
+                            .chosen_state
+                            .is_close_to_a_solution(level, context.found_words_state.as_ref());
+
+                        commands.add_child(
+                            "word_line",
+                            WordLine {
+                                solution: context.chosen_state.solution.clone(),
+                                should_hide: context.chosen_state.is_just_finished,
+                                close_to_solution,
+                                selfie_mode,
+                                special_colors: level.special_colors.clone(),
+                            },
+                            &context.window_size,
+                        );
+                    }
                 }
 
-                if !context.level_time.is_paused() {
-                    let close_to_solution = context
-                        .chosen_state
-                        .is_close_to_a_solution(level, context.found_words_state.as_ref());
 
-                    commands.add_child(
-                        "word_line",
-                        WordLine {
-                            solution: context.chosen_state.solution.clone(),
-                            should_hide: context.chosen_state.is_just_finished,
-                            close_to_solution,
-                            selfie_mode,
-                            special_colors: level.special_colors.clone(),
-                        },
-                        &context.window_size,
-                    );
-                }
 
                 if let Some(text) =
                     TutorialText::try_create(&context.current_level, &context.found_words_state)

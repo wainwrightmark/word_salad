@@ -8,7 +8,7 @@ use std::time::Duration;
 use strum::IntoEnumIterator;
 use ws_core::{layout::entities::*, palette::BUTTON_CLICK_FILL};
 
-pub const TRANSITION_WAIT_SECS: f32 = 1.0;
+pub const TRANSITION_WAIT_SECS: f32 = 4.0;
 pub const TRANSITION_SECS: f32 = 1.0;
 #[derive(Debug, Clone, PartialEq)]
 pub struct CongratsView;
@@ -137,17 +137,16 @@ impl MavericNode for CongratsView {
                     CurrentLevel::NonLevel(_) => Data::None,
                 };
 
-                let initial_scale = if context.found_words_state.is_changed() {
-                    Vec3::ZERO
-                } else {
+                let initial_scale = if context.current_level.is_changed() {
                     Vec3::ONE
+                } else {
+                    Vec3::ZERO
                 };
+
                 let transition = TransitionBuilder::default()
-                    .then_wait(Duration::from_secs_f32(
-                        TRANSITION_WAIT_SECS + TRANSITION_SECS,
-                    ))
-                    .then_set_value(Vec3::ONE)
-                    //.then_ease(Vec3::ONE, (1.0 / TRANSITION_SECS).into(), Ease::CubicOut)
+                    .then_wait(Duration::from_secs_f32(TRANSITION_WAIT_SECS))
+                    //.then_set_value(Vec3::ONE)
+                    .then_ease(Vec3::ONE, (1.0 / TRANSITION_SECS).into(), Ease::CubicOut)
                     .build();
 
                 let stat_text_color = if selfie_mode.is_selfie_mode {

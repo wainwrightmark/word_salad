@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::prelude::*;
 use bevy::text::Text2dBounds;
 use bevy_param_shaders::ShaderBundle;
@@ -118,27 +120,129 @@ impl MavericNode for GridTiles {
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.ordered_children_with_node_and_context(|node, context, commands| {
-            if node.is_level_complete {
-                return;
-            }
-            let solution = context.chosen_state.current_solution();
-
             let Either::Left(level) = context.current_level.level(&context.daily_challenges) else {
                 return;
             };
+
+            let selfie_mode = context.video_resource.selfie_mode();
+            let size = context.window_size.as_ref();
+            let tile_size = size.tile_size(&selfie_mode);
+            let font_size = size.font_size::<LayoutGridTile>(&LayoutGridTile::default(), &());
+
+            if node.is_level_complete {
+                if context.chosen_state.is_just_finished && context.found_words_state.is_changed() {
+                    let sol_count = context.chosen_state.solution.len();
+
+                    let target_scale = match sol_count {
+                        ..=4 => 1.0,
+                        5.. => 4.0 / (sol_count as f32),
+                    };
+
+                    for (index, tile) in context.chosen_state.solution.iter().cloned().enumerate() {
+                        let initial_centre = size
+                            .get_rect(&LayoutGridTile(tile), &selfie_mode)
+                            .centre()
+                            .extend(crate::z_indices::GRID_TILE);
+                        let character = level.grid[tile];
+                        let target_centre = size
+                            .get_rect(&LayoutAnimatedTile { index }, &(selfie_mode, sol_count))
+                            .centre()
+                            .extend(crate::z_indices::GRID_TILE);
+
+                        let scale_transition: Transition<TransformScaleLens> = {
+                            let target_scale1 = Vec3 {
+                                x: target_scale,
+                                y: target_scale,
+                                z: 1.0,
+                            };
+
+                            let speed2 = maveric::transition::speed::calculate_speed(
+                                &target_scale1,
+                                &Vec3::ZERO,
+                                Duration::from_secs_f32(congrats::TRANSITION_SECS),
+                            );
+
+                            if target_scale == 1.0 {
+                                let transition = TransitionBuilder::default()
+                                    .then_wait(Duration::from_secs_f32(
+                                        congrats::TRANSITION_WAIT_SECS,
+                                    ))
+                                    .then_tween(Vec3::ZERO, speed2);
+
+                                transition.build()
+                            } else {
+                                let speed1 = maveric::transition::speed::calculate_speed(
+                                    &Vec3::ONE,
+                                    &target_scale1,
+                                    Duration::from_secs_f32(congrats::TRANSITION_WAIT_SECS * 0.25),
+                                );
+
+                                let transition = TransitionBuilder::default()
+                                    .then_set_value(target_scale1)
+                                    .then_ease(target_scale1, speed1, Ease::CubicOut)
+                                    .then_wait(Duration::from_secs_f32(
+                                        congrats::TRANSITION_WAIT_SECS * 0.75,
+                                    ))
+                                    .then_ease(Vec3::ZERO, speed2, Ease::CubicOut);
+
+                                transition.build()
+                            }
+                        };
+
+                        let transform_transition: Transition<TransformTranslationLens> = {
+                            let speed1 = maveric::transition::speed::calculate_speed(
+                                &initial_centre,
+                                &target_centre,
+                                Duration::from_secs_f32(congrats::TRANSITION_WAIT_SECS * 0.25),
+                            );
+
+                            let transition = TransitionBuilder::default()
+                                .then_set_value(initial_centre)
+                                .then_ease(target_centre, speed1, Ease::CubicInOut);
+
+                            transition.build()
+                        };
+
+                        commands.add_child(
+                            tile.inner() as u32,
+                            GridTile {
+                                tile,
+                                character,
+                                selectability: Selectability::Selectable,
+                                tile_size,
+                                font_size,
+
+                                hint_status: HintStatus::Unknown,
+                                timer_paused: !node.pause_type.is_not_paused(),
+                                is_selfie_mode: context.video_resource.is_selfie_mode,
+                            }
+                            .with_bundle(Transform::from_translation(initial_centre))
+                            .with_transition::<TransformTranslationLens, ()>(
+                                initial_centre,
+                                transform_transition,
+                                (),
+                            )
+                            .with_transition::<TransformScaleLens, ()>(
+                                Vec3::ONE,
+                                scale_transition,
+                                (),
+                            ),
+                            &(),
+                        );
+                    }
+                }
+
+                return;
+            }
+
+            let solution = context.chosen_state.current_solution();
             let inadvisable_tiles: GridSet = context
                 .found_words_state
                 .calculate_inadvisable_tiles(solution, level);
 
             let hint_set = &context.found_words_state.manual_hint_set(level, solution); //TODO this should reveal if a tile is previously hinted
 
-            let selfie_mode = context.video_resource.selfie_mode();
-
             let inadvisable_tiles = inadvisable_tiles.intersect(&hint_set.negate());
-
-            let size = context.window_size.as_ref();
-            let tile_size = size.tile_size(&selfie_mode);
-            let font_size = size.font_size::<LayoutGridTile>(&LayoutGridTile::default(), &());
 
             for (tile, character) in level.grid.enumerate() {
                 if character.is_blank() {
@@ -340,8 +444,6 @@ impl MavericNode for GridTile {
                 }
             });
         }
-
-        //info!("Grid Tile on deleted {found_children:?} children found");
 
         DeletionPolicy::Linger(std::time::Duration::from_secs_f32(TILE_LINGER_SECONDS))
     }

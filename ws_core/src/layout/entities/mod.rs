@@ -10,6 +10,7 @@ pub mod non_level_layout_entity;
 pub mod recording_button;
 pub mod word_salad_logo;
 pub mod timer_layout_entity;
+pub mod layout_animated_tile;
 
 pub use congrats_layout_entity::*;
 pub use consts::*;
@@ -20,4 +21,5 @@ pub use layout_word_tile::*;
 pub use menu_buttons_layout::*;
 pub use non_level_layout_entity::*;
 pub use word_salad_logo::*;
+pub use layout_animated_tile::*;
 pub use timer_layout_entity::*;
