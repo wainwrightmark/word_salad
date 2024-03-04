@@ -228,6 +228,7 @@ impl Plugin for EmbeddedAssetPlugin {
         embedded_asset!(app, "", "../../assets/fonts/ws_icons.ttf");
 
         embedded_asset!(app, "", "../../assets/images/logo1024.png");
+        embedded_asset!(app, "", "../../assets/images/logo_white1024.png");
         embedded_asset!(app, "", "../../assets/images/steks_button.png");
 
         embedded_asset!(app, "", "../../assets/shaders/fill/fill_with_outline.wgsl");

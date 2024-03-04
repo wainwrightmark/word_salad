@@ -6,7 +6,9 @@ pub struct LogoContext {
     pub window_size: MyWindowSize,
     pub video_resource: VideoResource,
     pub pressed_button: PressedButton,
-    pub insets_resource: InsetsResource
+    pub insets_resource: InsetsResource,
+    pub current_level: CurrentLevel,
+    pub found_words_state: FoundWordsState,
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, MavericRoot)]
@@ -19,6 +21,12 @@ impl MavericRootChildren for WordSaladLogoRoot {
         context: &<Self::Context as NodeContext>::Wrapper<'_>,
         commands: &mut impl ChildCommands,
     ) {
+        let background_type = background_type_from_resources(
+            &context.video_resource,
+            &context.current_level,
+            &context.found_words_state,
+        );
+
         let size = &context.window_size;
 
         let logo_rect = size.get_rect(&WordSaladLogo, &(context.video_resource.selfie_mode(), context.insets_resource.0));
@@ -31,18 +39,31 @@ impl MavericRootChildren for WordSaladLogoRoot {
             _ => 1.0,
         };
 
+        const LOGO_WHITE_PATH : &str = r#"embedded://ws_common/../../assets/images/logo_white1024.png"#;
+        const LOGO_NORMAL_PATH : &str = r#"embedded://ws_common/../../assets/images/logo1024.png"#;
+
+        let texture_path = match background_type{
+            BackgroundType::Congrats => LOGO_WHITE_PATH,
+            BackgroundType::NonLevel => LOGO_WHITE_PATH,
+            BackgroundType::Selfie => LOGO_NORMAL_PATH,
+            BackgroundType::Normal => LOGO_NORMAL_PATH,
+        };
+
         commands.add_child(
             "Word Salad Icon",
             SpriteNode {
-                texture_path: r#"embedded://ws_common/../../assets/images/logo1024.png"#,
+                texture_path,
                 sprite: Sprite {
                     custom_size: Some(logo_rect.extents.abs() * pressed_multiplier),
+                    //color: Color::BLACK,
                     ..Default::default()
                 },
             }
             .with_bundle((Transform::from_translation(
                 logo_rect.centre().extend(crate::z_indices::TOP_BAR_BUTTON),
-            ),)),
+            ),))
+
+            ,
             &(),
         );
     }
