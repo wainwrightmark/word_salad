@@ -18,6 +18,8 @@ impl Plugin for WasmPlugin {
             resizer.run_if(|e: EventReader<WebWindowResizedEvent>| !e.is_empty()),
         );
         app.add_systems(Startup, register_on_window_resized);
+        app.add_systems(PostStartup, update_insets);
+
 
         app.register_async_event::<WebWindowResizedEvent>();
     }
@@ -386,4 +388,43 @@ impl TryFrom<JsValue> for JsException {
             Err(())
         }
     }
+}
+
+
+fn update_insets(mut insets: ResMut<InsetsResource>) {
+    if let Some(new_insets) = get_insets() {
+        debug!("{:?}", new_insets.clone());
+        insets.0 = new_insets;
+    }
+}
+
+fn get_insets() -> Option<Insets> {
+    let window = web_sys::window()?;
+    let document = window.document()?.document_element()?;
+    let style = window.get_computed_style(&document).ok()??;
+
+
+    let top = style
+        .get_property_value("--sat")
+        .ok()
+        .and_then(|x| x.trim_end_matches("px").parse::<f32>().ok())
+        .unwrap_or_default();
+    let left = style
+        .get_property_value("--sal")
+        .ok()
+        .and_then(|x| x.trim_end_matches("px").parse::<f32>().ok())
+        .unwrap_or_default();
+    let right = style
+        .get_property_value("--sar")
+        .ok()
+        .and_then(|x| x.trim_end_matches("px").parse::<f32>().ok())
+        .unwrap_or_default();
+    let bottom = style
+        .get_property_value("--sab")
+        .ok()
+        .and_then(|x| x.trim_end_matches("px").parse::<f32>().ok())
+        .unwrap_or_default();
+
+    let insets = Insets::new(top,left,right,bottom);
+    Some(insets)
 }

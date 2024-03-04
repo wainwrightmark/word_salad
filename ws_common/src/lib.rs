@@ -14,6 +14,7 @@ pub mod current_level;
 pub mod grid_input;
 pub mod haptics;
 pub mod input;
+pub mod insets_resource;
 pub mod level_time;
 pub mod logging;
 pub mod menu_layout;
@@ -51,10 +52,10 @@ pub mod prelude {
     pub use crate::daily_challenge::*;
     pub use crate::grid_input::*;
     pub use crate::haptics::*;
+    pub use crate::insets_resource::*;
     pub use crate::level_time::*;
     pub use crate::logging::*;
     pub use crate::menu_layout::*;
-
     pub use crate::platform_specific::*;
     pub use crate::purchase_common::*;
     pub use crate::shapes::*;

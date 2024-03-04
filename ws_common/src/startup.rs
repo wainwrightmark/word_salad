@@ -59,6 +59,8 @@ pub fn setup_app(extra_setup: impl FnOnce(&mut App)) {
 
     app.add_plugins(ClearColorPlugin);
 
+    app.insert_resource(InsetsResource::default());
+
     app.add_plugins(WordlinePlugin);
     app.init_resource::<RedrawMarker>();
     app.register_maveric::<ViewRoot>();

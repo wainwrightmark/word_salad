@@ -11,6 +11,7 @@ pub mod level_type;
 pub mod word;
 pub mod word_trait;
 pub mod complete_solve;
+pub mod insets;
 pub use crate::prelude::*;
 
 
@@ -25,6 +26,7 @@ pub mod prelude {
     pub use crate::level_trait::*;
     pub use crate::word::*;
     pub use crate::word_trait::*;
+    pub use crate::insets::*;
 
     pub use arrayvec::ArrayVec;
     pub use geometrid::prelude::HasCenter;
