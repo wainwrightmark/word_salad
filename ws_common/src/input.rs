@@ -65,9 +65,11 @@ impl InteractionEntity {
         is_game_paused: bool,
         grid_tolerance: Option<f32>,
         user_signed_in: &UserSignedIn,
-        insets: Insets
+        insets: Insets,
     ) -> Option<Self> {
-        let selfie_mode = &video_resource.selfie_mode();
+        let selfie_mode = SelfieMode {
+            is_selfie_mode: video_resource.is_selfie_mode,
+        };
         //info!("Try find input");
         if let Some(popup_type) = popup_state.0 {
             match popup_type {
@@ -100,18 +102,14 @@ impl InteractionEntity {
             }
         }
 
-        let tbi = Self::try_get_button::<WordSaladLogo>(position, size, &(*selfie_mode, insets));
+        let tbi = Self::try_get_button::<WordSaladLogo>(position, size, &(selfie_mode, insets));
         if tbi.is_some() {
             return tbi;
         }
 
-        let selfie_mode = SelfieMode {
-            is_selfie_mode: video_resource.is_selfie_mode,
-        };
-
         if video_resource.show_recording_button()
             && size
-                .try_pick::<ToggleRecordingButton>(*position, &selfie_mode)
+                .try_pick::<ToggleRecordingButton>(*position, &(selfie_mode, insets))
                 .is_some()
         {
             return Some(InteractionEntity::Button(
@@ -142,9 +140,11 @@ impl InteractionEntity {
 
                     match layout_entity {
                         GameLayoutEntity::TopBar => {
-                            if let Some(x) =
-                                Self::try_get_button::<WordSaladLogo>(position, size, &(selfie_mode, insets))
-                            {
+                            if let Some(x) = Self::try_get_button::<WordSaladLogo>(
+                                position,
+                                size,
+                                &(selfie_mode, insets),
+                            ) {
                                 Some(x)
                             } else if let Some(x) = Self::try_get_button::<TimerLayoutEntity>(
                                 position,
@@ -328,7 +328,7 @@ impl InputType {
         timer: &LevelTime,
         time: &Time,
         user_signed_in: &UserSignedIn,
-        insets: &InsetsResource
+        insets: &InsetsResource,
     ) {
         startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 
@@ -360,7 +360,7 @@ impl InputType {
                     timer.is_paused(),
                     None,
                     user_signed_in,
-                    insets.0
+                    insets.0,
                 ) {
                     match interaction {
                         InteractionEntity::Button(button) => Some(button),
@@ -393,7 +393,7 @@ impl InputType {
                     timer.is_paused(),
                     Some(MOVE_TOLERANCE),
                     user_signed_in,
-                    insets.0
+                    insets.0,
                 ) {
                     match interaction {
                         InteractionEntity::Button(button) => Some(button),
@@ -427,7 +427,7 @@ impl InputType {
                     timer.is_paused(),
                     None,
                     user_signed_in,
-                    insets.0
+                    insets.0,
                 ) {
                     match interaction {
                         InteractionEntity::Button(button) => {
@@ -537,9 +537,7 @@ pub fn handle_mouse_input(
     daily_challenges: Res<DailyChallenges>,
     timer: Res<LevelTime>,
     mut event_writer: EventWriter<ButtonActivated>,
-    extras: (Res<Time>,
-        Res<UserSignedIn>,
-        Res<InsetsResource>)
+    extras: (Res<Time>, Res<UserSignedIn>, Res<InsetsResource>),
 ) {
     let (time, user_signed_in, insets) = extras;
 
@@ -575,7 +573,7 @@ pub fn handle_mouse_input(
         &timer,
         &time,
         &user_signed_in,
-        &insets
+        &insets,
     );
 }
 
@@ -595,9 +593,7 @@ pub fn handle_touch_input(
     daily_challenges: Res<DailyChallenges>,
     timer: Res<LevelTime>,
     mut event_writer: EventWriter<ButtonActivated>,
-    extras: (Res<Time>,
-    Res<UserSignedIn>,
-    Res<InsetsResource>)
+    extras: (Res<Time>, Res<UserSignedIn>, Res<InsetsResource>),
 ) {
     let (time, user_signed_in, insets) = extras;
 
@@ -637,7 +633,7 @@ pub fn handle_touch_input(
             &timer,
             &time,
             &user_signed_in,
-            &insets
+            &insets,
         );
     }
 }

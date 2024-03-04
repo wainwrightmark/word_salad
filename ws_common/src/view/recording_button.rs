@@ -7,6 +7,7 @@ pub struct RecordingButtonContext {
     pub window_size: MyWindowSize,
     pub video_resource: VideoResource,
     pub pressed_button: PressedButton,
+    pub insets: InsetsResource
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, MavericRoot)]
@@ -27,7 +28,7 @@ impl MavericRootChildren for RecordingButtonRoot {
 
         let rect = size.get_rect(
             &ToggleRecordingButton,
-            &context.video_resource.selfie_mode(),
+            &(context.video_resource.selfie_mode(), context.insets.0),
         );
 
         let pressed_multiplier = match context.pressed_button.as_ref() {

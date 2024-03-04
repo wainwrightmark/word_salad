@@ -10,8 +10,8 @@ pub const TOP_BAR_OFFSET: f32 = 30.;
 pub const TOP_BAR_HEIGHT: f32 = 40.;
 pub const WORD_SALAD_LOGO_SIZE: f32 = 30.;
 pub const TIMER_HEIGHT: f32 = 20.;
-pub const RECORDING_BUTTON_MIN_SIZE: f32 = 25.0;
-pub const RECORDING_BUTTON_MAX_SIZE: f32 = 50.0;
+pub const RECORDING_BUTTON_MIN_SIZE: f32 = 15.0;
+pub const RECORDING_BUTTON_MAX_SIZE: f32 = 30.0;
 //pub const WORD_SALAD_LOGO_WIDTH: f32 = 160.;
 
 pub const THEME_HEIGHT: f32 = 24.;
