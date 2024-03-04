@@ -13,6 +13,7 @@ pub fn make_finder_group_vec_from_file(text: &str) -> Vec<FinderGroup> {
     let result = text
         .lines()
         .filter(|x| !x.is_empty())
+        .filter(|x| !x.starts_with("-"))
         //.flat_map(|x| x.split(','))
         .flat_map(|s| match FinderGroup::from_str(s) {
             Ok(word) => Some(word),
@@ -26,12 +27,43 @@ pub fn make_finder_group_vec_from_file(text: &str) -> Vec<FinderGroup> {
         .dedup()
         .collect_vec();
     errors.sort();
-    for (error, words) in errors
+    for (error, error_words) in errors
         .into_iter()
         .group_by(|(err, _)| err.to_string())
         .into_iter()
     {
-        let words = words.map(|(_, word)| word).join(", ");
+        let words = error_words.map(|(_, word)| word).join(", ");
+        log::warn!("{error}: {words}")
+    }
+
+    result
+}
+
+pub fn take_bad_words_from_file(text: &str) -> Vec<FinderSingleWord> {
+    let mut errors: Vec<(&str, &str)> = vec![];
+    let result = text
+        .lines()
+        .filter(|x| !x.is_empty())
+        .filter(|x| x.starts_with("-"))
+        //.flat_map(|x| x.split(','))
+        .flat_map(|s| match FinderSingleWord::from_str(s) {
+            Ok(word) => Some(word),
+            Err(err) => {
+                errors.push((err, s));
+                //log::warn!("Word '{s}' is invalid: {err}");
+                None
+            }
+        })
+        .sorted_by_key(|x| x.counts)
+        .dedup()
+        .collect_vec();
+
+    for (error, error_words) in errors
+        .into_iter()
+        .group_by(|(err, _)| err.to_string())
+        .into_iter()
+    {
+        let words = error_words.map(|(_, word)| word).join(", ");
         log::warn!("{error}: {words}")
     }
 

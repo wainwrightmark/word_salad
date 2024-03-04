@@ -20,9 +20,17 @@ use std::{
     path::{Path, PathBuf},
     str::FromStr,
 };
-use ws_core::{complete_solve, finder::{
-    cluster::Cluster, falling_probability, helpers::*, node::GridResult, orientation::{self, *}
-}, try_make_grid};
+use ws_core::{
+    complete_solve,
+    finder::{
+        cluster::Cluster,
+        falling_probability,
+        helpers::*,
+        node::GridResult,
+        orientation::{self, *},
+    },
+    try_make_grid,
+};
 
 use crate::clustering::cluster_words;
 
@@ -54,9 +62,9 @@ pub enum Commands {
     /// Remove duplicate grids
     RemoveDuplicates {},
 
-    CheckWords{
-        grid: String
-    }
+    CheckWords {
+        grid: String,
+    },
 }
 
 #[derive(Args, Debug)]
@@ -77,8 +85,8 @@ pub struct ClusterArgs {
     pub grids: u32,
 
     /// All grids should have at least this cumulative falling probability
-    #[arg( long, default_value = "0.0")]
-    pub min_falling: f32
+    #[arg(long, default_value = "0.0")]
+    pub min_falling: f32,
 }
 
 #[derive(Args, Debug)]
@@ -140,7 +148,7 @@ fn main() {
         Some(Commands::RemoveDuplicates {}) => {
             remove_duplicate_grids(&options);
         }
-        Some(Commands::CheckWords { grid })=>{
+        Some(Commands::CheckWords { grid }) => {
             check_words(grid);
         }
         None => do_finder(FindGridsArgs::default()),
@@ -341,7 +349,11 @@ fn cluster_files(options: &ClusterArgs) {
             .lines()
             .map(|l| GridResult::from_str(l).unwrap())
             .filter(|x| x.words.len() >= options.minimum_words as usize)
-            .filter(|x| options.min_falling == 0.0 || falling_probability::calculate_cumulative_falling_probability_2(x) >= options.min_falling)
+            .filter(|x| {
+                options.min_falling == 0.0
+                    || falling_probability::calculate_cumulative_falling_probability_2(x)
+                        >= options.min_falling
+            })
             .filter(|grid| {
                 if let Some(..) = orientation::find_taboo_word(&grid.grid) {
                     taboo_grids += 1;
@@ -423,6 +435,7 @@ struct FinderCase {
     file_name: String,
     write_path: String,
     stem: String,
+    bad_words: Vec<FinderSingleWord>,
 }
 
 impl FinderCase {
@@ -436,6 +449,8 @@ impl FinderCase {
 
         let word_map = make_finder_group_vec_from_file(data_file_text.as_str());
 
+        let bad_words = take_bad_words_from_file(data_file_text.as_str());
+
         Self {
             word_map,
             data_path,
@@ -443,26 +458,27 @@ impl FinderCase {
             data_file_text,
             write_path,
             stem,
+            bad_words,
         }
     }
 }
 
-fn check_words(grid: String){
+fn check_words(grid: String) {
     let grid = try_make_grid(&grid).expect("Expected a valid grid string");
     //https://github.com/dwyl/english-words
-    let english_words = std::fs::read_to_string("english_words.txt").expect("Expected a file named 'english_words.txt'");
+    let english_words = std::fs::read_to_string("english_words.txt")
+        .expect("Expected a file named 'english_words.txt'");
 
     let results = complete_solve::do_complete_solve(&grid, english_words.as_str(), 4);
     //https://raw.githubusercontent.com/dwyl/english-words/master/words.txt
-    
+
     let found_words = results
-            .iter()
-            .map(|x| x.iter().map(|c| c.as_char().to_ascii_lowercase()).join("")).sorted()
-            .join(", ");
+        .iter()
+        .map(|x| x.iter().map(|c| c.as_char().to_ascii_lowercase()).join(""))
+        .sorted()
+        .join(", ");
 
-            info!("{found_words}");
-
-
+    info!("{found_words}");
 }
 
 fn do_finder(options: FindGridsArgs) {
@@ -492,10 +508,16 @@ fn do_finder(options: FindGridsArgs) {
             write_path,
             data_file_text,
             stem,
+            bad_words,
         } = finder_case;
 
         info!("Found {} Words", word_map.len());
         info!("{}", word_map.iter().map(|x| x.text).sorted().join(", "));
+
+        if !bad_words.is_empty() {
+            info!("Found {} Bad Words", bad_words.len());
+            info!("{}", bad_words.iter().map(|x| x.text).sorted().join(", "));
+        }
 
         for (a, b) in word_map
             .iter()
@@ -516,6 +538,7 @@ fn do_finder(options: FindGridsArgs) {
             make_finder_group_vec_from_file(&master_file_text)
                 .into_iter()
                 .flat_map(|x| x.words)
+                .chain(bad_words.iter().cloned())
                 .collect_vec();
         if !master_words.is_empty() {
             let word_set: HashSet<_> = word_map
