@@ -6,7 +6,10 @@ use serde::{Deserialize, Serialize};
 use ws_levels::{level_group::LevelGroup, level_sequence::LevelSequence};
 
 use crate::{
-    ads_common::InterstitialProgressState, compatibility::SubmitScoreData, level_time::LevelTime, prelude::{CurrentLevel, DailyChallenges, FoundWordsState, NonLevel, Purchases, Streak}
+    ads_common::InterstitialProgressState,
+    compatibility::SubmitScoreData,
+    level_time::LevelTime,
+    prelude::{CurrentLevel, DailyChallenges, FoundWordsState, NonLevel, Purchases, Streak},
 };
 
 #[derive(Debug, PartialEq, Serialize, Deserialize, Default, Clone, Resource, MavericContext)]
@@ -234,7 +237,7 @@ pub fn track_level_completion(
     level_time: Res<LevelTime>,
     daily_challenges: Res<DailyChallenges>,
     mut ips: ResMut<InterstitialProgressState>,
-    purchases: Res<Purchases>
+    purchases: Res<Purchases>,
 ) {
     if !found_words.is_changed()
         || !found_words.is_level_complete()
@@ -271,6 +274,7 @@ pub fn track_level_completion(
 
         CurrentLevel::Custom { .. } => {
             // No need to track custom level completion
+            crate::platform_specific::request_review();
             first_time = false;
         }
         CurrentLevel::Tutorial { index } => {
@@ -309,7 +313,21 @@ pub fn track_level_completion(
                             total_score_amount: level_time.total_elapsed().as_secs() as i32,
                         });
 
-                        crate::platform_specific::request_review();
+                        #[cfg(any(feature = "web"))]
+                        {
+                            crate::platform_specific::show_toast_on_web(
+                                capacitor_bindings::toast::ShowOptions{
+
+                                    text: "Come to the launch event on March 13! Contact Mark or Sam for details.".to_string(),
+                                    duration: capacitor_bindings::toast::ToastDuration::Long,
+                                    position: capacitor_bindings::toast::ToastPosition::Bottom
+                                }
+);
+                        }
+                        #[cfg(not(any(feature = "web")))]
+                        {
+                            crate::platform_specific::request_review();
+                        }
                     } else {
                         info!("Streak set to one");
                         streak.current = 1;
@@ -332,8 +350,7 @@ pub fn track_level_completion(
         CurrentLevel::NonLevel(..) => first_time = false,
     }
     if !current_level.is_changed() {
-
-        if current_level.count_for_interstitial_ads(&purchases){
+        if current_level.count_for_interstitial_ads(&purchases) {
             ips.levels_without_interstitial += 1;
         }
 
