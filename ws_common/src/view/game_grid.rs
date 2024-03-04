@@ -156,49 +156,49 @@ impl MavericNode for GridTiles {
                                 z: 1.0,
                             };
 
-                            let speed2 = maveric::transition::speed::calculate_speed(
-                                &target_scale1,
-                                &Vec3::ZERO,
-                                Duration::from_secs_f32(congrats::TRANSITION_SECS),
-                            );
-
                             if target_scale == 1.0 {
                                 let transition = TransitionBuilder::default()
+                                    .then_set_value(Vec3::ONE)
                                     .then_wait(Duration::from_secs_f32(
                                         congrats::TRANSITION_WAIT_SECS,
                                     ))
-                                    .then_tween(Vec3::ZERO, speed2);
+                                    .then_tween_with_duration(
+                                        Vec3::ZERO,
+                                        Duration::from_secs_f32(congrats::TRANSITION_SECS),
+                                    );
 
                                 transition.build()
                             } else {
-                                let speed1 = maveric::transition::speed::calculate_speed(
-                                    &Vec3::ONE,
-                                    &target_scale1,
-                                    Duration::from_secs_f32(congrats::TRANSITION_WAIT_SECS * 0.25),
-                                );
-
                                 let transition = TransitionBuilder::default()
                                     .then_set_value(target_scale1)
-                                    .then_ease(target_scale1, speed1, Ease::CubicOut)
+                                    .then_ease_with_duration(
+                                        target_scale1,
+                                        Duration::from_secs_f32(
+                                            congrats::TRANSITION_WAIT_SECS * 0.25,
+                                        ),
+                                        Ease::CubicOut,
+                                    )
                                     .then_wait(Duration::from_secs_f32(
                                         congrats::TRANSITION_WAIT_SECS * 0.75,
                                     ))
-                                    .then_ease(Vec3::ZERO, speed2, Ease::CubicOut);
+                                    .then_ease_with_duration(
+                                        Vec3::ZERO,
+                                        Duration::from_secs_f32(congrats::TRANSITION_SECS),
+                                        Ease::CubicOut,
+                                    );
 
                                 transition.build()
                             }
                         };
 
                         let transform_transition: Transition<TransformTranslationLens> = {
-                            let speed1 = maveric::transition::speed::calculate_speed(
-                                &initial_centre,
-                                &target_centre,
-                                Duration::from_secs_f32(congrats::TRANSITION_WAIT_SECS * 0.25),
-                            );
-
                             let transition = TransitionBuilder::default()
                                 .then_set_value(initial_centre)
-                                .then_ease(target_centre, speed1, Ease::CubicInOut);
+                                .then_ease_with_duration(
+                                    target_centre,
+                                    Duration::from_secs_f32(congrats::TRANSITION_WAIT_SECS * 0.25),
+                                    Ease::CubicInOut,
+                                );
 
                             transition.build()
                         };

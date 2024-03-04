@@ -12,7 +12,7 @@ itertools = "0.12"
 strum = { version = "0.26", features = ["derive"] }
 serde = { version = "1", features = ["derive", "rc"] }
 anyhow = "1"
-base64 = "0.21"
+base64 = "0.22"
 geometrid = { git = "https://github.com/wainwrightmark/geometrid", features = ["glam", "serde"] }
 log = "0.4.20"
 env_logger = "0.11"
@@ -20,7 +20,6 @@ env_logger = "0.11"
 lazy_static = "1.4.0"
 clap = { version = "4.4.7", features = ["derive"] }
 rayon = "1.8.0"
-# sled = "0.34.7"
 indicatif = "0.17.7"
 indicatif-log-bridge = "0.2.2"
 const_sized_bit_set = { git = "https://github.com/wainwrightmark/const_sized_bit_set" }

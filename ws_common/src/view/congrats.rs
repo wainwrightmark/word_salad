@@ -145,8 +145,9 @@ impl MavericNode for CongratsView {
 
                 let transition = TransitionBuilder::default()
                     .then_wait(Duration::from_secs_f32(TRANSITION_WAIT_SECS))
-                    //.then_set_value(Vec3::ONE)
-                    .then_ease(Vec3::ONE, (1.0 / TRANSITION_SECS).into(), Ease::CubicOut)
+                    .then_set_value(initial_scale)
+
+                    .then_ease_with_duration(Vec3::ONE, Duration::from_secs_f32(TRANSITION_SECS), Ease::CubicOut)
                     .build();
 
                 let stat_text_color = if selfie_mode.is_selfie_mode {

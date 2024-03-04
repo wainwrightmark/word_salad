@@ -11,7 +11,7 @@ lambda_runtime = {version= "0.8", default-features=false}
 tokio = {version= "1", default-features=false}
 resvg = { version = "0.38", default-features = false, features=["text"] }
 ws_core = { path = "../../../ws_core" }
-base64 = "0.21.7"
+base64 = "0.22"
 
 [dev-dependencies]
 insta = "1.29.0"

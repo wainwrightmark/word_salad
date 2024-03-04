@@ -12,7 +12,7 @@ strum = { version = "0.26", features = ["derive"] }
 chrono = { version = "0.4", features = ["serde", "wasmbind"] }
 serde = { version = "1", features = ["derive", "rc"] }
 anyhow = "1"
-base64 = "0.21"
+base64 = "0.22"
 geometrid = { git = "https://github.com/wainwrightmark/geometrid", features = ["glam", "serde"] }
 glam = "0.25"
 serde_with = "3"
