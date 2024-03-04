@@ -40,6 +40,12 @@ pub trait SaladWindowSize {
         context: &T::Context<'_>,
     ) -> Option<T>;
     fn try_pick<T: LayoutStructure>(&self, p: Vec2, context: &T::Context<'_>) -> Option<T>;
+
+    fn get_origin<T: LayoutStructure + LayoutStructureWithOrigin>(
+        &self,
+        entity: &T,
+        context: &T::Context<'_>,
+    ) -> Vec2;
 }
 
 fn layout(size: &Size) -> LayoutSizing {
@@ -70,6 +76,23 @@ impl SaladWindowSize for Size {
         rect.extents.y *= -1.0;
 
         rect
+    }
+
+    fn get_origin<T: LayoutStructure + LayoutStructureWithOrigin>(
+        &self,
+        entity: &T,
+        context: &T::Context<'_>,
+    ) -> Vec2 {
+        let rect = self.get_rect(entity, context);
+        let origin = entity.origin(context, &layout(self));
+
+        match origin{
+            Origin::Center => rect.centre(),
+            Origin::TopLeft => rect.top_left,
+            Origin::CenterLeft => rect.centre_left(),
+        }
+
+
     }
 
     fn try_pick<T: LayoutStructure>(&self, p: Vec2, context: &T::Context<'_>) -> Option<T> {

@@ -12,8 +12,11 @@ pub enum LevelInfoLayoutEntity {
     ThemeInfo,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct IsLevelComplete(pub bool);
+
 impl LayoutStructure for LevelInfoLayoutEntity {
-    type Context<'a> = (SelfieMode, Insets);
+    type Context<'a> = ((SelfieMode, Insets), IsLevelComplete);
 
     fn iter_all(_context: &Self::Context<'_>) -> impl Iterator<Item = Self> {
         Self::iter()
@@ -33,7 +36,7 @@ impl LayoutStructure for LevelInfoLayoutEntity {
     }
     fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
         let base_location =
-            GameLayoutEntity::location(&GameLayoutEntity::LevelInfo, &context, sizing);
+            GameLayoutEntity::location(&GameLayoutEntity::LevelInfo, &context.0, sizing);
 
         match self {
             LevelInfoLayoutEntity::ThemeAndNumber => Vec2 {
@@ -45,6 +48,16 @@ impl LayoutStructure for LevelInfoLayoutEntity {
                 x: base_location.x,
                 y: base_location.y + THEME_HEIGHT,
             },
+        }
+    }
+}
+
+impl LayoutStructureWithOrigin for LevelInfoLayoutEntity{
+    fn origin(&self, context: &Self::Context<'_>, _sizing: &LayoutSizing)-> Origin {
+        if context.1.0{
+            Origin::Center
+        }else{
+            Origin::CenterLeft
         }
     }
 }

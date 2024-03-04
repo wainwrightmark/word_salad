@@ -135,6 +135,14 @@ impl MavericRootChildren for ViewRoot {
                         },
                         &context.window_size,
                     );
+
+                    if !is_level_complete{
+                        commands.add_child("timer", TimerView{
+                            background_type,
+                            selfie_mode,
+                            insets: context.insets.0
+                        }, &context.window_size)
+                    }
                 }
             }
             itertools::Either::Right(non_level) => {
