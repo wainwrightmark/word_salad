@@ -6,6 +6,7 @@ pub struct LogoContext {
     pub window_size: MyWindowSize,
     pub video_resource: VideoResource,
     pub pressed_button: PressedButton,
+    pub insets_resource: InsetsResource
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, MavericRoot)]
@@ -20,7 +21,7 @@ impl MavericRootChildren for WordSaladLogoRoot {
     ) {
         let size = &context.window_size;
 
-        let logo_rect = size.get_rect(&WordSaladLogo, &context.video_resource.selfie_mode());
+        let logo_rect = size.get_rect(&WordSaladLogo, &(context.video_resource.selfie_mode(), context.insets_resource.0));
 
         let pressed_multiplier = match context.pressed_button.as_ref() {
             PressedButton::Pressed {

@@ -25,6 +25,7 @@ pub struct CongratsContext {
     pub level_time: LevelTime,
     pub daily_challenges: DailyChallenges,
     pub menu_state: MenuState,
+    pub insets_resource: InsetsResource
 }
 
 impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for CongratsContextWrapper<'w> {
@@ -40,6 +41,7 @@ impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for CongratsContextWrapper<'w>
             level_time: Res::clone(&value.level_time),
             daily_challenges: Res::clone(&value.daily_challenges),
             menu_state: Res::clone(&value.menu_state),
+            insets_resource: Res::clone(&value.insets)
         }
     }
 }
@@ -79,6 +81,7 @@ impl MavericNode for CongratsView {
                         TILE_LINGER_SECONDS,
                         i <= 1,
                         context.video_resource.selfie_mode(),
+                        context.insets_resource.0
                     );
                 }
             });

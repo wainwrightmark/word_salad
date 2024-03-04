@@ -13,7 +13,7 @@ pub enum LevelInfoLayoutEntity {
 }
 
 impl LayoutStructure for LevelInfoLayoutEntity {
-    type Context<'a> = SelfieMode;
+    type Context<'a> = (SelfieMode, Insets);
 
     fn iter_all(_context: &Self::Context<'_>) -> impl Iterator<Item = Self> {
         Self::iter()

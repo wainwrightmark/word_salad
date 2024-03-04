@@ -22,6 +22,7 @@ pub struct WordLine {
     pub close_to_solution: bool,
     pub selfie_mode: SelfieMode,
     pub special_colors: Option<Vec<BasicColor>>,
+    pub insets: Insets
 }
 
 impl MavericNode for WordLine {
@@ -75,7 +76,7 @@ impl MavericNode for WordLine {
             if let Ok(tile) = solution.iter().exactly_one() {
                 let rect = args
                     .context
-                    .get_rect(&LayoutGridTile(*tile), &args.node.selfie_mode);
+                    .get_rect(&LayoutGridTile(*tile), &(args.node.selfie_mode, args.node.insets));
                 let color = index_to_color(0, &args.node.special_colors);
 
                 commands.add_child(
@@ -106,10 +107,10 @@ impl MavericNode for WordLine {
 
                     let rect_f = args
                         .context
-                        .get_rect(&LayoutGridTile(*from), &args.node.selfie_mode);
+                        .get_rect(&LayoutGridTile(*from), &(args.node.selfie_mode, args.node.insets));
                     let rect_t = args
                         .context
-                        .get_rect(&LayoutGridTile(*to), &args.node.selfie_mode);
+                        .get_rect(&LayoutGridTile(*to), &(args.node.selfie_mode, args.node.insets));
 
                     let translation =
                         ((rect_f.centre() + rect_t.centre()) * 0.5).extend(z_indices::WORD_LINE);

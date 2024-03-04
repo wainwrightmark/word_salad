@@ -5,7 +5,7 @@ pub use crate::prelude::*;
 
 pub type Size = WindowSize<SaladWindowBreakPoints>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct MyWindowSize; //TODO rename
 
 impl NodeContext for MyWindowSize {
@@ -29,7 +29,7 @@ pub trait SaladWindowSize {
     fn scale(&self) -> f32;
 
     fn font_size<T: LayoutStructureWithFont>(&self, entity: &T, context: &T::FontContext) -> f32;
-    fn tile_size(&self, selfie_mode: &SelfieMode) -> f32;
+    fn tile_size(&self, selfie_mode: &SelfieMode, insets: Insets) -> f32;
 
     fn get_rect<T: LayoutStructure>(&self, entity: &T, context: &T::Context<'_>)
         -> LayoutRectangle;
@@ -93,9 +93,9 @@ impl SaladWindowSize for Size {
         layout(self).font_size(entity, context)
     }
 
-    fn tile_size(&self, selfie_mode: &SelfieMode) -> f32 {
+    fn tile_size(&self, selfie_mode: &SelfieMode, insets: Insets) -> f32 {
         layout(self)
-            .get_size(&LayoutGridTile::default(), selfie_mode)
+            .get_size(&LayoutGridTile::default(), &(*selfie_mode, insets))
             .x
     }
 }

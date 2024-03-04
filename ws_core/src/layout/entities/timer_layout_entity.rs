@@ -7,7 +7,7 @@ use super::{consts::*, GameLayoutEntity, SelfieMode};
 pub struct TimerLayoutEntity;
 
 impl LayoutStructure for TimerLayoutEntity {
-    type Context<'a> = SelfieMode;
+    type Context<'a> = (SelfieMode, Insets);
 
     fn size(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
         Vec2 {

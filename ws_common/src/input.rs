@@ -65,6 +65,7 @@ impl InteractionEntity {
         is_game_paused: bool,
         grid_tolerance: Option<f32>,
         user_signed_in: &UserSignedIn,
+        insets: Insets
     ) -> Option<Self> {
         let selfie_mode = &video_resource.selfie_mode();
         //info!("Try find input");
@@ -99,7 +100,7 @@ impl InteractionEntity {
             }
         }
 
-        let tbi = Self::try_get_button::<WordSaladLogo>(position, size, selfie_mode);
+        let tbi = Self::try_get_button::<WordSaladLogo>(position, size, &(*selfie_mode, insets));
         if tbi.is_some() {
             return tbi;
         }
@@ -130,7 +131,7 @@ impl InteractionEntity {
                     }
 
                     let Some(layout_entity) =
-                        size.try_pick::<GameLayoutEntity>(*position, &selfie_mode)
+                        size.try_pick::<GameLayoutEntity>(*position, &(selfie_mode, insets))
                     else {
                         return None;
                     };
@@ -142,13 +143,13 @@ impl InteractionEntity {
                     match layout_entity {
                         GameLayoutEntity::TopBar => {
                             if let Some(x) =
-                                Self::try_get_button::<WordSaladLogo>(position, size, &selfie_mode)
+                                Self::try_get_button::<WordSaladLogo>(position, size, &(selfie_mode, insets))
                             {
                                 Some(x)
                             } else if let Some(x) = Self::try_get_button::<TimerLayoutEntity>(
                                 position,
                                 size,
-                                &selfie_mode,
+                                &(selfie_mode, insets),
                             ) {
                                 Some(x)
                             } else {
@@ -161,17 +162,17 @@ impl InteractionEntity {
                                 .try_pick_with_tolerance::<LayoutGridTile>(
                                     *position,
                                     tolerance,
-                                    &selfie_mode,
+                                    &(selfie_mode, insets),
                                 )
                                 .map(|t| Self::Tile(t.0)),
                             None => size
-                                .try_pick::<LayoutGridTile>(*position, &selfie_mode)
+                                .try_pick::<LayoutGridTile>(*position, &(selfie_mode, insets))
                                 .map(|t| Self::Tile(t.0)),
                         },
                         GameLayoutEntity::WordList => Self::try_get_button::<LayoutWordTile>(
                             position,
                             size,
-                            &(level.words.as_slice(), selfie_mode),
+                            &(level.words.as_slice(), (selfie_mode, insets)),
                         ),
                         GameLayoutEntity::LevelInfo => None,
                     }
@@ -327,6 +328,7 @@ impl InputType {
         timer: &LevelTime,
         time: &Time,
         user_signed_in: &UserSignedIn,
+        insets: &InsetsResource
     ) {
         startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 
@@ -358,6 +360,7 @@ impl InputType {
                     timer.is_paused(),
                     None,
                     user_signed_in,
+                    insets.0
                 ) {
                     match interaction {
                         InteractionEntity::Button(button) => Some(button),
@@ -390,6 +393,7 @@ impl InputType {
                     timer.is_paused(),
                     Some(MOVE_TOLERANCE),
                     user_signed_in,
+                    insets.0
                 ) {
                     match interaction {
                         InteractionEntity::Button(button) => Some(button),
@@ -423,6 +427,7 @@ impl InputType {
                     timer.is_paused(),
                     None,
                     user_signed_in,
+                    insets.0
                 ) {
                     match interaction {
                         InteractionEntity::Button(button) => {
@@ -532,9 +537,12 @@ pub fn handle_mouse_input(
     daily_challenges: Res<DailyChallenges>,
     timer: Res<LevelTime>,
     mut event_writer: EventWriter<ButtonActivated>,
-    time: Res<Time>,
-    user_signed_in: Res<UserSignedIn>,
+    extras: (Res<Time>,
+        Res<UserSignedIn>,
+        Res<InsetsResource>)
 ) {
+    let (time, user_signed_in, insets) = extras;
+
     let input_type = if mouse_input.just_released(MouseButton::Left) {
         let position_option = get_cursor_position(q_windows);
         InputType::End(position_option)
@@ -567,6 +575,7 @@ pub fn handle_mouse_input(
         &timer,
         &time,
         &user_signed_in,
+        &insets
     );
 }
 
@@ -586,9 +595,12 @@ pub fn handle_touch_input(
     daily_challenges: Res<DailyChallenges>,
     timer: Res<LevelTime>,
     mut event_writer: EventWriter<ButtonActivated>,
-    time: Res<Time>,
-    user_signed_in: Res<UserSignedIn>,
+    extras: (Res<Time>,
+    Res<UserSignedIn>,
+    Res<InsetsResource>)
 ) {
+    let (time, user_signed_in, insets) = extras;
+
     for ev in touch_events.read() {
         let input_type: InputType = match ev.phase {
             bevy::input::touch::TouchPhase::Started => {
@@ -625,6 +637,7 @@ pub fn handle_touch_input(
             &timer,
             &time,
             &user_signed_in,
+            &insets
         );
     }
 }

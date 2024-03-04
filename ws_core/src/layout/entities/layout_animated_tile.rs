@@ -15,7 +15,7 @@ pub struct LayoutAnimatedTile{
 }
 
 impl LayoutStructure for LayoutAnimatedTile{
-    type Context<'a> = (SelfieMode, usize); //number of tiles
+    type Context<'a> = ((SelfieMode, Insets), usize); //number of tiles
 
     fn size(&self, context: &Self::Context<'_>, _sizing: &crate::LayoutSizing) -> glam::Vec2 {
         let size = if  context.1 <= 4{

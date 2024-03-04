@@ -1,6 +1,6 @@
 use glam::Vec2;
 
-use crate::{layout::spacing, LayoutStructure, LayoutStructureWithFont};
+use crate::{layout::spacing, Insets, LayoutStructure, LayoutStructureWithFont};
 
 use super::{
     GameLayoutEntity, SelfieMode, GRID_SIZE, GRID_WORD_LIST_SPACER, HINTS_REMAINING_FONT_SIZE,
@@ -11,7 +11,7 @@ use super::{
 pub struct HintsRemainingLayout;
 
 impl LayoutStructure for HintsRemainingLayout {
-    type Context<'a> = SelfieMode;
+    type Context<'a> = (SelfieMode, Insets);
 
     fn size(&self, _context: &Self::Context<'_>, _sizing: &crate::LayoutSizing) -> glam::Vec2 {
         Vec2 {

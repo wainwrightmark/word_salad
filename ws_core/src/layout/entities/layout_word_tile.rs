@@ -13,7 +13,7 @@ impl From<usize> for LayoutWordTile {
 }
 
 impl LayoutStructure for LayoutWordTile {
-    type Context<'a> = (&'a [DisplayWord], SelfieMode);
+    type Context<'a> = (&'a [DisplayWord], (SelfieMode, Insets));
 
     fn iter_all(context: &Self::Context<'_>) -> impl Iterator<Item = Self> {
         LayoutWordTileIter {

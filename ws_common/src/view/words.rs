@@ -29,6 +29,7 @@ pub struct WordsContext {
     pub video_resource: VideoResource,
     pub daily_challenges: DailyChallenges,
     pub menu_state: MenuState,
+    pub insets: InsetsResource
 }
 
 impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for WordsContextWrapper<'w> {
@@ -40,6 +41,7 @@ impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for WordsContextWrapper<'w> {
             video_resource: Res::clone(&value.video_resource),
             daily_challenges: Res::clone(&value.daily_challenges),
             menu_state: Res::clone(&value.menu_state),
+            insets: Res::clone(&value.insets)
         }
     }
 }
@@ -81,7 +83,7 @@ impl MavericNode for WordsNode {
                     let completion = context.found_words_state.get_completion(index);
                     let tile = LayoutWordTile(index);
                     let font_size = context.window_size.font_size::<LayoutWordTile>(&tile, &());
-                    let rect = context.window_size.get_rect(&tile, &(words, selfie_mode));
+                    let rect = context.window_size.get_rect(&tile, &(words, (selfie_mode, context.insets.0)));
                     let level_indices: (u16, u16) = match context.current_level.as_ref() {
                         CurrentLevel::Fixed { level_index, .. } => (0, *level_index as u16),
                         CurrentLevel::Custom { .. } => (1, 0),

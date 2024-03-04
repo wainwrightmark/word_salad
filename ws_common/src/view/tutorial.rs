@@ -26,8 +26,26 @@ pub struct TutorialNode {
     pub text: TutorialText,
 }
 
+
+#[derive(Debug, NodeContext)]
+pub struct TutorialContext {
+    pub window_size: MyWindowSize,
+    pub video_resource: VideoResource,
+    pub insets: InsetsResource
+}
+
+impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for TutorialContextWrapper<'w> {
+    fn from(value: &'a ViewContextWrapper<'w>) -> Self {
+        Self {
+            window_size: Res::clone(&value.window_size),
+            video_resource: Res::clone(&value.video_resource),
+            insets: Res::clone(&value.insets)
+        }
+    }
+}
+
 impl MavericNode for TutorialNode {
-    type Context = MyWindowSize;
+    type Context = TutorialContext;
 
     fn set_components(commands: maveric::prelude::SetComponentCommands<Self, Self::Context>) {
         commands
@@ -110,7 +128,7 @@ pub struct TutorialPopupNode {
 }
 
 impl MavericNode for TutorialPopupNode {
-    type Context = MyWindowSize;
+    type Context = TutorialContext;
 
     fn set_components(mut commands: maveric::prelude::SetComponentCommands<Self, Self::Context>) {
         commands.insert_static_bundle((VisibilityBundle::default(), GlobalTransform::default()));
@@ -118,7 +136,7 @@ impl MavericNode for TutorialPopupNode {
         commands
             .map_node(|x| &x.entity)
             .insert_with_node_and_context(|entity, context| {
-                let rect = context.get_rect(entity, &());
+                let rect = context.window_size.get_rect(entity, &(context.video_resource.selfie_mode(), context.insets.0));
 
                 Transform::from_translation(rect.centre().extend(0.0))
             });
@@ -130,9 +148,9 @@ impl MavericNode for TutorialPopupNode {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
             let TutorialPopupNode { text, entity } = node;
 
-            let rect = context.get_rect(entity, &());
-            let font_size = context.font_size(&TutorialTextLayoutEntity(*entity), &());
-            let text_rect = context.get_rect(&TutorialTextLayoutEntity(*entity), &());
+            let rect = context.window_size.get_rect(entity, &(context.video_resource.selfie_mode(), context.insets.0));
+            let font_size = context.window_size.font_size(&TutorialTextLayoutEntity(*entity), &());
+            let text_rect = context.window_size.get_rect(&TutorialTextLayoutEntity(*entity), &(context.video_resource.selfie_mode(), context.insets.0));
 
             const OPACITY: f32 = 0.6;
 
@@ -485,7 +503,7 @@ pub enum TutorialLayoutEntity {
 const BOX_WIDTH: f32 = GRID_SIZE + 45.0;
 
 impl LayoutStructure for TutorialLayoutEntity {
-    type Context<'a> = ();
+    type Context<'a> = (SelfieMode, Insets);
 
     fn size(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> bevy::prelude::Vec2 {
         match self {
@@ -504,15 +522,13 @@ impl LayoutStructure for TutorialLayoutEntity {
         }
     }
 
-    fn location(&self, _context: &Self::Context<'_>, sizing: &LayoutSizing) -> bevy::prelude::Vec2 {
+    fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> bevy::prelude::Vec2 {
         match self {
             TutorialLayoutEntity::Top => Vec2 {
                 x: (IDEAL_WIDTH - BOX_WIDTH) * 0.5,
                 y: GameLayoutEntity::LevelInfo
                     .location(
-                        &SelfieMode {
-                            is_selfie_mode: false,
-                        },
+                        &context,
                         sizing,
                     )
                     .y
@@ -522,9 +538,7 @@ impl LayoutStructure for TutorialLayoutEntity {
                 x: (IDEAL_WIDTH - BOX_WIDTH) * 0.5,
                 y: GameLayoutEntity::LevelInfo
                     .location(
-                        &SelfieMode {
-                            is_selfie_mode: false,
-                        },
+                        &context,
                         sizing,
                     )
                     .y,
@@ -533,9 +547,7 @@ impl LayoutStructure for TutorialLayoutEntity {
                 x: (IDEAL_WIDTH - BOX_WIDTH) * 0.5,
                 y: GameLayoutEntity::WordList
                     .location(
-                        &SelfieMode {
-                            is_selfie_mode: false,
-                        },
+                        &context,
                         sizing,
                     )
                     .y
@@ -557,7 +569,7 @@ const TEXT_RIGHT_MARGIN: f32 = 5.0;
 const BOTTOM_TEXT_TOP_OFFSET: f32 = 40.0;
 
 impl LayoutStructure for TutorialTextLayoutEntity {
-    type Context<'a> = ();
+    type Context<'a> = (SelfieMode, Insets);
 
     fn size(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
         let x = TEXT_LEFT_MARGIN + TEXT_RIGHT_MARGIN;

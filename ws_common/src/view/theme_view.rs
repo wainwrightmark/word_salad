@@ -11,7 +11,8 @@ pub struct ThemeView {
     pub info: Option<Ustr>,
     pub background_type: BackgroundType,
     pub is_level_complete: bool,
-    pub selfie_mode: SelfieMode, // pub daily_challenge_number: Option<usize>,
+    pub selfie_mode: SelfieMode,
+    pub insets: Insets
 }
 
 impl MavericNode for ThemeView {
@@ -55,7 +56,7 @@ impl MavericNode for ThemeView {
                 }
                 .with_bundle(Transform::from_translation(
                     context
-                        .get_rect(&LevelInfoLayoutEntity::ThemeAndNumber, &node.selfie_mode)
+                        .get_rect(&LevelInfoLayoutEntity::ThemeAndNumber, &(node.selfie_mode, node.insets))
                         .centre_left()
                         .extend(crate::z_indices::THEME),
                 )),
@@ -92,7 +93,7 @@ impl MavericNode for ThemeView {
                     }
                     .with_bundle((Transform::from_translation(
                         context
-                            .get_rect(&LevelInfoLayoutEntity::ThemeInfo, &node.selfie_mode)
+                            .get_rect(&LevelInfoLayoutEntity::ThemeInfo, &(node.selfie_mode, node.insets))
                             .centre_left()
                             .extend(crate::z_indices::THEME),
                     ),)),
@@ -124,7 +125,7 @@ impl MavericNode for ThemeView {
                     .with_bundle((
                         Transform::from_translation(
                             context
-                                .get_rect(&TimerLayoutEntity, &node.selfie_mode)
+                                .get_rect(&TimerLayoutEntity, &(node.selfie_mode, node.insets))
                                 .top_centre()
                                 .extend(crate::z_indices::THEME),
                         ),

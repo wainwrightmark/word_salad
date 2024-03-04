@@ -7,7 +7,7 @@ use std::ops::Add;
 pub struct LayoutGridTile(pub Tile);
 
 impl LayoutStructure for LayoutGridTile {
-    type Context<'a> = SelfieMode;
+    type Context<'a> = (SelfieMode, Insets);
 
     fn pick(point: Vec2, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Option<Self> {
         let grid_rect = GameLayoutEntity::Grid.rect(context, sizing);

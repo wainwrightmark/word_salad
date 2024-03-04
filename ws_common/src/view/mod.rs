@@ -47,7 +47,8 @@ pub struct ViewContext {
     pub daily_challenges: DailyChallenges,
     pub streak: Streak,
     pub prices: Prices,
-    pub redraw_marker: RedrawMarker
+    pub redraw_marker: RedrawMarker,
+    pub insets: InsetsResource
 }
 
 #[derive(MavericRoot)]
@@ -105,6 +106,7 @@ impl MavericRootChildren for ViewRoot {
                                 close_to_solution,
                                 selfie_mode,
                                 special_colors: level.special_colors.clone(),
+                                insets: context.insets.0
                             },
                             &context.window_size,
                         );
@@ -117,7 +119,7 @@ impl MavericRootChildren for ViewRoot {
                     TutorialText::try_create(&context.current_level, &context.found_words_state)
                 {
                     if context.menu_state.is_closed() {
-                        commands.add_child("tutorial", TutorialNode { text }, &context.window_size);
+                        commands.add_child("tutorial", TutorialNode { text }, &context.into());
                     }
                 } else {
                     let full_name = level.full_name();
@@ -129,6 +131,7 @@ impl MavericRootChildren for ViewRoot {
                             background_type,
                             selfie_mode,
                             is_level_complete,
+                            insets: context.insets.0
                         },
                         &context.window_size,
                     );

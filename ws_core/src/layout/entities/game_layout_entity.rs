@@ -15,7 +15,7 @@ pub enum GameLayoutEntity {
 }
 
 impl LayoutStructure for GameLayoutEntity {
-    type Context<'a> = SelfieMode;
+    type Context<'a> = (SelfieMode, Insets);
 
     fn iter_all(_context: &Self::Context<'_>) -> impl Iterator<Item = Self> {
         Self::iter()
@@ -50,18 +50,18 @@ impl LayoutStructure for GameLayoutEntity {
 
             GameLayoutEntity::LevelInfo => Vec2 {
                 x: LEFT_MARGIN,
-                y: TOP_BAR_HEIGHT + TOP_BAR_OFFSET + (extra_top_height(sizing, context) * 0.25),
+                y: TOP_BAR_HEIGHT + TOP_BAR_OFFSET + (extra_top_height(sizing, &context.0) * 0.25),
             },
 
             GameLayoutEntity::Grid => Vec2 {
                 x: LEFT_MARGIN,
-                y: (TOP_BAR_HEIGHT + TOP_BAR_OFFSET + extra_top_height(sizing, context))
+                y: (TOP_BAR_HEIGHT + TOP_BAR_OFFSET + extra_top_height(sizing, &context.0))
                     + THEME_HEIGHT
                     + THEME_INFO_HEIGHT
                     + GRID_THEME_SPACER,
             },
             GameLayoutEntity::WordList => {
-                let y = (TOP_BAR_HEIGHT + TOP_BAR_OFFSET + extra_top_height(sizing, context))
+                let y = (TOP_BAR_HEIGHT + TOP_BAR_OFFSET + extra_top_height(sizing, &context.0))
                     + THEME_HEIGHT
                     + THEME_INFO_HEIGHT
                     + GRID_SIZE

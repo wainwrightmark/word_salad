@@ -28,6 +28,7 @@ pub fn animate_solutions(
     asset_server: Res<AssetServer>,
     size: Res<Size>,
     video: Res<VideoResource>,
+    insets_resource: Res<InsetsResource>,
 ) {
     for ev in events.read() {
         animate_solution(
@@ -39,6 +40,7 @@ pub fn animate_solutions(
             size.as_ref(),
             &ev.level,
             video.selfie_mode(),
+            &insets_resource,
         );
     }
 }
@@ -67,6 +69,7 @@ fn animate_solution(
     size: &Size,
     level: &DesignedLevel,
     selfie_mode: SelfieMode,
+    insets_resource: &InsetsResource,
 ) {
     //info!("Animate solution");
     let color = if is_first_time {
@@ -85,7 +88,10 @@ fn animate_solution(
     let Some(layout_word_tile) = words.iter().position(|x| x == word).map(LayoutWordTile) else {
         return;
     };
-    let word_destination_rect = size.get_rect(&layout_word_tile, &(words, selfie_mode));
+    let word_destination_rect = size.get_rect(
+        &layout_word_tile,
+        &(words, (selfie_mode, insets_resource.0)),
+    );
     let word_destination_centre = word_destination_rect.centre();
 
     let font = asset_server.load(SOLUTIONS_FONT_PATH);
@@ -118,7 +124,9 @@ fn animate_solution(
                 y: 0.0,
             };
 
-        let start_position = size.get_rect(&LayoutGridTile(*tile), &selfie_mode).centre();
+        let start_position = size
+            .get_rect(&LayoutGridTile(*tile), &(selfie_mode, insets_resource.0))
+            .centre();
 
         let speed_one_translation = calculate_speed(
             &start_position,
