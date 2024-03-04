@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use itertools::Either;
 use nice_bevy_utils::TrackableResource;
 use serde::{Deserialize, Serialize};
-use std::sync::OnceLock;
+use std::sync::RwLock;
 use strum::EnumIs;
 use ws_core::level_type::LevelType;
 use ws_levels::{all_levels::get_tutorial_level, level_sequence::LevelSequence};
@@ -35,45 +35,70 @@ pub enum NonLevel {
     BeforeTutorial,
     AfterCustomLevel,
     DailyChallengeFinished,
-    DailyChallengeNotLoaded { goto_level: usize },
-    DailyChallengeLoading { goto_level: usize },
+    DailyChallengeNotLoaded {
+        goto_level: usize,
+    },
+    DailyChallengeLoading {
+        goto_level: usize,
+    },
     DailyChallengeReset,
-    DailyChallengeCountdown { todays_index: usize }, //TODO remove
+    DailyChallengeCountdown {
+        todays_index: usize,
+    }, //TODO remove
 
     LevelSequenceMustPurchaseGroup(LevelSequence),
     LevelSequenceAllFinished(LevelSequence),
     LevelSequenceReset(LevelSequence),
 
     AdBreak(NextLevel),
-    AdFailed{
+    AdFailed {
         next_level: NextLevel,
-        since: Option<DateTime<Utc>>
-    }
+        since: Option<DateTime<Utc>>,
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, EnumIs)]
-pub enum NextLevel{
-    DailyChallenge{index: usize},
-    LevelSequence{sequence: LevelSequence, level_index: usize}
+pub enum NextLevel {
+    DailyChallenge {
+        index: usize,
+    },
+    LevelSequence {
+        sequence: LevelSequence,
+        level_index: usize,
+    },
 }
 
-impl From<NextLevel> for CurrentLevel{
+impl From<NextLevel> for CurrentLevel {
     fn from(value: NextLevel) -> Self {
         match value {
             NextLevel::DailyChallenge { index } => CurrentLevel::DailyChallenge { index },
-            NextLevel::LevelSequence { sequence, level_index } => CurrentLevel::Fixed { level_index, sequence },
+            NextLevel::LevelSequence {
+                sequence,
+                level_index,
+            } => CurrentLevel::Fixed {
+                level_index,
+                sequence,
+            },
         }
     }
 }
 
-impl<'a> TryFrom<&'a CurrentLevel> for NextLevel{
+impl<'a> TryFrom<&'a CurrentLevel> for NextLevel {
     type Error = ();
 
     fn try_from(value: &'a CurrentLevel) -> Result<Self, Self::Error> {
-        match value{
+        match value {
             CurrentLevel::Tutorial { .. } => Err(()),
-            CurrentLevel::Fixed { level_index, sequence } => Ok(NextLevel::LevelSequence { sequence: *sequence, level_index: *level_index }) ,
-            CurrentLevel::DailyChallenge { index } => Ok(NextLevel::DailyChallenge { index: *index }),
+            CurrentLevel::Fixed {
+                level_index,
+                sequence,
+            } => Ok(NextLevel::LevelSequence {
+                sequence: *sequence,
+                level_index: *level_index,
+            }),
+            CurrentLevel::DailyChallenge { index } => {
+                Ok(NextLevel::DailyChallenge { index: *index })
+            }
             CurrentLevel::Custom { .. } => Err(()),
             CurrentLevel::NonLevel(_) => Err(()),
         }
@@ -96,7 +121,19 @@ impl Default for CurrentLevel {
     }
 }
 
-pub static CUSTOM_LEVEL: OnceLock<DesignedLevel> = OnceLock::new();
+pub static CUSTOM_LEVEL: RwLock<Option<&'static DesignedLevel>> = RwLock::new(None);
+
+pub fn set_custom_level(level: DesignedLevel){
+    match CUSTOM_LEVEL.write(){
+        Ok(mut write) => {
+            let leaked_level: &'static DesignedLevel = Box::leak(Box::new(level));
+            write.replace(leaked_level);
+        },
+        Err(..) => {
+            error!("Poison error writing custom level")
+        },
+    }
+}
 
 impl CurrentLevel {
     /// Returns true if hints used on this level should be deducted from the users remaining hints
@@ -148,9 +185,12 @@ impl CurrentLevel {
                 Some(level) => Either::Left(level),
                 None => Either::Right(NonLevel::LevelSequenceAllFinished(*sequence)),
             },
-            CurrentLevel::Custom { .. } => match CUSTOM_LEVEL.get() {
-                Some(cl) => Either::Left(cl),
-                None => Either::Right(NonLevel::AfterCustomLevel),
+            CurrentLevel::Custom { .. } => match CUSTOM_LEVEL.read() {
+                Ok(opt) => match opt.as_ref() {
+                    Some(cl) => Either::Left(cl),
+                    None => Either::Right(NonLevel::AfterCustomLevel),
+                },
+                Err(_) => Either::Right(NonLevel::AfterCustomLevel),
             },
             CurrentLevel::Tutorial { index } => match get_tutorial_level(*index) {
                 Some(cl) => Either::Left(cl),

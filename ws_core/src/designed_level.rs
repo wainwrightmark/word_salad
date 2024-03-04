@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use crate::{finder::helpers::LetterCounts, prelude::*, Grid};
 use itertools::Itertools;
-use log::warn;
+use log::{error, warn};
 use ustr::Ustr;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -36,6 +36,40 @@ impl std::fmt::Display for DesignedLevel {
 }
 
 impl DesignedLevel {
+    pub fn try_from_path(mut path: &str) -> Option<Self> {
+
+        path = path.trim_start_matches("https://wordsalad.online");
+
+        if path.is_empty() || path.eq_ignore_ascii_case("/") {
+            return None;
+        }
+
+
+        if path.to_ascii_lowercase().starts_with("/game/") {
+            //log::info!("Path starts with game");
+            let data = path[6..].to_string();
+            //log::info!("{data}");
+
+            use base64::Engine;
+
+            let data = base64::engine::general_purpose::URL_SAFE
+                .decode(data)
+                .ok()?;
+
+            let data = String::from_utf8(data).ok()?;
+
+            match DesignedLevel::from_tsv_line(&data.trim()) {
+                Ok(data) => Some(data),
+                Err(err) => {
+                    error!("{err}");
+                    None
+                }
+            }
+        } else {
+            None
+        }
+    }
+
     pub fn full_name(&self) -> Ustr {
         match self.numbering {
             Some(Numbering::SequenceNumber(num)) => {

@@ -18,13 +18,16 @@ impl Plugin for AppLifecyclePlugin {
 }
 
 #[allow(dead_code)]
-#[derive(Debug, Clone, Copy, Event, PartialEq)]
+#[derive(Debug, Clone, Event, PartialEq)]
 enum AppLifeCycleEvent {
     StateChange {
         is_active: bool,
         time_sent: DateTime<Utc>,
     },
     BackPressed,
+    UrlOpened {
+        url: String,
+    },
 }
 
 fn hide_splash() {
@@ -52,6 +55,7 @@ fn watch_lifecycle(
     mut menu: ResMut<MenuState>,
     mut popup: ResMut<PopupState>,
     mut level_time: ResMut<LevelTime>,
+    mut change_level_events: EventWriter<ChangeLevelEvent>,
 ) {
     for event in events.read() {
         match event {
@@ -88,13 +92,56 @@ fn watch_lifecycle(
                     menu.close();
                 }
             }
+            AppLifeCycleEvent::UrlOpened { url } => {
+                info!("Url opened event '{url}'");
+                if let Some(daily_index) = try_daily_index_from_path(&url) {
+                    let new_level = CurrentLevel::DailyChallenge { index: daily_index };
+                    change_level_events.send(new_level.into());
+                } else if let Some(level) = DesignedLevel::try_from_path(&url) {
+                    let custom_level = CurrentLevel::Custom {
+                        name: level.full_name().clone(),
+                    };
+                    set_custom_level(level);
+
+                    change_level_events.send(custom_level.into());
+                }
+            }
         }
     }
 }
 
 fn begin_lifecycle(writer: async_event_writer::AsyncEventWriter<AppLifeCycleEvent>) {
     spawn_and_run(disable_back_async(writer.clone()));
-    spawn_and_run(on_resume(writer));
+    spawn_and_run(on_resume(writer.clone()));
+    spawn_and_run(handle_app_url_open(writer));
+}
+
+async fn handle_app_url_open<'a>(writer: async_event_writer::AsyncEventWriter<AppLifeCycleEvent>) {
+    #[cfg(any(feature = "android", feature = "ios"))]
+    {
+        //info!("Registering app url open");
+        let result = capacitor_bindings::app::App::add_app_url_open_listener(
+            move |x: capacitor_bindings::app::URLOpenListenerEvent| {
+                let event = AppLifeCycleEvent::UrlOpened { url: x.url };
+                ws_common::startup::ADDITIONAL_TRACKING
+                    .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                writer.send_or_panic(event);
+            },
+        )
+        .await;
+
+        match result {
+            Ok(handle) => {
+                //info!("Leading back button");
+                handle.leak();
+            }
+            Err(err) => {
+                ws_common::logging::try_log_error_message(format!(
+                    "Error Registering app url open '{err}'"
+                ));
+            }
+        }
+    }
 }
 
 async fn disable_back_async<'a>(writer: async_event_writer::AsyncEventWriter<AppLifeCycleEvent>) {
@@ -102,6 +149,8 @@ async fn disable_back_async<'a>(writer: async_event_writer::AsyncEventWriter<App
     {
         info!("Disabling back");
         let result = capacitor_bindings::app::App::add_back_button_listener(move |_| {
+            ws_common::startup::ADDITIONAL_TRACKING
+                .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
             writer.send_or_panic(AppLifeCycleEvent::BackPressed);
         })
         .await;
@@ -127,6 +176,7 @@ async fn on_resume(writer: async_event_writer::AsyncEventWriter<AppLifeCycleEven
                 is_active: x.is_active,
                 time_sent: chrono::Utc::now(),
             };
+            ws_common::startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
             writer.send_or_panic(event);
         })
         .await;

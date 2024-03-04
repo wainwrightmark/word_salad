@@ -129,7 +129,7 @@ fn setup_system(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
 
-pub(crate) static ADDITIONAL_TRACKING: AtomicUsize = AtomicUsize::new(0);
+pub static ADDITIONAL_TRACKING: AtomicUsize = AtomicUsize::new(0);
 
 fn maybe_request_redraw(mut writer: EventWriter<RequestRedraw>, mut buffer: Local<bool>) {
     let should_redraw = maveric::tracing::count_transitions() > 0
@@ -183,12 +183,10 @@ fn choose_level_on_game_load(
                 info!("Loaded custom level from path");
 
                 let custom_level = CurrentLevel::Custom {
-                    name: level.clone().full_name(),
+                    name: level.full_name().clone(),
                 };
 
-                if let Err(err) = CUSTOM_LEVEL.set(level) {
-                    error!("{err}");
-                }
+                set_custom_level(level);
 
                 if !current_level.as_ref().eq(&custom_level) {
                     return Some(custom_level);
@@ -197,6 +195,7 @@ fn choose_level_on_game_load(
                 }
             }
         }
+
 
         match current_level.as_ref() {
             CurrentLevel::Tutorial { .. } | CurrentLevel::NonLevel(NonLevel::BeforeTutorial) => {

@@ -4,7 +4,7 @@ use std::time::Duration;
 use strum::EnumIs;
 use ws_core::layout::entities::recording_button::ToggleRecordingButton;
 use ws_core::layout::entities::{
-    CongratsButton, CongratsLayoutEntity, LayoutWordTile, TimerLayoutEntity, WordSaladLogo
+    CongratsButton, CongratsLayoutEntity, LayoutWordTile, TimerLayoutEntity, WordSaladLogo,
 };
 use ws_levels::level_group::LevelGroup;
 
@@ -267,7 +267,7 @@ impl From<CongratsButton> for ButtonInteraction {
     }
 }
 
-impl From<TimerLayoutEntity> for ButtonInteraction{
+impl From<TimerLayoutEntity> for ButtonInteraction {
     fn from(_value: TimerLayoutEntity) -> Self {
         ButtonInteraction::TimerButton
     }
@@ -453,9 +453,11 @@ impl ButtonInteraction {
                             change_level_events.send(CurrentLevel::Tutorial { index: 0 }.into());
                         }
                         NonLevel::AfterCustomLevel => {
-                            if let Some(l) = CUSTOM_LEVEL.get() {
-                                change_level_events
-                                    .send(CurrentLevel::Custom { name: l.name }.into());
+                            if let Ok(guard) = CUSTOM_LEVEL.read() {
+                                if let Some(l) = guard.as_ref() {
+                                    change_level_events
+                                        .send(CurrentLevel::Custom { name: l.name }.into());
+                                }
                             }
                         }
                         NonLevel::LevelSequenceMustPurchaseGroup(sequence) => {

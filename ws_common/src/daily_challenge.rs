@@ -122,6 +122,32 @@ fn load_levels(writer: AsyncEventWriter<DailyChallengeDataLoadedEvent>, dc: Res<
     asynchronous::spawn_and_run(load_levels_async(writer, false));
 }
 
+pub fn try_daily_index_from_path(mut path: &str) -> Option<usize> {
+
+    path = path.trim_start_matches("https://wordsalad.online");
+    //info!("{path}");
+    if path.is_empty() || path.eq_ignore_ascii_case("/") {
+        return None;
+    }
+
+    if path.to_ascii_lowercase().starts_with("/daily/") {
+        //info!("{path} starts with daily");
+        let data = path[7..].to_string();
+
+        let index = usize::from_str_radix(data.trim(), 10)
+            .ok()?
+            .checked_sub(1)?;
+
+        let today_index = DailyChallenges::get_today_index();
+
+        if index <= today_index {
+            //info!("{path} index is legit");
+            return Some(index);
+        }
+    }
+    return None;
+}
+
 pub async fn load_levels_async(
     writer: AsyncEventWriter<DailyChallengeDataLoadedEvent>,
     user_requested: bool,

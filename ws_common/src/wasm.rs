@@ -20,7 +20,6 @@ impl Plugin for WasmPlugin {
         app.add_systems(Startup, register_on_window_resized);
         app.add_systems(PostStartup, update_insets);
 
-
         app.register_async_event::<WebWindowResizedEvent>();
     }
 }
@@ -153,31 +152,7 @@ pub fn get_daily_from_location() -> Option<usize> {
     let location = window.location();
     let path = location.pathname().ok()?;
 
-    try_daily_index_from_path(path)
-}
-
-fn try_daily_index_from_path(path: String) -> Option<usize> {
-    //info!("{path}");
-    if path.is_empty() || path.eq_ignore_ascii_case("/") {
-        return None;
-    }
-
-    if path.to_ascii_lowercase().starts_with("/daily/") {
-        //info!("{path} starts with daily");
-        let data = path[7..].to_string();
-
-        let index = usize::from_str_radix(data.trim(), 10)
-            .ok()?
-            .checked_sub(1)?;
-
-        let today_index = DailyChallenges::get_today_index();
-
-        if index <= today_index {
-            //info!("{path} index is legit");
-            return Some(index);
-        }
-    }
-    return None;
+    try_daily_index_from_path(path.as_str())
 }
 
 pub fn get_game_from_location() -> Option<DesignedLevel> {
@@ -185,39 +160,7 @@ pub fn get_game_from_location() -> Option<DesignedLevel> {
     let location = window.location();
     let path = location.pathname().ok()?;
 
-    designed_level_try_from_path(path)
-}
-
-fn designed_level_try_from_path(path: String) -> Option<DesignedLevel> {
-    //info!("path: {path}");
-
-    if path.is_empty() || path.eq_ignore_ascii_case("/") {
-        return None;
-    }
-
-    if path.to_ascii_lowercase().starts_with("/game/") {
-        //log::info!("Path starts with game");
-        let data = path[6..].to_string();
-        //log::info!("{data}");
-
-        use base64::Engine;
-
-        let data = base64::engine::general_purpose::URL_SAFE
-            .decode(data)
-            .ok()?;
-
-        let data = String::from_utf8(data).ok()?;
-
-        match DesignedLevel::from_tsv_line(&data.trim()) {
-            Ok(data) => Some(data),
-            Err(err) => {
-                error!("{err}");
-                None
-            }
-        }
-    } else {
-        None
-    }
+    DesignedLevel::try_from_path(path.as_ref())
 }
 
 pub fn open_link(url: &str) {
@@ -390,7 +333,6 @@ impl TryFrom<JsValue> for JsException {
     }
 }
 
-
 fn update_insets(mut insets: ResMut<InsetsResource>) {
     if let Some(new_insets) = get_insets() {
         debug!("{:?}", new_insets.clone());
@@ -402,7 +344,6 @@ fn get_insets() -> Option<Insets> {
     let window = web_sys::window()?;
     let document = window.document()?.document_element()?;
     let style = window.get_computed_style(&document).ok()??;
-
 
     let top = style
         .get_property_value("--sat")
@@ -425,6 +366,6 @@ fn get_insets() -> Option<Insets> {
         .and_then(|x| x.trim_end_matches("px").parse::<f32>().ok())
         .unwrap_or_default();
 
-    let insets = Insets::new(top,left,right,bottom);
+    let insets = Insets::new(top, left, right, bottom);
     Some(insets)
 }
