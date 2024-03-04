@@ -65,6 +65,7 @@ impl MavericNode for TutorialNode {
                         text,
                         entity: TutorialLayoutEntity::Top,
                         color: palette::TUTORIAL_TOP_TEXT.convert_color(),
+                        align_left: true,
                     }
                     .with_transition_in_out::<TransformScaleLens>(
                         Vec3::ZERO,
@@ -90,6 +91,7 @@ impl MavericNode for TutorialNode {
                         text,
                         entity: TutorialLayoutEntity::BigTop,
                         color: palette::TUTORIAL_MIDDLE_TEXT.convert_color(),
+                        align_left: false,
                     }
                     .with_transition::<TransformScaleLens, ()>(
                         Vec3::ZERO,
@@ -106,6 +108,7 @@ impl MavericNode for TutorialNode {
                         text,
                         entity: TutorialLayoutEntity::Bottom,
                         color: palette::TUTORIAL_BOTTOM_TEXT.convert_color(),
+                        align_left: true,
                     }
                     .with_transition_in_out::<TransformScaleLens>(
                         Vec3::ZERO,
@@ -128,22 +131,14 @@ pub struct TutorialPopupNode {
     pub text: &'static str,
     pub entity: TutorialLayoutEntity,
     pub color: Color,
+    pub align_left: bool,
 }
 
 impl MavericNode for TutorialPopupNode {
     type Context = TutorialContext;
 
     fn set_components(mut commands: maveric::prelude::SetComponentCommands<Self, Self::Context>) {
-        //todo tidy this up
-        commands.insert_static_bundle((VisibilityBundle::default(), GlobalTransform::default()));
-
-        commands
-            .map_node(|x| &x.entity)
-            .insert_with_node_and_context(|entity, context| {
-                let rect = context.window_size.get_rect(entity, &(context.video_resource.selfie_mode(), context.insets.0));
-
-                Transform::from_translation(rect.centre().extend(0.0))
-            });
+        commands.insert_static_bundle(SpatialBundle::default());
     }
 
     fn set_children<R: maveric::prelude::MavericRoot>(
@@ -154,32 +149,41 @@ impl MavericNode for TutorialPopupNode {
                 text,
                 entity,
                 color,
+                align_left,
             } = node;
 
-            let rect = context.window_size.get_rect(
+            let font_size = context.window_size.font_size(entity, &());
+            let text_rect = context.window_size.get_rect(
                 entity,
                 &(context.video_resource.selfie_mode(), context.insets.0),
             );
-            let font_size = context
-                .window_size
-                .font_size(&TutorialTextLayoutEntity(*entity), &());
-            let text_rect = context.window_size.get_rect(
-                &TutorialTextLayoutEntity(*entity),
-                &(context.video_resource.selfie_mode(), context.insets.0),
-            );
+
+            let (justify_text, translation, text_anchor) = if *align_left {
+                (
+                    JustifyText::Left,
+                    text_rect.centre_left(),
+                    bevy::sprite::Anchor::CenterLeft,
+                )
+            } else {
+                (
+                    JustifyText::Center,
+                    text_rect.centre(),
+                    bevy::sprite::Anchor::Center,
+                )
+            };
 
             let text = Text2DNode {
                 text: *text,
                 font: TUTORIAL_FONT_PATH,
                 font_size,
                 color: *color,
-                justify_text: JustifyText::Left,
-                linebreak_behavior: bevy::text::BreakLineOn::WordBoundary,
+                justify_text,
+                linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                 text_2d_bounds: Text2dBounds::default(),
-                text_anchor: bevy::sprite::Anchor::CenterLeft,
+                text_anchor,
             }
             .with_bundle(Transform::from_translation(
-                (text_rect.centre_left() - rect.centre()).extend(crate::z_indices::TUTORIAL_POPUP_BOX_TEXT),
+                translation.extend(crate::z_indices::TUTORIAL_POPUP_BOX_TEXT),
             ));
 
             commands.add_child("title text", text, &());
@@ -495,7 +499,7 @@ pub enum TutorialLayoutEntity {
     Bottom,
 }
 
-const BOX_WIDTH: f32 = GRID_SIZE + 45.0;
+const BOX_WIDTH: f32 = GRID_SIZE;
 
 impl LayoutStructure for TutorialLayoutEntity {
     type Context<'a> = (SelfieMode, Insets);
@@ -512,7 +516,7 @@ impl LayoutStructure for TutorialLayoutEntity {
             },
             TutorialLayoutEntity::Bottom => Vec2 {
                 x: BOX_WIDTH,
-                y: 120.0,
+                y: 160.0,
             },
         }
     }
@@ -539,42 +543,7 @@ impl LayoutStructure for TutorialLayoutEntity {
     }
 }
 
-#[derive(Debug, PartialEq, Clone, Copy)]
-pub struct TutorialTextLayoutEntity(TutorialLayoutEntity);
-
-const TEXT_LEFT_MARGIN: f32 = 0.0;
-const TEXT_RIGHT_MARGIN: f32 = 5.0;
-const BOTTOM_TEXT_TOP_OFFSET: f32 = 40.0;
-
-impl LayoutStructure for TutorialTextLayoutEntity {
-    type Context<'a> = (SelfieMode, Insets);
-
-    fn size(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
-        let x = TEXT_LEFT_MARGIN + TEXT_RIGHT_MARGIN;
-        let y = if self.0.is_bottom() {
-            BOTTOM_TEXT_TOP_OFFSET
-        } else {
-            0.0
-        };
-        self.0.size(context, sizing) - Vec2 { x, y }
-    }
-
-    fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
-        let x = TEXT_LEFT_MARGIN; //note this is different from in 'size'
-        let y = if self.0.is_bottom() {
-            BOTTOM_TEXT_TOP_OFFSET
-        } else {
-            0.0
-        };
-        self.0.location(context, sizing) + Vec2 { x, y }
-    }
-
-    fn iter_all(_context: &Self::Context<'_>) -> impl Iterator<Item = Self> {
-        TutorialLayoutEntity::iter().map(Self)
-    }
-}
-
-impl LayoutStructureWithFont for TutorialTextLayoutEntity {
+impl LayoutStructureWithFont for TutorialLayoutEntity {
     type FontContext = ();
     fn font_size(&self, _: &()) -> f32 {
         TUTORIAL_TEXT_FONT_SIZE
