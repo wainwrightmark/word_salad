@@ -120,6 +120,10 @@ pub mod palette {
     pub const THEME_INFO_COLOR_COMPLETE_NORMAL: Color = MY_WHITE;
     pub const THEME_INFO_COLOR_SELFIE: Color = LIGHT_GRAY;
 
+    pub const TUTORIAL_TOP_TEXT: Color = MY_BLACK;
+    pub const TUTORIAL_BOTTOM_TEXT: Color = MY_BLACK;
+    pub const TUTORIAL_MIDDLE_TEXT: Color = MY_WHITE;
+
     pub const TIMER_COLOR_NORMAL: Color = MEDIUM_GRAY;
     pub const TIMER_COLOR_SELFIE: Color = LIGHT_GRAY;
 
@@ -184,7 +188,7 @@ pub mod palette {
     const MY_BLACK: Color = Color::rgba(0.12, 0., 0., 1.);
     const MY_WHITE: Color = Color::rgba(1.0, 1.0, 1.0, 1.);
 
-    const LIGHT_GRAY: Color = Color::rgba(0.98, 0.97, 0.97, 1.);
+    const LIGHT_GRAY: Color = Color::rgba(0.96, 0.95, 0.95, 1.);
 
     const MEDIUM_GRAY: Color = Color::rgba(0.4, 0.42, 0.44, 1.0);
 

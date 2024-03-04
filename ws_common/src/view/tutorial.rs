@@ -11,7 +11,7 @@ use maveric::{
 use strum::{EnumCount, EnumIs, EnumIter, IntoEnumIterator};
 use ws_core::{
     layout::entities::{
-        GameLayoutEntity, SelfieMode, GRID_SIZE, IDEAL_WIDTH, TUTORIAL_TEXT_FONT_SIZE,
+        GameLayoutEntity, SelfieMode, GRID_SIZE, LEFT_MARGIN, TUTORIAL_TEXT_FONT_SIZE,
     },
     LayoutStructure,
 };
@@ -26,12 +26,11 @@ pub struct TutorialNode {
     pub text: TutorialText,
 }
 
-
 #[derive(Debug, NodeContext)]
 pub struct TutorialContext {
     pub window_size: MyWindowSize,
     pub video_resource: VideoResource,
-    pub insets: InsetsResource
+    pub insets: InsetsResource,
 }
 
 impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for TutorialContextWrapper<'w> {
@@ -39,7 +38,7 @@ impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for TutorialContextWrapper<'w>
         Self {
             window_size: Res::clone(&value.window_size),
             video_resource: Res::clone(&value.video_resource),
-            insets: Res::clone(&value.insets)
+            insets: Res::clone(&value.insets),
         }
     }
 }
@@ -65,6 +64,7 @@ impl MavericNode for TutorialNode {
                     TutorialPopupNode {
                         text,
                         entity: TutorialLayoutEntity::Top,
+                        color: palette::TUTORIAL_TOP_TEXT.convert_color(),
                     }
                     .with_transition_in_out::<TransformScaleLens>(
                         Vec3::ZERO,
@@ -85,10 +85,11 @@ impl MavericNode for TutorialNode {
                     .build();
 
                 commands.add_child(
-                    "big top",
+                    "middle",
                     TutorialPopupNode {
                         text,
                         entity: TutorialLayoutEntity::BigTop,
+                        color: palette::TUTORIAL_MIDDLE_TEXT.convert_color(),
                     }
                     .with_transition::<TransformScaleLens, ()>(
                         Vec3::ZERO,
@@ -104,6 +105,7 @@ impl MavericNode for TutorialNode {
                     TutorialPopupNode {
                         text,
                         entity: TutorialLayoutEntity::Bottom,
+                        color: palette::TUTORIAL_BOTTOM_TEXT.convert_color(),
                     }
                     .with_transition_in_out::<TransformScaleLens>(
                         Vec3::ZERO,
@@ -125,12 +127,14 @@ impl MavericNode for TutorialNode {
 pub struct TutorialPopupNode {
     pub text: &'static str,
     pub entity: TutorialLayoutEntity,
+    pub color: Color,
 }
 
 impl MavericNode for TutorialPopupNode {
     type Context = TutorialContext;
 
     fn set_components(mut commands: maveric::prelude::SetComponentCommands<Self, Self::Context>) {
+        //todo tidy this up
         commands.insert_static_bundle((VisibilityBundle::default(), GlobalTransform::default()));
 
         commands
@@ -146,45 +150,36 @@ impl MavericNode for TutorialPopupNode {
         commands: maveric::prelude::SetChildrenCommands<Self, Self::Context, R>,
     ) {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
-            let TutorialPopupNode { text, entity } = node;
+            let TutorialPopupNode {
+                text,
+                entity,
+                color,
+            } = node;
 
-            let rect = context.window_size.get_rect(entity, &(context.video_resource.selfie_mode(), context.insets.0));
-            let font_size = context.window_size.font_size(&TutorialTextLayoutEntity(*entity), &());
-            let text_rect = context.window_size.get_rect(&TutorialTextLayoutEntity(*entity), &(context.video_resource.selfie_mode(), context.insets.0));
-
-            const OPACITY: f32 = 0.6;
-
-            let background = crate::shapes::box_with_border_node(
-                rect.width(),
-                rect.height(),
-                Vec2::ZERO.extend(crate::z_indices::TUTORIAL_POPUP_BOX_BACKGROUND),
-                ws_core::palette::POPUP_BOX_BACKGROUND
-                    .convert_color()
-                    .with_a(OPACITY),
-                0.1,
-                ShaderBorder {
-                    border_color: ws_core::palette::POPUP_BOX_BORDER
-                        .convert_color()
-                        .with_a(OPACITY),
-                    border: 0.01,
-                },
+            let rect = context.window_size.get_rect(
+                entity,
+                &(context.video_resource.selfie_mode(), context.insets.0),
             );
-
-            commands.add_child("background", background, &());
+            let font_size = context
+                .window_size
+                .font_size(&TutorialTextLayoutEntity(*entity), &());
+            let text_rect = context.window_size.get_rect(
+                &TutorialTextLayoutEntity(*entity),
+                &(context.video_resource.selfie_mode(), context.insets.0),
+            );
 
             let text = Text2DNode {
                 text: *text,
                 font: TUTORIAL_FONT_PATH,
                 font_size,
-                color: Color::BLACK,
+                color: *color,
                 justify_text: JustifyText::Left,
                 linebreak_behavior: bevy::text::BreakLineOn::WordBoundary,
                 text_2d_bounds: Text2dBounds::default(),
                 text_anchor: bevy::sprite::Anchor::CenterLeft,
             }
             .with_bundle(Transform::from_translation(
-                (text_rect.centre_left() - rect.centre())
-                    .extend(crate::z_indices::TUTORIAL_POPUP_BOX_TEXT),
+                (text_rect.centre_left() - rect.centre()).extend(crate::z_indices::TUTORIAL_POPUP_BOX_TEXT),
             ));
 
             commands.add_child("title text", text, &());
@@ -525,33 +520,16 @@ impl LayoutStructure for TutorialLayoutEntity {
     fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> bevy::prelude::Vec2 {
         match self {
             TutorialLayoutEntity::Top => Vec2 {
-                x: (IDEAL_WIDTH - BOX_WIDTH) * 0.5,
-                y: GameLayoutEntity::LevelInfo
-                    .location(
-                        &context,
-                        sizing,
-                    )
-                    .y
-                    - 10.0,
+                x: LEFT_MARGIN,
+                y: GameLayoutEntity::LevelInfo.location(&context, sizing).y - 10.0,
             },
             TutorialLayoutEntity::BigTop => Vec2 {
-                x: (IDEAL_WIDTH - BOX_WIDTH) * 0.5,
-                y: GameLayoutEntity::LevelInfo
-                    .location(
-                        &context,
-                        sizing,
-                    )
-                    .y,
+                x: LEFT_MARGIN,
+                y: GameLayoutEntity::LevelInfo.location(&context, sizing).y,
             },
             TutorialLayoutEntity::Bottom => Vec2 {
-                x: (IDEAL_WIDTH - BOX_WIDTH) * 0.5,
-                y: GameLayoutEntity::WordList
-                    .location(
-                        &context,
-                        sizing,
-                    )
-                    .y
-                    - 10.0,
+                x: LEFT_MARGIN,
+                y: GameLayoutEntity::WordList.location(&context, sizing).y - 10.0,
             },
         }
     }
@@ -564,7 +542,7 @@ impl LayoutStructure for TutorialLayoutEntity {
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct TutorialTextLayoutEntity(TutorialLayoutEntity);
 
-const TEXT_LEFT_MARGIN: f32 = 15.0;
+const TEXT_LEFT_MARGIN: f32 = 0.0;
 const TEXT_RIGHT_MARGIN: f32 = 5.0;
 const BOTTOM_TEXT_TOP_OFFSET: f32 = 40.0;
 
