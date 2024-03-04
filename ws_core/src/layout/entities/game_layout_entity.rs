@@ -45,12 +45,15 @@ impl LayoutStructure for GameLayoutEntity {
         }
     }
     fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
+
+        let extra_top = extra_top_height(sizing, &context.0);
+
         match self {
-            GameLayoutEntity::TopBar => Vec2 { x: 0.0, y: TOP_BAR_OFFSET },
+            GameLayoutEntity::TopBar => Vec2 { x: 0.0, y: (context.1.top / sizing.size_ratio).max(TOP_BAR_OFFSET) },
 
             GameLayoutEntity::LevelInfo => Vec2 {
                 x: LEFT_MARGIN,
-                y: TOP_BAR_HEIGHT + TOP_BAR_OFFSET + (extra_top_height(sizing, &context.0) * 0.25),
+                y: TOP_BAR_HEIGHT + (context.1.top / sizing.size_ratio).max(TOP_BAR_OFFSET) + (extra_top * 0.25),
             },
 
             GameLayoutEntity::Grid => Vec2 {
