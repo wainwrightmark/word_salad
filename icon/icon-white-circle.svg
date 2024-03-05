@@ -4,7 +4,7 @@
    data-name="Layer 2"
    viewBox="0 0 1024 1024"
    version="1.1"
-   sodipodi:docname="icon.svg"
+   sodipodi:docname="icon-white-cirlce.svg"
    width="1024"
    height="1024"
    inkscape:version="1.3 (0e150ed6c4, 2023-07-21)"
@@ -29,7 +29,7 @@
      inkscape:window-x="3191"
      inkscape:window-y="425"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g7" />
+     inkscape:current-layer="g2" />
   <defs
      id="defs2">
     <style
@@ -66,7 +66,8 @@
       <path
          class="cls-6"
          d="m 889.26,444.63 c 0,245.56 -199.07,444.63 -444.63,444.63 C 199.07,889.26 0,690.19 0,444.63 0,199.07 199.07,0 444.63,0 690.19,0 889.26,199.07 889.26,444.63"
-         id="path2" />
+         id="path2"
+         style="fill:#ffffff" />
     </g>
     <g
        class="cls-8"

@@ -50,8 +50,8 @@ impl MavericRootChildren for WordSaladLogoRoot {
         };
 
         const LOGO_WHITE_PATH: &str =
-            r#"embedded://ws_common/../../assets/images/logo_white1024.png"#;
-        const LOGO_NORMAL_PATH: &str = r#"embedded://ws_common/../../assets/images/logo1024.png"#;
+            r#"embedded://ws_common/../../assets/images/icon-white-circle1024.png"#;
+        const LOGO_NORMAL_PATH: &str = r#"embedded://ws_common/../../assets/images/icon1024.png"#;
 
         let (key, texture_path, in_secs) = match background_type {
             BackgroundType::Congrats => ("logo_white", LOGO_WHITE_PATH, TILE_LINGER_SECONDS),
