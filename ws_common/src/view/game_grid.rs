@@ -205,9 +205,10 @@ impl MavericNode for GridTiles {
 
                             transition.build()
                         };
+                        commands.remove_child(tile.inner() as u32); //remove the old tile
 
                         commands.add_child(
-                            tile.inner() as u32,
+                            (tile.inner() as u16, 2),
                             GridTile {
                                 tile,
                                 character,

@@ -6,12 +6,17 @@ use maveric::{widgets::text2d_node::Text2DNode, with_bundle::CanWithBundle};
 use rand::rngs::ThreadRng;
 use std::time::Duration;
 use strum::IntoEnumIterator;
-use ws_core::{layout::entities::*, palette::BUTTON_CLICK_FILL};
+use ws_core::{
+    layout::entities::{level_info_entity::ThemeLengths, *},
+    palette::BUTTON_CLICK_FILL,
+};
 
 pub const TRANSITION_WAIT_SECS: f32 = 4.0;
 pub const TRANSITION_SECS: f32 = 1.0;
 #[derive(Debug, Clone, PartialEq)]
-pub struct CongratsView;
+pub struct CongratsView {
+    pub background_type: BackgroundType,
+}
 
 #[derive(Debug, NodeContext)]
 pub struct CongratsContext {
@@ -25,7 +30,7 @@ pub struct CongratsContext {
     pub level_time: LevelTime,
     pub daily_challenges: DailyChallenges,
     pub menu_state: MenuState,
-    pub insets_resource: InsetsResource
+    pub insets_resource: InsetsResource,
 }
 
 impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for CongratsContextWrapper<'w> {
@@ -41,7 +46,7 @@ impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for CongratsContextWrapper<'w>
             level_time: Res::clone(&value.level_time),
             daily_challenges: Res::clone(&value.daily_challenges),
             menu_state: Res::clone(&value.menu_state),
-            insets_resource: Res::clone(&value.insets)
+            insets_resource: Res::clone(&value.insets),
         }
     }
 }
@@ -81,7 +86,7 @@ impl MavericNode for CongratsView {
                         TILE_LINGER_SECONDS,
                         i <= 1,
                         context.video_resource.selfie_mode(),
-                        context.insets_resource.0
+                        context.insets_resource.0,
                     );
                 }
             });
@@ -89,244 +94,293 @@ impl MavericNode for CongratsView {
     }
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
-        commands
-            .ignore_node()
-            .unordered_children_with_context(|context, commands| {
-                let size = &context.window_size;
-                let selfie_mode = context.video_resource.selfie_mode();
+        commands.unordered_children_with_node_and_context(|node, context, commands| {
+            let initial_scale =
+                if context.current_level.is_changed() || context.window_size.is_changed() {
+                    Vec3::ONE
+                } else {
+                    Vec3::ZERO
+                };
 
-                let congrats_context = (selfie_mode, context.current_level.level_type());
+            let size = &context.window_size;
+            let selfie_mode = context.video_resource.selfie_mode();
 
-                #[derive(Debug, Clone, Copy)]
-                enum Data {
-                    None,
-                    JustHints,
-                    TodaysChallenge { streak: usize, longest: usize },
-                    Sequence { complete: usize, remaining: usize },
-                }
+            let congrats_context = (selfie_mode, context.current_level.level_type());
 
-                let data = match context.current_level.as_ref() {
-                    CurrentLevel::DailyChallenge { index } => {
-                        let today_index = DailyChallenges::get_today_index();
-                        if today_index == *index {
-                            let streak = context.streak.as_ref();
-                            Data::TodaysChallenge {
-                                streak: streak.current,
-                                longest: streak.longest,
-                            }
-                        } else {
-                            let complete = context
-                                .daily_challenge_completion
-                                .get_daily_challenges_complete();
-                            let total = today_index + 1;
-                            let remaining = total.saturating_sub(complete);
-                            Data::Sequence {
-                                complete,
-                                remaining,
-                            }
+            #[derive(Debug, Clone, Copy)]
+            enum Data {
+                None,
+                JustHints,
+                TodaysChallenge { streak: usize, longest: usize },
+                Sequence { complete: usize, remaining: usize },
+            }
+
+            let data = match context.current_level.as_ref() {
+                CurrentLevel::DailyChallenge { index } => {
+                    let today_index = DailyChallenges::get_today_index();
+                    if today_index == *index {
+                        let streak = context.streak.as_ref();
+                        Data::TodaysChallenge {
+                            streak: streak.current,
+                            longest: streak.longest,
                         }
-                    }
-                    CurrentLevel::Tutorial { .. } => Data::None,
-                    CurrentLevel::Fixed { sequence, .. } => {
-                        let complete = context.sequence_completion.get_number_complete(sequence);
-                        let total = sequence.level_count();
+                    } else {
+                        let complete = context
+                            .daily_challenge_completion
+                            .get_daily_challenges_complete();
+                        let total = today_index + 1;
                         let remaining = total.saturating_sub(complete);
                         Data::Sequence {
                             complete,
                             remaining,
                         }
                     }
-                    CurrentLevel::Custom { .. } => Data::JustHints,
-                    CurrentLevel::NonLevel(_) => Data::None,
+                }
+                CurrentLevel::Tutorial { .. } => Data::None,
+                CurrentLevel::Fixed { sequence, .. } => {
+                    let complete = context.sequence_completion.get_number_complete(sequence);
+                    let total = sequence.level_count();
+                    let remaining = total.saturating_sub(complete);
+                    Data::Sequence {
+                        complete,
+                        remaining,
+                    }
+                }
+                CurrentLevel::Custom { .. } => Data::JustHints,
+                CurrentLevel::NonLevel(_) => Data::None,
+            };
+
+            let transition = TransitionBuilder::default()
+                .then_wait(Duration::from_secs_f32(TRANSITION_WAIT_SECS))
+                .then_set_value(initial_scale)
+                .then_ease_with_duration(
+                    Vec3::ONE,
+                    Duration::from_secs_f32(TRANSITION_SECS),
+                    Ease::CubicOut,
+                )
+                .build();
+
+            if let itertools::Either::Left(level) =
+                context.current_level.level(&context.daily_challenges)
+            {
+                let full_name = level.full_name();
+                let theme_lengths = ThemeLengths {
+                    full_name_characters: full_name.len(),
                 };
-
-                let initial_scale = if context.current_level.is_changed() {
-                    Vec3::ONE
-                } else {
-                    Vec3::ZERO
-                };
-
-                let transition = TransitionBuilder::default()
-                    .then_wait(Duration::from_secs_f32(TRANSITION_WAIT_SECS))
-                    .then_set_value(initial_scale)
-
-                    .then_ease_with_duration(Vec3::ONE, Duration::from_secs_f32(TRANSITION_SECS), Ease::CubicOut)
-                    .build();
-
-                let stat_text_color = if selfie_mode.is_selfie_mode {
-                    palette::CONGRATS_STATISTIC_TEXT_SELFIE
-                } else {
-                    palette::CONGRATS_STATISTIC_TEXT_NORMAL
-                }
-                .convert_color();
-
-                if !context.current_level.is_tutorial() {
-                    let rect = size.get_rect(&CongratsLayoutEntity::Time, &congrats_context);
-
-                    commands.add_child(
-                        "Timer",
-                        TimerNode {
-                            text: format_seconds(context.level_time.total_elapsed().as_secs()),
-                            text_color: stat_text_color,
-                            text_font_size: size.font_size(&CongratsTimer, &selfie_mode),
-                        }
-                        .with_bundle(Transform::from_translation(
-                            rect.centre().extend(z_indices::CONGRATS_BUTTON),
-                        ))
-                        .with_transition::<TransformScaleLens, ()>(
-                            initial_scale,
-                            transition.clone(),
-                            (),
-                        ),
-                        &(),
-                    );
-                }
-
-                let stat_number_font_size = size.font_size(&StatisticNumber, &selfie_mode);
-                let stat_text_font_size = size.font_size(&StatisticLabel, &selfie_mode);
-
-                for (index, statistic) in CongratsStatistic::iter().enumerate() {
-                    let data = match (statistic, data) {
-                        (_, Data::None)
-                        | (CongratsStatistic::Left, Data::JustHints)
-                        | (CongratsStatistic::Right, Data::JustHints) => None,
-                        (CongratsStatistic::Left, _)
-                        | (CongratsStatistic::Middle, Data::JustHints) => {
-                            Some((context.found_words_state.hints_used, "Hints"))
-                        }
-                        (CongratsStatistic::Middle, Data::TodaysChallenge { streak, .. }) => {
-                            Some((streak, "Streak"))
-                        }
-                        (CongratsStatistic::Middle, Data::Sequence { complete, .. }) => {
-                            Some((complete, "Complete"))
-                        }
-                        (CongratsStatistic::Right, Data::TodaysChallenge { longest, .. }) => {
-                            Some((longest, "Longest"))
-                        }
-                        (CongratsStatistic::Right, Data::Sequence { remaining, .. }) => {
-                            Some((remaining, "Remaining"))
-                        }
-                    };
-
-                    let Some((number, label)) = data else {
-                        continue;
-                    };
-                    let rect = size.get_rect(
-                        &CongratsLayoutEntity::Statistic(statistic),
-                        &congrats_context,
-                    );
-
-                    commands.add_child(
-                        (0u16, index as u16),
-                        StatisticNode {
-                            rect,
-                            number,
-                            text: label,
-                            text_color: stat_text_color,
-                            number_font_size: stat_number_font_size,
-                            text_font_size: stat_text_font_size,
-                        }
-                        .with_bundle(Transform::from_translation(
-                            rect.centre().extend(z_indices::CONGRATS_BUTTON),
-                        ))
-                        .with_transition::<TransformScaleLens, ()>(
-                            initial_scale,
-                            transition.clone(),
-                            (),
-                        ),
-                        &(),
-                    );
-                }
-
-                if !context.menu_state.is_closed() {
-                    return; //TODO change control flow
-                }
-
-                let button_count = CongratsLayoutEntity::get_button_count(&congrats_context);
-
-                let button_text_color = if selfie_mode.is_selfie_mode {
-                    palette::CONGRATS_BUTTON_TEXT_SELFIE
-                } else {
-                    palette::CONGRATS_BUTTON_TEXT_NORMAL
-                }
-                .convert_color();
-
-                let (button_fill_color, border) = if selfie_mode.is_selfie_mode {
-                    (
-                        palette::CONGRATS_BUTTON_FILL_SELFIE.convert_color(),
-                        ShaderBorder::NONE,
+                commands.add_child(
+                    "theme",
+                    theme_title_node(
+                        full_name.to_string(),
+                        node.background_type,
+                        &context.window_size,
+                        theme_lengths,
+                        true,
+                        context.video_resource.selfie_mode(),
+                        context.insets_resource.0,
                     )
-                } else {
-                    (Color::NONE, ShaderBorder::from_color(button_text_color))
+                    .with_transition::<TransformScaleLens, ()>(
+                        initial_scale,
+                        transition.clone(),
+                        (),
+                    ),
+                    &(),
+                );
+
+                if let Some(info) = level.extra_info {
+                    commands.add_child(
+                        "info",
+                        theme_info_node(
+                            info.to_string(),
+                            node.background_type,
+                            &context.window_size,
+                            theme_lengths,
+                            true,
+                            context.video_resource.selfie_mode(),
+                            context.insets_resource.0,
+                        )
+                        .with_transition::<TransformScaleLens, ()>(
+                            initial_scale,
+                            transition.clone(),
+                            (),
+                        ),
+                        &(),
+                    );
+                }
+            }
+
+            let stat_text_color = if selfie_mode.is_selfie_mode {
+                palette::CONGRATS_STATISTIC_TEXT_SELFIE
+            } else {
+                palette::CONGRATS_STATISTIC_TEXT_NORMAL
+            }
+            .convert_color();
+
+            if !context.current_level.is_tutorial() {
+                let rect = size.get_rect(&CongratsLayoutEntity::Time, &congrats_context);
+
+                commands.add_child(
+                    "Timer",
+                    TimerNode {
+                        text: format_seconds(context.level_time.total_elapsed().as_secs()),
+                        text_color: stat_text_color,
+                        text_font_size: size.font_size(&CongratsTimer, &selfie_mode),
+                    }
+                    .with_bundle(Transform::from_translation(
+                        rect.centre().extend(z_indices::CONGRATS_BUTTON),
+                    ))
+                    .with_transition::<TransformScaleLens, ()>(
+                        initial_scale,
+                        transition.clone(),
+                        (),
+                    ),
+                    &(),
+                );
+            }
+
+            let stat_number_font_size = size.font_size(&StatisticNumber, &selfie_mode);
+            let stat_text_font_size = size.font_size(&StatisticLabel, &selfie_mode);
+
+            for (index, statistic) in CongratsStatistic::iter().enumerate() {
+                let data = match (statistic, data) {
+                    (_, Data::None)
+                    | (CongratsStatistic::Left, Data::JustHints)
+                    | (CongratsStatistic::Right, Data::JustHints) => None,
+                    (CongratsStatistic::Left, _) | (CongratsStatistic::Middle, Data::JustHints) => {
+                        Some((context.found_words_state.hints_used, "Hints"))
+                    }
+                    (CongratsStatistic::Middle, Data::TodaysChallenge { streak, .. }) => {
+                        Some((streak, "Streak"))
+                    }
+                    (CongratsStatistic::Middle, Data::Sequence { complete, .. }) => {
+                        Some((complete, "Complete"))
+                    }
+                    (CongratsStatistic::Right, Data::TodaysChallenge { longest, .. }) => {
+                        Some((longest, "Longest"))
+                    }
+                    (CongratsStatistic::Right, Data::Sequence { remaining, .. }) => {
+                        Some((remaining, "Remaining"))
+                    }
                 };
 
-                for (index, button) in CongratsButton::iter().enumerate().take(button_count) {
-                    let text = match button {
-                        CongratsButton::Next => match context.current_level.level_type() {
-                            ws_core::level_type::LevelType::Tutorial => "Next".to_string(),
-                            _ => {
-                                let next_level = context.current_level.get_next_level(
-                                    &context.daily_challenge_completion,
-                                    &context.sequence_completion,
-                                    &Purchases::default(), //don't actually worry about purchases here :)
-                                    &context.daily_challenges,
-                                );
+                let Some((number, label)) = data else {
+                    continue;
+                };
+                let rect = size.get_rect(
+                    &CongratsLayoutEntity::Statistic(statistic),
+                    &congrats_context,
+                );
 
-                                match next_level {
-                                    CurrentLevel::Tutorial { .. } => "Next".to_string(),
-                                    CurrentLevel::Fixed { .. } => "Next".to_string(),
-                                    CurrentLevel::DailyChallenge { index: next_index } => {
-                                        if let CurrentLevel::DailyChallenge {
-                                            index: current_index,
-                                        } = context.current_level.as_ref()
+                commands.add_child(
+                    (0u16, index as u16),
+                    StatisticNode {
+                        rect,
+                        number,
+                        text: label,
+                        text_color: stat_text_color,
+                        number_font_size: stat_number_font_size,
+                        text_font_size: stat_text_font_size,
+                    }
+                    .with_bundle(Transform::from_translation(
+                        rect.centre().extend(z_indices::CONGRATS_BUTTON),
+                    ))
+                    .with_transition::<TransformScaleLens, ()>(
+                        initial_scale,
+                        transition.clone(),
+                        (),
+                    ),
+                    &(),
+                );
+            }
+
+            if !context.menu_state.is_closed() {
+                return; //TODO change control flow
+            }
+
+            let button_count = CongratsLayoutEntity::get_button_count(&congrats_context);
+
+            let button_text_color = if selfie_mode.is_selfie_mode {
+                palette::CONGRATS_BUTTON_TEXT_SELFIE
+            } else {
+                palette::CONGRATS_BUTTON_TEXT_NORMAL
+            }
+            .convert_color();
+
+            let (button_fill_color, border) = if selfie_mode.is_selfie_mode {
+                (
+                    palette::CONGRATS_BUTTON_FILL_SELFIE.convert_color(),
+                    ShaderBorder::NONE,
+                )
+            } else {
+                (Color::NONE, ShaderBorder::from_color(button_text_color))
+            };
+
+            for (index, button) in CongratsButton::iter().enumerate().take(button_count) {
+                let text = match button {
+                    CongratsButton::Next => match context.current_level.level_type() {
+                        ws_core::level_type::LevelType::Tutorial => "Next".to_string(),
+                        _ => {
+                            let next_level = context.current_level.get_next_level(
+                                &context.daily_challenge_completion,
+                                &context.sequence_completion,
+                                &Purchases::default(), //don't actually worry about purchases here :)
+                                &context.daily_challenges,
+                            );
+
+                            match next_level {
+                                CurrentLevel::Tutorial { .. } => "Next".to_string(),
+                                CurrentLevel::Fixed { .. } => "Next".to_string(),
+                                CurrentLevel::DailyChallenge { index: next_index } => {
+                                    if let CurrentLevel::DailyChallenge {
+                                        index: current_index,
+                                    } = context.current_level.as_ref()
+                                    {
+                                        if next_index > *current_index
+                                            && next_index == DailyChallenges::get_today_index()
                                         {
-                                            if next_index > *current_index
-                                                && next_index == DailyChallenges::get_today_index()
-                                            {
-                                                "Today's Puzzle".to_string()
-                                            } else {
-                                                format!("Play #{}", next_index + 1)
-                                            }
+                                            "Today's Puzzle".to_string()
                                         } else {
                                             format!("Play #{}", next_index + 1)
                                         }
+                                    } else {
+                                        format!("Play #{}", next_index + 1)
                                     }
-                                    CurrentLevel::Custom { .. } => "Next".to_string(),
-                                    CurrentLevel::NonLevel(NonLevel::LevelSequenceAllFinished(
-                                        _,
-                                    )) => "Finish".to_string(),
-                                    CurrentLevel::NonLevel(_) => "Next".to_string(),
                                 }
+                                CurrentLevel::Custom { .. } => "Next".to_string(),
+                                CurrentLevel::NonLevel(NonLevel::LevelSequenceAllFinished(_)) => {
+                                    "Finish".to_string()
+                                }
+                                CurrentLevel::NonLevel(_) => "Next".to_string(),
                             }
-                        },
-                        CongratsButton::MoreLevels => "More Puzzles".to_string(),
-                        CongratsButton::ResetPuzzle => "Reset Puzzle".to_string(),
-                        #[cfg(target_arch = "wasm32")]
-                        CongratsButton::Share => "Share".to_string(),
-                    };
-
-                    commands.add_child(
-                        (1u16, index as u16),
-                        WSButtonNode {
-                            text,
-                            font_size: size.font_size(&CongratsLayoutEntity::Button(button), &()),
-                            rect: size
-                                .get_rect(&CongratsLayoutEntity::Button(button), &congrats_context),
-                            interaction: ButtonInteraction::Congrats(button),
-                            text_color: button_text_color,
-                            fill_color: button_fill_color,
-                            clicked_fill_color: BUTTON_CLICK_FILL.convert_color(),
-                            border,
                         }
-                        .with_transition::<TransformScaleLens, ()>(
-                            initial_scale,
-                            transition.clone(),
-                            (),
-                        ),
-                        &(),
-                    );
-                }
-            });
+                    },
+                    CongratsButton::MoreLevels => "More Puzzles".to_string(),
+                    CongratsButton::ResetPuzzle => "Reset Puzzle".to_string(),
+                    #[cfg(target_arch = "wasm32")]
+                    CongratsButton::Share => "Share".to_string(),
+                };
+
+                commands.add_child(
+                    (1u16, index as u16),
+                    WSButtonNode {
+                        text,
+                        font_size: size.font_size(&CongratsLayoutEntity::Button(button), &()),
+                        rect: size
+                            .get_rect(&CongratsLayoutEntity::Button(button), &congrats_context),
+                        interaction: ButtonInteraction::Congrats(button),
+                        text_color: button_text_color,
+                        fill_color: button_fill_color,
+                        clicked_fill_color: BUTTON_CLICK_FILL.convert_color(),
+                        border,
+                    }
+                    .with_transition::<TransformScaleLens, ()>(
+                        initial_scale,
+                        transition.clone(),
+                        (),
+                    ),
+                    &(),
+                );
+            }
+        });
     }
 }
 

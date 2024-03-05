@@ -3089,7 +3089,7 @@ dependencies = [
 [[package]]
 name = "maveric"
 version = "0.1.0"
-source = "git+https://github.com/wainwrightmark/maveric#7ca4bfaf45fee6993835bcdd691c90e6b12c8187"
+source = "git+https://github.com/wainwrightmark/maveric#ca32ad413fb2f0e57bfc135cb6c5872ce0630f21"
 dependencies = [
  "allocator-api2",
  "bevy",
@@ -3101,7 +3101,7 @@ dependencies = [
 [[package]]
 name = "maveric-macro"
 version = "0.1.0"
-source = "git+https://github.com/wainwrightmark/maveric#7ca4bfaf45fee6993835bcdd691c90e6b12c8187"
+source = "git+https://github.com/wainwrightmark/maveric#ca32ad413fb2f0e57bfc135cb6c5872ce0630f21"
 dependencies = [
  "proc-macro2",
  "quote",

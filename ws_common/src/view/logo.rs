@@ -29,7 +29,13 @@ impl MavericRootChildren for WordSaladLogoRoot {
 
         let size = &context.window_size;
 
-        let logo_rect = size.get_rect(&WordSaladLogo, &(context.video_resource.selfie_mode(), context.insets_resource.0));
+        let logo_rect = size.get_rect(
+            &WordSaladLogo,
+            &(
+                context.video_resource.selfie_mode(),
+                context.insets_resource.0,
+            ),
+        );
 
         let pressed_multiplier = match context.pressed_button.as_ref() {
             PressedButton::Pressed {
@@ -39,10 +45,11 @@ impl MavericRootChildren for WordSaladLogoRoot {
             _ => 1.0,
         };
 
-        const LOGO_WHITE_PATH : &str = r#"embedded://ws_common/../../assets/images/logo_white1024.png"#;
-        const LOGO_NORMAL_PATH : &str = r#"embedded://ws_common/../../assets/images/logo1024.png"#;
+        const LOGO_WHITE_PATH: &str =
+            r#"embedded://ws_common/../../assets/images/logo_white1024.png"#;
+        const LOGO_NORMAL_PATH: &str = r#"embedded://ws_common/../../assets/images/logo1024.png"#;
 
-        let texture_path = match background_type{
+        let texture_path = match background_type {
             BackgroundType::Congrats => LOGO_WHITE_PATH,
             BackgroundType::NonLevel => LOGO_WHITE_PATH,
             BackgroundType::Selfie => LOGO_NORMAL_PATH,
@@ -61,28 +68,8 @@ impl MavericRootChildren for WordSaladLogoRoot {
             }
             .with_bundle((Transform::from_translation(
                 logo_rect.centre().extend(crate::z_indices::TOP_BAR_BUTTON),
-            ),))
-
-            ,
+            ),)),
             &(),
         );
     }
 }
-
-// #[derive(Debug, Clone, Copy, Default, PartialEq)]
-// struct LogoImageNodeStyle;
-
-// impl IntoBundle for LogoImageNodeStyle {
-//     type B = Style;
-
-//     fn into_bundle(self) -> Self::B {
-//         Style {
-//             width: Val::Px(100.0),
-//             height: Val::Px(100.0),
-//             margin: UiRect::DEFAULT,
-//             align_self: AlignSelf::Center,
-//             justify_self: JustifySelf::Center,
-//             ..default()
-//         }
-//     }
-// }

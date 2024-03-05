@@ -30,7 +30,7 @@ use maveric::prelude::*;
 
 /// Resource that will touched when a redraw is requested
 #[derive(Debug, Resource, MavericContext, Default, Clone, Copy)]
-pub struct RedrawMarker{}
+pub struct RedrawMarker {}
 
 #[derive(Debug, NodeContext)]
 pub struct ViewContext {
@@ -48,7 +48,7 @@ pub struct ViewContext {
     pub streak: Streak,
     pub prices: Prices,
     pub redraw_marker: RedrawMarker,
-    pub insets: InsetsResource
+    pub insets: InsetsResource,
 }
 
 #[derive(MavericRoot)]
@@ -89,7 +89,7 @@ impl MavericRootChildren for ViewRoot {
         match context.current_level.level(&context.daily_challenges) {
             itertools::Either::Left(level) => {
                 if context.found_words_state.is_level_complete() {
-                    commands.add_child("congrats", CongratsView, &context.into());
+                    commands.add_child("congrats", CongratsView{background_type}, &context.into());
                 } else {
                     commands.add_child("words", WordsNode, &context.into());
 
@@ -106,14 +106,12 @@ impl MavericRootChildren for ViewRoot {
                                 close_to_solution,
                                 selfie_mode,
                                 special_colors: level.special_colors.clone(),
-                                insets: context.insets.0
+                                insets: context.insets.0,
                             },
                             &context.window_size,
                         );
                     }
                 }
-
-
 
                 if let Some(text) =
                     TutorialText::try_create(&context.current_level, &context.found_words_state)
@@ -121,7 +119,7 @@ impl MavericRootChildren for ViewRoot {
                     if context.menu_state.is_closed() {
                         commands.add_child("tutorial", TutorialNode { text }, &context.into());
                     }
-                } else {
+                } else if !is_level_complete {
                     let full_name = level.full_name();
                     commands.add_child(
                         "ui_theme",
@@ -130,19 +128,20 @@ impl MavericRootChildren for ViewRoot {
                             info: level.extra_info,
                             background_type,
                             selfie_mode,
-                            is_level_complete,
-                            insets: context.insets.0
+                            insets: context.insets.0,
                         },
                         &context.window_size,
                     );
 
-                    if !is_level_complete{
-                        commands.add_child("timer", TimerView{
+                    commands.add_child(
+                        "timer",
+                        TimerView {
                             background_type,
                             selfie_mode,
-                            insets: context.insets.0
-                        }, &context.window_size)
-                    }
+                            insets: context.insets.0,
+                        },
+                        &context.window_size,
+                    )
                 }
             }
             itertools::Either::Right(non_level) => {
