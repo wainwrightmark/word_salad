@@ -35,23 +35,30 @@ fn clear_color_transition(
         let background_type = background_type_from_resources(&video, &current_level, &found_words);
 
         if clear_transition.transition.is_some()
-            || clear_color.0 != background_type.color().convert_color()
+            || clear_color.0 != background_type.clear_color().convert_color()
         {
-            if background_type.is_transition_instant() {
+            let is_instant = current_level.is_changed() || !background_type.is_congrats();
+
+            if is_instant {
                 clear_transition.transition = Some(Transition::SetValue {
-                    value: background_type.color().convert_color(),
+                    value: background_type.clear_color().convert_color(),
                     next: None,
                 })
             } else {
-                clear_transition.transition = Some(Transition::Wait {
-                    remaining: Duration::from_secs_f32(crate::view::TILE_LINGER_SECONDS),
-                    next: Some(Box::new(Transition::ThenEase {
-                        next: None,
-                        destination: background_type.color().convert_color(),
-                        speed: 2.0.into(),
-                        ease: Ease::CubicOut,
-                    })),
-                })
+                const WAIT_SECS: f32 = 1.0;
+                const TRANSITION_SECS: f32 = 2.0;
+
+                let transition = TransitionBuilder::default()
+                    .then_set_value(clear_color.0)
+                    .then_wait(Duration::from_secs_f32(WAIT_SECS))
+                    .then_ease_with_duration(
+                        background_type.clear_color().convert_color(),
+                        Duration::from_secs_f32(TRANSITION_SECS),
+                        Ease::CubicOut,
+                    )
+                    .build();
+
+                clear_transition.transition = Some(transition);
             }
         }
     }

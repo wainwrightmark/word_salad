@@ -1,5 +1,7 @@
+use std::time::Duration;
+
 use crate::prelude::*;
-use maveric::with_bundle::CanWithBundle;
+use maveric::{define_lens, with_bundle::CanWithBundle};
 use ws_core::layout::entities::*;
 #[derive(Debug, NodeContext)]
 pub struct LogoContext {
@@ -10,6 +12,8 @@ pub struct LogoContext {
     pub current_level: CurrentLevel,
     pub found_words_state: FoundWordsState,
 }
+
+define_lens!(SpriteColorLens, Sprite, Color, color);
 
 #[derive(Debug, PartialEq, Clone, Copy, MavericRoot)]
 pub struct WordSaladLogoRoot;
@@ -49,26 +53,33 @@ impl MavericRootChildren for WordSaladLogoRoot {
             r#"embedded://ws_common/../../assets/images/logo_white1024.png"#;
         const LOGO_NORMAL_PATH: &str = r#"embedded://ws_common/../../assets/images/logo1024.png"#;
 
-        let texture_path = match background_type {
-            BackgroundType::Congrats => LOGO_WHITE_PATH,
-            BackgroundType::NonLevel => LOGO_WHITE_PATH,
-            BackgroundType::Selfie => LOGO_NORMAL_PATH,
-            BackgroundType::Normal => LOGO_NORMAL_PATH,
+        let (key, texture_path, in_secs) = match background_type {
+            BackgroundType::Congrats => ("logo_white", LOGO_WHITE_PATH, TILE_LINGER_SECONDS),
+            BackgroundType::NonLevel => ("logo_white", LOGO_WHITE_PATH, TILE_LINGER_SECONDS),
+            BackgroundType::Selfie => ("logo_normal", LOGO_NORMAL_PATH, 0.0),
+            BackgroundType::Normal => ("logo_normal", LOGO_NORMAL_PATH, 0.0),
         };
 
         commands.add_child(
-            "Word Salad Icon",
+            key,
             SpriteNode {
                 texture_path,
                 sprite: Sprite {
                     custom_size: Some(logo_rect.extents.abs() * pressed_multiplier),
-                    //color: Color::BLACK,
                     ..Default::default()
                 },
             }
             .with_bundle((Transform::from_translation(
                 logo_rect.centre().extend(crate::z_indices::TOP_BAR_BUTTON),
-            ),)),
+            ),))
+            .with_transition_in::<SpriteColorLens>(
+                Color::NONE,
+                Color::WHITE,
+                Duration::from_secs_f32(in_secs),
+
+                Some(Ease::ExpoIn),
+            ),
+
             &(),
         );
     }

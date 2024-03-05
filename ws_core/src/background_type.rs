@@ -11,7 +11,7 @@ pub enum BackgroundType {
 }
 
 impl BackgroundType {
-    pub fn color(&self) -> BasicColor {
+    pub fn clear_color(&self) -> BasicColor {
         match self {
             BackgroundType::Congrats => palette::CLEAR_COLOR_CONGRATS,
             BackgroundType::NonLevel => palette::CLEAR_COLOR_NON_LEVEL,
@@ -20,14 +20,6 @@ impl BackgroundType {
         }
     }
 
-    pub fn is_transition_instant(&self) -> bool {
-        match self {
-            BackgroundType::Congrats => false,
-            BackgroundType::NonLevel => true,
-            BackgroundType::Selfie => true,
-            BackgroundType::Normal => true,
-        }
-    }
 
     pub fn menu_button_complete_fill(&self) -> BasicColor {
         match self {

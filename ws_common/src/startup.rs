@@ -84,6 +84,7 @@ pub fn setup_app(extra_setup: impl FnOnce(&mut App)) {
     app.register_transition::<TransformTranslationLens>();
     app.register_transition::<TransformScaleLens>();
     app.register_transition::<(TransformTranslationLens, TransformScaleLens)>();
+    app.register_transition::<SpriteColorLens>();
 
     app.add_plugins(InputPlugin);
 
