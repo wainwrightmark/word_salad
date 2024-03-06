@@ -62,8 +62,8 @@ impl MavericNode for TutorialNode {
                     "title",
                     Text2DNode {
                         text: "Tutorial",
-                        font,
-                        font_size,
+                        font: BOLD_FONT,
+                        font_size: context.window_size.font_size(&TutorialTitleLayoutEntity, &()),
                         color: palette::TUTORIAL_TEXT_LINE2.convert_color(),
                         justify_text: JustifyText::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -294,7 +294,7 @@ impl LayoutStructureWithOrigin for TutorialTitleLayoutEntity{
 impl LayoutStructureWithFont for TutorialTitleLayoutEntity {
     type FontContext = ();
     fn font_size(&self, _: &()) -> f32 {
-        TUTORIAL_TEXT_FONT_SIZE
+        TUTORIAL_TITLE_FONT_SIZE
     }
 }
 

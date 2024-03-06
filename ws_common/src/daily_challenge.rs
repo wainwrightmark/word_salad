@@ -108,7 +108,7 @@ impl DailyChallenges {
         }
 
         let today = chrono::offset::Utc::now();
-        let today_eastern = today.add(Duration::hours(Self::OFFSET_HOURS));
+        let today_eastern = today.add(Duration ::hours(Self::OFFSET_HOURS));
 
         let secs_today: u32 =
             (today_eastern.hour() * 3600) + (today_eastern.minute() * 60) + today_eastern.second();

@@ -162,6 +162,7 @@ pub mod palette {
     pub const MENU_BUTTON_FILL: Color = GREEN_LIGHT;
     pub const BUTTON_CLICK_FILL: Color = GREEN_DARK;
     pub const MENU_BUTTON_DISCOURAGED_FILL: Color = LIGHT_GRAY;
+    pub const SUFFER_ALONE_BUTTON_DISCOURAGED_FILL: Color = Color::rgba(0.9, 0.9, 0.9, 1.);
     pub const MENU_BUTTON_COMPLETE_FILL: Color = GREEN_OTHER;
     pub const MENU_BUTTON_STROKE: Color = MY_BLACK;
 

@@ -29,7 +29,7 @@ pub struct WordsContext {
     pub video_resource: VideoResource,
     pub daily_challenges: DailyChallenges,
     pub menu_state: MenuState,
-    pub insets: InsetsResource
+    pub insets: InsetsResource,
 }
 
 impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for WordsContextWrapper<'w> {
@@ -41,7 +41,7 @@ impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for WordsContextWrapper<'w> {
             video_resource: Res::clone(&value.video_resource),
             daily_challenges: Res::clone(&value.daily_challenges),
             menu_state: Res::clone(&value.menu_state),
-            insets: Res::clone(&value.insets)
+            insets: Res::clone(&value.insets),
         }
     }
 }
@@ -83,7 +83,9 @@ impl MavericNode for WordsNode {
                     let completion = context.found_words_state.get_completion(index);
                     let tile = LayoutWordTile(index);
                     let font_size = context.window_size.font_size::<LayoutWordTile>(&tile, &());
-                    let rect = context.window_size.get_rect(&tile, &(words, (selfie_mode, context.insets.0)));
+                    let rect = context
+                        .window_size
+                        .get_rect(&tile, &(words, (selfie_mode, context.insets.0)));
                     let level_indices: (u16, u16) = match context.current_level.as_ref() {
                         CurrentLevel::Fixed { level_index, .. } => (0, *level_index as u16),
                         CurrentLevel::Custom { .. } => (1, 0),
@@ -212,6 +214,7 @@ impl MavericNode for WordNode {
                                 completion,
                                 tile: node.tile,
                                 previous_completion: args.previous.map(|x| x.completion),
+                                menu_open: !node.menu_closed,
                             },
                             ShaderProportions {
                                 width: width / scale,
@@ -244,6 +247,7 @@ pub struct WordButtonCompletion {
     pub completion: Completion,
     pub previous_completion: Option<Completion>,
     pub tile: LayoutWordTile,
+    pub menu_open: bool,
 }
 
 pub const WORD_BUTTON_HOLD_SECONDS: f32 = 0.3;
@@ -271,6 +275,7 @@ impl ExtractToShader for WordButtonBoxShader {
                 completion,
                 tile,
                 previous_completion,
+                menu_open,
             },
             ShaderProportions { height, width },
             ShaderProgress { progress },
@@ -293,18 +298,32 @@ impl ExtractToShader for WordButtonBoxShader {
             }
             PressedButton::PressedAfterActivated { .. } => None,
         } {
-            let color = match completion {
-                Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color(),
-                Completion::ManualHinted(_) => palette::WORD_BACKGROUND_MANUAL_HINT.convert_color(),
-                Completion::Complete { .. } => palette::WORD_BACKGROUND_COMPLETE.convert_color(),
+            let color = if *menu_open {
+                palette::WORD_BACKGROUND_UNSTARTED.convert_color()
+            } else {
+                match completion {
+                    Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color(),
+                    Completion::ManualHinted(_) => {
+                        palette::WORD_BACKGROUND_MANUAL_HINT.convert_color()
+                    }
+                    Completion::Complete { .. } => {
+                        palette::WORD_BACKGROUND_COMPLETE.convert_color()
+                    }
+                }
             };
 
-            let color2 = match completion {
-                Completion::Unstarted => palette::WORD_BACKGROUND_PROGRESS.convert_color(),
-                Completion::ManualHinted(_) => {
-                    palette::WORD_BACKGROUND_MANUAL_HINT2.convert_color()
+            let color2 = if *menu_open {
+                palette::WORD_BACKGROUND_UNSTARTED.convert_color()
+            } else {
+                match completion {
+                    Completion::Unstarted => palette::WORD_BACKGROUND_PROGRESS.convert_color(),
+                    Completion::ManualHinted(_) => {
+                        palette::WORD_BACKGROUND_MANUAL_HINT2.convert_color()
+                    }
+                    Completion::Complete { .. } => {
+                        palette::WORD_BACKGROUND_COMPLETE.convert_color()
+                    }
                 }
-                Completion::Complete { .. } => palette::WORD_BACKGROUND_COMPLETE.convert_color(),
             };
 
             let progress =
@@ -319,22 +338,36 @@ impl ExtractToShader for WordButtonBoxShader {
                 rounding: crate::rounding::WORD_BUTTON_NORMAL,
             }
         } else {
-            let color = match completion {
-                Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color(),
-                Completion::ManualHinted(_) => palette::WORD_BACKGROUND_MANUAL_HINT.convert_color(),
-                Completion::Complete { .. } => {
-                    if previous_completion.is_some_and(|x| x.is_manual_hinted()) {
+            let color = if *menu_open {
+                palette::WORD_BACKGROUND_UNSTARTED.convert_color()
+            } else {
+                match completion {
+                    Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color(),
+                    Completion::ManualHinted(_) => {
                         palette::WORD_BACKGROUND_MANUAL_HINT.convert_color()
-                    } else {
-                        palette::WORD_BACKGROUND_UNSTARTED.convert_color()
+                    }
+                    Completion::Complete { .. } => {
+                        if previous_completion.is_some_and(|x| x.is_manual_hinted()) {
+                            palette::WORD_BACKGROUND_MANUAL_HINT.convert_color()
+                        } else {
+                            palette::WORD_BACKGROUND_UNSTARTED.convert_color()
+                        }
                     }
                 }
             };
 
-            let color2 = match completion {
-                Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color(),
-                Completion::ManualHinted(_) => palette::WORD_BACKGROUND_MANUAL_HINT.convert_color(),
-                Completion::Complete { .. } => palette::WORD_BACKGROUND_COMPLETE.convert_color(),
+            let color2 = if *menu_open {
+                palette::WORD_BACKGROUND_UNSTARTED.convert_color()
+            } else {
+                match completion {
+                    Completion::Unstarted => palette::WORD_BACKGROUND_UNSTARTED.convert_color(),
+                    Completion::ManualHinted(_) => {
+                        palette::WORD_BACKGROUND_MANUAL_HINT.convert_color()
+                    }
+                    Completion::Complete { .. } => {
+                        palette::WORD_BACKGROUND_COMPLETE.convert_color()
+                    }
+                }
             };
 
             HorizontalGradientBoxShaderParams {

@@ -146,7 +146,7 @@ impl MavericRootChildren for PopupStateRoot {
                                 rect.width(),
                                 rect.height(),
                                 rect.centre().extend(crate::z_indices::POPUP_BOX_BUTTON),
-                                palette::MENU_BUTTON_DISCOURAGED_FILL.convert_color(),
+                                palette::SUFFER_ALONE_BUTTON_DISCOURAGED_FILL.convert_color(),
                                 BUTTON_CLICK_FILL.convert_color(),
                                 OTHER_BUTTON_NORMAL,
                                 ShaderBorder::NONE,
