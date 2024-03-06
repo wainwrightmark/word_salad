@@ -20,7 +20,7 @@
        id="filter28"
        x="-0.20909794"
        y="-0.20909793"
-       width="1.4617579"
+       width="1.461758"
        height="1.4617579">
       <feFlood
          result="flood"
@@ -52,6 +52,70 @@
          in2="comp1"
          id="feComposite28" />
     </filter>
+    <filter
+       style="color-interpolation-filters:sRGB;"
+       inkscape:label="Drop Shadow"
+       id="filter4"
+       x="-0.20732898"
+       y="-0.20732898"
+       width="1.4578515"
+       height="1.4578515">
+      <feFlood
+         result="flood"
+         in="SourceGraphic"
+         flood-opacity="0.498039"
+         flood-color="rgb(0,0,0)"
+         id="feFlood3" />
+      <feGaussianBlur
+         result="blur"
+         in="SourceGraphic"
+         stdDeviation="8.000000"
+         id="feGaussianBlur3" />
+      <feOffset
+         result="offset"
+         in="blur"
+         dx="4.000000"
+         dy="4.000000"
+         id="feOffset3" />
+      <feComposite
+         result="comp1"
+         operator="in"
+         in="flood"
+         in2="offset"
+         id="feComposite3" />
+      <feComposite
+         result="comp2"
+         operator="over"
+         in="SourceGraphic"
+         in2="comp1"
+         id="feComposite4" />
+    </filter>
+    <filter
+       style="color-interpolation-filters:sRGB;"
+       inkscape:label="Clean Edges"
+       id="filter34"
+       x="-0.04248562"
+       y="-0.047644588"
+       width="1.0849712"
+       height="1.0952892">
+      <feGaussianBlur
+         stdDeviation="1"
+         result="blur"
+         id="feGaussianBlur33" />
+      <feComposite
+         in="SourceGraphic"
+         in2="blur"
+         operator="in"
+         result="composite1"
+         id="feComposite33" />
+      <feComposite
+         in="composite1"
+         in2="composite1"
+         k2="1"
+         operator="in"
+         result="composite2"
+         id="feComposite34" />
+    </filter>
   </defs>
   <sodipodi:namedview
      id="namedview1"
@@ -63,7 +127,7 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="1.0896626"
-     inkscape:cx="317.52948"
+     inkscape:cx="427.65531"
      inkscape:cy="322.57692"
      inkscape:window-width="2400"
      inkscape:window-height="1261"
@@ -79,13 +143,16 @@
        id="rect1"
        width="135.47"
        height="135.47"
-       x="0"
-       y="0" />
-    <path
-       d="M 31.371208,21.823498 H 104.0988 a 9.5477085,9.5477085 0 0 1 9.5477,9.547709 v 72.727583 a 9.5477085,9.5477085 0 0 1 -9.5477,9.54771 H 31.371208 A 9.5477085,9.5477085 0 0 1 21.8235,104.09879 V 31.371207 a 9.5477085,9.5477085 0 0 1 9.547708,-9.547709 z"
-       fill="#e8e3e3"
-       id="path1"
-       style="stroke-width:0.20496;filter:url(#filter28)" />
+       x="-0.05000272"
+       y="0.050001498"
+       sodipodi:insensitive="true" />
+    <rect
+       style="opacity:1;fill:#e8e3e3;fill-opacity:1;stroke-width:1.30549;stroke-linecap:round;stroke-linejoin:round;filter:url(#filter4)"
+       id="rect2"
+       width="92.606445"
+       height="92.606445"
+       x="21.431778"
+       y="21.431778" />
     <text
        x="67.699043"
        y="92.921494"
@@ -93,6 +160,6 @@
        text-align="center"
        text-anchor="middle"
        id="text1"
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:71.9614px;font-family:Montserrat;-inkscape-font-specification:'Montserrat, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;stroke-width:0.20496">A</text>
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:71.9614px;font-family:Montserrat;-inkscape-font-specification:'Montserrat, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;stroke-width:0.20496;filter:url(#filter34)">A</text>
   </g>
 </svg>
