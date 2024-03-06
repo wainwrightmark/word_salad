@@ -192,11 +192,9 @@ pub mod palette {
 
     const MEDIUM_GRAY: Color = Color::rgba(0.4, 0.42, 0.44, 1.0);
 
-    //const DARK_BLUE: Color = Color::rgba(0.02, 0.07, 0.21, 1.0);
-
-    const GREEN_LIGHT: Color = Color::rgba(0.18, 0.66, 0.29, 1.0);
-    pub const GREEN_DARK: Color = Color::rgba(0.16, 0.33, 0.27, 1.);
-    const GREEN_OTHER: Color = Color::rgba(0.36, 0.73, 0.28, 1.);
+    const GREEN_LIGHT: Color = Color::rgb(0.16, 0.66, 0.28);
+    pub const GREEN_DARK: Color = Color::rgb(0.09, 0.34, 0.27);
+    const GREEN_OTHER: Color = Color::rgb(0.01, 0.53, 0.22);
     const GOLD: Color = Color::rgba(1., 0.94, 0.62, 1.);
     #[allow(dead_code)]
     pub const TRANSPARENT: Color = Color::rgba(0., 0., 0., 0.);

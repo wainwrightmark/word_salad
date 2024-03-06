@@ -28,7 +28,7 @@ export async function startVideo() {
         video.play();
     };
 
-    document.body.style.backgroundColor = "#2bb559";
+    document.body.style.backgroundColor = "#2aa847";
 
     console.log("Starting Selfie Mode (js)");
 

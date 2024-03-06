@@ -134,7 +134,7 @@ pub const REGULAR_FONT: &str = "embedded://ws_common/../../assets/fonts/Montserr
 
 pub const TILE_FONT_PATH: &str = BOLD_FONT;
 
-pub const THEME_FONT_PATH: &str = SEMIBOLD_FONT;
+pub const THEME_FONT_PATH: &str = BOLD_FONT;
 pub const BUTTONS_FONT_PATH: &str = SEMIBOLD_FONT;
 pub const THEME_INFO_FONT_PATH: &str = SEMIBOLD_FONT;
 

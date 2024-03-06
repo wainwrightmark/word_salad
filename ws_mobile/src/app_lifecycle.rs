@@ -46,7 +46,7 @@ fn set_status_bar() {
 
         do_or_report_error(StatusBar::set_style(Style::Dark));
         #[cfg(feature = "android")]
-        do_or_report_error(StatusBar::set_background_color("#2bb559"));
+        do_or_report_error(StatusBar::set_background_color("#2aa847"));
     }
 }
 
