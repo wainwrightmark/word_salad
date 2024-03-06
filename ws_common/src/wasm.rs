@@ -39,46 +39,6 @@ fn register_on_window_resized(writer: async_event_writer::AsyncEventWriter<WebWi
     std::mem::forget(closure);
 }
 
-#[derive(Default, PartialEq, Clone, Copy, Debug)]
-pub struct WindowSize {
-    pub width: f32,
-    pub height: f32,
-    pub device_pixel_ratio: f32,
-}
-
-impl WindowSize {
-    pub fn from_web_window() -> Self {
-        let web_window = web_sys::window().expect("no global `window` exists");
-        let width: f32 = web_window.inner_width().unwrap().as_f64().unwrap() as f32;
-        let height: f32 = web_window.inner_height().unwrap().as_f64().unwrap() as f32;
-        let device_pixel_ratio: f32 = web_window.device_pixel_ratio() as f32;
-
-        Self {
-            width,
-            height,
-            device_pixel_ratio,
-        }
-    }
-
-    pub fn to_window_resolution(&self) -> bevy::window::WindowResolution {
-        let mut res = bevy::window::WindowResolution::default();
-
-        res.set_scale_factor(self.device_pixel_ratio);
-        res.set(self.width, self.height);
-
-        res
-    }
-
-    pub fn clamp_to_resize_constraints(&mut self, constraints: &WindowResizeConstraints) {
-        self.width = self
-            .width
-            .clamp(constraints.min_width, constraints.max_width);
-        self.height = self
-            .height
-            .clamp(constraints.min_height, constraints.max_height);
-    }
-}
-
 fn resizer(
     mut events: EventReader<WebWindowResizedEvent>,
     //TODO move to nice bevy utils
@@ -91,7 +51,7 @@ fn resizer(
         }
 
         if let Ok((window_entity, mut window)) = windows.get_single_mut() {
-            let mut current_size = WindowSize::from_web_window();
+            let mut current_size = WindowSizeValues::from_web_window();
             current_size.clamp_to_resize_constraints(&window.resize_constraints);
 
             window.resolution = current_size.to_window_resolution();

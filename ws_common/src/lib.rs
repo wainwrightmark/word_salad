@@ -27,6 +27,7 @@ pub mod state;
 pub mod streak;
 pub mod video;
 pub mod view;
+pub mod window_size;
 
 #[cfg(target_arch = "wasm32")]
 pub mod wasm;
@@ -63,6 +64,7 @@ pub mod prelude {
     pub use crate::streak::*;
     pub use crate::video::*;
     pub use crate::view::*;
+    pub use crate::window_size::*;
 
     pub use bevy::prelude::*;
 

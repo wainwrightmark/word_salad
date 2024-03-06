@@ -17,7 +17,7 @@ pub fn setup_app(extra_setup: impl FnOnce(&mut App)) {
 
     #[cfg(target_arch = "wasm32")]
     {
-        let mut ws = crate::wasm::WindowSize::from_web_window();
+        let mut ws = WindowSizeValues::from_web_window();
         ws.clamp_to_resize_constraints(&resize_constraints);
 
         resolution = ws.to_window_resolution();

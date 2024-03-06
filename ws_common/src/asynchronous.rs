@@ -1,4 +1,5 @@
 use std::future::Future;
+
 //todo move to bevy nice utils
 
 pub fn spawn_and_run(future: impl Future<Output = ()> + 'static) {
