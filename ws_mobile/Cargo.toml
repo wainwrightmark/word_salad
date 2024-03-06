@@ -27,7 +27,7 @@ rand = "0.8.5"
 itertools = "0.12"
 strum = { version = "0.26", features = ["derive"] }
 chrono = { version = "0.4", features = ["serde", "wasmbind"] }
-bevy_pkv = { git = 'https://github.com/johanhelsing/bevy_pkv' }
+bevy_pkv = "0.10"
 serde = { version = "1", features = ["derive", "rc"] }
 anyhow = "1"
 base64 = "0.22"

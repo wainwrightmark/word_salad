@@ -187,7 +187,10 @@ fn track_level_completion_achievements(
             }
         }
         CurrentLevel::Custom { .. } => {}
-        CurrentLevel::NonLevel(_) => {}
+        CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished) | CurrentLevel::NonLevel(NonLevel::DailyChallengeReset) => {
+            maybe_unlock(&mut achievements, Achievement::CaesarSalad);
+        }
+        CurrentLevel::NonLevel(..)=>{}
     };
 
     let eligible_for_timed: bool = match current_level.as_ref() {

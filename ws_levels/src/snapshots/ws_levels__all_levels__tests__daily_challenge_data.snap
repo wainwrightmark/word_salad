@@ -5,7 +5,7 @@ expression: text
 Name	Info	Word Count	Utilization	Chance to fall after 1st word	Chance to fall after 2nd word	Chance to have fallen after 2 words	Words
 Packing for School            	by samuel           	 6	2.06	66.7%	73.3%	100.0%	Apple	Eraser	Folder	Paper	Pencil	Ruler
 Elements                      	by mark             	11	3.81	27.3%	31.8%	52.7%	Argon	Arsenic	Barium	Boron	Bromine	Carbon	Iodine	Iron	Neon	Radium	Radon
-US States                     	by mark             	 5	2.12	40.0%	85.0%	90.0%	Colorado	Maine	Maryland	Oregon	Wyoming
+US States                     	by mark             	 7	2.50	28.6%	57.1%	71.4%	Florida	Idaho	Iowa	Maine	Maryland	New York	Ohio
 Signs of the Zodiac           	by samuel           	 5	2.19	80.0%	90.0%	100.0%	Aquarius	Aries	Sagittarius	Taurus	Virgo
 Marvel's Avengers             	by mark             	 5	1.69	60.0%	90.0%	100.0%	Ant-Man	Hulk	Iron Man	Thor	Vision
 South American Capitals       	by samuel           	 5	1.94	100.0%	100.0%	100.0%	Bogota	Brasilia	Lima	Quito	Santiago
@@ -21,8 +21,8 @@ Disney Movies                 	by mark             	 5	1.81	80.0%	85.0%	100.0%	A
 Aquatic Mammals               	by samuel           	 6	2.06	83.3%	86.7%	100.0%	Orca	Otter	Polar Bear	Seal	Walrus	Whale
 Counties of Ireland           	for St. Patrick's Day	 5	1.81	80.0%	85.0%	100.0%	Derry	Donegal	Dublin	Galway	Kerry
 South American Countries      	by samuel           	 5	1.88	100.0%	100.0%	100.0%	Bolivia	Brazil	Chile	Colombia	Peru
-US Presidents                 	by samuel           	 8	2.56	37.5%	53.6%	75.0%	Adams	Bush	Ford	Grant	Harding	Obama	Truman	Trump
 Safari Animals                	by mark             	 6	2.44	66.7%	70.0%	93.3%	Antelope	Cheetah	Elephant	Leopard	Lion	Zebra
+Poets                         	by samuel           	 5	1.94	60.0%	75.0%	90.0%	Eliot	Frost	Keats	Plath	Shakespeare
 Premier League Teams          	by mark             	 5	1.93	60.0%	85.0%	100.0%	Arsenal	Chelsea	Fulham	Man U	Spurs
 Parts of the Body             	by samuel           	10	2.94	30.0%	33.3%	53.3%	Ankle	Cheek	Chest	Chin	Finger	Heel	Knee	Nose	Shin	Tongue
 Shakespeare Characters        	for Shakespeare's Birthday	 6	2.06	50.0%	66.7%	93.3%	Iago	Juliet	Macbeth	Oberon	Romeo	Timon
@@ -45,12 +45,12 @@ Famous Astronomers            	for eclipse day     	 5	1.88	80.0%	90.0%	100.0%	B
 Supernatural Creatures        	by samuel           	 7	2.44	71.4%	76.2%	95.2%	Dragon	Fairy	Golem	Hydra	Mermaid	Ogre	Vampire
 Famous Scientists             	by mark             	 6	2.25	33.3%	66.7%	86.7%	Curie	Darwin	Edison	Einstein	Newton	Tesla
 Harry Potter Characters       	by samuel           	 5	1.75	100.0%	100.0%	100.0%	Fred	Hagrid	Harry	Hermione	Snape
-African Countries             	by mark             	 7	2.56	42.9%	59.5%	85.7%	China	India	Indonesia	Japan	Laos	Nepal	Thailand
+African Countries             	by mark             	 5	1.75	80.0%	90.0%	100.0%	Chad	Egypt	Ethiopia	Ghana	Rwanda
 Pizza Toppings                	by samuel           	 6	2.62	50.0%	60.0%	86.7%	Jalapeno	Olive	Onion	Pepper	Pepperoni	Pineapple
 Time Periods                  	by samuel           	 6	1.94	83.3%	90.0%	100.0%	Decade	Hour	Moment	Month	Second	Year
 Breakfast Foods               	by samuel           	 6	2.06	50.0%	76.7%	93.3%	Bacon	Bagel	Cereal	Eggs	Granola	Waffle
 Birds of Prey                 	by mark             	 5	1.69	80.0%	95.0%	100.0%	Barn Owl	Eagle	Harrier	Hawk	Kite
 2D Shapes                     	by mark             	 7	2.62	71.4%	73.8%	95.2%	Circle	Kite	Octagon	Oval	Rectangle	Star	Triangle
-Marvel's Avengers             	by samuel           	 5	1.69	60.0%	90.0%	100.0%	Ant-Man	Hulk	Iron Man	Thor	Vision
+US Presidents                 	by samuel           	 8	2.56	37.5%	53.6%	75.0%	Adams	Bush	Ford	Grant	Harding	Obama	Truman	Trump
 Music Genres                  	by mark             	 6	1.69	83.3%	90.0%	100.0%	Blues	Funk	Indie	Rock	Soul	Swing
 Signs of the Zodiac           	by samuel           	 5	1.94	100.0%	100.0%	100.0%	Aquarius	Aries	Libra	Scorpio	Taurus

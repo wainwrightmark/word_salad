@@ -1,5 +1,5 @@
 {
-    "name": "Word Salad: A new classic word puzzle",
+    "name": "Word Salad",
     "lang": "en-US",
     "short_name": "Word Salad",
     "icons": [
@@ -27,7 +27,7 @@
     "theme_color": "#2aa847",
     "shortcuts": [
     ],
-    "description": "A new classic word puzzle",
+    "description": "Make this challenging word puzzle one of your 5-a-day",
     "display_override": [],
     "orientation": "portrait"
 
