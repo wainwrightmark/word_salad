@@ -30,36 +30,61 @@ impl Plugin for DailyChallengePlugin {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Resource, Default, MavericContext)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Resource, MavericContext)]
 pub struct DailyChallenges {
-    level_data: String,
+    level_data: Option<String>,
     #[serde(skip)]
     pub levels: Vec<DesignedLevel>,
-} //todo make the default be something
+}
+
+impl Default for DailyChallenges {
+    fn default() -> Self {
+        let mut levels = ws_levels::all_levels::DEFAULT_DAILY_CHALLENGE.clone();
+
+        DailyChallenges::number_levels(&mut levels);
+
+        Self {
+            level_data: None,
+            levels,
+        }
+    }
+}
 
 impl TrackableResource for DailyChallenges {
-    const KEY: &'static str = "DailyChallenges";
+    const KEY: &'static str = "DailyChallengesData";
 
     fn on_loaded(&mut self) {
-        //let now = chrono::Utc::now();
-        self.levels = self
-            .level_data
-            .lines()
-            .map(|x| {
-                DesignedLevel::from_tsv_line(x).unwrap_or_else(|err| {
-                    error!("{err}");
-                    DesignedLevel::unknown()
+        if let Some(level_data) = &self.level_data {
+            let mut loaded_levels: Vec<DesignedLevel> = level_data
+                .lines()
+                .map(|x| {
+                    DesignedLevel::from_tsv_line(x).unwrap_or_else(|err| {
+                        error!("{err}");
+                        DesignedLevel::unknown()
+                    })
                 })
-            })
-            .collect();
+                .collect();
 
-        for (index, level) in self.levels.iter_mut().enumerate() {
+            if loaded_levels.len() > ws_levels::all_levels::DEFAULT_DAILY_CHALLENGE.len() {
+                DailyChallenges::number_levels(&mut loaded_levels);
+                self.levels = loaded_levels;
+            }
+        } else {
+            //Continue using the default data
+        }
+    }
+}
+
+impl DailyChallenges {
+    fn number_levels(levels: &mut Vec<DesignedLevel>) {
+        for (index, level) in levels.iter_mut().enumerate() {
             level.numbering = Some(Numbering::WordSaladNumber(index + 1));
         }
     }
 }
 
-pub const DAYS_OFFSET: i32 = 738865;
+//Days between 1st January 1CE and 1st March 2024
+pub const DAYS_OFFSET: i32 = 738946;
 
 #[derive(Debug, PartialEq, Event, Clone)]
 pub struct DailyChallengeDataLoadedEvent {
@@ -123,7 +148,6 @@ fn load_levels(writer: AsyncEventWriter<DailyChallengeDataLoadedEvent>, dc: Res<
 }
 
 pub fn try_daily_index_from_path(mut path: &str) -> Option<usize> {
-
     path = path.trim_start_matches("https://wordsalad.online");
     //info!("{path}");
     if path.is_empty() || path.eq_ignore_ascii_case("/") {
@@ -205,9 +229,7 @@ fn handle_daily_challenge_data_loaded(
             .flat_map(|x| x.ok())
             .collect_vec();
 
-        for (index, level) in levels.iter_mut().enumerate() {
-            level.numbering = Some(Numbering::WordSaladNumber(index + 1));
-        }
+        DailyChallenges::number_levels(&mut levels);
 
         if levels.len() > daily_challenges.levels.len() {
             info!(
@@ -215,7 +237,7 @@ fn handle_daily_challenge_data_loaded(
                 levels.len(),
                 daily_challenges.levels.len()
             );
-            daily_challenges.level_data = event.data.clone();
+            daily_challenges.level_data = Some(event.data.clone()) ;
             daily_challenges.levels = levels;
 
             let should_change_to: Option<usize> = match current_level.as_ref() {

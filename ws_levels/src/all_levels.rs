@@ -168,6 +168,12 @@ lazy_static! { //todo data_bake
             .map(|x| x.unwrap()),
         "MLB Teams"
     );
+
+    pub static ref DEFAULT_DAILY_CHALLENGE: Vec<DesignedLevel> = include_str!("../../daily.tsv")
+            .lines()
+            .map(DesignedLevel::from_tsv_line)
+            .map(|x| x.unwrap())
+            .collect_vec();
 }
 
 pub fn number_levels(
@@ -234,15 +240,20 @@ pub mod tests {
     }
 
     #[test]
-    pub fn test_all_levels_unique(){
+    pub fn test_all_levels_unique() {
         let mut set: HashSet<_> = Default::default();
 
         let mut all_errors: Vec<String> = Default::default();
 
-        for level in get_all_levels().iter().chain((*DAILY_CHALLENGE).iter()){
-            let words = level.words.iter().map(|x: &DisplayWord|x.characters.clone()).sorted().collect_vec();
+        for level in get_all_levels().iter().chain((*DEFAULT_DAILY_CHALLENGE).iter()) {
+            let words = level
+                .words
+                .iter()
+                .map(|x: &DisplayWord| x.characters.clone())
+                .sorted()
+                .collect_vec();
 
-            if !set.insert(words){
+            if !set.insert(words) {
                 all_errors.push(format!("Level '{}' is a duplicate", level.to_string()));
             }
         }
@@ -300,11 +311,11 @@ pub mod tests {
 
     #[test]
     pub fn test_daily_challenge_levels_valid() {
-        assert!(DAILY_CHALLENGE.len() > 10);
+        assert!(DEFAULT_DAILY_CHALLENGE.len() > 10);
 
         let mut all_errors: Vec<String> = Default::default();
 
-        for level in DAILY_CHALLENGE.clone().into_iter() {
+        for level in DEFAULT_DAILY_CHALLENGE.clone().into_iter() {
             let name = &level.name;
             if level.words.len() < 4 {
                 all_errors.push(format!("Level {name} should have at least 4 words"))
@@ -368,7 +379,7 @@ pub mod tests {
     pub fn test_daily_challenge_data() {
         let mut text = "Name\tInfo\tWord Count\tUtilization\tChance to fall after 1st word\tChance to fall after 2nd word\tChance to have fallen after 2 words\tWords\n".to_string();
 
-        for level in (*DAILY_CHALLENGE).iter() {
+        for level in (*DEFAULT_DAILY_CHALLENGE).iter() {
             let fa1 = falling_probability::calculate_falling_probability_1(level) * 100.0;
             let fa2 = falling_probability::calculate_falling_probability_2(level) * 100.0;
             let fac2 =
@@ -440,14 +451,6 @@ pub mod tests {
             }
         }
         Ok(())
-    }
-
-    lazy_static! {
-        pub(crate) static ref DAILY_CHALLENGE: Vec<DesignedLevel> = include_str!("../../daily.tsv")
-            .lines()
-            .map(DesignedLevel::from_tsv_line)
-            .map(|x| x.unwrap())
-            .collect_vec();
     }
 
     //spellchecker:disable
