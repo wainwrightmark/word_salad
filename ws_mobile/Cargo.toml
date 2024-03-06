@@ -22,6 +22,7 @@ bevy = { version = "0.13", default_features = false, features = [
 
 ws_core = { path = "../ws_core" }
 ws_levels = { path = "../ws_levels" }
+async-sleep = { version = "0.4.1", features = ["impl_async_timer"] }
 rand = "0.8.5"
 itertools = "0.12"
 strum = { version = "0.26", features = ["derive"] }

@@ -217,6 +217,8 @@ const BETWEEN_LEVELS_INTERSTITIAL_AD_ID: &str = "ca-app-pub-5238923028364185/941
 const BUY_HINTS_REWARD_AD_ID: &str = "ca-app-pub-5238923028364185/4515517358";
 
 mod mobile_only {
+    use std::{future::Future, time::Duration};
+
     use super::*;
 
     pub async fn init_everything_async(writer: AsyncEventWriter<AdEvent>) {
@@ -304,20 +306,6 @@ mod mobile_only {
         }
     }
 
-    pub async fn load_and_show_interstitial_ad(writer: AsyncEventWriter<AdEvent>) {
-        let options: AdOptions = AdOptions {
-            ad_id: BETWEEN_LEVELS_INTERSTITIAL_AD_ID.to_string(),
-            is_testing: true,
-            margin: 0.0,
-            npa: false,
-        };
-
-        match Admob::prepare_interstitial(options).await {
-            Ok(..) => try_show_interstitial_ad(writer).await,
-            Err(err) => writer.send_or_panic(AdEvent::FailedToShowInterstitialAd(err.to_string())),
-        }
-    }
-
     pub async fn try_show_interstitial_ad(writer: AsyncEventWriter<AdEvent>) {
         match Admob::show_interstitial().await {
             Ok(()) => writer.send_or_panic(AdEvent::InterstitialShowed),
@@ -347,6 +335,35 @@ mod mobile_only {
         };
     }
 
+    pub async fn load_and_show_interstitial_ad(writer: AsyncEventWriter<AdEvent>) {
+        let options: AdOptions = AdOptions {
+            ad_id: BETWEEN_LEVELS_INTERSTITIAL_AD_ID.to_string(),
+            is_testing: true,
+            margin: 0.0,
+            npa: false,
+        };
+
+        const INTERSTITIAL_AD_TIMEOUT: f32 = 5.0;
+
+        let prepare_future = Admob::prepare_interstitial(options);
+
+        let timeout_future = with_timeout(
+            Duration::from_secs_f32(INTERSTITIAL_AD_TIMEOUT),
+            Box::pin(prepare_future),
+        )
+        .await;
+
+        match timeout_future {
+            Ok(Ok(_)) => try_show_interstitial_ad(writer).await,
+            Ok(Err(err)) => {
+                writer.send_or_panic(AdEvent::FailedToShowInterstitialAd(err.to_string()))
+            }
+            Err(timeout_err) => {
+                writer.send_or_panic(AdEvent::FailedToShowInterstitialAd(timeout_err.to_string()))
+            }
+        }
+    }
+
     pub async fn load_and_show_reward_ad(writer: AsyncEventWriter<AdEvent>) {
         let options = RewardAdOptions {
             ssv: None,
@@ -356,11 +373,34 @@ mod mobile_only {
             npa: false,
         };
 
-        match Admob::prepare_reward_video_ad(options).await {
-            Ok(..) => {
+        const REWARD_AD_TIMEOUT: f32 = 10.0;
+
+        let prepare_future = Admob::prepare_reward_video_ad(options);
+
+        let timeout_future = with_timeout(
+            Duration::from_secs_f32(REWARD_AD_TIMEOUT),
+            Box::pin(prepare_future),
+        )
+        .await;
+
+        match timeout_future {
+            Ok(Ok(_)) => {
                 try_show_reward_ad(writer).await;
             }
-            Err(err) => writer.send_or_panic(AdEvent::FailedToLoadRewardAd(err.to_string())),
+            Ok(Err(err)) => writer.send_or_panic(AdEvent::FailedToLoadRewardAd(err.to_string())),
+            Err(timeout_err) => {
+                writer.send_or_panic(AdEvent::FailedToLoadRewardAd(timeout_err.to_string()))
+            }
         }
+    }
+
+    pub fn with_timeout<T>(
+        dur: Duration,
+        future: T,
+    ) -> impl Future<Output = Result<T::Output, async_sleep::timeout::Error>>
+    where
+        T: Future + Unpin,
+    {
+        async_sleep::timeout::<async_sleep::AsyncTimerPlatform, T>(dur, future)
     }
 }

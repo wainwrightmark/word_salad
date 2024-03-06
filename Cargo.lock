@@ -342,6 +342,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-sleep"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c327a532ed3acb8ad885b50bb2ea5fc7c132a396dd990cf855d2825fbdc16c6c"
+dependencies = [
+ "async-timer",
+ "futures-util",
+]
+
+[[package]]
 name = "async-stream"
 version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -368,6 +378,17 @@ name = "async-task"
 version = "4.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fbb36e985947064623dbd357f727af08ffd077f93d696782f3c56365fa2e2799"
+
+[[package]]
+name = "async-timer"
+version = "1.0.0-beta.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "312c45355a5673af115235efb90c3c3cbabcd1957d98ae6a7c4706389cd71218"
+dependencies = [
+ "error-code",
+ "libc",
+ "wasm-bindgen",
+]
 
 [[package]]
 name = "atomic-waker"
@@ -1968,6 +1989,12 @@ dependencies = [
  "libc",
  "windows-sys 0.52.0",
 ]
+
+[[package]]
+name = "error-code"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "281e452d3bad4005426416cdba5ccfd4f5c1280e10099e21db27f7c1c28347fc"
 
 [[package]]
 name = "ethnum"
@@ -5955,6 +5982,7 @@ dependencies = [
  "anyhow",
  "arrayvec",
  "async-compat",
+ "async-sleep",
  "base64 0.22.0",
  "bevy",
  "bevy_param_shaders",
