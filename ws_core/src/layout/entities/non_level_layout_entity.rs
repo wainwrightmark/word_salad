@@ -44,10 +44,15 @@ impl LayoutStructure for NonLevelLayoutEntity {
                 x: (IDEAL_WIDTH - NON_LEVEL_TEXT_WIDTH) / 2.,
                 y: top_offset,
             },
-            NonLevelLayoutEntity::InteractButton => Vec2 {
-                x: (IDEAL_WIDTH - NON_LEVEL_BUTTON_WIDTH) / 2.,
-                y: top_offset + NON_LEVEL_TEXT_HEIGHT,
-            },
+            NonLevelLayoutEntity::InteractButton => {
+                let bottom_padding = sizing.bottom_pad / sizing.size_ratio;
+                let total_height = IDEAL_HEIGHT + bottom_padding;
+
+                Vec2 {
+                    x: (IDEAL_WIDTH - NON_LEVEL_BUTTON_WIDTH) / 2.,
+                    y: (total_height - NON_LEVEL_BUTTON_HEIGHT) / 2.,
+                }
+            }
         }
     }
 

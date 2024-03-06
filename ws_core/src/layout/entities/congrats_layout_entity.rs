@@ -1,5 +1,5 @@
 use glam::Vec2;
-use strum::{Display, EnumCount, EnumIter, IntoEnumIterator};
+use strum::{Display, EnumCount, EnumIs, EnumIter, IntoEnumIterator};
 
 use crate::{level_type::LevelType, prelude::*};
 
@@ -29,7 +29,7 @@ pub enum CongratsButton {
     ResetPuzzle = 2,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, EnumCount, Display)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, EnumCount, Display, EnumIs)]
 pub enum CongratsLayoutEntity {
     Time,
     Statistic(CongratsStatistic),
@@ -93,6 +93,18 @@ impl LayoutStructure for CongratsLayoutEntity {
     }
 
     fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
+        if self.is_button() && context.1.is_tutorial() {
+            let bottom_padding = sizing.bottom_pad / sizing.size_ratio;
+            let total_height = IDEAL_HEIGHT + bottom_padding;
+
+            let size = self.size(context, sizing);
+
+            return Vec2 {
+                x: (IDEAL_WIDTH - size.x) / 2.,
+                y: (total_height - size.y) / 2.,
+            };
+        }
+
         let stat_size = if context.0.is_selfie_mode {
             CONGRATS_ENTITY_STATISTIC_SIZE_SELFIE
         } else {
@@ -111,7 +123,8 @@ impl LayoutStructure for CongratsLayoutEntity {
                     + CONGRATS_BUTTON_GAP_SELFIE
                     + ((stat_size + CONGRATS_ENTITY_SPACING) * 2.0))
         } else {
-            TOP_BAR_HEIGHT + TOP_BAR_OFFSET
+            TOP_BAR_HEIGHT
+                + TOP_BAR_OFFSET
                 + extra_top_height(sizing, &context.0)
                 + THEME_HEIGHT
                 + GRID_WORD_LIST_SPACER
@@ -165,8 +178,10 @@ impl LayoutStructure for CongratsLayoutEntity {
         let button_count = Self::get_button_count(context);
         let take = 3 + button_count;
 
+        let stat_count = if context.1.is_tutorial(){0} else {3};
+
         CongratsStatistic::iter()
-            .map(|x| Self::Statistic(x))
+            .map(|x| Self::Statistic(x)).take(stat_count)
             .chain(CongratsButton::iter().map(|x| Self::Button(x)))
             .take(take)
     }

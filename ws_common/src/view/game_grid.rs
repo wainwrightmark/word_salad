@@ -149,7 +149,7 @@ impl MavericNode for GridTiles {
                         let character = level.grid[tile];
                         let target_centre = size
                             .get_rect(&LayoutAnimatedTile { index }, &((selfie_mode, insets), sol_count))
-                            .centre()
+                            .top_centre()
                             .extend(crate::z_indices::GRID_TILE);
 
                         let scale_transition: Transition<TransformScaleLens> = {
