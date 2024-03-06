@@ -32,7 +32,7 @@ body {
   /* height: 100%; */
   /* width: 100%; */
   width: 100vw;
-  height: 177.77vw;
+  height: 178vw;
   left: 50%;
   transform: translate(-50%, 0) scaleX(-100%);
   visibility: hidden;
@@ -40,6 +40,15 @@ body {
   object-fit: cover;
   z-index: -1;
   /* aspect-ratio: 16 / 9; */
+}
+
+#afterVideo{
+  background: linear-gradient(to bottom, white, #2aa847 0%, #1D7532 50%);
+  height: 100%;
+  position: absolute;
+  width: 100%;
+  top: 178vw;
+  z-index: 1;
 }
 
 pwa-toast{

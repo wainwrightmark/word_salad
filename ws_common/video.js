@@ -28,7 +28,6 @@ export async function startVideo() {
         video.play();
     };
 
-    document.body.style.backgroundColor = "#2aa847";
 
     console.log("Starting Selfie Mode (js)");
 
@@ -59,7 +58,6 @@ export async function stopVideo() {
         const video = document.querySelector("#videoElement");
         video.style.visibility = "hidden";
         video.srcObject = null;
-        document.body.style.backgroundColor = "#ffffff";
 
     }
     else {
