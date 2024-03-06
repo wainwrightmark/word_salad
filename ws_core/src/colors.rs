@@ -120,8 +120,9 @@ pub mod palette {
     pub const THEME_INFO_COLOR_COMPLETE_NORMAL: Color = MY_WHITE;
     pub const THEME_INFO_COLOR_SELFIE: Color = LIGHT_GRAY;
 
-    pub const TUTORIAL_TOP_TEXT: Color = MY_BLACK;
-    pub const TUTORIAL_BOTTOM_TEXT: Color = MY_BLACK;
+
+    pub const TUTORIAL_TEXT_LINE1: Color = GREEN_LIGHT;
+    pub const TUTORIAL_TEXT_LINE2: Color = MEDIUM_GRAY;
     pub const TUTORIAL_MIDDLE_TEXT: Color = MY_WHITE;
 
     pub const TIMER_COLOR_NORMAL: Color = MEDIUM_GRAY;

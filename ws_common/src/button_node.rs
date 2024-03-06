@@ -97,7 +97,7 @@ impl MavericNode for WsImageButtonNode {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct WSButtonNode<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> {
+pub struct WSButtonNode<T: core::fmt::Display + PartialEq + Debug + Send + Sync + Clone + 'static> {
     pub font_size: f32,
     pub rect: LayoutRectangle,
     pub text: T,
@@ -109,7 +109,7 @@ pub struct WSButtonNode<T: Into<String> + PartialEq + Debug + Send + Sync + Clon
     pub text_color: Color,
 }
 
-impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> MavericNode
+impl<T: core::fmt::Display + PartialEq + Debug + Send + Sync + Clone + 'static> MavericNode
     for WSButtonNode<T>
 {
     type Context = ();
@@ -173,7 +173,7 @@ impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> Maveri
 }
 
 #[derive(Debug, PartialEq)]
-pub struct DoubleTextButtonNode<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static>
+pub struct DoubleTextButtonNode<T: core::fmt::Display + PartialEq + Debug + Send + Sync + Clone + 'static>
 {
     pub font_size: f32,
     pub rect: LayoutRectangle,
@@ -188,7 +188,7 @@ pub struct DoubleTextButtonNode<T: Into<String> + PartialEq + Debug + Send + Syn
     pub right_font: &'static str,
 }
 
-impl<T: Into<String> + PartialEq + Debug + Send + Sync + Clone + 'static> MavericNode
+impl<T: core::fmt::Display + PartialEq + Debug + Send + Sync + Clone + 'static> MavericNode
     for DoubleTextButtonNode<T>
 {
     type Context = ();

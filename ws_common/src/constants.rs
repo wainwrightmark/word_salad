@@ -90,6 +90,7 @@ impl SaladWindowSize for Size {
             Origin::Center => rect.centre(),
             Origin::TopLeft => rect.top_left,
             Origin::CenterLeft => rect.centre_left(),
+            Origin::TopCenter => rect.top_centre(),
         }
 
 

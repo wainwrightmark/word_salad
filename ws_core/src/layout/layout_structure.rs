@@ -36,6 +36,7 @@ pub trait LayoutStructureWithOrigin : LayoutStructure{
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Display, EnumIs)]
 pub enum Origin{
     Center,
+    TopCenter,
     TopLeft,
     CenterLeft
 }

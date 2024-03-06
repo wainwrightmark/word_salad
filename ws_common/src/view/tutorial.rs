@@ -5,16 +5,10 @@ use itertools::Itertools;
 use maveric::{
     helpers::{ChildCommands, SpatialBundle},
     node::MavericNode,
-    widgets::text2d_node::Text2DNode,
     with_bundle::CanWithBundle,
 };
 use strum::{EnumCount, EnumIs, EnumIter, IntoEnumIterator};
-use ws_core::{
-    layout::entities::{
-        GameLayoutEntity, SelfieMode, GRID_SIZE, LEFT_MARGIN, TUTORIAL_TEXT_FONT_SIZE,
-    },
-    LayoutStructure,
-};
+use ws_core::{layout::entities::*, LayoutStructure};
 
 use crate::prelude::*;
 
@@ -58,67 +52,102 @@ impl MavericNode for TutorialNode {
         commands: maveric::prelude::SetChildrenCommands<Self, Self::Context, R>,
     ) {
         commands.ordered_children_with_node_and_context(|node, context, commands| {
-            if let Some(text) = node.text.top {
+            let font_size = context
+                .window_size
+                .font_size(&TutorialLayoutEntity::Top, &());
+            let font = TUTORIAL_FONT_PATH;
+
+            if node.text.middle.is_none() {
+                commands.add_child(
+                    "title",
+                    Text2DNode {
+                        text: "Tutorial",
+                        font,
+                        font_size,
+                        color: palette::TUTORIAL_TEXT_LINE2.convert_color(),
+                        justify_text: JustifyText::Center,
+                        linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
+                        text_anchor: bevy::sprite::Anchor::Center,
+                        text_2d_bounds: Default::default(),
+                    }
+                    .with_bundle(Transform::from_translation(
+                        context
+                            .window_size
+                            .get_origin(&TutorialTitleLayoutEntity, &(context.video_resource.selfie_mode(), context.insets.0))
+                            .extend(crate::z_indices::TUTORIAL_POPUP_BOX_TEXT),
+                    )),
+                    &(),
+                )
+            }
+
+            if let [Some(text1), maybe_text2] = node.text.top {
                 commands.add_child(
                     "top",
                     TutorialPopupNode {
-                        text,
+                        sections: [
+                            Some(TextSectionData {
+                                text: text1,
+                                font,
+                                font_size,
+                                color: palette::TUTORIAL_TEXT_LINE1.convert_color(),
+                            }),
+                            maybe_text2.map(|t| TextSectionData {
+                                text: t,
+                                font,
+                                font_size,
+                                color: palette::TUTORIAL_TEXT_LINE2.convert_color(),
+                            }),
+                        ],
                         entity: TutorialLayoutEntity::Top,
-                        color: palette::TUTORIAL_TOP_TEXT.convert_color(),
+                        //color: palette::TUTORIAL_TOP_TEXT.convert_color(),
                         align_left: true,
-                    }
-                    .with_transition_in_out::<TransformScaleLens>(
-                        Vec3::ZERO,
-                        Vec3::ONE,
-                        Vec3::ZERO,
-                        Duration::from_secs_f32(POPUP_TRANSITION_IN_SECONDS),
-                        Duration::from_secs_f32(POPUP_TRANSITION_OUT_SECONDS),
-                        Some(Ease::CubicOut),
-                        Some(Ease::CubicOut),
-                    ),
+                        middle_transition: false,
+                    },
                     context,
                 );
             }
             if let Some(text) = node.text.middle {
-                let transition = TransitionBuilder::default()
-                    .then_wait(Duration::from_secs_f32(TRANSITION_WAIT_SECS))
-                    .then_ease(Vec3::ONE, (1.0 / TRANSITION_SECS).into(), Ease::CubicOut)
-                    .build();
-
                 commands.add_child(
                     "middle",
                     TutorialPopupNode {
-                        text,
-                        entity: TutorialLayoutEntity::BigTop,
-                        color: palette::TUTORIAL_MIDDLE_TEXT.convert_color(),
+                        entity: TutorialLayoutEntity::Middle,
+                        sections: [
+                            Some(TextSectionData {
+                                text,
+                                font,
+                                font_size,
+                                color: palette::TUTORIAL_MIDDLE_TEXT.convert_color(),
+                            }),
+                            None,
+                        ],
                         align_left: false,
-                    }
-                    .with_transition::<TransformScaleLens, ()>(
-                        Vec3::ZERO,
-                        transition,
-                        (),
-                    ),
+                        middle_transition: true,
+                    },
                     context,
                 );
             }
-            if let Some(text) = node.text.bottom {
+            if let [Some(text1), maybe_text2] = node.text.bottom {
                 commands.add_child(
                     "bottom",
                     TutorialPopupNode {
-                        text,
                         entity: TutorialLayoutEntity::Bottom,
-                        color: palette::TUTORIAL_BOTTOM_TEXT.convert_color(),
+                        sections: [
+                            Some(TextSectionData {
+                                text: text1,
+                                font,
+                                font_size,
+                                color: palette::TUTORIAL_TEXT_LINE1.convert_color(),
+                            }),
+                            maybe_text2.map(|t| TextSectionData {
+                                text: t,
+                                font,
+                                font_size,
+                                color: palette::TUTORIAL_TEXT_LINE2.convert_color(),
+                            }),
+                        ],
                         align_left: true,
-                    }
-                    .with_transition_in_out::<TransformScaleLens>(
-                        Vec3::ZERO,
-                        Vec3::ONE,
-                        Vec3::ZERO,
-                        Duration::from_secs_f32(POPUP_TRANSITION_IN_SECONDS),
-                        Duration::from_secs_f32(POPUP_TRANSITION_OUT_SECONDS),
-                        Some(Ease::CubicOut),
-                        Some(Ease::CubicOut),
-                    ),
+                        middle_transition: false,
+                    },
                     context,
                 );
             }
@@ -128,10 +157,10 @@ impl MavericNode for TutorialNode {
 
 #[derive(Debug, PartialEq)]
 pub struct TutorialPopupNode {
-    pub text: &'static str,
+    pub sections: [Option<TextSectionData<&'static str>>; 2],
     pub entity: TutorialLayoutEntity,
-    pub color: Color,
     pub align_left: bool,
+    pub middle_transition: bool,
 }
 
 impl MavericNode for TutorialPopupNode {
@@ -146,13 +175,12 @@ impl MavericNode for TutorialPopupNode {
     ) {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
             let TutorialPopupNode {
-                text,
+                sections,
                 entity,
-                color,
                 align_left,
+                middle_transition,
             } = node;
 
-            let font_size = context.window_size.font_size(entity, &());
             let text_rect = context.window_size.get_rect(
                 entity,
                 &(context.video_resource.selfie_mode(), context.insets.0),
@@ -172,11 +200,52 @@ impl MavericNode for TutorialPopupNode {
                 )
             };
 
-            let text = Text2DNode {
-                text: *text,
-                font: TUTORIAL_FONT_PATH,
-                font_size,
-                color: *color,
+            let transition_in = if *middle_transition {
+                TransitionBuilder::<TransformScaleLens>::default()
+                    .then_set_value(Vec3::ZERO)
+                    .then_wait(Duration::from_secs_f32(TRANSITION_WAIT_SECS))
+                    .then_ease_with_duration(
+                        Vec3::ONE,
+                        Duration::from_secs_f32(TRANSITION_SECS),
+                        Ease::CubicOut,
+                    )
+                    .build()
+            } else {
+                TransitionBuilder::<TransformScaleLens>::default()
+                    .then_set_value(Vec3 {
+                        x: 1.0,
+                        y: 0.0,
+                        z: 1.0,
+                    })
+                    .then_ease_with_duration(
+                        Vec3::ONE,
+                        Duration::from_secs_f32(POPUP_TRANSITION_IN_SECONDS),
+                        Ease::CubicOut,
+                    )
+                    .build()
+            };
+
+            let transition_out = if *middle_transition {
+                TransitionBuilder::<TransformScaleLens>::default()
+                    .then_set_value(Vec3::ZERO)
+                    .build()
+            } else {
+                TransitionBuilder::<TransformScaleLens>::default()
+                    .then_set_value(Vec3::ONE)
+                    .then_ease_with_duration(
+                        Vec3 {
+                            x: 1.0,
+                            y: 0.0,
+                            z: 1.0,
+                        },
+                        Duration::from_secs_f32(POPUP_TRANSITION_OUT_SECONDS),
+                        Ease::CubicOut,
+                    )
+                    .build()
+            };
+
+            let text = MultiText2DNode {
+                sections: sections.clone(),
                 justify_text,
                 linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
                 text_2d_bounds: Text2dBounds::default(),
@@ -184,18 +253,115 @@ impl MavericNode for TutorialPopupNode {
             }
             .with_bundle(Transform::from_translation(
                 translation.extend(crate::z_indices::TUTORIAL_POPUP_BOX_TEXT),
-            ));
+            ))
+            .with_transition(Vec3::ZERO, transition_in, transition_out);
 
             commands.add_child("title text", text, &());
         });
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TutorialTitleLayoutEntity;
+
+impl LayoutStructure for TutorialTitleLayoutEntity {
+    type Context<'a> = (SelfieMode, Insets);
+
+    fn size(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {
+        Vec2 {
+            x: TIMER_WIDTH,
+            y: TIMER_HEIGHT,
+        }
+    }
+    fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Vec2 {
+        Vec2 {
+            x: (IDEAL_WIDTH - TIMER_WIDTH) * 0.5,
+            y: GameLayoutEntity::TopBar.location(context, sizing).y + (WORD_SALAD_LOGO_SIZE / 2.),
+        }
+    }
+
+    fn iter_all(_context: &Self::Context<'_>) -> impl Iterator<Item = Self> {
+        [Self].into_iter()
+    }
+}
+
+impl LayoutStructureWithOrigin for TutorialTitleLayoutEntity{
+    fn origin(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing)-> Origin {
+        Origin::TopCenter
+    }
+}
+
+impl LayoutStructureWithFont for TutorialTitleLayoutEntity {
+    type FontContext = ();
+    fn font_size(&self, _: &()) -> f32 {
+        TUTORIAL_TEXT_FONT_SIZE
+    }
+}
+
+#[derive(Debug, EnumCount, EnumIter, EnumIs, PartialEq, Clone, Copy)]
+pub enum TutorialLayoutEntity {
+    Top,
+    Middle,
+    Bottom,
+}
+
+const BOX_WIDTH: f32 = GRID_SIZE;
+
+impl LayoutStructure for TutorialLayoutEntity {
+    type Context<'a> = (SelfieMode, Insets);
+
+    fn size(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> bevy::prelude::Vec2 {
+        match self {
+            TutorialLayoutEntity::Top => Vec2 {
+                x: BOX_WIDTH,
+                y: 70.0,
+            },
+            TutorialLayoutEntity::Middle => Vec2 {
+                x: BOX_WIDTH,
+                y: 105.0,
+            },
+            TutorialLayoutEntity::Bottom => Vec2 {
+                x: BOX_WIDTH,
+                y: 160.0,
+            },
+        }
+    }
+
+    fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> bevy::prelude::Vec2 {
+        match self {
+            TutorialLayoutEntity::Top => Vec2 {
+                x: LEFT_MARGIN,
+                y: GameLayoutEntity::Grid.location(&context, sizing).y
+                    - self.size(context, sizing).y -10.0,
+            },
+            TutorialLayoutEntity::Middle => Vec2 {
+                x: LEFT_MARGIN,
+                y: GameLayoutEntity::LevelInfo.location(&context, sizing).y,
+            },
+            TutorialLayoutEntity::Bottom => Vec2 {
+                x: LEFT_MARGIN,
+                y: GameLayoutEntity::WordList.location(&context, sizing).y ,
+            },
+        }
+    }
+
+    fn iter_all(_context: &Self::Context<'_>) -> impl Iterator<Item = Self> {
+        Self::iter()
+    }
+}
+
+impl LayoutStructureWithFont for TutorialLayoutEntity {
+    type FontContext = ();
+    fn font_size(&self, _: &()) -> f32 {
+        TUTORIAL_TEXT_FONT_SIZE
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub struct TutorialText {
-    top: Option<&'static str>,
+    top: [Option<&'static str>; 2],
     middle: Option<&'static str>,
-    bottom: Option<&'static str>,
+    bottom: [Option<&'static str>; 2],
 }
 
 impl TutorialText {
@@ -216,13 +382,12 @@ impl TutorialText {
             //Chess Pieces
             match completed_words {
                 0 => Self {
-                    top: Some(
-                        "\
-                        Let's start by finding 'Pawn'\n\
-                        Make words by linking tiles",
-                    ),
+                    top: [
+                        Some("Let's start by finding 'Pawn'\n"),
+                        Some("Make words by linking tiles"),
+                    ],
                     middle: None,
-                    bottom: None,
+                    bottom: [None; 2],
                 },
                 1 => {
                     let found_index = found_words
@@ -233,47 +398,37 @@ impl TutorialText {
                         .unwrap_or_default();
 
                     let bottom = match found_index {
-                        4 => {
-                            "\
-                        \n\
-                        These labels show the word lengths\n\
-                        The first 6-letter word is 'Bishop'"
-                        }
-                        _ => {
-                            "\
-                        \n\
-                        These labels show the word lengths\n\
-                        The 5-letter word is 'Queen'"
-                        }
+                        4 => [
+                            Some("These labels show the word lengths\n"),
+                            Some("The first 6-letter word is 'Bishop'"),
+                        ],
+                        _ => [
+                            Some("These labels show the word lengths\n"),
+                            Some("The 5-letter word is 'Queen'"),
+                        ],
                     };
 
                     Self {
-                        top: Some(
-                            "\
-                        Letters vanish when no longer needed\n\
-                        Every remaining letter is needed",
-                        ),
+                        top: [
+                            Some("Letters vanish when no longer needed\n"),
+                            Some("Every remaining letter is needed"),
+                        ],
                         middle: None,
-                        bottom: Some(bottom),
+                        bottom: bottom,
                     }
                 }
                 2 => Self {
-                    top: Some(
-                        "\
-                        Find the final three Chess Pieces\n",
-                    ),
+                    top: [Some("Find the final three Chess Pieces"), None],
                     middle: None,
-                    bottom: None,
+                    bottom: [None; 2],
                 },
                 3 => Self {
-                    top: None,
+                    top: [None; 2],
                     middle: None,
-                    bottom: Some(
-                        "\
-                        \n\
-                        Labels are listed alphabetically\n\
-                        This can help you find first letters",
-                    ),
+                    bottom: [
+                        Some("Labels are listed alphabetically\n"),
+                        Some("This can help you find first letters"),
+                    ],
                 },
                 4 => {
                     let incomplete_index = found_words
@@ -283,74 +438,56 @@ impl TutorialText {
                         .map(|x| x.0)
                         .unwrap_or_default();
 
-                    let bottom = match incomplete_index {
+                    let hint = match incomplete_index {
                         0 =>
                         //bishop
                         {
-                            "\
-                        \n\
-                        Because the labels are alphabetical\n\
-                        This word starts with 'B', 'H', or 'I'"
+                            "This word starts with 'B', 'H', or 'I'"
                         }
 
                         1 =>
                         //king
                         {
-                            "\
-                        \n\
-                        Because the labels are alphabetical\n\
-                        This word can't start with an 'N'"
+                            "This word can't start with an 'N'"
                         }
 
                         2 =>
                         //knight
                         {
-                            "\
-                        \n\
-                        Because the labels are alphabetical\n\
-                        This word must start with 'K' or 'N'"
+                            "This word must start with 'K' or 'N'"
                         }
 
                         3 =>
                         //pawn
                         {
-                            "\
-                        \n\
-                        Because the labels are alphabetical\n\
-                        This word must start with 'P' or 'N'"
+                            "This word must start with 'P' or 'N'"
                         }
 
                         _ =>
                         // queen
                         {
-                            "\
-                            \n\
-                            Because the labels are alphabetical\n\
-                            This word must start with 'Q'"
+                            "This word must start with 'Q'"
                         }
                     };
 
                     Self {
-                        top: Some(
-                            "\
-                            Just one Chess Piece left\n\
-                            See below for a clue!",
-                        ),
+                        top: [
+                            Some("Just one Chess Piece left\n"),
+                            Some("See below for a clue!"),
+                        ],
                         middle: None,
-                        bottom: Some(bottom),
+                        bottom: [Some("The labels are listed alphabetically\n"), Some(hint)],
                     }
                 }
 
                 _ => {
                     //Completed
                     Self {
-                        top: None,
+                        top: [None; 2],
                         middle: Some(
-                            "\
-                            You completed your first Word Salad\n\
-                            The next puzzle is about Planets",
+                            "You completed your first Word Salad\nThe next puzzle is about Planets",
                         ),
-                        bottom: None,
+                        bottom: [None; 2],
                     }
                 }
             }
@@ -358,38 +495,33 @@ impl TutorialText {
             //Planets
             match completed_words {
                 0 => Self {
-                    top: Some(
-                        "\
-                    Find six planets\n\
-                    The 4-letter planet is 'Mars'",
-                    ),
+                    top: [
+                        Some("Find six planets\n"),
+                        Some("The 4-letter planet is 'Mars'"),
+                    ],
                     middle: None,
-                    bottom: None,
+                    bottom: [None; 2],
                 },
                 1 => Self {
-                    top: Some("Find the other planets"),
+                    top: [Some("Find the other planets"), None],
                     middle: None,
-                    bottom: Some(
-                        "\
-                        \n\
-                    Want help? Use a hint\n\
-                    Press a label to reveal a letter",
-                    ),
+                    bottom: [
+                        Some("Want help? Use a hint\n"),
+                        Some("Press a label to reveal a letter"),
+                    ],
                 },
                 2 => Self {
-                    top: Some("Hints are free in the tutorial"),
+                    top: [Some("Hints are free in the tutorial"), None],
                     middle: None,
-                    bottom: Some(
-                        "\
-                        \n\
-                    Want help? Use a hint\n\
-                    Press a label to reveal a letter",
-                    ),
+                    bottom: [
+                        Some("Want help? Use a hint\n"),
+                        Some("Press a label to reveal a letter"),
+                    ],
                 },
                 3..=4 => Self {
-                    top: Some("Hints are free in the tutorial"),
+                    top: [Some("Hints are free in the tutorial"), None],
                     middle: None,
-                    bottom: None,
+                    bottom: [None; 2],
                 },
                 5 => {
                     let incomplete_index = found_words
@@ -399,82 +531,54 @@ impl TutorialText {
                         .map(|x| x.0)
                         .unwrap_or_default();
 
-                    let bottom = match incomplete_index {
+                    let hint = match incomplete_index {
                         0 =>
                         // Mars
                         {
-                            "\
-                        \n\
-                        Because the labels are alphabetical\n\
-                        This word starts with 'A' or 'MA'"
+                            "This word starts with 'A' or 'MA'"
                         }
 
                         1 =>
                         // Mercury
                         {
-                            "\
-                        \n\
-                        Because the labels are alphabetical\n\
-                        This word starts with 'M'"
+                            "This word starts with 'M'"
                         }
 
                         2 =>
                         // Neptune
                         {
-                            "\
-                        \n\
-                        Because the labels are alphabetical\n\
-                        This word must start with 'N' or 'P'"
+                            "This word must start with 'N' or 'P'"
                         }
 
                         3 =>
                         // Saturn
                         {
-                            "\
-                        \n\
-                        Because the labels are alphabetical\n\
-                        This word cannot start with 'A'"
+                            "This word cannot start with 'A'"
                         }
 
                         4 =>
                         // Uranus
                         {
-                            "\
-                            \n\
-                            Because the labels are alphabetical\n\
-                            This word must start with 'S' or 'U'"
+                            "This word must start with 'S' or 'U'"
                         }
 
                         _ =>
                         // Venus
                         {
-                            "\
-                            \n\
-                            Because the labels are alphabetical\n\
-                            This word must start with 'U' or 'V'"
+                            "This word must start with 'U' or 'V'"
                         }
                     };
 
                     Self {
-                        top: Some(
-                            "\
-                            Just one Chess Piece left\n\
-                            See below for a clue!",
-                        ),
+                        top: [Some("One planet to go!"), None],
                         middle: None,
-                        bottom: Some(bottom),
-                    };
-
-                    Self {
-                        top: Some("One planet to go!"),
-                        middle: None,
-                        bottom: Some(bottom),
+                        bottom: [Some("The labels are listed alphabetically\n"), Some(hint)],
                     }
                 }
                 _ => {
                     //Completed
                     Self {
-                        top: None,
+                        top: [None; 2],
                         middle: Some(
                             "\
                         Tap 'Next' for today's puzzle\n\
@@ -482,70 +586,12 @@ impl TutorialText {
                         Why not try out Selfie Mode?",
                         ),
 
-                        bottom: None,
+                        bottom: [None; 2],
                     }
                 }
             }
         };
 
         Some(result)
-    }
-}
-
-#[derive(Debug, EnumCount, EnumIter, EnumIs, PartialEq, Clone, Copy)]
-pub enum TutorialLayoutEntity {
-    Top,
-    BigTop,
-    Bottom,
-}
-
-const BOX_WIDTH: f32 = GRID_SIZE;
-
-impl LayoutStructure for TutorialLayoutEntity {
-    type Context<'a> = (SelfieMode, Insets);
-
-    fn size(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> bevy::prelude::Vec2 {
-        match self {
-            TutorialLayoutEntity::Top => Vec2 {
-                x: BOX_WIDTH,
-                y: 70.0,
-            },
-            TutorialLayoutEntity::BigTop => Vec2 {
-                x: BOX_WIDTH,
-                y: 105.0,
-            },
-            TutorialLayoutEntity::Bottom => Vec2 {
-                x: BOX_WIDTH,
-                y: 160.0,
-            },
-        }
-    }
-
-    fn location(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> bevy::prelude::Vec2 {
-        match self {
-            TutorialLayoutEntity::Top => Vec2 {
-                x: LEFT_MARGIN,
-                y: GameLayoutEntity::LevelInfo.location(&context, sizing).y - 10.0,
-            },
-            TutorialLayoutEntity::BigTop => Vec2 {
-                x: LEFT_MARGIN,
-                y: GameLayoutEntity::LevelInfo.location(&context, sizing).y,
-            },
-            TutorialLayoutEntity::Bottom => Vec2 {
-                x: LEFT_MARGIN,
-                y: GameLayoutEntity::WordList.location(&context, sizing).y - 10.0,
-            },
-        }
-    }
-
-    fn iter_all(_context: &Self::Context<'_>) -> impl Iterator<Item = Self> {
-        Self::iter()
-    }
-}
-
-impl LayoutStructureWithFont for TutorialLayoutEntity {
-    type FontContext = ();
-    fn font_size(&self, _: &()) -> f32 {
-        TUTORIAL_TEXT_FONT_SIZE
     }
 }
