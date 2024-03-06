@@ -108,7 +108,7 @@ impl DailyChallenges {
         }
 
         let today = chrono::offset::Utc::now();
-        let today_eastern = today.add(Duration ::hours(Self::OFFSET_HOURS));
+        let today_eastern = today.add(Duration ::try_hours(Self::OFFSET_HOURS).unwrap());
 
         let secs_today: u32 =
             (today_eastern.hour() * 3600) + (today_eastern.minute() * 60) + today_eastern.second();
@@ -135,7 +135,7 @@ impl DailyChallenges {
 
 fn get_today_date() -> chrono::NaiveDate {
     let today = chrono::offset::Utc::now();
-    let today_eastern = today.add(Duration::hours(DailyChallenges::OFFSET_HOURS));
+    let today_eastern = today.add(Duration::try_hours(DailyChallenges::OFFSET_HOURS).unwrap());
     today_eastern.date_naive()
 }
 

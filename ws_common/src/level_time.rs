@@ -82,7 +82,7 @@ impl TrackableResource for LevelTime {
     fn on_loaded(&mut self) {
         if let LevelTime::Running { since, additional } = self {
             let now = chrono::Utc::now();
-            let flush_time = chrono::Duration::seconds(FLUSH_SECONDS);
+            let flush_time = chrono::Duration::try_seconds(FLUSH_SECONDS).unwrap();
             if now.signed_duration_since(since) > flush_time {
                 let new_additional = *additional + Duration::from_secs(FLUSH_SECONDS as u64);
                 *self = LevelTime::Running {
@@ -138,7 +138,7 @@ fn manage_timer(
 
     if let LevelTime::Running { since, .. } = timer.as_ref() {
         if chrono::Utc::now().signed_duration_since(since)
-            >= chrono::Duration::seconds(FLUSH_SECONDS)
+            >= chrono::Duration::try_seconds(FLUSH_SECONDS).unwrap()
         {
             timer.resume_timer();
         }
