@@ -190,6 +190,11 @@ impl MavericNode for WordLine {
 
         entity_commands.commands().insert_resource(targets);
     }
+
+    fn on_deleted(&self, commands: &mut ComponentCommands) -> DeletionPolicy {
+        commands.insert_resource(WordLineGlobalTargets::default());
+        DeletionPolicy::DeleteImmediately
+    }
 }
 
 fn get_direction(from: &Tile, to: &Tile) -> u32 {
@@ -338,7 +343,7 @@ impl Default for WordLineGlobalTargets {
 
 #[derive(Debug, Resource, PartialEq)]
 enum LineWidthTarget {
-    PulseUp,
+    PulseUp, //TODO track remaining pulses
     PulseDown,
     Full,
     None,
@@ -357,9 +362,12 @@ fn transition_word_line(
     mut values: ResMut<WordLineGlobalValues>,
     mut targets: ResMut<WordLineGlobalTargets>,
     time: Res<Time>,
+    chosen: Res<ChosenState>
 ) {
     let progress_change = time.delta_seconds() * PROGRESS_SPEED;
     let mut changed: bool = false;
+
+
 
     let line_width = match targets.target_line_width {
         LineWidthTarget::PulseUp => {

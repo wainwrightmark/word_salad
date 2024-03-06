@@ -3117,7 +3117,7 @@ dependencies = [
 [[package]]
 name = "maveric"
 version = "0.1.0"
-source = "git+https://github.com/wainwrightmark/maveric#81b9fff19f97e543e7ac221fab7d8d6cfcecf187"
+source = "git+https://github.com/wainwrightmark/maveric#7a387d5ec74569a34ea19bde7c3b6c3255077fed"
 dependencies = [
  "allocator-api2",
  "bevy",
@@ -3129,7 +3129,7 @@ dependencies = [
 [[package]]
 name = "maveric-macro"
 version = "0.1.0"
-source = "git+https://github.com/wainwrightmark/maveric#81b9fff19f97e543e7ac221fab7d8d6cfcecf187"
+source = "git+https://github.com/wainwrightmark/maveric#7a387d5ec74569a34ea19bde7c3b6c3255077fed"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4597,9 +4597,9 @@ checksum = "2047c6ded9c721764247e62cd3b03c09ffc529b2ba5b10ec482ae507a4a70160"
 
 [[package]]
 name = "sysinfo"
-version = "0.30.6"
+version = "0.30.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6746919caf9f2a85bff759535664c060109f21975c5ac2e8652e60102bd4d196"
+checksum = "0c385888ef380a852a16209afc8cfad22795dd8873d69c9a14d2e2088f118d18"
 dependencies = [
  "cfg-if",
  "core-foundation-sys",
