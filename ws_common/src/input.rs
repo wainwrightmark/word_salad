@@ -12,7 +12,7 @@ use crate::{
 };
 use bevy::{prelude::*, window::PrimaryWindow};
 use strum::EnumIs;
-use ws_core::layout::entities::{recording_button::ToggleRecordingButton, *};
+use ws_core::layout::entities::{level_info_entity::IsLevelComplete, recording_button::ToggleRecordingButton, *};
 
 use self::{
     hints_menu_layout::HintsLayoutEntity, settings_menu_layout::SettingsLayoutEntity,
@@ -102,7 +102,7 @@ impl InteractionEntity {
             }
         }
 
-        let tbi = Self::try_get_button::<WordSaladLogo>(position, size, &(selfie_mode, insets));
+        let tbi = Self::try_get_button::<WordSaladLogo>(position, size, &((selfie_mode, insets), IsLevelComplete(is_level_complete)));
         if tbi.is_some() {
             return tbi;
         }
@@ -143,7 +143,7 @@ impl InteractionEntity {
                             if let Some(x) = Self::try_get_button::<WordSaladLogo>(
                                 position,
                                 size,
-                                &(selfie_mode, insets),
+                                &((selfie_mode, insets), IsLevelComplete(is_level_complete)),
                             ) {
                                 Some(x)
                             } else if let Some(x) = Self::try_get_button::<TimerLayoutEntity>(

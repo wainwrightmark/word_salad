@@ -22,6 +22,8 @@ mod tests {
     use crate::layout::entities::*;
     use crate::prelude::*;
 
+    use self::level_info_entity::IsLevelComplete;
+
     // TODO check that all children are contained within parents
     // TODO check that all siblings do not intersect each other
 
@@ -34,7 +36,7 @@ mod tests {
         let insets = Insets::default();
 
         test_picking::<GameLayoutEntity>(&(selfie_mode, insets), &sizing);
-        test_picking::<WordSaladLogo>(&(selfie_mode, insets), &sizing);
+        test_picking::<WordSaladLogo>(&((selfie_mode, insets), IsLevelComplete(false)), &sizing);
         test_picking::<LayoutGridTile>(&(selfie_mode, insets), &sizing);
     }
 

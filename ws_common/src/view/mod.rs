@@ -89,8 +89,24 @@ impl MavericRootChildren for ViewRoot {
         match context.current_level.level(&context.daily_challenges) {
             itertools::Either::Left(level) => {
                 if context.found_words_state.is_level_complete() {
-                    commands.add_child("congrats", CongratsView{background_type}, &context.into());
+                    commands.add_child(
+                        "congrats",
+                        CongratsView { background_type },
+                        &context.into(),
+                    );
                 } else {
+                    commands.add_child(
+                        "logo",
+                        crate::view::logo(
+                            &context.window_size,
+                            &context.video_resource,
+                            &context.insets,
+                            background_type,
+                            is_level_complete,
+                        ),
+                        &(),
+                    );
+
                     commands.add_child("words", WordsNode, &context.into());
 
                     if !context.level_time.is_paused() {

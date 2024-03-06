@@ -65,7 +65,6 @@ pub fn setup_app(extra_setup: impl FnOnce(&mut App)) {
     app.init_resource::<RedrawMarker>();
     app.register_maveric::<ViewRoot>();
     app.register_maveric::<RecordingButtonRoot>();
-    app.register_maveric::<WordSaladLogoRoot>();
     app.register_maveric::<MenuRoot>();
     app.add_plugins(HintsRemainingPlugin);
     app.add_plugins(StatePlugin);
@@ -84,7 +83,7 @@ pub fn setup_app(extra_setup: impl FnOnce(&mut App)) {
     app.register_transition::<TransformTranslationLens>();
     app.register_transition::<TransformScaleLens>();
     app.register_transition::<(TransformTranslationLens, TransformScaleLens)>();
-    app.register_transition::<SpriteColorLens>();
+
 
     app.add_plugins(InputPlugin);
 

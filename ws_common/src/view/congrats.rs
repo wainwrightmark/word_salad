@@ -95,13 +95,6 @@ impl MavericNode for CongratsView {
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
-            let initial_scale =
-                if context.current_level.is_changed() || context.window_size.is_changed() {
-                    Vec3::ONE
-                } else {
-                    Vec3::ZERO
-                };
-
             let size = &context.window_size;
             let selfie_mode = context.video_resource.selfie_mode();
 
@@ -150,47 +143,60 @@ impl MavericNode for CongratsView {
                 CurrentLevel::NonLevel(_) => Data::None,
             };
 
-            let transition = TransitionBuilder::default()
-                .then_wait(Duration::from_secs_f32(TRANSITION_WAIT_SECS))
-                .then_set_value(initial_scale)
-                .then_ease_with_duration(
-                    Vec3::ONE,
-                    Duration::from_secs_f32(TRANSITION_SECS),
-                    Ease::CubicOut,
-                )
-                .build();
-
-            if let itertools::Either::Left(level) =
-                context.current_level.level(&context.daily_challenges)
+            let (initial_scale, transition) = if context.current_level.is_changed()
+                || context.window_size.is_changed()
+                || context.menu_state.is_changed()
             {
-                let full_name = level.full_name();
-                let theme_lengths = ThemeLengths {
-                    full_name_characters: full_name.len(),
-                };
-                commands.add_child(
-                    "theme",
-                    theme_title_node(
-                        full_name.to_string(),
-                        node.background_type,
-                        &context.window_size,
-                        theme_lengths,
-                        true,
-                        context.video_resource.selfie_mode(),
-                        context.insets_resource.0,
-                    )
-                    .with_transition::<TransformScaleLens, ()>(
-                        initial_scale,
-                        transition.clone(),
-                        (),
-                    ),
-                    &(),
-                );
+                (
+                    Vec3::ONE,
+                    TransitionBuilder::default()
+                        .then_set_value(Vec3::ONE)
+                        .build(),
+                )
+            } else {
+                let transition = TransitionBuilder::default()
+                    .then_wait(Duration::from_secs_f32(TRANSITION_WAIT_SECS))
+                    .then_set_value(Vec3::ZERO)
+                    .then_tween_with_duration(Vec3::ONE, Duration::from_secs_f32(TRANSITION_SECS))
+                    .build();
 
-                if let Some(info) = level.extra_info {
+                (Vec3::ZERO, transition)
+            };
+
+            let background_type = if context.video_resource.is_selfie_mode {
+                BackgroundType::Selfie
+            } else {
+                BackgroundType::Congrats
+            };
+            commands.add_child(
+                "logo",
+                crate::view::logo(
+                    &context.window_size,
+                    &context.video_resource,
+                    &context.insets_resource,
+                    background_type,
+                    true,
+                )
+                .with_transition::<TransformScaleLens, ()>(
+                    initial_scale,
+                    transition.clone(),
+                    (),
+                ),
+                &(),
+            );
+
+            if !context.current_level.is_tutorial() {
+                if let itertools::Either::Left(level) =
+                    context.current_level.level(&context.daily_challenges)
+                {
+                    let full_name = level.full_name();
+                    let theme_lengths = ThemeLengths {
+                        full_name_characters: full_name.len(),
+                    };
                     commands.add_child(
-                        "info",
-                        theme_info_node(
-                            info.to_string(),
+                        "theme",
+                        theme_title_node(
+                            full_name.to_string(),
                             node.background_type,
                             &context.window_size,
                             theme_lengths,
@@ -205,6 +211,27 @@ impl MavericNode for CongratsView {
                         ),
                         &(),
                     );
+
+                    if let Some(info) = level.extra_info {
+                        commands.add_child(
+                            "info",
+                            theme_info_node(
+                                info.to_string(),
+                                node.background_type,
+                                &context.window_size,
+                                theme_lengths,
+                                true,
+                                context.video_resource.selfie_mode(),
+                                context.insets_resource.0,
+                            )
+                            .with_transition::<TransformScaleLens, ()>(
+                                initial_scale,
+                                transition.clone(),
+                                (),
+                            ),
+                            &(),
+                        );
+                    }
                 }
             }
 

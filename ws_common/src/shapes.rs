@@ -324,7 +324,7 @@ impl ShaderBorder {
     pub fn from_color(color: Color) -> Self {
         Self {
             border_color: color,
-            border: 0.01,
+            border: 0.005,
         }
     }
 }
