@@ -78,7 +78,7 @@ impl LevelsMenuLayoutEntity {
         };
 
         let complete = num_complete.min(total);
-        let fraction = fmtastic::VulgarFraction::new(complete, total).to_string();
+        let fraction = format!("{:#}", fmtastic::VulgarFraction::new(complete, total));
 
         (name.to_string(), fraction)
     }

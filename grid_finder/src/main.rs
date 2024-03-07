@@ -29,7 +29,7 @@ use ws_core::{
         node::GridResult,
         orientation::{self, *},
     },
-    try_make_grid,
+    try_make_grid, CharsArray, WordTrait,
 };
 
 use crate::clustering::cluster_words;
@@ -44,6 +44,7 @@ struct Cli {
 #[derive(Subcommand, Debug)]
 
 pub enum Commands {
+    /// Find grids using the data files
     FindGrids(FindGridsArgs),
 
     /// search all found grids for ones where ones in this list are written in an obvious way
@@ -87,6 +88,11 @@ pub struct ClusterArgs {
     /// All grids should have at least this cumulative falling probability
     #[arg(long, default_value = "0.0")]
     pub min_falling: f32,
+
+    /// Space Separated Words to ignore
+    /// Grids containing these words will not be clustered
+    #[arg(long, default_value="")]
+    pub ignore_words: String,
 }
 
 #[derive(Args, Debug)]
@@ -310,10 +316,12 @@ fn cluster_files(options: &ClusterArgs) {
     let folder = std::fs::read_dir("grids").unwrap();
 
     let paths: Vec<_> = folder.collect();
-
-    // let pb: ProgressBar = ProgressBar::new(paths.len() as u64)
-    //     .with_style(ProgressStyle::with_template("{msg:50} {bar} {pos:2}/{len:2}").unwrap())
-    //     .with_message("Data files");
+    let ignore_words: HashSet<CharsArray> = options
+        .ignore_words
+        .split_ascii_whitespace()
+        .map(|s| ws_core::Word::from_str(s).unwrap())
+        .map(|s| s.characters)
+        .collect();
 
     let _ = std::fs::create_dir("clusters");
 
@@ -322,7 +330,6 @@ fn cluster_files(options: &ClusterArgs) {
         let file_name = grid_path.file_name().unwrap().to_string_lossy();
 
         let category = grid_path.file_stem().unwrap().to_string_lossy();
-        // pb.set_message(file_name.to_string());
 
         let grid_file_text = std::fs::read_to_string(grid_path.clone()).unwrap();
 
@@ -349,6 +356,7 @@ fn cluster_files(options: &ClusterArgs) {
             .lines()
             .map(|l| GridResult::from_str(l).unwrap())
             .filter(|x| x.words.len() >= options.minimum_words as usize)
+            .filter(|x|ignore_words.is_empty() || x.words.iter().all(|w|!ignore_words.contains(w.characters()) ))
             .filter(|x| {
                 options.min_falling == 0.0
                     || falling_probability::calculate_cumulative_falling_probability_2(x)
