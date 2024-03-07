@@ -31,6 +31,7 @@ pub struct CongratsContext {
     pub daily_challenges: DailyChallenges,
     pub menu_state: MenuState,
     pub insets_resource: InsetsResource,
+    pub chosen_state: ChosenState,
 }
 
 impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for CongratsContextWrapper<'w> {
@@ -47,6 +48,7 @@ impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for CongratsContextWrapper<'w>
             daily_challenges: Res::clone(&value.daily_challenges),
             menu_state: Res::clone(&value.menu_state),
             insets_resource: Res::clone(&value.insets),
+            chosen_state: Res::clone(&value.chosen_state),
         }
     }
 }
@@ -143,10 +145,7 @@ impl MavericNode for CongratsView {
                 CurrentLevel::NonLevel(_) => Data::None,
             };
 
-            let (initial_scale, transition) = if context.current_level.is_changed()
-                || context.window_size.is_changed()
-                || context.menu_state.is_changed()
-            {
+            let (initial_scale, transition) = if !context.chosen_state.is_just_finished {
                 (
                     Vec3::ONE,
                     TransitionBuilder::default()
@@ -155,8 +154,8 @@ impl MavericNode for CongratsView {
                 )
             } else {
                 let transition = TransitionBuilder::default()
-                    .then_wait(Duration::from_secs_f32(TRANSITION_WAIT_SECS))
                     .then_set_value(Vec3::ZERO)
+                    .then_wait(Duration::from_secs_f32(TRANSITION_WAIT_SECS))
                     .then_tween_with_duration(Vec3::ONE, Duration::from_secs_f32(TRANSITION_SECS))
                     .build();
 
