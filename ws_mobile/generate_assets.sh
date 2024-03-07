@@ -1,1 +1,2 @@
-npx @capacitor/assets generate --pwaManifestPath ..\manifest.json --ios --android --assetPath ../icon
+npx @capacitor/assets generate --pwaManifestPath .\manifest.json --ios --android --assetPath ../icon --iconBackgroundColor #f4f3f1 --iconBackgroundColorDark #061335 --splashBackgroundColor #f4f3f1 --splashBackgroundColorDark #061335
+#Remember to set background android:inset="10%" in ic_launcher_round
