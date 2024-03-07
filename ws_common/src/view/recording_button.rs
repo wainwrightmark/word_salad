@@ -80,7 +80,7 @@ impl MavericRootChildren for RecordingButtonRoot {
             &(),
         );
 
-        let inner_scale = Vec3::ONE * rect.width() * 0.25 * pressed_multiplier;
+        let inner_scale = Vec3::ONE * rect.width() * 0.20 * pressed_multiplier;
 
         commands.add_child(
             "InnerShape",

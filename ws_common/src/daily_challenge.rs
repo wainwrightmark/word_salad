@@ -13,6 +13,7 @@ use nice_bevy_utils::{
     TrackableResource,
 };
 use serde::{Deserialize, Serialize};
+use ws_levels::all_levels::{number_daily_challenge_levels, DAILY_CHALLENGE_NUMBERED};
 
 pub struct DailyChallengePlugin;
 
@@ -34,18 +35,23 @@ impl Plugin for DailyChallengePlugin {
 pub struct DailyChallenges {
     level_data: Option<String>,
     #[serde(skip)]
-    pub levels: Vec<DesignedLevel>,
+    pub levels: Option<Vec<DesignedLevel>>,
 }
 
 impl Default for DailyChallenges {
     fn default() -> Self {
-        let mut levels = ws_levels::all_levels::DEFAULT_DAILY_CHALLENGE.clone();
-
-        DailyChallenges::number_levels(&mut levels);
-
         Self {
             level_data: None,
-            levels,
+            levels: None,
+        }
+    }
+}
+
+impl DailyChallenges{
+    pub fn levels(&self)-> &[DesignedLevel]{
+        match &self.levels{
+            Some(l) => l.as_slice(),
+            None => (*DAILY_CHALLENGE_NUMBERED).as_slice(),
         }
     }
 }
@@ -66,19 +72,14 @@ impl TrackableResource for DailyChallenges {
                 .collect();
 
             if loaded_levels.len() > ws_levels::all_levels::DEFAULT_DAILY_CHALLENGE.len() {
-                DailyChallenges::number_levels(&mut loaded_levels);
-                self.levels = loaded_levels;
+                number_daily_challenge_levels(&mut loaded_levels);
+                self.levels = Some(loaded_levels);
+            } else {
+                self.levels = None;
             }
         } else {
             //Continue using the default data
-        }
-    }
-}
-
-impl DailyChallenges {
-    fn number_levels(levels: &mut Vec<DesignedLevel>) {
-        for (index, level) in levels.iter_mut().enumerate() {
-            level.numbering = Some(Numbering::WordSaladNumber(index + 1));
+            self.levels = None;
         }
     }
 }
@@ -108,7 +109,7 @@ impl DailyChallenges {
         }
 
         let today = chrono::offset::Utc::now();
-        let today_eastern = today.add(Duration ::try_hours(Self::OFFSET_HOURS).unwrap());
+        let today_eastern = today.add(Duration::try_hours(Self::OFFSET_HOURS).unwrap());
 
         let secs_today: u32 =
             (today_eastern.hour() * 3600) + (today_eastern.minute() * 60) + today_eastern.second();
@@ -129,7 +130,7 @@ impl DailyChallenges {
     }
 
     pub fn total_levels(&self) -> usize {
-        (Self::get_today_index().saturating_add(1)).min(self.levels.len())
+        (Self::get_today_index().saturating_add(1)).min(self.levels().len())
     }
 }
 
@@ -229,16 +230,17 @@ fn handle_daily_challenge_data_loaded(
             .flat_map(|x| x.ok())
             .collect_vec();
 
-        DailyChallenges::number_levels(&mut levels);
 
-        if levels.len() > daily_challenges.levels.len() {
+
+        if levels.len() > daily_challenges.levels().len() {
+            number_daily_challenge_levels(&mut levels);
             info!(
                 "Downloaded {} levels (previously had {})",
                 levels.len(),
-                daily_challenges.levels.len()
+                daily_challenges.levels().len()
             );
-            daily_challenges.level_data = Some(event.data.clone()) ;
-            daily_challenges.levels = levels;
+            daily_challenges.level_data = Some(event.data.clone());
+            daily_challenges.levels = Some(levels);
 
             let should_change_to: Option<usize> = match current_level.as_ref() {
                 CurrentLevel::NonLevel(NonLevel::DailyChallengeFinished) => {
@@ -259,11 +261,11 @@ fn handle_daily_challenge_data_loaded(
                     change_level_events.send(new_current_level.into());
                 }
             }
-        } else if levels.len() < daily_challenges.levels.len() {
+        } else if levels.len() < daily_challenges.levels().len() {
             warn!(
                 "Downloaded {} levels (but previously had {})",
                 levels.len(),
-                daily_challenges.levels.len()
+                daily_challenges.levels().len()
             );
         }
     }

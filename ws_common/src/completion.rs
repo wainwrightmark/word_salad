@@ -207,7 +207,8 @@ impl DailyChallengeCompletion {
     ) -> NextDailyChallengeResult {
         let mut current_index = today_date_index;
 
-        if daily_challenges.levels.get(current_index).is_none() {
+        if daily_challenges.levels().get(current_index).is_none() {
+            //info!("Today not loaded {current_index} / {}", daily_challenges.levels.len());
             return NextDailyChallengeResult::TodayNotLoaded(current_index);
         }
 
@@ -381,10 +382,9 @@ pub mod test {
     pub fn test_daily_challenge_completion() {
         let mut completion = DailyChallengeCompletion::default();
         let mut daily_challenges = DailyChallenges::default();
-        daily_challenges.levels.push(DesignedLevel::unknown());
-        daily_challenges.levels.push(DesignedLevel::unknown());
-        daily_challenges.levels.push(DesignedLevel::unknown());
-        daily_challenges.levels.push(DesignedLevel::unknown());
+
+        let levels = vec![DesignedLevel::unknown(); 4];
+        daily_challenges.levels = Some(levels);
 
         assert_eq!(
             NextDailyChallengeResult::Level(3),

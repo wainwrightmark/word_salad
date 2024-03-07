@@ -362,7 +362,6 @@ fn transition_word_line(
     mut values: ResMut<WordLineGlobalValues>,
     mut targets: ResMut<WordLineGlobalTargets>,
     time: Res<Time>,
-    chosen: Res<ChosenState>
 ) {
     let progress_change = time.delta_seconds() * PROGRESS_SPEED;
     let mut changed: bool = false;

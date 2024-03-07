@@ -174,6 +174,20 @@ lazy_static! { //todo data_bake
             .map(DesignedLevel::from_tsv_line)
             .map(|x| x.unwrap())
             .collect_vec();
+
+
+    pub static ref DAILY_CHALLENGE_NUMBERED: Vec<DesignedLevel> = {
+        let mut levels = (*DEFAULT_DAILY_CHALLENGE).clone();
+        number_daily_challenge_levels(&mut levels);
+        levels
+
+    };
+}
+
+pub fn number_daily_challenge_levels(levels: &mut Vec<DesignedLevel>) {
+    for (index, level) in levels.iter_mut().enumerate() {
+        level.numbering = Some(Numbering::WordSaladNumber(index + 1));
+    }
 }
 
 pub fn number_levels(
@@ -245,7 +259,10 @@ pub mod tests {
 
         let mut all_errors: Vec<String> = Default::default();
 
-        for level in get_all_levels().iter().chain((*DEFAULT_DAILY_CHALLENGE).iter()) {
+        for level in get_all_levels()
+            .iter()
+            .chain((*DEFAULT_DAILY_CHALLENGE).iter())
+        {
             let words = level
                 .words
                 .iter()

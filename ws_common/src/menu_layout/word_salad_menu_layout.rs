@@ -92,7 +92,7 @@ impl WordSaladMenuLayoutEntity {
                 .level_index()?,
         };
 
-        let level: &ws_core::prelude::DesignedLevel = daily_challenges.levels.get(index)?;
+        let level: &ws_core::prelude::DesignedLevel = daily_challenges.levels().get(index)?;
 
         let complete = completion.is_daily_challenge_complete(index);
         let name = level.full_name();

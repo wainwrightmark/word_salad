@@ -196,7 +196,7 @@ impl CurrentLevel {
                 Some(cl) => Either::Left(cl),
                 None => Either::Right(NonLevel::BeforeTutorial),
             },
-            CurrentLevel::DailyChallenge { index } => match daily_challenges.levels.get(*index) {
+            CurrentLevel::DailyChallenge { index } => match daily_challenges.levels().get(*index) {
                 Some(cl) => Either::Left(cl),
                 None => Either::Right(NonLevel::DailyChallengeNotLoaded { goto_level: *index }),
             },
