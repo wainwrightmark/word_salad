@@ -166,7 +166,6 @@ impl MavericRootChildren for ViewRoot {
                         "non_level",
                         NonLevelView {
                             non_level,
-                            selfie_mode,
                         },
                         &context.into(),
                     );

@@ -310,22 +310,22 @@ fn get_insets() -> Option<Insets> {
         .ok()
         .and_then(|x| x.trim_end_matches("px").parse::<f32>().ok())
         .unwrap_or_default();
-    let left = style
-        .get_property_value("--sal")
-        .ok()
-        .and_then(|x| x.trim_end_matches("px").parse::<f32>().ok())
-        .unwrap_or_default();
-    let right = style
-        .get_property_value("--sar")
-        .ok()
-        .and_then(|x| x.trim_end_matches("px").parse::<f32>().ok())
-        .unwrap_or_default();
-    let bottom = style
-        .get_property_value("--sab")
-        .ok()
-        .and_then(|x| x.trim_end_matches("px").parse::<f32>().ok())
-        .unwrap_or_default();
+    // let left = style
+    //     .get_property_value("--sal")
+    //     .ok()
+    //     .and_then(|x| x.trim_end_matches("px").parse::<f32>().ok())
+    //     .unwrap_or_default();
+    // let right = style
+    //     .get_property_value("--sar")
+    //     .ok()
+    //     .and_then(|x| x.trim_end_matches("px").parse::<f32>().ok())
+    //     .unwrap_or_default();
+    // let bottom = style
+    //     .get_property_value("--sab")
+    //     .ok()
+    //     .and_then(|x| x.trim_end_matches("px").parse::<f32>().ok())
+    //     .unwrap_or_default();
 
-    let insets = Insets::new(top, left, right, bottom);
+    let insets = Insets::new(top);
     Some(insets)
 }

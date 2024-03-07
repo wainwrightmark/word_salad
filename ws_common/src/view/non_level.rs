@@ -4,17 +4,21 @@ use ws_core::{layout::entities::*, palette::BUTTON_CLICK_FILL};
 
 #[derive(Debug, NodeContext)]
 pub struct NonLevelContext {
-    pub size: MyWindowSize,
+    pub window_size: MyWindowSize,
     pub prices: Prices,
-    pub redraw_marker: RedrawMarker
+    pub redraw_marker: RedrawMarker,
+    pub video_resource: VideoResource,
+    pub insets_resource: InsetsResource,
 }
 
 impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for NonLevelContextWrapper<'w> {
     fn from(value: &'a ViewContextWrapper<'w>) -> Self {
         Self {
-            size: Res::clone(&value.window_size),
+            window_size: Res::clone(&value.window_size),
             prices: Res::clone(&value.prices),
-            redraw_marker: Res::clone(&value.redraw_marker)
+            redraw_marker: Res::clone(&value.redraw_marker),
+            video_resource: Res::clone(&value.video_resource),
+            insets_resource: Res::clone(&value.insets),
         }
     }
 }
@@ -22,8 +26,6 @@ impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for NonLevelContextWrapper<'w>
 #[derive(Debug, Clone, PartialEq)]
 pub struct NonLevelView {
     pub non_level: NonLevel,
-    pub selfie_mode: SelfieMode,
-
 }
 
 #[derive(Debug, Component, PartialEq, Clone, Copy)]
@@ -38,9 +40,26 @@ impl MavericNode for NonLevelView {
 
     fn set_children<R: MavericRoot>(commands: SetChildrenCommands<Self, Self::Context, R>) {
         commands.unordered_children_with_node_and_context(|node, context, commands| {
-            let size = &context.size;
+            let size = &context.window_size;
 
-            let selfie_mode = node.selfie_mode;
+            let selfie_mode = context.video_resource.is_selfie_mode;
+            let background_type = if selfie_mode{
+                BackgroundType::Selfie
+            }else{
+                BackgroundType::Congrats
+            };
+
+            commands.add_child(
+                "logo",
+                crate::view::logo(
+                    &context.window_size,
+                    &context.video_resource,
+                    &context.insets_resource,
+                    background_type,
+                    true,
+                ),
+                &(),
+            );
 
             let text = match node.non_level {
                 NonLevel::BeforeTutorial => {
@@ -91,7 +110,7 @@ impl MavericNode for NonLevelView {
                 },
             };
 
-            let text_color = if selfie_mode.is_selfie_mode {
+            let text_color = if selfie_mode {
                 palette::NON_LEVEL_TEXT_SELFIE
             } else {
                 palette::NON_LEVEL_TEXT_NORMAL
@@ -117,7 +136,7 @@ impl MavericNode for NonLevelView {
                 }
                 .with_bundle((
                     Transform::from_translation(
-                        size.get_rect(&NonLevelLayoutEntity::Text, &node.selfie_mode)
+                        size.get_rect(&NonLevelLayoutEntity::Text, &context.video_resource.selfie_mode())
                             .centre()
                             .extend(crate::z_indices::CONGRATS_BUTTON),
                     ),
@@ -153,7 +172,7 @@ impl MavericNode for NonLevelView {
                 },
             };
 
-            let (fill_color, border) = if selfie_mode.is_selfie_mode {
+            let (fill_color, border) = if selfie_mode {
                 (
                     palette::CONGRATS_BUTTON_FILL_SELFIE.convert_color(),
                     ShaderBorder::NONE,
@@ -170,7 +189,7 @@ impl MavericNode for NonLevelView {
                         font_size: size
                             .font_size(&NonLevelLayoutEntity::InteractButton, &non_level_type),
                         rect: size
-                            .get_rect(&NonLevelLayoutEntity::InteractButton, &node.selfie_mode),
+                            .get_rect(&NonLevelLayoutEntity::InteractButton, &context.video_resource.selfie_mode()),
                         interaction: ButtonInteraction::NonLevelInteractionButton,
                         text_color,
                         fill_color,
