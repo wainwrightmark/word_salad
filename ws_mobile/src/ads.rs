@@ -5,6 +5,10 @@ use nice_bevy_utils::async_event_writer::AsyncEventWriter;
 use ws_common::asynchronous;
 use ws_common::{ads_common, logging, platform_specific, prelude::*};
 
+use crate::ads::mobile_only::{init_load_and_show_interstitial_ad};
+
+use self::mobile_only::init_load_and_show_reward_ad;
+
 // const MARK_IOS_DEVICE_ID: &str = "d3f1ad44252cdc0f1278cf7347063f07";
 // const MARK_ANDROID_DEVICE_ID: &str = "806EEBB5152549F81255DD01CDA931D9";
 
@@ -54,7 +58,9 @@ fn handle_ad_requests(
                         ));
                     }
                 } else {
-                    warn!("Cannot request reward with admob (ads are not set up)")
+                    asynchronous::spawn_and_run(init_load_and_show_reward_ad(
+                        async_writer.clone(),
+                    ));
                 }
             }
             AdRequestEvent::RequestInterstitial => {
@@ -70,7 +76,9 @@ fn handle_ad_requests(
                         ));
                     }
                 } else {
-                    warn!("Cannot request interstitial with admob (ads are not set up)")
+                    asynchronous::spawn_and_run(init_load_and_show_interstitial_ad(
+                        async_writer.clone(),
+                    ));
                 }
             }
         }
@@ -203,7 +211,7 @@ fn handle_ad_events(
 
 #[allow(unused_variables)]
 fn init_everything(writer: AsyncEventWriter<AdEvent>) {
-    asynchronous::spawn_and_run(mobile_only::init_everything_async(writer));
+    asynchronous::spawn_and_run(mobile_only::init_everything1_async(writer));
 }
 
 #[cfg(feature = "android")]
@@ -221,13 +229,22 @@ mod mobile_only {
 
     use super::*;
 
-    pub async fn init_everything_async(writer: AsyncEventWriter<AdEvent>) {
+    ///initialize ads. Returns true if successful
+    pub async fn init_everything_async(writer: AsyncEventWriter<AdEvent>) -> bool {
         match try_init_ads_async().await {
             Ok(()) => {
                 writer.send_or_panic(AdEvent::AdsInit);
+                true
             }
-            Err(err) => writer.send_or_panic(AdEvent::AdsInitError(err)),
+            Err(err) => {
+                writer.send_or_panic(AdEvent::AdsInitError(err));
+                false
+            }
         }
+    }
+
+    pub async fn init_everything1_async(writer: AsyncEventWriter<AdEvent>) {
+        init_everything_async(writer).await;
     }
 
     pub async fn try_init_ads_async() -> Result<(), String> {
@@ -333,6 +350,26 @@ mod mobile_only {
             Ok(item) => writer.send_or_panic(AdEvent::RewardAdRewarded(item)),
             Err(err) => writer.send_or_panic(AdEvent::FailedToShowRewardAd(err.to_string())),
         };
+    }
+
+    pub async fn init_load_and_show_reward_ad(writer: AsyncEventWriter<AdEvent>) {
+        if init_everything_async(writer.clone()).await {
+            load_and_show_reward_ad(writer).await;
+        } else {
+            writer.send_or_panic(AdEvent::FailedToShowRewardAd(
+                "Could not init ads for reward ad".to_string(),
+            ));
+        }
+    }
+
+    pub async fn init_load_and_show_interstitial_ad(writer: AsyncEventWriter<AdEvent>) {
+        if init_everything_async(writer.clone()).await {
+            load_and_show_interstitial_ad(writer).await;
+        } else {
+            writer.send_or_panic(AdEvent::FailedToShowInterstitialAd(
+                "Could not init ads for interstitial ad".to_string(),
+            ));
+        }
     }
 
     pub async fn load_and_show_interstitial_ad(writer: AsyncEventWriter<AdEvent>) {

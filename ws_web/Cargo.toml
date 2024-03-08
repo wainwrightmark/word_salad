@@ -109,3 +109,4 @@ bevy = { version = "0.13", default_features = false, features = [
 
 [features]
 recording =["dep:bevy_image_export"]
+web =["ws_common/web"]
