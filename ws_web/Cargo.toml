@@ -5,7 +5,7 @@ edition = "2021"
 
 
 [dependencies]
-ws_common = { path = "../ws_common", features = ["web"] }
+ws_common = { path = "../ws_common" }
 bevy = { version = "0.13", default_features = false, features = [
     "bevy_winit",         # Window management
     "bevy_render",        # Rendering framework core
@@ -63,6 +63,12 @@ reqwest = { version = "0.11", default-features = false, features = ["json"] }
 fixedbitset = { version = "0.5", features = ["serde"] }
 fmtastic = "0.2.0"
 bytemuck = { version = "1.14.0", features = ["derive"] }
+bevy_image_export = {version = "0.10", optional = true}
+
+
+
+
+
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 js-sys = { version = "0.3" }
 wasm-bindgen = "0.2"
@@ -75,6 +81,7 @@ web-sys = { version = "0.3", features = [
     'Navigator',
 ] }
 console_error_panic_hook = "0.1"
+
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 async-compat = "0.2.3"
@@ -101,3 +108,5 @@ bevy = { version = "0.13", default_features = false, features = [
 ] }
 
 [features]
+recording =["dep:bevy_image_export"]
+web =["ws_common/web"]

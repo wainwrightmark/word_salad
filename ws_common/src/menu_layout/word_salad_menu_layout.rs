@@ -49,7 +49,7 @@ impl WordSaladMenuLayoutEntity {
             WordSaladMenuLayoutEntity::DaysAgo(0) => "Today's Puzzle".to_string(),
             WordSaladMenuLayoutEntity::DaysAgo(1) => "Yesterday's Puzzle".to_string(),
             WordSaladMenuLayoutEntity::DaysAgo(x) => format!("{x} Days Ago Puzzle"),
-            WordSaladMenuLayoutEntity::NextPuzzle => "Next Incomplete".to_string(),
+            WordSaladMenuLayoutEntity::NextPuzzle => "Reset Completion".to_string(),
         };
 
         (s1.to_string(), "\u{f096}".to_string())

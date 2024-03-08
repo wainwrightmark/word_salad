@@ -38,7 +38,9 @@
 <script>
   const style = document.documentElement.style;
 
-  window.AndroidNotch.getInsetTop(
+  try
+  {
+    window.AndroidNotch.getInsetTop(
     (px) => {
       style.setProperty("--sat", px + "px");
     },
@@ -65,4 +67,9 @@
     },
     (err) => console.error("Failed to get insets left:", err)
   );
+  }
+  catch{
+    "Could not get android insets"
+  }
+
 </script>

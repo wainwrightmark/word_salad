@@ -124,8 +124,8 @@ impl SaladWindowSize for Size {
     }
 }
 
-pub const DEFAULT_WINDOW_WIDTH: f32 = 400f32;
-pub const DEFAULT_WINDOW_HEIGHT: f32 = 800f32;
+pub const DEFAULT_WINDOW_WIDTH: f32 = 398f32;
+pub const DEFAULT_WINDOW_HEIGHT: f32 = 884f32;
 
 pub const TILE_MULTIPLIER: f32 = 0.9;
 

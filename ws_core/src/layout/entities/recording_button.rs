@@ -31,7 +31,7 @@ impl LayoutStructure for ToggleRecordingButton {
         let extra_top_bar_height = extra_top_height(sizing, &context.0);
         let default_location = Vec2 {
             x: IDEAL_WIDTH - RECORDING_BUTTON_MIN_SIZE - ((IDEAL_WIDTH - GRID_SIZE) * 0.5),
-            y: GameLayoutEntity::TopBar.location(context, sizing).y + (RECORDING_BUTTON_MIN_SIZE * 0.5),
+            y: GameLayoutEntity::TopBar.location(context, sizing).y + (RECORDING_BUTTON_MIN_SIZE * 0.25),
         };
         let bottom_padding = extra_bottom_space(sizing, &context.0);
 

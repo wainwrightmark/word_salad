@@ -192,7 +192,10 @@ impl MavericNode for WordLine {
     }
 
     fn on_deleted(&self, commands: &mut ComponentCommands) -> DeletionPolicy {
-        commands.insert_resource(WordLineGlobalTargets::default());
+        commands.insert_resource(WordLineGlobalTargets{
+            target_line_width: LineWidthTarget::None,
+            target_progress: ProgressTarget::DecreaseToZero,
+        });
         DeletionPolicy::DeleteImmediately
     }
 }

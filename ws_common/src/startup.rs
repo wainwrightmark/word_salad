@@ -9,6 +9,8 @@ use bevy::{
 };
 use nice_bevy_utils::window_size::WindowSizePlugin;
 
+
+
 pub fn setup_app(extra_setup: impl FnOnce(&mut App)) {
     let mut app = App::new();
 
@@ -25,8 +27,8 @@ pub fn setup_app(extra_setup: impl FnOnce(&mut App)) {
     #[cfg(not(target_arch = "wasm32"))]
     {
         resolution = bevy::window::WindowResolution::new(
-            ws_core::layout::entities::IDEAL_WIDTH,
-            ws_core::layout::entities::IDEAL_HEIGHT,
+            DEFAULT_WINDOW_WIDTH,
+            DEFAULT_WINDOW_HEIGHT,
         );
     }
 
