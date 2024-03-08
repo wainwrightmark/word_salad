@@ -1,12 +1,12 @@
 PODS:
-  - Capacitor (5.7.0):
+  - Capacitor (5.7.2):
     - CapacitorCordova
   - CapacitorApp (5.0.7):
     - Capacitor
   - CapacitorCommunityAdmob (5.3.1):
     - Capacitor
     - Google-Mobile-Ads-SDK (= 10.12.0)
-  - CapacitorCordova (5.7.0)
+  - CapacitorCordova (5.7.2)
   - CapacitorDevice (5.0.7):
     - Capacitor
   - CapacitorHaptics (5.0.7):
@@ -25,7 +25,7 @@ PODS:
     - Capacitor
   - CapgoCapacitorScreenRecorder (8.0.9):
     - Capacitor
-  - CordovaPlugins (5.7.0):
+  - CordovaPlugins (5.7.2):
     - CapacitorCordova
   - Google-Mobile-Ads-SDK (10.12.0):
     - GoogleAppMeasurement (< 11.0, >= 7.0)
@@ -136,10 +136,10 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@openforge/capacitor-game-connect"
 
 SPEC CHECKSUMS:
-  Capacitor: fc155ee2ee45a2093d716f13cf5aa5a865e2d85a
+  Capacitor: fc7ef6d935eafb0df9eaaf109ca69be16c51a2d2
   CapacitorApp: 17fecd0e6cb23feafac7eb0939417389038b0979
   CapacitorCommunityAdmob: 1e377ccfb6236c38591f23759334fa12668fb2e0
-  CapacitorCordova: e825fce1a2e14e4b5730641c7e098dccf74397b7
+  CapacitorCordova: 70b13b8fddb6f35d8adcfe06cb5045c07f35f6de
   CapacitorDevice: fc91bdb484dc0e70755e9b621cd557afe642613a
   CapacitorHaptics: 7c7c206f0c96a628fed073830c96d28c4b2e772e
   CapacitorLocalNotifications: c58afadd159f6bc540ef9b3cbdbc82510a2bf112
@@ -149,7 +149,7 @@ SPEC CHECKSUMS:
   CapacitorStatusBar: f390fbb49b82ffb754ea4b3cf71dc8b048baf3e7
   CapacitorToast: c8bb89eeb59a23c1fc298f138cc06c8ff4d90ac1
   CapgoCapacitorScreenRecorder: 253d86288062ab823df2889256fa32a288ef8884
-  CordovaPlugins: 146ec091cc8c269c045cf030520df3c6da81db2a
+  CordovaPlugins: 3c9cd741ba8b663f4e64d6eb8ae7228245a9718f
   Google-Mobile-Ads-SDK: 976fdf273815674eed30b8aafffedb3c25b055e4
   GoogleAppMeasurement: a65314d316443969ed3d3709b3a187448ed6418f
   GoogleUserMessagingPlatform: d31dbfb40ec02c5d9683029815c5d5a7f46389ee
