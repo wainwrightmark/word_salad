@@ -686,6 +686,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_image_export"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ff682f1c7d4cc8f5989a7cb95454b1f2adcae9348b1e2e304be16f24a337ad9b"
+dependencies = [
+ "bevy",
+ "bytemuck",
+ "futures",
+ "futures-lite",
+ "image 0.24.9",
+ "wgpu",
+]
+
+[[package]]
 name = "bevy_input"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6009,6 +6023,7 @@ dependencies = [
  "async-compat",
  "base64 0.22.0",
  "bevy",
+ "bevy_image_export",
  "bevy_param_shaders",
  "bevy_pkv",
  "bitfield-struct",

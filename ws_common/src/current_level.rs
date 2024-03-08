@@ -149,7 +149,7 @@ impl CurrentLevel {
 
     /// Whether this level should be counted to towards total interstitial ads
     pub fn count_for_interstitial_ads(&self, purchases: &Purchases) -> bool {
-        if purchases.remove_ads_purchased {
+        if  purchases.remove_ads_purchased {
             return false;
         }
 
