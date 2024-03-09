@@ -312,7 +312,7 @@ mod mobile_only {
     pub async fn try_load_interstitial_ad(writer: AsyncEventWriter<AdEvent>) {
         let options: AdOptions = AdOptions {
             ad_id: BETWEEN_LEVELS_INTERSTITIAL_AD_ID.to_string(),
-            is_testing: true,
+            is_testing: false,
             margin: 0.0,
             npa: false,
         };
@@ -334,7 +334,7 @@ mod mobile_only {
         let options = RewardAdOptions {
             ssv: None,
             ad_id: BUY_HINTS_REWARD_AD_ID.to_string(),
-            is_testing: true,
+            is_testing: false,
             margin: 0.0,
             npa: false,
         };
@@ -375,7 +375,7 @@ mod mobile_only {
     pub async fn load_and_show_interstitial_ad(writer: AsyncEventWriter<AdEvent>) {
         let options: AdOptions = AdOptions {
             ad_id: BETWEEN_LEVELS_INTERSTITIAL_AD_ID.to_string(),
-            is_testing: true,
+            is_testing: false,
             margin: 0.0,
             npa: false,
         };
@@ -405,7 +405,7 @@ mod mobile_only {
         let options = RewardAdOptions {
             ssv: None,
             ad_id: BUY_HINTS_REWARD_AD_ID.to_string(),
-            is_testing: true,
+            is_testing: false,
             margin: 0.0,
             npa: false,
         };
