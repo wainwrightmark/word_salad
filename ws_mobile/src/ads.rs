@@ -5,12 +5,14 @@ use nice_bevy_utils::async_event_writer::AsyncEventWriter;
 use ws_common::asynchronous;
 use ws_common::{ads_common, logging, platform_specific, prelude::*};
 
-use crate::ads::mobile_only::{init_load_and_show_interstitial_ad};
+use crate::ads::mobile_only::init_load_and_show_interstitial_ad;
 
 use self::mobile_only::init_load_and_show_reward_ad;
 
-// const MARK_IOS_DEVICE_ID: &str = "d3f1ad44252cdc0f1278cf7347063f07";
-// const MARK_ANDROID_DEVICE_ID: &str = "806EEBB5152549F81255DD01CDA931D9";
+const MARK_IOS_DEVICE_ID: &str = "d3f1ad44252cdc0f1278cf7347063f07";
+const MARK_ANDROID_DEVICE_ID: &str = "806EEBB5152549F81255DD01CDA931D9";
+
+const IS_TESTING: bool = false;
 
 pub struct AdsPlugin;
 
@@ -58,9 +60,7 @@ fn handle_ad_requests(
                         ));
                     }
                 } else {
-                    asynchronous::spawn_and_run(init_load_and_show_reward_ad(
-                        async_writer.clone(),
-                    ));
+                    asynchronous::spawn_and_run(init_load_and_show_reward_ad(async_writer.clone()));
                 }
             }
             AdRequestEvent::RequestInterstitial => {
@@ -94,10 +94,14 @@ async fn reshow_consent_form() -> Result<(), capacitor_bindings::error::Error> {
 
     let consent_info = Admob::request_consent_info(AdmobConsentRequestOptions {
         debug_geography: AdmobConsentDebugGeography::Disabled,
-        test_device_identifiers: vec![
-            // MARK_ANDROID_DEVICE_ID.to_string(),
-            // MARK_IOS_DEVICE_ID.to_string(),
-        ],
+        test_device_identifiers: if IS_TESTING {
+            vec![
+                MARK_ANDROID_DEVICE_ID.to_string(),
+                MARK_IOS_DEVICE_ID.to_string(),
+            ]
+        } else {
+            vec![]
+        },
         tag_for_under_age_of_consent: false,
     })
     .await?;
@@ -249,11 +253,15 @@ mod mobile_only {
 
     pub async fn try_init_ads_async() -> Result<(), String> {
         Admob::initialize(AdMobInitializationOptions {
-            initialize_for_testing: false, //Turn on for testing
-            testing_devices: vec![
-                // MARK_ANDROID_DEVICE_ID.to_string(),
-                // MARK_IOS_DEVICE_ID.to_string(),
-            ],
+            initialize_for_testing: IS_TESTING,
+            testing_devices: if IS_TESTING {
+                vec![
+                    MARK_ANDROID_DEVICE_ID.to_string(),
+                    MARK_IOS_DEVICE_ID.to_string(),
+                ]
+            } else {
+                vec![]
+            },
             tag_for_under_age_of_consent: false,
             tag_for_child_directed_treatment: false,
             max_ad_content_rating: MaxAdContentRating::General,
@@ -287,10 +295,14 @@ mod mobile_only {
 
         let consent_info = Admob::request_consent_info(AdmobConsentRequestOptions {
             debug_geography: AdmobConsentDebugGeography::Disabled,
-            test_device_identifiers: vec![
-                // MARK_ANDROID_DEVICE_ID.to_string(),
-                // MARK_IOS_DEVICE_ID.to_string(),
-            ],
+            test_device_identifiers: if IS_TESTING {
+                vec![
+                    MARK_ANDROID_DEVICE_ID.to_string(),
+                    MARK_IOS_DEVICE_ID.to_string(),
+                ]
+            } else {
+                vec![]
+            },
             tag_for_under_age_of_consent: false,
         })
         .await
@@ -312,7 +324,7 @@ mod mobile_only {
     pub async fn try_load_interstitial_ad(writer: AsyncEventWriter<AdEvent>) {
         let options: AdOptions = AdOptions {
             ad_id: BETWEEN_LEVELS_INTERSTITIAL_AD_ID.to_string(),
-            is_testing: false,
+            is_testing: IS_TESTING,
             margin: 0.0,
             npa: false,
         };
@@ -334,7 +346,7 @@ mod mobile_only {
         let options = RewardAdOptions {
             ssv: None,
             ad_id: BUY_HINTS_REWARD_AD_ID.to_string(),
-            is_testing: false,
+            is_testing: IS_TESTING,
             margin: 0.0,
             npa: false,
         };
@@ -375,7 +387,7 @@ mod mobile_only {
     pub async fn load_and_show_interstitial_ad(writer: AsyncEventWriter<AdEvent>) {
         let options: AdOptions = AdOptions {
             ad_id: BETWEEN_LEVELS_INTERSTITIAL_AD_ID.to_string(),
-            is_testing: false,
+            is_testing: IS_TESTING,
             margin: 0.0,
             npa: false,
         };
@@ -405,7 +417,7 @@ mod mobile_only {
         let options = RewardAdOptions {
             ssv: None,
             ad_id: BUY_HINTS_REWARD_AD_ID.to_string(),
-            is_testing: false,
+            is_testing: IS_TESTING,
             margin: 0.0,
             npa: false,
         };
