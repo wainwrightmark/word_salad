@@ -97,7 +97,7 @@ pub fn setup_app(extra_setup: impl FnOnce(&mut App)) {
 
     app.add_plugins(AdsCommonPlugin);
 
-    app.add_systems(PostStartup, choose_level_on_game_load);
+    //app.add_systems(PostStartup, choose_level_on_game_load);
 
     #[cfg(not(target_arch = "wasm32"))]
     {
@@ -150,7 +150,7 @@ fn maybe_request_redraw(mut writer: EventWriter<RequestRedraw>, mut buffer: Loca
 }
 
 #[allow(unused_variables, unused_mut)]
-fn choose_level_on_game_load(
+pub fn choose_level_on_game_load(
     current_level: Res<CurrentLevel>,
     daily_challenge_completion: Res<DailyChallengeCompletion>,
     daily_challenges: Res<DailyChallenges>,

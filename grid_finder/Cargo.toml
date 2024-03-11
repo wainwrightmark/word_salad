@@ -24,6 +24,7 @@ indicatif = "0.17.7"
 indicatif-log-bridge = "0.2.2"
 const_sized_bit_set = { git = "https://github.com/wainwrightmark/const_sized_bit_set" }
 hashbrown = { version = "0.14", features = ["rayon"] }
+prime_bag = { version = "0.2.0"}
 
 [dev-dependencies]
 test-case = "3.2.1"

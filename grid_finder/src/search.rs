@@ -1,13 +1,46 @@
 use std::str::FromStr;
 
 use indicatif::{ProgressBar, ProgressStyle};
+use itertools::Itertools;
 use log::info;
+use prime_bag::{PrimeBag128, PrimeBagElement};
 use ws_core::{prelude::*, DesignedLevel, Word};
 
-pub fn do_search(search: &str) {
+use crate::SearchArgs;
+
+#[derive(Debug, PartialEq, Eq)]
+struct WordLengthBagMember(usize);
+
+impl PrimeBagElement for WordLengthBagMember {
+    fn into_prime_index(&self) -> usize {
+        match self.0.checked_sub(4) {
+            Some(index) => index,
+            None => panic!("Word length must be at least 4"),
+        }
+    }
+
+    fn from_prime_index(value: usize) -> Self {
+        Self(value + 4)
+    }
+}
+
+fn level_to_prime_bag(level: &impl LevelTrait) -> PrimeBag128<WordLengthBagMember> {
+    let bag = PrimeBag128::try_from_iter(
+        level
+            .words()
+            .iter()
+            .map(|x| x.characters().len())
+            .map(|x| WordLengthBagMember(x)),
+    )
+    .expect("Cannot convert level to prime bag");
+    bag
+}
+
+pub fn do_search(search_args: &SearchArgs) {
     let folder = std::fs::read_dir("grids").unwrap();
 
-    let words: Vec<_> = search
+    let words: Vec<_> = search_args
+        .words
         .split_ascii_whitespace()
         .map(|s| Word::from_str(s).unwrap())
         .map(|w| {
@@ -15,6 +48,15 @@ pub fn do_search(search: &str) {
             (w, lc)
         })
         .collect();
+
+    let expected_lengths: PrimeBag128<WordLengthBagMember> = prime_bag::PrimeBag128::try_from_iter(
+        search_args
+            .lengths
+            .split_ascii_whitespace()
+            .map(|x| x.parse().expect("Could not parse value as integer"))
+            .map(|x| WordLengthBagMember(x)),
+    )
+    .expect("Cannot create prime bag from lengths");
 
     let paths: Vec<_> = folder.collect();
 
@@ -36,21 +78,46 @@ pub fn do_search(search: &str) {
                 .letter_counts()
                 .expect("Could not get grid letter counts");
 
-            for (word, _) in words
-                .iter()
-                .filter(|(_, lc)| level_letter_counts.is_superset(lc))
-            {
+            let length_allowed: bool;
+
+            if expected_lengths.is_empty() {
+                length_allowed = true;
+            } else {
+                let level_lengths = level_to_prime_bag(&level);
+
+                if search_args.exact_lengths {
+                    length_allowed = level_lengths == expected_lengths;
+                } else {
+                    length_allowed = level_lengths.is_superset(&expected_lengths);
+                }
+            }
+
+            if !length_allowed{
+                continue;
+            }
+
+            if words.is_empty() {
                 total_possibles += 1;
-                if let Some(..) = word.find_solution(&level.grid) {
-                    total_solutions += 1;
-                    info!(
-                        "Found {word} in {file} {level} ",
-                        file = grids_path
-                            .file_name()
-                            .map(|x| x.to_string_lossy())
-                            .unwrap_or_default(),
-                        word = word.text
-                    )
+                total_solutions += 1;
+
+                info!("Found  {level}",)
+            } else {
+                for (word, _) in words
+                    .iter()
+                    .filter(|(_, lc)| level_letter_counts.is_superset(lc))
+                {
+                    total_possibles += 1;
+                    if let Some(..) = word.find_solution(&level.grid) {
+                        total_solutions += 1;
+                        info!(
+                            "Found {word} in {file} {level} ",
+                            file = grids_path
+                                .file_name()
+                                .map(|x| x.to_string_lossy())
+                                .unwrap_or_default(),
+                            word = word.text
+                        )
+                    }
                 }
             }
         }

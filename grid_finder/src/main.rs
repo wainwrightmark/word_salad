@@ -52,9 +52,7 @@ pub enum Commands {
     /// find clusters for all existing grids rather than finding new grids
     Cluster(ClusterArgs),
     /// search all found grids for a particular word or list of words
-    Search {
-        words: String,
-    },
+    Search(SearchArgs),
     /// Check word layouts
     CheckLayout {},
     /// reorient existing grids rather than finding new grids
@@ -66,6 +64,18 @@ pub enum Commands {
     CheckWords {
         grid: String,
     },
+}
+
+#[derive(Args, Debug)]
+pub struct SearchArgs{
+    #[arg(long, default_value="")]
+    pub words: String,
+
+    #[arg(long, required=false)]
+    pub lengths: String,
+
+    #[arg(long, default_value_t=false)]
+    pub exact_lengths: bool
 }
 
 #[derive(Args, Debug)]
@@ -145,7 +155,7 @@ fn main() {
         Some(Commands::Cluster(cluster_args)) => {
             cluster_files(&cluster_args);
         }
-        Some(Commands::Search { words }) => search::do_search(&words),
+        Some(Commands::Search(search_args)) => search::do_search(&search_args),
         Some(Commands::CheckLayout {}) => word_layout::do_word_layout(),
         Some(Commands::Reorient {}) => reorient_grids(),
         Some(Commands::FindGrids(find_args)) => {

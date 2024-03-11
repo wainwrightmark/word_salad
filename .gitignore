@@ -39,5 +39,7 @@ ws_mobile/android/app/credentials.gradle
 ws_mobile/android/capacitor.settings.gradle
 ws_mobile/android/.idea/misc.xml
 ws_mobile/android/app/capacitor.build.gradle
+
+## Recording
 out/*.png
-out.mp4
+*.mp4

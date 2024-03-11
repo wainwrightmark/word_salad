@@ -2484,6 +2484,7 @@ dependencies = [
  "itertools 0.12.1",
  "lazy_static",
  "log",
+ "prime_bag",
  "rand",
  "rayon",
  "serde",
