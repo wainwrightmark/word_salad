@@ -32,7 +32,7 @@ geometrid = { git = "https://github.com/wainwrightmark/geometrid", features = [
     "serde",
 ] }
 serde_with = "3"
-capacitor_bindings = { git = "https://github.com/wainwrightmark/capacitor_bindings", features = [
+capacitor_bindings = { version = "0.11", features = [
     "game_plugin",
     "rate_plugin",
     "admob_plugin",
