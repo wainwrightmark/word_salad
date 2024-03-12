@@ -627,6 +627,22 @@ fn do_finder(options: FindGridsArgs) {
                 options.minimum,
                 max_grids,
                 resume_grids,
+            ),..=512 => grid_creator::create_grids::<8>(
+                &stem,
+                word_map,
+                &master_words,
+                grids_writer,
+                options.minimum,
+                max_grids,
+                resume_grids,
+            ),..=1024 => grid_creator::create_grids::<16>(
+                &stem,
+                word_map,
+                &master_words,
+                grids_writer,
+                options.minimum,
+                max_grids,
+                resume_grids,
             ),
             _ => panic!("Too many words to do grid creation"),
         };
@@ -680,6 +696,8 @@ fn do_finder(options: FindGridsArgs) {
                 options.max_clusters as usize,
                 Some(stem.clone()),
             ),
+            ..=512 => cluster_words::<8>(grids, &all_words,options.max_clusters as usize, Some(stem.clone())),
+            ..=1024 => cluster_words::<16>(grids, &all_words,options.max_clusters as usize, Some(stem.clone())),
             _ => panic!("Too many words to do clustering"),
         };
 
