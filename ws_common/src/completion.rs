@@ -68,7 +68,11 @@ impl NextLevelResult {
                 sequence,
             },
             NextLevelResult::MustPurchase => {
-                CurrentLevel::NonLevel(NonLevel::LevelSequenceMustPurchaseGroup(sequence))
+                if cfg!(feature = "web") {
+                    CurrentLevel::NonLevel(NonLevel::PleaseBuyTheGame)
+                } else {
+                    CurrentLevel::NonLevel(NonLevel::LevelSequenceMustPurchaseGroup(sequence))
+                }
             }
             NextLevelResult::NoMoreLevels => {
                 CurrentLevel::NonLevel(NonLevel::LevelSequenceAllFinished(sequence))

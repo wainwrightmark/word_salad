@@ -62,6 +62,11 @@ impl MavericNode for NonLevelView {
             );
 
             let text = match node.non_level {
+
+                NonLevel::PleaseBuyTheGame =>{
+                    "1000s of puzzles are\navailable in the full game".to_string()
+                }
+
                 NonLevel::BeforeTutorial => {
                     "Welcome to Word Salad\nLet's find some chess pieces".to_string()
                 }
@@ -170,6 +175,7 @@ impl MavericNode for NonLevelView {
                         None
                     }
                 },
+                NonLevel::PleaseBuyTheGame => Some("Get the App".to_string()),
             };
 
             let (fill_color, border) = if selfie_mode {

@@ -46,6 +46,7 @@ pub enum NonLevel {
         todays_index: usize,
     }, //TODO remove
 
+    PleaseBuyTheGame,
     LevelSequenceMustPurchaseGroup(LevelSequence),
     LevelSequenceAllFinished(LevelSequence),
     LevelSequenceReset(LevelSequence),

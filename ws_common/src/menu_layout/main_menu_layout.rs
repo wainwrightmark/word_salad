@@ -13,6 +13,9 @@ pub enum MainMenuLayoutEntity {
     ResetPuzzle = 4,
     Settings = 5,
     PlaySteks = 6,
+
+    #[cfg(feature="web")]
+    GetFullGame = 7
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -67,6 +70,9 @@ impl LayoutStructureWithTextOrImage for MainMenuLayoutEntity {
                 aspect_ratio: 7168.0 / 1024.0,
             },
             Settings => ws_core::TextOrImage::Text { text: "Settings" },
+
+            #[cfg(all(target_arch = "wasm32", feature="web"))]
+            GetFullGame => ws_core::TextOrImage::Text { text: "Full Game" },
         }
     }
 }

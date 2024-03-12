@@ -368,6 +368,11 @@ impl ButtonInteraction {
                 crate::wasm::open_link("https://steks.net");
             }
 
+            #[cfg(all(target_arch = "wasm32", feature="web"))]
+            ButtonInteraction::MainMenu(MainMenuLayoutEntity::GetFullGame)=>{
+                crate::app_store::go_to_app_store();
+            }
+
             ButtonInteraction::LevelsMenu(LevelsMenuLayoutEntity::WordSalad) => {
                 *menu_state.as_mut() = MenuState::WordSaladLevels;
             }
@@ -449,6 +454,10 @@ impl ButtonInteraction {
             ButtonInteraction::NonLevelInteractionButton => {
                 if let Some(non_level) = current_level.level(daily_challenges).right() {
                     match non_level {
+                        NonLevel::PleaseBuyTheGame => {
+                            crate::app_store::go_to_app_store()
+                        }
+
                         NonLevel::BeforeTutorial => {
                             change_level_events.send(CurrentLevel::Tutorial { index: 0 }.into());
                         }
@@ -542,6 +551,7 @@ impl ButtonInteraction {
                                 change_level_events.send(next_level.into());
                             }
                         }
+
                     }
                 }
             }
