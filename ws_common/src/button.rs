@@ -392,7 +392,7 @@ impl ButtonInteraction {
             ButtonInteraction::WordSaladMenu(WordSaladMenuLayoutEntity::NextPuzzle) => {
                 if let Some(level) =
                     DailyChallenges::get_today_index()
-                        .checked_sub(3)
+                        .checked_sub(word_salad_menu_layout::DAYS_AGO)
                         .and_then(|x| {
                             daily_challenge_completion
                                 .get_next_incomplete_daily_challenge(x, daily_challenges)

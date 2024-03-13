@@ -9,7 +9,7 @@ pub enum WordSaladMenuLayoutEntity {
     NextPuzzle,
 }
 
-const DAYS_AGO: usize = 5;
+pub const DAYS_AGO: usize = 5;
 
 impl MenuButtonsLayout for WordSaladMenuLayoutEntity {
     type Context = ();
