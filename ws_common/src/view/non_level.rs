@@ -151,7 +151,7 @@ impl MavericNode for NonLevelView {
             );
 
             let interaction_text = match node.non_level {
-                NonLevel::BeforeTutorial => Some("Ok".to_string()),
+                NonLevel::BeforeTutorial => Some("Start Tutorial".to_string()),
                 NonLevel::AfterCustomLevel => Some("Restart".to_string()),
                 NonLevel::DailyChallengeFinished => Some("Next".to_string()),
                 NonLevel::DailyChallengeNotLoaded { .. } => Some("Retry".to_string()),

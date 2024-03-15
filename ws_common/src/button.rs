@@ -334,7 +334,7 @@ impl ButtonInteraction {
             ButtonInteraction::MainMenu(MainMenuLayoutEntity::Puzzles) => {
                 *menu_state.as_mut() = MenuState::ChooseLevelsPage;
             }
-            #[cfg(target_arch = "wasm32")]
+            #[cfg(all(target_arch = "wasm32", not(feature = "web")))]
             ButtonInteraction::MainMenu(MainMenuLayoutEntity::Store) => {
                 *menu_state.as_mut() = MenuState::MainStorePage;
             }
@@ -347,6 +347,7 @@ impl ButtonInteraction {
                 change_level_events.send(CurrentLevel::NonLevel(NonLevel::BeforeTutorial).into());
                 menu_state.close();
             }
+            #[cfg(all(target_arch = "wasm32", not(feature = "web")))]
             ButtonInteraction::MainMenu(MainMenuLayoutEntity::Settings) => {
                 *menu_state.as_mut() = MenuState::SettingsPage;
             }
