@@ -1,7 +1,6 @@
 use std::str::FromStr;
 
 use indicatif::{ProgressBar, ProgressStyle};
-use itertools::Itertools;
 use log::info;
 use prime_bag::{PrimeBag128, PrimeBagElement};
 use ws_core::{prelude::*, DesignedLevel, Word};

@@ -220,7 +220,7 @@ impl WordUniquenessHelper {
         match node_id_set.count() {
             0 => WordLetterResult::Buffer,
             1 => WordLetterResult::UniqueLetter(
-                *character,
+                (),
                 node_id_set.iter_true_tiles().next().unwrap(),
             ),
             _ => {
@@ -234,7 +234,7 @@ impl WordUniquenessHelper {
                         .skip(node_index)
                         .next()
                         .expect("Should be able to get node by index");
-                    return WordLetterResult::UniqueLetter(*character, node);
+                    return WordLetterResult::UniqueLetter((), node);
                 } else {
                     WordLetterResult::DuplicateLetter(
                         *character,
@@ -249,7 +249,7 @@ impl WordUniquenessHelper {
 }
 enum WordLetterResult {
     Buffer,
-    UniqueLetter(Character, NodeId),
+    UniqueLetter((), NodeId),
     DuplicateLetter(Character, MultiConstraintId),
 }
 

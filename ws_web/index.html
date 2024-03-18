@@ -10,27 +10,28 @@
 
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Word Salad" />
-    <meta property="og:url" content="https://wordsalad.online/" >
+    <meta property="og:url" content="https://wordsalad.online/" />
 
     <meta property="og:site_name" content="Word Salad" />
-    <meta property="og:description" content="Make this challenging word puzzle one of your 5-a-day" />
-    <meta name="description" content="Make this challenging word puzzle one of your 5-a-day" />
+    <meta
+      property="og:description"
+      content="Make this challenging word puzzle one of your 5-a-day"
+    />
+    <meta
+      name="description"
+      content="Make this challenging word puzzle one of your 5-a-day"
+    />
 
     <link data-trunk rel="copy-dir" href="../images" />
-
 
     <meta
       property="og:image"
       content="https://wordsalad.online/images/og_image.png"
     />
-    
+
     <meta property="og:image:width" content="1080" />
     <meta property="og:image:height" content="1080" />
-    <meta
-      property="og:image:alt"
-      content="Word Salad Logo"
-    />
-    
+    <meta property="og:image:alt" content="Word Salad Logo" />
 
     <link data-trunk rel="copy-dir" href="../icon" />
     <link rel="icon" href="../icon/icon192.png" />
@@ -38,7 +39,10 @@
     <link rel="apple-touch-icon" sizes="120x120" href="../icon/icon120.png" />
     <link rel="apple-touch-icon" sizes="152x152" href="../icon/icon152.png" />
     <meta name="msapplication-square70x70logo" content="../icon/icon70.png" />
-    <meta name="msapplication-square150x150logo" content="../icon/icon150.png" />
+    <meta
+      name="msapplication-square150x150logo"
+      content="../icon/icon150.png"
+    />
     <meta name="msapplication-wide310x150logo" content="../icon/icon310.png" />
 
     <link data-trunk rel="copy-file" href="robots.txt" />
@@ -72,6 +76,43 @@
 
     <link data-trunk rel="copy-dir" href="plugins" />
     <link data-trunk rel="copy-dir" href=".well-known" />
+
+    <!-- Meta Pixel Code -->
+    <script>
+      !(function (f, b, e, v, n, t, s) {
+        if (f.fbq) return;
+        n = f.fbq = function () {
+          n.callMethod
+            ? n.callMethod.apply(n, arguments)
+            : n.queue.push(arguments);
+        };
+        if (!f._fbq) f._fbq = n;
+        n.push = n;
+        n.loaded = !0;
+        n.version = "2.0";
+        n.queue = [];
+        t = b.createElement(e);
+        t.async = !0;
+        t.src = v;
+        s = b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t, s);
+      })(
+        window,
+        document,
+        "script",
+        "https://connect.facebook.net/en_US/fbevents.js"
+      );
+      fbq("init", "757156946137497");
+      fbq("track", "PageView");
+    </script>
+    <noscript
+      ><img
+        height="1"
+        width="1"
+        style="display: none"
+        src="https://www.facebook.com/tr?id=757156946137497&ev=PageView&noscript=1"
+    /></noscript>
+    <!-- End Meta Pixel Code -->
   </head>
 
   <body>
@@ -94,6 +135,5 @@
     ></video>
     <div id="afterVideo"></div>
     <canvas id="game" style="position: absolute"> </canvas>
-
   </body>
 </html>
