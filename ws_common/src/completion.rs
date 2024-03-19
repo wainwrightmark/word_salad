@@ -323,7 +323,7 @@ pub fn track_level_completion(
                             crate::platform_specific::show_toast_on_web(
                                 capacitor_bindings::toast::ShowOptions{
 
-                                    text: "Come to the launch event on March 13! Contact Mark or Sam for details.".to_string(),
+                                    text: "The full app has now been released on IOS and Android".to_string(),
                                     duration: capacitor_bindings::toast::ToastDuration::Long,
                                     position: capacitor_bindings::toast::ToastPosition::Bottom
                                 }
