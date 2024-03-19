@@ -1619,7 +1619,8 @@ checksum = "6051f239ecec86fde3410901ab7860d458d160371533842974fc61f96d15879b"
 [[package]]
 name = "const_sized_bit_set"
 version = "0.1.0"
-source = "git+https://github.com/wainwrightmark/const_sized_bit_set#0a91012338771253e80526cc657c3ef8c525ecdf"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f0b0ae97052c9c3a99d9d1721983421557d06feb7161ccae7ffafd77406d627d"
 
 [[package]]
 name = "const_soft_float"
@@ -2101,9 +2102,9 @@ checksum = "0ce7134b9999ecaf8bcd65542e436736ef32ddca1b3e06094cb6ec5755203b80"
 
 [[package]]
 name = "fixedbitset"
-version = "0.5.3"
+version = "0.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5e1d0c934dd7f99df4a0f70ee99a4c5a0538e66571ca3e12aeefc772ff85fa1"
+checksum = "439f3d9767ae6466036a0c188ce394202322569d8f8dd0fc1bf74ca393a1ee0d"
 dependencies = [
  "serde",
 ]
@@ -2310,7 +2311,8 @@ checksum = "1d758ba1b47b00caf47f24925c0074ecb20d6dfcffe7f6d53395c0465674841a"
 [[package]]
 name = "geometrid"
 version = "0.7.0"
-source = "git+https://github.com/wainwrightmark/geometrid#6d978c764c8f9f7b7cdf3f8483b63f3db1bee5c1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f342568b0a184d1cd14fa8263b8f14bc427ff104aa35edf5b005fdc74203c186"
 dependencies = [
  "const_panic",
  "ethnum",
@@ -3810,9 +3812,9 @@ dependencies = [
 
 [[package]]
 name = "prime_bag"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dbc06a0db33c02b059e4bf309043ca0d90b52452dd3c58c48923f8085ad08e6d"
+checksum = "1d0f8ec1729b4dbabc8a043fd55cc904757aaa20e96f98958ec9351c2ebe356b"
 dependencies = [
  "gcd",
  "static_assertions",
@@ -5890,7 +5892,7 @@ dependencies = [
  "chrono",
  "console_error_panic_hook",
  "enumset",
- "fixedbitset 0.5.3",
+ "fixedbitset 0.5.4",
  "fmtastic",
  "geometrid",
  "insta",
@@ -5995,7 +5997,7 @@ dependencies = [
  "chrono",
  "console_error_panic_hook",
  "enumset",
- "fixedbitset 0.5.3",
+ "fixedbitset 0.5.4",
  "fmtastic",
  "geometrid",
  "insta",
@@ -6040,7 +6042,7 @@ dependencies = [
  "chrono",
  "console_error_panic_hook",
  "enumset",
- "fixedbitset 0.5.3",
+ "fixedbitset 0.5.4",
  "fmtastic",
  "geometrid",
  "insta",

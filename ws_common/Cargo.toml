@@ -27,7 +27,7 @@ bevy_pkv = "0.10"
 serde = { version = "1", features = ["derive", "rc"] }
 anyhow = "1"
 base64 = "0.22"
-geometrid = { git = "https://github.com/wainwrightmark/geometrid", features = [
+geometrid = { version="0.7", features = [
     "glam",
     "serde",
 ] }

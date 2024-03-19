@@ -13,9 +13,9 @@ chrono = { version = "0.4", features = ["serde", "wasmbind"] }
 serde = { version = "1", features = ["derive", "rc"] }
 anyhow = "1"
 base64 = "0.22"
-geometrid = { git = "https://github.com/wainwrightmark/geometrid", features = ["glam", "serde"] }
+geometrid = { version = "0.7", features = ["glam", "serde"] }
 glam = "0.25"
-prime_bag = { version = "0.2.0"}
+prime_bag = { version = "0.3"}
 serde_with = "3"
 lazy_static = "1.4"
 serde_yaml = "0.9"
@@ -28,7 +28,7 @@ unicode-normalization = "0.1"
 unicode-segmentation = "1.10"
 log = "0.4.20"
 ustr = {version = "1.0", features = ["serde"]}
-const_sized_bit_set ={git="https://github.com/wainwrightmark/const_sized_bit_set"}
+const_sized_bit_set ={version = "0.1.0"}
 static_assertions = "1.1.0"
 
 [dev-dependencies]
