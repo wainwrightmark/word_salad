@@ -256,6 +256,20 @@
 				<string>3qcr597p9d.skadnetwork</string>
 			</dict>
 		</array>
+
+<key>CFBundleURLTypes</key>
+<array>
+  <dict>
+  <key>CFBundleURLSchemes</key>
+  <array>
+    <string>fb780875056849311</string>
+  </array>
+  </dict>
+</array>
+<key>FacebookAppID</key>
+<string>780875056849311</string>
+<key>FacebookDisplayName</key>
+<string>Word Salad</string>
 	</dict>
 
 
