@@ -97,7 +97,7 @@ pub fn setup_app(extra_setup: impl FnOnce(&mut App)) {
 
     app.add_plugins(AdsCommonPlugin);
 
-    //app.add_systems(PostStartup, choose_level_on_game_load);
+    app.add_systems(PostStartup, choose_level_on_game_load);
 
     #[cfg(not(target_arch = "wasm32"))]
     {
@@ -161,6 +161,7 @@ pub fn choose_level_on_game_load(
         daily_challenge_completion: Res<DailyChallengeCompletion>,
         daily_challenges: Res<DailyChallenges>,
     ) -> Option<CurrentLevel> {
+
         #[cfg(target_arch = "wasm32")]
         {
             if let Some(daily_index) = crate::wasm::get_daily_from_location() {
