@@ -257,7 +257,7 @@
 			</dict>
 		</array>
 
-<key>CFBundleURLTypes</key>
+<!-- <key>CFBundleURLTypes</key>
 <array>
   <dict>
   <key>CFBundleURLSchemes</key>
@@ -269,7 +269,7 @@
 <key>FacebookAppID</key>
 <string>780875056849311</string>
 <key>FacebookDisplayName</key>
-<string>Word Salad</string>
+<string>Word Salad</string> -->
 	</dict>
 
 
