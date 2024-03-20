@@ -9,7 +9,7 @@
 			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
 			<key>NSPrivacyAccessedAPITypeReasons</key>
 			<array>
-				<string>E174.1</string>
+				<string>CA92.1</string>
 			</array>
 		</dict>
 		<dict>
