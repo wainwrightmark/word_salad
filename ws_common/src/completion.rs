@@ -1,5 +1,4 @@
 use bevy::{prelude::*, utils::HashMap};
-use fixedbitset::FixedBitSet;
 use maveric::helpers::MavericContext;
 use nice_bevy_utils::TrackableResource;
 use serde::{Deserialize, Serialize};
@@ -39,7 +38,6 @@ pub struct LevelResult {
 #[derive(Debug, PartialEq, Serialize, Deserialize, Default, Clone, Resource, MavericContext)]
 pub struct DailyChallengeCompletion {
     pub results: HashMap<usize, LevelResult>,
-    total_completion: FixedBitSet,
 }
 
 impl TrackableResource for DailyChallengeCompletion {
@@ -193,7 +191,7 @@ impl DailyChallengeCompletion {
     }
 
     pub fn is_daily_challenge_complete(&self, index: usize) -> bool {
-        self.total_completion.contains(index)
+        self.results.contains_key(&index)
     }
 
     pub fn get_next_incomplete_daily_challenge_from_today(
@@ -228,7 +226,7 @@ impl DailyChallengeCompletion {
     }
 
     pub fn get_daily_challenges_complete(&self) -> usize {
-        self.total_completion.count_ones(..)
+        self.results.len()
     }
 }
 
@@ -298,13 +296,13 @@ pub fn track_level_completion(
         }
 
         CurrentLevel::DailyChallenge { index } => {
-            if !daily_challenge_completion.total_completion.contains(*index) {
+            if !daily_challenge_completion.results.contains_key(index) {
                 first_time = true;
-                daily_challenge_completion
-                    .total_completion
-                    .grow(index.saturating_add(1));
+                // daily_challenge_completion
+                //     .total_completion
+                //     .grow(index.saturating_add(1));
 
-                daily_challenge_completion.total_completion.insert(*index);
+                //daily_challenge_completion.total_completion.insert(*index);
 
                 let index = DailyChallenges::get_today_index();
                 {
@@ -321,13 +319,13 @@ pub fn track_level_completion(
                         #[cfg(any(feature = "web"))]
                         {
                             crate::platform_specific::show_toast_on_web(
-                                capacitor_bindings::toast::ShowOptions{
-
-                                    text: "The full app has now been released on IOS and Android".to_string(),
+                                capacitor_bindings::toast::ShowOptions {
+                                    text: "The full app has now been released on IOS and Android"
+                                        .to_string(),
                                     duration: capacitor_bindings::toast::ToastDuration::Long,
-                                    position: capacitor_bindings::toast::ToastPosition::Bottom
-                                }
-);
+                                    position: capacitor_bindings::toast::ToastPosition::Bottom,
+                                },
+                            );
                         }
                         #[cfg(not(any(feature = "web")))]
                         {
@@ -380,7 +378,32 @@ pub fn track_level_completion(
 
 #[cfg(test)]
 pub mod test {
+
     use crate::prelude::*;
+
+    #[test]
+    pub fn test_daily_challenge_completion_serde() {
+        let old_form = r#"{"results":{"16":{"seconds":12,"hints_used":0},"18":{"seconds":29,"hints_used":0},"17":{"seconds":11,"hints_used":0},"19":{"seconds":15,"hints_used":0},"15":{"seconds":24,"hints_used":0}},"total_completion":{"data":[1015808],"length":20}}"#;
+        let new_form = r#"{"results":{"19":{"seconds":15,"hints_used":0},"17":{"seconds":11,"hints_used":0},"18":{"seconds":29,"hints_used":0},"15":{"seconds":24,"hints_used":0},"16":{"seconds":12,"hints_used":0}}}"#;
+
+        let old_form_completion: DailyChallengeCompletion =
+            serde_json::from_str(old_form).expect("Should be able to deserialize old form");
+
+        assert_eq!(5, old_form_completion.get_daily_challenges_complete());
+
+        let new_form_completion: DailyChallengeCompletion =
+            serde_json::from_str(new_form).expect("Should be able to deserialize new form");
+
+        assert_eq!(old_form_completion, new_form_completion);
+
+        let serialized = serde_json::to_string(&new_form_completion)
+            .expect("Should be able to serialize new form");
+
+        let restored: DailyChallengeCompletion =
+            serde_json::from_str(&serialized).expect("Should be able to round trip");
+
+        assert_eq!(restored, new_form_completion);
+    }
 
     #[test]
     pub fn test_daily_challenge_completion() {
