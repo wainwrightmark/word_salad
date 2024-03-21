@@ -20,7 +20,6 @@ impl BackgroundType {
         }
     }
 
-
     pub fn menu_button_complete_fill(&self) -> BasicColor {
         match self {
             BackgroundType::Congrats | BackgroundType::NonLevel => palette::TRANSPARENT,

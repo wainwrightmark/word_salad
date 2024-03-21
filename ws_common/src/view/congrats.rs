@@ -145,7 +145,9 @@ impl MavericNode for CongratsView {
                 CurrentLevel::NonLevel(_) => Data::None,
             };
 
-            let (initial_scale, transition) = if !context.chosen_state.is_just_finished || context.menu_state.is_changed() {
+            let (initial_scale, transition) = if !context.chosen_state.is_just_finished
+                || context.menu_state.is_changed()
+            {
                 (
                     Vec3::ONE,
                     TransitionBuilder::default()

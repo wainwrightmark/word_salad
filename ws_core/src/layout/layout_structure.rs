@@ -28,17 +28,16 @@ pub trait LayoutStructure: Sized + PartialEq + Debug {
     fn iter_all(context: &Self::Context<'_>) -> impl Iterator<Item = Self>;
 }
 
-
-pub trait LayoutStructureWithOrigin : LayoutStructure{
-    fn origin(&self, context: &Self::Context<'_>, sizing: &LayoutSizing)-> Origin;
+pub trait LayoutStructureWithOrigin: LayoutStructure {
+    fn origin(&self, context: &Self::Context<'_>, sizing: &LayoutSizing) -> Origin;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Display, EnumIs)]
-pub enum Origin{
+pub enum Origin {
     Center,
     TopCenter,
     TopLeft,
-    CenterLeft
+    CenterLeft,
 }
 
 pub trait LayoutStructureWithFont {

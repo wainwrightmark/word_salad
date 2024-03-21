@@ -2,32 +2,29 @@ use std::ops::Add;
 
 use glam::Vec2;
 
-use crate::LayoutStructure;
 use crate::prelude::*;
+use crate::LayoutStructure;
 
 use super::GameLayoutEntity;
 use super::SelfieMode;
 use super::GRID_TILE_SIZE;
 
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
-pub struct LayoutAnimatedTile{
+pub struct LayoutAnimatedTile {
     pub index: usize,
 }
 
-impl LayoutStructure for LayoutAnimatedTile{
+impl LayoutStructure for LayoutAnimatedTile {
     type Context<'a> = ((SelfieMode, Insets), usize); //number of tiles
 
     fn size(&self, context: &Self::Context<'_>, _sizing: &crate::LayoutSizing) -> glam::Vec2 {
-        let size = if  context.1 <= 4{
+        let size = if context.1 <= 4 {
             GRID_TILE_SIZE
-        }else{
-            (GRID_TILE_SIZE * 4.0 ) / (context.1 as f32)
+        } else {
+            (GRID_TILE_SIZE * 4.0) / (context.1 as f32)
         };
 
-        Vec2{
-            x: size,
-            y: size
-        }
+        Vec2 { x: size, y: size }
     }
 
     fn location(&self, context: &Self::Context<'_>, sizing: &crate::LayoutSizing) -> glam::Vec2 {
@@ -46,7 +43,6 @@ impl LayoutStructure for LayoutAnimatedTile{
     }
 
     fn iter_all(context: &Self::Context<'_>) -> impl Iterator<Item = Self> {
-
-        (0..context.1).map(|index| Self{ index})
+        (0..context.1).map(|index| Self { index })
     }
 }

@@ -219,10 +219,7 @@ impl WordUniquenessHelper {
 
         match node_id_set.count() {
             0 => WordLetterResult::Buffer,
-            1 => WordLetterResult::UniqueLetter(
-                (),
-                node_id_set.iter_true_tiles().next().unwrap(),
-            ),
+            1 => WordLetterResult::UniqueLetter((), node_id_set.iter_true_tiles().next().unwrap()),
             _ => {
                 if *self.constraining_words.get(*character) == Some(word_index) {
                     let node_index = word.array[0..true_index]

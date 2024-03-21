@@ -126,7 +126,9 @@ fn handle_product_purchased(
         if !purchases.groups_purchased.contains(&lg) {
             purchases.groups_purchased.insert(lg);
 
-            if let CurrentLevel::NonLevel(NonLevel::LevelSequenceMustPurchaseGroup(sequence)) = level {
+            if let CurrentLevel::NonLevel(NonLevel::LevelSequenceMustPurchaseGroup(sequence)) =
+                level
+            {
                 if sequence.group() == lg {
                     let next_level: CurrentLevel = sequence_completion
                         .get_next_level_index(*sequence, purchases)

@@ -173,8 +173,9 @@ impl<T: core::fmt::Display + PartialEq + Debug + Send + Sync + Clone + 'static> 
 }
 
 #[derive(Debug, PartialEq)]
-pub struct DoubleTextButtonNode<T: core::fmt::Display + PartialEq + Debug + Send + Sync + Clone + 'static>
-{
+pub struct DoubleTextButtonNode<
+    T: core::fmt::Display + PartialEq + Debug + Send + Sync + Clone + 'static,
+> {
     pub font_size: f32,
     pub rect: LayoutRectangle,
     pub left_text: T,

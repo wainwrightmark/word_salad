@@ -37,13 +37,11 @@ impl std::fmt::Display for DesignedLevel {
 
 impl DesignedLevel {
     pub fn try_from_path(mut path: &str) -> Option<Self> {
-
         path = path.trim_start_matches("https://wordsalad.online");
 
         if path.is_empty() || path.eq_ignore_ascii_case("/") {
             return None;
         }
-
 
         if path.to_ascii_lowercase().starts_with("/game/") {
             //log::info!("Path starts with game");

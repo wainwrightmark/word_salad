@@ -14,7 +14,6 @@ pub fn show_toast_sync(options: impl Into<capacitor_bindings::toast::ShowOptions
     {
         crate::logging::do_or_report_error(capacitor_bindings::toast::Toast::show(options));
     }
-
 }
 
 #[allow(unused_variables)]

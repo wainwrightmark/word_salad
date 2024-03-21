@@ -178,10 +178,11 @@ impl LayoutStructure for CongratsLayoutEntity {
         let button_count = Self::get_button_count(context);
         let take = 3 + button_count;
 
-        let stat_count = if context.1.is_tutorial(){0} else {3};
+        let stat_count = if context.1.is_tutorial() { 0 } else { 3 };
 
         CongratsStatistic::iter()
-            .map(Self::Statistic).take(stat_count)
+            .map(Self::Statistic)
+            .take(stat_count)
             .chain(CongratsButton::iter().map(Self::Button))
             .take(take)
     }

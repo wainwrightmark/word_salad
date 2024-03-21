@@ -92,7 +92,7 @@ pub struct GridTilesContext {
     pub window_size: MyWindowSize,
     pub video_resource: VideoResource,
     pub daily_challenges: DailyChallenges,
-    pub insets: InsetsResource
+    pub insets: InsetsResource,
 }
 
 impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for GridTilesContextWrapper<'w> {
@@ -104,7 +104,7 @@ impl<'a, 'w: 'a> From<&'a ViewContextWrapper<'w>> for GridTilesContextWrapper<'w
             video_resource: Res::clone(&value.video_resource),
             chosen_state: Res::clone(&value.chosen_state),
             daily_challenges: Res::clone(&value.daily_challenges),
-            insets: Res::clone(&value.insets)
+            insets: Res::clone(&value.insets),
         }
     }
 }
@@ -148,7 +148,10 @@ impl MavericNode for GridTiles {
                             .extend(crate::z_indices::GRID_TILE);
                         let character = level.grid[tile];
                         let target_centre = size
-                            .get_rect(&LayoutAnimatedTile { index }, &((selfie_mode, insets), sol_count))
+                            .get_rect(
+                                &LayoutAnimatedTile { index },
+                                &((selfie_mode, insets), sol_count),
+                            )
                             .top_centre()
                             .extend(crate::z_indices::GRID_TILE);
 
@@ -262,7 +265,9 @@ impl MavericNode for GridTiles {
                 let hint_status =
                     HintStatus::new(tile, selectability, hint_set, &inadvisable_tiles);
 
-                let centre = size.get_rect(&LayoutGridTile(tile), &(selfie_mode, insets)).centre();
+                let centre = size
+                    .get_rect(&LayoutGridTile(tile), &(selfie_mode, insets))
+                    .centre();
 
                 commands.add_child(
                     tile.inner() as u32,

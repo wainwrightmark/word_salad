@@ -13,10 +13,13 @@ use ws_core::{
 use ws_levels::level_group::LevelGroup;
 
 use crate::{
-    achievements::UserSignedIn, menu_layout::{
+    achievements::UserSignedIn,
+    menu_layout::{
         main_menu_back_button::MainMenuBackButton,
         word_salad_menu_layout::WordSaladMenuLayoutEntity,
-    }, prelude::*, shapes, z_indices
+    },
+    prelude::*,
+    shapes, z_indices,
 };
 
 use self::{
@@ -81,7 +84,7 @@ pub struct MenuContext {
     pub current_level: CurrentLevel,
     pub found_words_state: FoundWordsState,
     pub prices: Prices,
-    pub user_signed_in: UserSignedIn
+    pub user_signed_in: UserSignedIn,
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, MavericRoot)]
@@ -152,7 +155,10 @@ impl MavericRootChildren for MenuRoot {
             }
             MenuState::SettingsPage => {
                 add_menu_items::<settings_menu_layout::SettingsLayoutEntity>(
-                    &(context.video_resource.selfie_mode(), *context.user_signed_in.as_ref()),
+                    &(
+                        context.video_resource.selfie_mode(),
+                        *context.user_signed_in.as_ref(),
+                    ),
                     commands,
                     size,
                     1,

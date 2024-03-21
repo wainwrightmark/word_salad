@@ -6,7 +6,7 @@ use hashbrown::hash_set;
 use indicatif::{ProgressBar, ProgressStyle};
 use itertools::Itertools;
 use log::info;
-use ws_core::{ ArrayVec, Character, DesignedLevel, Vector, Word, WordTrait};
+use ws_core::{ArrayVec, Character, DesignedLevel, Vector, Word, WordTrait};
 
 #[derive(Args, Debug)]
 pub struct ObviousArgs {

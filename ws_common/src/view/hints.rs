@@ -27,7 +27,7 @@ struct HintsRemainingContext {
     pub current_level: CurrentLevel,
     pub pressed_button: PressedButton,
     pub menu: MenuState,
-    pub insets_resource: InsetsResource
+    pub insets_resource: InsetsResource,
 }
 
 fn is_word_button_pressed(b: &PressedButton) -> bool {
@@ -71,9 +71,13 @@ impl MavericRootChildren for HintsRemainingRoot {
         }
         .convert_color();
 
-        let rect = context
-            .window_size
-            .get_rect(&HintsRemainingLayout, &(context.video_resource.selfie_mode(), context.insets_resource.0));
+        let rect = context.window_size.get_rect(
+            &HintsRemainingLayout,
+            &(
+                context.video_resource.selfie_mode(),
+                context.insets_resource.0,
+            ),
+        );
 
         commands.add_child(
             "text",

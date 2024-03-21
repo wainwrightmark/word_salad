@@ -38,9 +38,9 @@ pub struct DailyChallenges {
     pub levels: Option<Vec<DesignedLevel>>,
 }
 
-impl DailyChallenges{
-    pub fn levels(&self)-> &[DesignedLevel]{
-        match &self.levels{
+impl DailyChallenges {
+    pub fn levels(&self) -> &[DesignedLevel] {
+        match &self.levels {
             Some(l) => l.as_slice(),
             None => (*DAILY_CHALLENGE_NUMBERED).as_slice(),
         }
@@ -150,9 +150,7 @@ pub fn try_daily_index_from_path(mut path: &str) -> Option<usize> {
         //info!("{path} starts with daily");
         let data = path[7..].to_string();
 
-        let index = data.trim().parse::<usize>()
-            .ok()?
-            .checked_sub(1)?;
+        let index = data.trim().parse::<usize>().ok()?.checked_sub(1)?;
 
         let today_index = DailyChallenges::get_today_index();
 
@@ -220,8 +218,6 @@ fn handle_daily_challenge_data_loaded(
             .map(DesignedLevel::from_tsv_line)
             .flat_map(|x| x.ok())
             .collect_vec();
-
-
 
         if levels.len() > daily_challenges.levels().len() {
             number_daily_challenge_levels(&mut levels);

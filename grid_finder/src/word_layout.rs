@@ -33,7 +33,10 @@ pub fn do_word_layout() {
                 rightmost: isize,
             }
 
-            let context = &(level.words.as_slice(), (selfie_mode, ws_core::Insets::default()));
+            let context = &(
+                level.words.as_slice(),
+                (selfie_mode, ws_core::Insets::default()),
+            );
             let data: Vec<GroupData> =
                 ws_core::layout::entities::layout_word_tile::LayoutWordTile::iter_all(context)
                     .group_by(|tile| tile.location(context, &sizing).y)

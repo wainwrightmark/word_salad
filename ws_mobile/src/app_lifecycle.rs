@@ -176,7 +176,8 @@ async fn on_resume(writer: async_event_writer::AsyncEventWriter<AppLifeCycleEven
                 is_active: x.is_active,
                 time_sent: chrono::Utc::now(),
             };
-            ws_common::startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            ws_common::startup::ADDITIONAL_TRACKING
+                .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
             writer.send_or_panic(event);
         })
         .await;

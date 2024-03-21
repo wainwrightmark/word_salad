@@ -38,7 +38,11 @@ impl LayoutStructure for LevelInfoLayoutEntity {
         let base_location =
             GameLayoutEntity::location(&GameLayoutEntity::LevelInfo, &context.0, sizing);
 
-        let extra_y = if context.1.0 { THEME_HEIGHT + THEME_INFO_HEIGHT} else {0.0};
+        let extra_y = if context.1 .0 {
+            THEME_HEIGHT + THEME_INFO_HEIGHT
+        } else {
+            0.0
+        };
 
         match self {
             LevelInfoLayoutEntity::ThemeAndNumber => Vec2 {
@@ -54,11 +58,11 @@ impl LayoutStructure for LevelInfoLayoutEntity {
     }
 }
 
-impl LayoutStructureWithOrigin for LevelInfoLayoutEntity{
-    fn origin(&self, context: &Self::Context<'_>, _sizing: &LayoutSizing)-> Origin {
-        if context.1.0{
+impl LayoutStructureWithOrigin for LevelInfoLayoutEntity {
+    fn origin(&self, context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Origin {
+        if context.1 .0 {
             Origin::Center
-        }else{
+        } else {
             Origin::CenterLeft
         }
     }

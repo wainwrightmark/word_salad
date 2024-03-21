@@ -17,7 +17,7 @@ impl Into<capacitor_bindings::game_connect::SubmitScoreOptions> for SubmitScoreD
     }
 }
 
-pub static  DEVICE_ID: std::sync::OnceLock<DeviceIdentifier> = std::sync::OnceLock::new(); // DeviceIdentifier::EMPTY;
+pub static DEVICE_ID: std::sync::OnceLock<DeviceIdentifier> = std::sync::OnceLock::new(); // DeviceIdentifier::EMPTY;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(transparent)]

@@ -11,7 +11,6 @@ pub enum SettingsLayoutEntity {
     RestorePurchases,
     SeeAchievements,
     SyncAchievements,
-
 }
 
 impl SettingsLayoutEntity {

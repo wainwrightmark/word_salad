@@ -81,10 +81,8 @@ impl FromStr for FinderGroup {
     type Err = &'static str;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let words: Vec<FinderSingleWord> = s
-            .split('+')
-            .map(FinderSingleWord::from_str)
-            .try_collect()?;
+        let words: Vec<FinderSingleWord> =
+            s.split('+').map(FinderSingleWord::from_str).try_collect()?;
 
         let counts = words
             .iter()

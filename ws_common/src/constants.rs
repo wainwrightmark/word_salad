@@ -86,14 +86,12 @@ impl SaladWindowSize for Size {
         let rect = self.get_rect(entity, context);
         let origin = entity.origin(context, &layout(self));
 
-        match origin{
+        match origin {
             Origin::Center => rect.centre(),
             Origin::TopLeft => rect.top_left,
             Origin::CenterLeft => rect.centre_left(),
             Origin::TopCenter => rect.top_centre(),
         }
-
-
     }
 
     fn try_pick<T: LayoutStructure>(&self, p: Vec2, context: &T::Context<'_>) -> Option<T> {

@@ -18,7 +18,7 @@ pub fn create_firework(
     start_straight_after_delay: bool,
 
     selfie_mode: SelfieMode,
-    insets: Insets
+    insets: Insets,
 ) {
     let rect = size.get_rect(
         &ws_core::layout::entities::GameLayoutEntity::Grid,

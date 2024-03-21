@@ -63,7 +63,9 @@ impl MavericNode for TutorialNode {
                     Text2DNode {
                         text: "Tutorial",
                         font: BOLD_FONT,
-                        font_size: context.window_size.font_size(&TutorialTitleLayoutEntity, &()),
+                        font_size: context
+                            .window_size
+                            .font_size(&TutorialTitleLayoutEntity, &()),
                         color: palette::TUTORIAL_TEXT_LINE2.convert_color(),
                         justify_text: JustifyText::Center,
                         linebreak_behavior: bevy::text::BreakLineOn::NoWrap,
@@ -73,7 +75,10 @@ impl MavericNode for TutorialNode {
                     .with_bundle(Transform::from_translation(
                         context
                             .window_size
-                            .get_origin(&TutorialTitleLayoutEntity, &(context.video_resource.selfie_mode(), context.insets.0))
+                            .get_origin(
+                                &TutorialTitleLayoutEntity,
+                                &(context.video_resource.selfie_mode(), context.insets.0),
+                            )
                             .extend(crate::z_indices::TUTORIAL_POPUP_BOX_TEXT),
                     )),
                     &(),
@@ -285,8 +290,8 @@ impl LayoutStructure for TutorialTitleLayoutEntity {
     }
 }
 
-impl LayoutStructureWithOrigin for TutorialTitleLayoutEntity{
-    fn origin(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing)-> Origin {
+impl LayoutStructureWithOrigin for TutorialTitleLayoutEntity {
+    fn origin(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Origin {
         Origin::TopCenter
     }
 }
@@ -332,7 +337,8 @@ impl LayoutStructure for TutorialLayoutEntity {
             TutorialLayoutEntity::Top => Vec2 {
                 x: LEFT_MARGIN,
                 y: GameLayoutEntity::Grid.location(context, sizing).y
-                    - self.size(context, sizing).y -10.0,
+                    - self.size(context, sizing).y
+                    - 10.0,
             },
             TutorialLayoutEntity::Middle => Vec2 {
                 x: LEFT_MARGIN,
@@ -340,7 +346,7 @@ impl LayoutStructure for TutorialLayoutEntity {
             },
             TutorialLayoutEntity::Bottom => Vec2 {
                 x: LEFT_MARGIN,
-                y: GameLayoutEntity::WordList.location(context, sizing).y ,
+                y: GameLayoutEntity::WordList.location(context, sizing).y,
             },
         }
     }

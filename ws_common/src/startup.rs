@@ -9,8 +9,6 @@ use bevy::{
 };
 use nice_bevy_utils::window_size::WindowSizePlugin;
 
-
-
 pub fn setup_app(extra_setup: impl FnOnce(&mut App)) {
     let mut app = App::new();
 
@@ -26,10 +24,8 @@ pub fn setup_app(extra_setup: impl FnOnce(&mut App)) {
     }
     #[cfg(not(target_arch = "wasm32"))]
     {
-        resolution = bevy::window::WindowResolution::new(
-            DEFAULT_WINDOW_WIDTH,
-            DEFAULT_WINDOW_HEIGHT,
-        );
+        resolution =
+            bevy::window::WindowResolution::new(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
     }
 
     let prevent_default_event_handling = !cfg!(debug_assertions);
@@ -85,7 +81,6 @@ pub fn setup_app(extra_setup: impl FnOnce(&mut App)) {
     app.register_transition::<TransformTranslationLens>();
     app.register_transition::<TransformScaleLens>();
     app.register_transition::<(TransformTranslationLens, TransformScaleLens)>();
-
 
     app.add_plugins(InputPlugin);
 
@@ -161,7 +156,6 @@ pub fn choose_level_on_game_load(
         daily_challenge_completion: Res<DailyChallengeCompletion>,
         daily_challenges: Res<DailyChallenges>,
     ) -> Option<CurrentLevel> {
-
         #[cfg(target_arch = "wasm32")]
         {
             if let Some(daily_index) = crate::wasm::get_daily_from_location() {
@@ -198,7 +192,6 @@ pub fn choose_level_on_game_load(
                 }
             }
         }
-
 
         match current_level.as_ref() {
             CurrentLevel::Tutorial { .. } | CurrentLevel::NonLevel(NonLevel::BeforeTutorial) => {

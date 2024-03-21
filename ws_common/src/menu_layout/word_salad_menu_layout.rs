@@ -64,11 +64,13 @@ impl WordSaladMenuLayoutEntity {
 
         let index = match self {
             WordSaladMenuLayoutEntity::DaysAgo(x) => today_index.checked_sub(*x),
-            WordSaladMenuLayoutEntity::NextPuzzle => today_index.checked_sub(DAYS_AGO).and_then(|x| {
-                completion
-                    .get_next_incomplete_daily_challenge(x, daily_challenges)
-                    .level_index()
-            }),
+            WordSaladMenuLayoutEntity::NextPuzzle => {
+                today_index.checked_sub(DAYS_AGO).and_then(|x| {
+                    completion
+                        .get_next_incomplete_daily_challenge(x, daily_challenges)
+                        .level_index()
+                })
+            }
         };
 
         let Some(index) = index else {
@@ -88,7 +90,10 @@ impl WordSaladMenuLayoutEntity {
         let index = match self {
             WordSaladMenuLayoutEntity::DaysAgo(x) => today_index.checked_sub(*x)?,
             WordSaladMenuLayoutEntity::NextPuzzle => completion
-                .get_next_incomplete_daily_challenge(today_index.checked_sub(DAYS_AGO)?, daily_challenges)
+                .get_next_incomplete_daily_challenge(
+                    today_index.checked_sub(DAYS_AGO)?,
+                    daily_challenges,
+                )
                 .level_index()?,
         };
 

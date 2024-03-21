@@ -162,13 +162,7 @@ impl MavericRootChildren for ViewRoot {
             }
             itertools::Either::Right(non_level) => {
                 if context.menu_state.is_closed() {
-                    commands.add_child(
-                        "non_level",
-                        NonLevelView {
-                            non_level,
-                        },
-                        &context.into(),
-                    );
+                    commands.add_child("non_level", NonLevelView { non_level }, &context.into());
                 }
             }
         }

@@ -91,7 +91,7 @@ pub fn do_search(search_args: &SearchArgs) {
                 }
             }
 
-            if !length_allowed{
+            if !length_allowed {
                 continue;
             }
 

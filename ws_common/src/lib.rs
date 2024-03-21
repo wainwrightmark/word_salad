@@ -34,9 +34,9 @@ pub mod wasm;
 
 pub mod z_indices;
 
+pub mod app_store;
 pub mod daily_challenge;
 pub mod purchase_common;
-pub mod app_store;
 
 pub mod prelude {
 

@@ -34,7 +34,8 @@ impl<T: MenuButtonsLayout> LayoutStructure for T {
             x: (IDEAL_WIDTH - MENU_BUTTON_WIDTH) / 2.,
             y: (TOP_BAR_HEIGHT + TOP_BAR_OFFSET + extra_top_height(sizing, &context.0))
                 + Spacing::Centre.apply(
-                    IDEAL_HEIGHT - (TOP_BAR_HEIGHT + TOP_BAR_OFFSET + extra_top_height(sizing, &context.0)),
+                    IDEAL_HEIGHT
+                        - (TOP_BAR_HEIGHT + TOP_BAR_OFFSET + extra_top_height(sizing, &context.0)),
                     (MENU_BUTTON_HEIGHT + MENU_BUTTON_SPACING) * 0.5,
                     super::MENU_VIRTUAL_CHILDREN * 2,
                     (self.index() * 2) + super::MENU_VIRTUAL_CHILDREN

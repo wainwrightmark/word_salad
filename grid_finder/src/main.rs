@@ -67,15 +67,15 @@ pub enum Commands {
 }
 
 #[derive(Args, Debug)]
-pub struct SearchArgs{
-    #[arg(long, default_value="")]
+pub struct SearchArgs {
+    #[arg(long, default_value = "")]
     pub words: String,
 
-    #[arg(long, required=false)]
+    #[arg(long, required = false)]
     pub lengths: String,
 
-    #[arg(long, default_value_t=false)]
-    pub exact_lengths: bool
+    #[arg(long, default_value_t = false)]
+    pub exact_lengths: bool,
 }
 
 #[derive(Args, Debug)]
@@ -101,7 +101,7 @@ pub struct ClusterArgs {
 
     /// Space Separated Words to ignore
     /// Grids containing these words will not be clustered
-    #[arg(long, default_value="")]
+    #[arg(long, default_value = "")]
     pub ignore_words: String,
 }
 
@@ -366,7 +366,12 @@ fn cluster_files(options: &ClusterArgs) {
             .lines()
             .map(|l| GridResult::from_str(l).unwrap())
             .filter(|x| x.words.len() >= options.minimum_words as usize)
-            .filter(|x|ignore_words.is_empty() || x.words.iter().all(|w|!ignore_words.contains(w.characters()) ))
+            .filter(|x| {
+                ignore_words.is_empty()
+                    || x.words
+                        .iter()
+                        .all(|w| !ignore_words.contains(w.characters()))
+            })
             .filter(|x| {
                 options.min_falling == 0.0
                     || falling_probability::calculate_cumulative_falling_probability_2(x)
@@ -627,7 +632,8 @@ fn do_finder(options: FindGridsArgs) {
                 options.minimum,
                 max_grids,
                 resume_grids,
-            ),..=512 => grid_creator::create_grids::<8>(
+            ),
+            ..=512 => grid_creator::create_grids::<8>(
                 &stem,
                 word_map,
                 &master_words,
@@ -635,7 +641,8 @@ fn do_finder(options: FindGridsArgs) {
                 options.minimum,
                 max_grids,
                 resume_grids,
-            ),..=1024 => grid_creator::create_grids::<16>(
+            ),
+            ..=1024 => grid_creator::create_grids::<16>(
                 &stem,
                 word_map,
                 &master_words,
@@ -696,8 +703,18 @@ fn do_finder(options: FindGridsArgs) {
                 options.max_clusters as usize,
                 Some(stem.clone()),
             ),
-            ..=512 => cluster_words::<8>(grids, &all_words,options.max_clusters as usize, Some(stem.clone())),
-            ..=1024 => cluster_words::<16>(grids, &all_words,options.max_clusters as usize, Some(stem.clone())),
+            ..=512 => cluster_words::<8>(
+                grids,
+                &all_words,
+                options.max_clusters as usize,
+                Some(stem.clone()),
+            ),
+            ..=1024 => cluster_words::<16>(
+                grids,
+                &all_words,
+                options.max_clusters as usize,
+                Some(stem.clone()),
+            ),
             _ => panic!("Too many words to do clustering"),
         };
 

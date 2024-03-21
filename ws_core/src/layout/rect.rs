@@ -23,7 +23,7 @@ impl LayoutRectangle {
         }
     }
 
-    pub fn top_centre(&self)-> Vec2{
+    pub fn top_centre(&self) -> Vec2 {
         Vec2 {
             x: self.top_left.x + (self.extents.x * 0.5),
             y: self.top_left.y,

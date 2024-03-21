@@ -52,17 +52,12 @@ pub fn calculate_cumulative_falling_probability_2(level: &impl LevelTrait) -> f3
         let unneeded_after_1 =
             level.calculate_unneeded_tiles(Default::default(), |wi| wi == word_index);
 
-        if !unneeded_after_1.is_empty()
-        {
+        if !unneeded_after_1.is_empty() {
             total += word_count_sub_1;
             count += word_count_sub_1;
-        }
-        else{
+        } else {
             for word_index2 in 0..(level.words().len()) {
                 if word_index2 != word_index {
-
-
-
                     let unneeded_after_2 = level.calculate_unneeded_tiles(unneeded_after_1, |wi| {
                         wi == word_index || wi == word_index2
                     });
@@ -74,8 +69,6 @@ pub fn calculate_cumulative_falling_probability_2(level: &impl LevelTrait) -> f3
                 }
             }
         }
-
-
     }
 
     total /= count;

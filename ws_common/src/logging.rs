@@ -210,19 +210,18 @@ pub enum LoggableEvent {
     // NotificationClick,
 
     // ActedInTutorial
-
     SelfieModeStarted,
     SelfieModeStopped,
     RecordingStarted,
     RecordingNotStarted,
-    RecordingStopped{
-        recording_seconds: i64
+    RecordingStopped {
+        recording_seconds: i64,
     },
-    ProductPurchased{
-        product: Product
+    ProductPurchased {
+        product: Product,
     },
     RewardAdShown,
-    InterstitialAdShown
+    InterstitialAdShown,
 }
 
 #[cfg(any(feature = "android", feature = "ios", feature = "web"))]

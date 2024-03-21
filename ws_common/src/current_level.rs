@@ -124,15 +124,15 @@ impl Default for CurrentLevel {
 
 pub static CUSTOM_LEVEL: RwLock<Option<&'static DesignedLevel>> = RwLock::new(None);
 
-pub fn set_custom_level(level: DesignedLevel){
-    match CUSTOM_LEVEL.write(){
+pub fn set_custom_level(level: DesignedLevel) {
+    match CUSTOM_LEVEL.write() {
         Ok(mut write) => {
             let leaked_level: &'static DesignedLevel = Box::leak(Box::new(level));
             write.replace(leaked_level);
-        },
+        }
         Err(..) => {
             error!("Poison error writing custom level")
-        },
+        }
     }
 }
 
@@ -150,7 +150,7 @@ impl CurrentLevel {
 
     /// Whether this level should be counted to towards total interstitial ads
     pub fn count_for_interstitial_ads(&self, purchases: &Purchases) -> bool {
-        if  purchases.remove_ads_purchased {
+        if purchases.remove_ads_purchased {
             return false;
         }
 

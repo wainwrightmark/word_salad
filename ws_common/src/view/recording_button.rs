@@ -7,7 +7,7 @@ pub struct RecordingButtonContext {
     pub window_size: MyWindowSize,
     pub video_resource: VideoResource,
     pub pressed_button: PressedButton,
-    pub insets: InsetsResource
+    pub insets: InsetsResource,
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, MavericRoot)]

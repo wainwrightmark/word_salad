@@ -59,8 +59,6 @@ impl MenuButtonsLayout for MainMenuLayoutEntity {
 
 impl LayoutStructureWithTextOrImage for MainMenuLayoutEntity {
     fn text_or_image(&self, _context: &Self::Context<'_>) -> ws_core::prelude::TextOrImage {
-
-
         match self {
             MainMenuLayoutEntity::Puzzles => ws_core::TextOrImage::Text { text: "Puzzles" },
 

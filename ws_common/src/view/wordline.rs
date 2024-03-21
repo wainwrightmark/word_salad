@@ -22,7 +22,7 @@ pub struct WordLine {
     pub close_to_solution: bool,
     pub selfie_mode: SelfieMode,
     pub special_colors: Option<Vec<BasicColor>>,
-    pub insets: Insets
+    pub insets: Insets,
 }
 
 impl MavericNode for WordLine {
@@ -74,9 +74,10 @@ impl MavericNode for WordLine {
             const SCALE_FACTOR: f32 = ((GRID_GAP / 3.0) + GRID_TILE_SIZE) / GRID_TILE_SIZE;
 
             if let Ok(tile) = solution.iter().exactly_one() {
-                let rect = args
-                    .context
-                    .get_rect(&LayoutGridTile(*tile), &(args.node.selfie_mode, args.node.insets));
+                let rect = args.context.get_rect(
+                    &LayoutGridTile(*tile),
+                    &(args.node.selfie_mode, args.node.insets),
+                );
                 let color = index_to_color(0, &args.node.special_colors);
 
                 commands.add_child(
@@ -105,12 +106,14 @@ impl MavericNode for WordLine {
                 for (index, (from, to)) in solution.iter().tuple_windows().enumerate() {
                     let direction = get_direction(from, to);
 
-                    let rect_f = args
-                        .context
-                        .get_rect(&LayoutGridTile(*from), &(args.node.selfie_mode, args.node.insets));
-                    let rect_t = args
-                        .context
-                        .get_rect(&LayoutGridTile(*to), &(args.node.selfie_mode, args.node.insets));
+                    let rect_f = args.context.get_rect(
+                        &LayoutGridTile(*from),
+                        &(args.node.selfie_mode, args.node.insets),
+                    );
+                    let rect_t = args.context.get_rect(
+                        &LayoutGridTile(*to),
+                        &(args.node.selfie_mode, args.node.insets),
+                    );
 
                     let translation =
                         ((rect_f.centre() + rect_t.centre()) * 0.5).extend(z_indices::WORD_LINE);
@@ -192,7 +195,7 @@ impl MavericNode for WordLine {
     }
 
     fn on_deleted(&self, commands: &mut ComponentCommands) -> DeletionPolicy {
-        commands.insert_resource(WordLineGlobalTargets{
+        commands.insert_resource(WordLineGlobalTargets {
             target_line_width: LineWidthTarget::None,
             target_progress: ProgressTarget::DecreaseToZero,
         });
@@ -368,8 +371,6 @@ fn transition_word_line(
 ) {
     let progress_change = time.delta_seconds() * PROGRESS_SPEED;
     let mut changed: bool = false;
-
-
 
     let line_width = match targets.target_line_width {
         LineWidthTarget::PulseUp => {

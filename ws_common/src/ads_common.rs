@@ -26,18 +26,29 @@ fn is_ad_failed(current_level: Res<CurrentLevel>) -> bool {
     }
 }
 
-fn countdown_failed_ad(mut current_level: ResMut<CurrentLevel>, mut redraw: ResMut<RedrawMarker>, mut ips: ResMut<InterstitialProgressState>) {
-
-    if let CurrentLevel::NonLevel(NonLevel::AdFailed {  since: Some(since), next_level }) = current_level.as_ref() {
-
-        if chrono::Utc::now().signed_duration_since(since).num_seconds() >= AD_FAILED_SECONDS{
-            *current_level = CurrentLevel::NonLevel(NonLevel::AdFailed { next_level: *next_level, since: None });
+fn countdown_failed_ad(
+    mut current_level: ResMut<CurrentLevel>,
+    mut redraw: ResMut<RedrawMarker>,
+    mut ips: ResMut<InterstitialProgressState>,
+) {
+    if let CurrentLevel::NonLevel(NonLevel::AdFailed {
+        since: Some(since),
+        next_level,
+    }) = current_level.as_ref()
+    {
+        if chrono::Utc::now()
+            .signed_duration_since(since)
+            .num_seconds()
+            >= AD_FAILED_SECONDS
+        {
+            *current_level = CurrentLevel::NonLevel(NonLevel::AdFailed {
+                next_level: *next_level,
+                since: None,
+            });
             ips.levels_without_interstitial = 0;
         }
         redraw.set_changed()
-
     }
-
 }
 
 #[derive(Debug, Event)]
@@ -91,7 +102,7 @@ pub fn on_interstitial_failed(
         change_level_events.send(ChangeLevelEvent::ChangeTo(CurrentLevel::NonLevel(
             NonLevel::AdFailed {
                 next_level: *next_level,
-                since: Some(chrono::Utc::now()) ,
+                since: Some(chrono::Utc::now()),
             },
         )));
     }
