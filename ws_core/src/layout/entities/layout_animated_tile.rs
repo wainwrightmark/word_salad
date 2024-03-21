@@ -47,6 +47,6 @@ impl LayoutStructure for LayoutAnimatedTile{
 
     fn iter_all(context: &Self::Context<'_>) -> impl Iterator<Item = Self> {
 
-        (0..context.1).into_iter().map(|index| Self{ index})
+        (0..context.1).map(|index| Self{ index})
     }
 }

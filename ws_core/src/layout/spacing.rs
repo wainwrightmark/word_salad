@@ -33,9 +33,9 @@ impl Spacing {
         match self {
             Spacing::SpaceBetween => {
                 if num_children == 0 {
-                    return 0.;
+                    0.0
                 } else if num_children == 1 {
-                    return total_padding / 2.;
+                    total_padding / 2.0
                 } else {
                     let padding_between_children =
                         total_padding / num_children.saturating_sub(1) as f32;
@@ -44,7 +44,7 @@ impl Spacing {
             }
             Spacing::SpaceAround => {
                 if num_children == 0 {
-                    return 0.;
+                    0.0
                 } else {
                     let left_or_right_padding = total_padding / (num_children as f32 * 2.);
 

@@ -27,7 +27,7 @@ impl MenuButtonsLayout for WordSaladMenuLayoutEntity {
 
     fn iter_all(_context: &Self::Context) -> impl Iterator<Item = Self> {
         (0..DAYS_AGO)
-            .map(|x| WordSaladMenuLayoutEntity::DaysAgo(x))
+            .map(WordSaladMenuLayoutEntity::DaysAgo)
             .chain(std::iter::once(WordSaladMenuLayoutEntity::NextPuzzle))
     }
 

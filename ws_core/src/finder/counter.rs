@@ -43,7 +43,7 @@ impl<T> SolutionCollector<T> for Option<T> {
     }
 
     fn is_full(&self) -> bool {
-        return self.is_some();
+        self.is_some()
     }
 
     type Mapped<S> = Option<S>;
@@ -61,7 +61,7 @@ impl<T> SolutionCollector<T> for Vec<T> {
     }
 
     fn is_full(&self) -> bool {
-        return false;
+        false
     }
 
     type Mapped<S> = Vec<S>;

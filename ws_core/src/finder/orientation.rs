@@ -14,8 +14,7 @@ lazy_static! {
 
         let words: HashSet<CharsArray> = text
             .lines()
-            .map(|l| character::normalize_characters_array(l).ok())
-            .flatten()
+            .filter_map(|l| character::normalize_characters_array(l).ok())
             .collect();
         words
     };
@@ -94,13 +93,13 @@ pub fn try_optimize_orientation(grid_result: &mut GridResult) -> Result<bool, St
 
     if let Some(new_grid) = transforms
         .map(|(axes, quarter_turns)| {
-            let mut new_grid = grid_result.grid.clone();
+            let mut new_grid = grid_result.grid;
             new_grid.rotate(quarter_turns);
             new_grid.flip(axes);
             new_grid
         })
         .filter(|grid| find_taboo_word(grid).is_none())
-        .max_by_key(|new_grid| calculate_max_score(&new_grid, &grid_result.words))
+        .max_by_key(|new_grid| calculate_max_score(new_grid, &grid_result.words))
     {
         if grid_result.grid != new_grid {
             //log::info!("Changed \n{}\n to \n{new_grid}", grid_result.grid);
@@ -113,7 +112,7 @@ pub fn try_optimize_orientation(grid_result: &mut GridResult) -> Result<bool, St
         let mut taboo_words: HashSet<String> = Default::default();
 
         for (axes, quarter_turns) in flips.into_iter().cartesian_product(rotations) {
-            let mut new_grid = grid_result.grid.clone();
+            let mut new_grid = grid_result.grid;
             new_grid.rotate(quarter_turns);
             new_grid.flip(axes);
             if let Some(word) = find_taboo_word(&new_grid) {
@@ -149,7 +148,7 @@ pub fn find_single_row_word(grid_result: &GridResult) -> Option<FinderSingleWord
             }
         }
     }
-    return None;
+    None
 }
 
 fn calculate_max_score(grid: &Grid, words: &[FinderSingleWord]) -> i32 {
@@ -165,11 +164,7 @@ fn calculate_max_score(grid: &Grid, words: &[FinderSingleWord]) -> i32 {
 fn calculate_score(word: &FinderSingleWord, grid: &Grid) -> i32 {
     word.find_solutions(grid)
         .into_iter()
-        .map(|x| {
-            let score = score_solution(&x);
-            //println!("{}: {score}", word.text);
-            score
-        })
+        .map(|x| score_solution(&x))
         .max()
         .unwrap_or_default()
 }
@@ -177,7 +172,7 @@ fn calculate_score(word: &FinderSingleWord, grid: &Grid) -> i32 {
 fn score_solution(solution: &ArrayVec<Tile, 16>) -> i32 {
     //look at the first five tiles. Score is accumulated based on letters going left to right, preferably in the same row
     const FIRST_ROW: Tile = Tile::new_const::<0, 1>();
-    let mut total = match solution.get(0) {
+    let mut total = match solution.first() {
         Some(&Tile::NORTH_WEST) => 10, //bonus for being top left
         Some(&FIRST_ROW) => 8,         // bonus for being one below top left
         _ => 0,
@@ -185,9 +180,9 @@ fn score_solution(solution: &ArrayVec<Tile, 16>) -> i32 {
 
     let mut streak = true;
 
-    let mut windows = solution.iter().tuple_windows();
+    let windows = solution.iter().tuple_windows();
 
-    while let Some((a, b)) = windows.next() {
+    for (a, b) in windows {
         match b.x().cmp(&a.x()) {
             std::cmp::Ordering::Less => {
                 return total - 3;

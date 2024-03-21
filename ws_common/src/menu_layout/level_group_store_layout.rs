@@ -54,8 +54,7 @@ impl LayoutStructureDoubleTextButton for LevelGroupStoreLayoutStructure {
             "Owned".to_string()
         } else {
             let product: Product = self.0.into();
-            let price = text_context.prices.get_price_string(product);
-            price
+            text_context.prices.get_price_string(product)
         };
         (name.to_string(), price)
     }

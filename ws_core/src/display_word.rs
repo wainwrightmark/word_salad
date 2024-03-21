@@ -49,16 +49,13 @@ impl DisplayWord {
             }
         }
 
-        return result;
+        result
     }
 }
 
 impl PartialOrd for DisplayWord {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.characters
-            .iter()
-            .map(|x| x.as_char())
-            .partial_cmp(other.characters.iter().map(|x| x.as_char()))
+        Some(self.cmp(other))
     }
 }
 

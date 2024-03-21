@@ -80,7 +80,7 @@ pub trait LevelTrait {
                         .filter(|x| !is_word_found(x.0))
                         .map(|x| x.1)
                     {
-                        if !word.find_solution(&remaining_grid).is_some() {
+                        if word.find_solution(&remaining_grid).is_none() {
                             continue 'tiles_to_check;
                         }
                     }

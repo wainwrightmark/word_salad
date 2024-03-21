@@ -4,7 +4,7 @@ use super::SelfieMode;
 
 pub const IDEAL_WIDTH: f32 = 320.;
 pub const IDEAL_HEIGHT: f32 = 568.;
-pub const IDEAL_RATIO: f32 = IDEAL_WIDTH as f32 / IDEAL_HEIGHT as f32;
+pub const IDEAL_RATIO: f32 = IDEAL_WIDTH / IDEAL_HEIGHT;
 
 pub const TOP_BAR_OFFSET: f32 = 30.;
 pub const TOP_BAR_HEIGHT: f32 = 40.;
@@ -64,9 +64,7 @@ pub fn extra_top_height(sizing: &LayoutSizing, selfie_mode: &SelfieMode) -> f32 
     let bottom_padding = sizing.bottom_pad / sizing.size_ratio;
     let total_height = IDEAL_HEIGHT + bottom_padding;
     let mid = total_height * 0.5;
-    let result = bottom_padding.min(mid - (GRID_MID_BASE));
-    //log::info!("bottom padding: {bottom_padding} total height: {total_height} mid: {mid} result: {result} ");
-    result
+    bottom_padding.min(mid - (GRID_MID_BASE))
 }
 
 pub fn extra_bottom_space(sizing: &LayoutSizing, selfie_mode: &SelfieMode) -> f32 {

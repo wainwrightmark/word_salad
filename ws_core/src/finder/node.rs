@@ -62,7 +62,7 @@ impl From<&DesignedLevel> for GridResult {
 
         let words = words.iter().map(|x| x.into()).collect_vec();
         GridResult {
-            grid: grid.clone(),
+            grid: *grid,
             letters,
             words,
         }
@@ -231,10 +231,9 @@ impl WordUniquenessHelper {
                         .count();
                     let node = node_id_set
                         .iter_true_tiles()
-                        .skip(node_index)
-                        .next()
+                        .nth(node_index)
                         .expect("Should be able to get node by index");
-                    return WordLetterResult::UniqueLetter((), node);
+                    WordLetterResult::UniqueLetter((), node)
                 } else {
                     WordLetterResult::DuplicateLetter(
                         *character,
@@ -425,7 +424,7 @@ pub fn try_make_grid<Collector: SolutionCollector<GridResult>>(
     }
 
     for word in exclude_words.iter() {
-        if is_word_inevitable(&word.array, &nodes, &character_nodes, &multi_constraint_map) {
+        if is_word_inevitable(&word.array, &nodes, &character_nodes) {
             // let words = words.iter().map(|x|x.text).join(", ");
             // warn!("Excluded word '{}' is inevitable when finding {words}", word.text);
             return;
@@ -459,7 +458,6 @@ fn is_word_inevitable(
     characters: &[Character],
     nodes: &NodeMap,
     character_nodes: &CharacterNodes,
-    multiple_constraints: &MultiConstraintMap,
 ) -> bool {
     /// will it always be possible to find this word is all node restrictions are met
     fn is_word_inevitable_inner(
@@ -468,7 +466,6 @@ fn is_word_inevitable(
         characters: &[Character],
         nodes: &NodeMap,
         character_nodes: &CharacterNodes,
-        multiple_constraints: &MultiConstraintMap,
     ) -> bool {
         let Some((first, rem)) = characters.split_first() else {
             return true;
@@ -490,7 +487,6 @@ fn is_word_inevitable(
                 rem,
                 nodes,
                 character_nodes,
-                multiple_constraints,
             ) {
                 return false;
             }
@@ -512,13 +508,12 @@ fn is_word_inevitable(
             rem,
             nodes,
             character_nodes,
-            multiple_constraints,
         ) {
             return false;
         }
     }
 
-    return true;
+    true
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]

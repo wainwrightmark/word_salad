@@ -58,7 +58,7 @@ impl DesignedLevel {
 
             let data = String::from_utf8(data).ok()?;
 
-            match DesignedLevel::from_tsv_line(&data.trim()) {
+            match DesignedLevel::from_tsv_line(data.trim()) {
                 Ok(data) => Some(data),
                 Err(err) => {
                     error!("{err}");

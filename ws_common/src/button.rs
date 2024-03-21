@@ -369,8 +369,8 @@ impl ButtonInteraction {
                 crate::wasm::open_link("https://steks.net");
             }
 
-            #[cfg(all(target_arch = "wasm32", feature="web"))]
-            ButtonInteraction::MainMenu(MainMenuLayoutEntity::GetFullGame)=>{
+            #[cfg(all(target_arch = "wasm32", feature = "web"))]
+            ButtonInteraction::MainMenu(MainMenuLayoutEntity::GetFullGame) => {
                 crate::app_store::go_to_app_store();
             }
 
@@ -391,14 +391,13 @@ impl ButtonInteraction {
                 menu_state.close();
             }
             ButtonInteraction::WordSaladMenu(WordSaladMenuLayoutEntity::NextPuzzle) => {
-                if let Some(level) =
-                    DailyChallenges::get_today_index()
-                        .checked_sub(word_salad_menu_layout::DAYS_AGO)
-                        .and_then(|x| {
-                            daily_challenge_completion
-                                .get_next_incomplete_daily_challenge(x, daily_challenges)
-                                .actual_level()
-                        })
+                if let Some(level) = DailyChallenges::get_today_index()
+                    .checked_sub(word_salad_menu_layout::DAYS_AGO)
+                    .and_then(|x| {
+                        daily_challenge_completion
+                            .get_next_incomplete_daily_challenge(x, daily_challenges)
+                            .actual_level()
+                    })
                 {
                     change_level_events.send(level.into());
                 } else {
@@ -455,9 +454,7 @@ impl ButtonInteraction {
             ButtonInteraction::NonLevelInteractionButton => {
                 if let Some(non_level) = current_level.level(daily_challenges).right() {
                     match non_level {
-                        NonLevel::PleaseBuyTheGame => {
-                            crate::app_store::go_to_app_store()
-                        }
+                        NonLevel::PleaseBuyTheGame => crate::app_store::go_to_app_store(),
 
                         NonLevel::BeforeTutorial => {
                             change_level_events.send(CurrentLevel::Tutorial { index: 0 }.into());
@@ -476,14 +473,14 @@ impl ButtonInteraction {
                         }
                         NonLevel::DailyChallengeReset => {
                             daily_challenge_completion.reset_daily_challenge_completion();
-                            match daily_challenge_completion
-                                .get_next_incomplete_daily_challenge_from_today(daily_challenges)
+                            if let NextDailyChallengeResult::Level(index) =
+                                daily_challenge_completion
+                                    .get_next_incomplete_daily_challenge_from_today(
+                                        daily_challenges,
+                                    )
                             {
-                                NextDailyChallengeResult::Level(index) => {
-                                    change_level_events
-                                        .send(CurrentLevel::DailyChallenge { index }.into());
-                                }
-                                _ => {}
+                                change_level_events
+                                    .send(CurrentLevel::DailyChallenge { index }.into());
                             }
                         }
                         NonLevel::LevelSequenceReset(ls) => {
@@ -552,7 +549,6 @@ impl ButtonInteraction {
                                 change_level_events.send(next_level.into());
                             }
                         }
-
                     }
                 }
             }

@@ -13,7 +13,7 @@ pub fn make_finder_group_vec_from_file(text: &str) -> Vec<FinderGroup> {
     let result = text
         .lines()
         .filter(|x| !x.is_empty())
-        .filter(|x| !x.starts_with("-"))
+        .filter(|x| !x.starts_with('-'))
         //.flat_map(|x| x.split(','))
         .flat_map(|s| match FinderGroup::from_str(s) {
             Ok(word) => Some(word),
@@ -44,7 +44,7 @@ pub fn take_bad_words_from_file(text: &str) -> Vec<FinderSingleWord> {
     let result = text
         .lines()
         .filter(|x| !x.is_empty())
-        .filter(|x| x.starts_with("-"))
+        .filter(|x| x.starts_with('-'))
         //.flat_map(|x| x.split(','))
         .flat_map(|s| match FinderSingleWord::from_str(s) {
             Ok(word) => Some(word),
@@ -82,8 +82,8 @@ impl FromStr for FinderGroup {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let words: Vec<FinderSingleWord> = s
-            .split("+")
-            .map(|s| FinderSingleWord::from_str(s))
+            .split('+')
+            .map(FinderSingleWord::from_str)
             .try_collect()?;
 
         let counts = words
@@ -119,10 +119,7 @@ impl WordTrait for FinderSingleWord {
 
 impl PartialOrd for FinderSingleWord {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.array
-            .iter()
-            .map(|x| x.as_char())
-            .partial_cmp(other.array.iter().map(|x| x.as_char()))
+        Some(self.cmp(other))
     }
 }
 
@@ -149,7 +146,7 @@ impl FinderSingleWord {
                 return true;
             }
         }
-        return false;
+        false
     }
 }
 
@@ -184,7 +181,7 @@ impl From<&DisplayWord> for FinderSingleWord {
         let counts = PrimeBag128::try_from_iter(characters.iter().cloned()).unwrap();
 
         Self {
-            text: text.clone(),
+            text: *text,
             array: characters.clone(),
             counts,
         }

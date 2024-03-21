@@ -107,7 +107,7 @@ impl MavericNode for NonLevelView {
                         let seconds_remaining = AD_FAILED_SECONDS - chrono::Utc::now().signed_duration_since(since).num_seconds();
                         format!("Hate interruptions?\nRemove ads on the store page\n{seconds_remaining:2}")
                     }else{
-                        format!("Hate interruptions?\nRemove ads on the store page\n")
+                        "Hate interruptions?\nRemove ads on the store page\n".to_string()
                     }
 
 

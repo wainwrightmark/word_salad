@@ -39,7 +39,7 @@ pub fn request_review() {
 
 pub fn submit_score(data: crate::compatibility::SubmitScoreData) {
     bevy::log::info!("Submitting Score {data:?}");
-    #[cfg(any(feature = "ios"))] //only on IOS as android don't do recurring leaderboards
+    #[cfg(feature = "ios")] //only on IOS as android don't do recurring leaderboards
     {
         crate::logging::do_or_report_error(
             capacitor_bindings::game_connect::GameConnect::submit_score(

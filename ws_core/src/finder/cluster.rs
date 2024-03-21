@@ -1,4 +1,5 @@
 use crate::{finder::*, CharsArray, DesignedLevel};
+use cluster::falling_probability::{calculate_cumulative_falling_probability_2, calculate_falling_probability_1, calculate_falling_probability_2};
 use itertools::Itertools;
 use std::collections::{BTreeMap, HashSet};
 
@@ -24,14 +25,14 @@ pub struct ClusterScoreBuilder<const W: usize> {
     pub total_element_items: u32,
 }
 
-impl<const W: usize> Into<ClusterScore> for ClusterScoreBuilder<W> {
-    fn into(self) -> ClusterScore {
+impl<const W: usize> From<ClusterScoreBuilder<W>> for ClusterScore {
+    fn from(val: ClusterScoreBuilder<W>) -> Self {
         let ClusterScoreBuilder {
             min_underlap,
             all_items,
             total_underlap,
             total_element_items,
-        } = self;
+        } = val;
 
         ClusterScore {
             min_underlap,
@@ -231,9 +232,9 @@ impl Cluster {
             .sum::<usize>() as f32)
             / (16 * self.grids.len()) as f32;
 
-        let mean_falling_prob1 : f32 = self.grids.iter().map(|x|falling_probability::calculate_falling_probability_1(x)).sum::<f32>() / (self.grids.len() as f32) * 100.0;
-        let mean_falling_prob2 : f32 = self.grids.iter().map(|x|falling_probability::calculate_falling_probability_2(x)).sum::<f32>() / (self.grids.len() as f32) * 100.0;
-        let cumulative_falling_prob: f32 = self.grids.iter().map(|x|falling_probability::calculate_cumulative_falling_probability_2(x)).sum::<f32>() / (self.grids.len() as f32) * 100.0;
+        let mean_falling_prob1 : f32 = self.grids.iter().map(calculate_falling_probability_1).sum::<f32>() / (self.grids.len() as f32) * 100.0;
+        let mean_falling_prob2 : f32 = self.grids.iter().map(calculate_falling_probability_2).sum::<f32>() / (self.grids.len() as f32) * 100.0;
+        let cumulative_falling_prob: f32 = self.grids.iter().map(calculate_cumulative_falling_probability_2).sum::<f32>() / (self.grids.len() as f32) * 100.0;
 
         format!(
             "Grids: {l:2}\tMin underlap: {min_underlap:2}\tMean underlap: {mean_underlap:2.2}\tMean items: {mean_items:2.2}\tDistinct items: {distinct_items:3}\tMax adjacent {max_adj:2}\tMean adjacent {mean_adj:2.2}\tMean utilization {mean_util:1.2}\tFall after 1 {mean_falling_prob1:2.1}%\tFall after 2 {mean_falling_prob2:2.1}%\tFall after 2 cumulative {cumulative_falling_prob:2.1}%",

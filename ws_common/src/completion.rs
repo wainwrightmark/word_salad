@@ -316,7 +316,7 @@ pub fn track_level_completion(
                             total_score_amount: level_time.total_elapsed().as_secs() as i32,
                         });
 
-                        #[cfg(any(feature = "web"))]
+                        #[cfg(feature = "web")]
                         {
                             crate::platform_specific::show_toast_on_web(
                                 capacitor_bindings::toast::ShowOptions {
@@ -327,7 +327,7 @@ pub fn track_level_completion(
                                 },
                             );
                         }
-                        #[cfg(not(any(feature = "web")))]
+                        #[cfg(not(feature = "web"))]
                         {
                             crate::platform_specific::request_review();
                         }

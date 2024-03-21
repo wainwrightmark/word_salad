@@ -31,20 +31,11 @@ impl Plugin for DailyChallengePlugin {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Resource, MavericContext)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Resource, MavericContext, Default)]
 pub struct DailyChallenges {
     level_data: Option<String>,
     #[serde(skip)]
     pub levels: Option<Vec<DesignedLevel>>,
-}
-
-impl Default for DailyChallenges {
-    fn default() -> Self {
-        Self {
-            level_data: None,
-            levels: None,
-        }
-    }
 }
 
 impl DailyChallenges{
@@ -159,7 +150,7 @@ pub fn try_daily_index_from_path(mut path: &str) -> Option<usize> {
         //info!("{path} starts with daily");
         let data = path[7..].to_string();
 
-        let index = usize::from_str_radix(data.trim(), 10)
+        let index = data.trim().parse::<usize>()
             .ok()?
             .checked_sub(1)?;
 
@@ -170,7 +161,7 @@ pub fn try_daily_index_from_path(mut path: &str) -> Option<usize> {
             return Some(index);
         }
     }
-    return None;
+    None
 }
 
 pub async fn load_levels_async(

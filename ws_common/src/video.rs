@@ -65,16 +65,15 @@ fn handle_video_event(mut res: ResMut<VideoResource>, mut events: EventReader<Vi
             VideoEvent::RecordingStarted => {
                 res.recording_since = Some(chrono::Utc::now());
             }
-            VideoEvent::RecordingStopped => match res.recording_since {
-                Some(since) => {
+            VideoEvent::RecordingStopped => {
+                if let Some(since) = res.recording_since {
                     res.recording_since = None;
                     let elapsed = chrono::Utc::now().signed_duration_since(since);
                     let recording_seconds = elapsed.num_seconds();
 
                     crate::logging::LoggableEvent::RecordingStopped { recording_seconds }.try_log1()
                 }
-                None => {}
-            },
+            }
         }
         crate::startup::ADDITIONAL_TRACKING.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     }
@@ -183,9 +182,5 @@ async fn stop_selfie_mode_async(writer: AsyncEventWriter<VideoEvent>) {
 }
 
 pub const ALLOW_VIDEO: bool = {
-    if cfg!(target_arch = "wasm32") {
-        true
-    } else {
-        false
-    }
+    cfg!(target_arch = "wasm32")
 };

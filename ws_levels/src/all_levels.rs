@@ -184,7 +184,7 @@ lazy_static! { //todo data_bake
     };
 }
 
-pub fn number_daily_challenge_levels(levels: &mut Vec<DesignedLevel>) {
+pub fn number_daily_challenge_levels(levels: &mut [DesignedLevel]) {
     for (index, level) in levels.iter_mut().enumerate() {
         level.numbering = Some(Numbering::WordSaladNumber(index + 1));
     }

@@ -39,13 +39,11 @@ impl LayoutSizing {
         let bottom_pad = page_size.y - used_y;
         let size_ratio = used_x / ideal_width;
 
-        let r = Self {
+        Self {
             size_ratio,
             left_pad,
             bottom_pad,
-        };
-
-        r
+        }
     }
 
     pub fn try_pick_entity<T: LayoutStructure>(
@@ -57,8 +55,8 @@ impl LayoutSizing {
         let x = position.x - self.left_pad;
         let y = position.y;
 
-        let x = (x / self.size_ratio).round() as f32;
-        let y = (y / self.size_ratio).round() as f32;
+        let x = (x / self.size_ratio).round();
+        let y = (y / self.size_ratio).round();
 
         let location = Vec2 { x, y };
 
@@ -68,7 +66,7 @@ impl LayoutSizing {
             return Some(entity);
         }
 
-        let rect: LayoutRectangle = entity.rect(context, self).into();
+        let rect: LayoutRectangle = entity.rect(context, self);
 
         let dist = rect.centre().distance(location);
         let size_squared = rect.extents.length();
@@ -76,7 +74,7 @@ impl LayoutSizing {
         if dist / size_squared < tolerance {
             return Some(entity);
         }
-        return None;
+        None
     }
 
     pub fn get_size<T: LayoutStructure>(&self, entity: &T, context: &T::Context<'_>) -> Vec2 {
@@ -89,11 +87,11 @@ impl LayoutSizing {
         entity: &T,
         context: &T::Context<'_>,
     ) -> glam::Vec2 {
-        let Vec2 { x, y } = entity.location(context, &self);
+        let Vec2 { x, y } = entity.location(context, self);
 
         Vec2 {
-            x: self.left_pad + (self.size_ratio * x as f32),
-            y: (self.size_ratio * y as f32),
+            x: self.left_pad + self.size_ratio * x,
+            y: self.size_ratio * y,
         }
     }
 

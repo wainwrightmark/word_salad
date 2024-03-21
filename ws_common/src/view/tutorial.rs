@@ -331,16 +331,16 @@ impl LayoutStructure for TutorialLayoutEntity {
         match self {
             TutorialLayoutEntity::Top => Vec2 {
                 x: LEFT_MARGIN,
-                y: GameLayoutEntity::Grid.location(&context, sizing).y
+                y: GameLayoutEntity::Grid.location(context, sizing).y
                     - self.size(context, sizing).y -10.0,
             },
             TutorialLayoutEntity::Middle => Vec2 {
                 x: LEFT_MARGIN,
-                y: GameLayoutEntity::LevelInfo.location(&context, sizing).y,
+                y: GameLayoutEntity::LevelInfo.location(context, sizing).y,
             },
             TutorialLayoutEntity::Bottom => Vec2 {
                 x: LEFT_MARGIN,
-                y: GameLayoutEntity::WordList.location(&context, sizing).y ,
+                y: GameLayoutEntity::WordList.location(context, sizing).y ,
             },
         }
     }
@@ -414,7 +414,7 @@ impl TutorialText {
                             Some("Every remaining letter is needed"),
                         ],
                         middle: None,
-                        bottom: bottom,
+                        bottom,
                     }
                 }
                 2 => Self {

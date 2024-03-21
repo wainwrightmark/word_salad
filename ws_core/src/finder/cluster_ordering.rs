@@ -3,7 +3,7 @@ use std::cmp::Reverse;
 use const_sized_bit_set::BitSet;
 use itertools::Itertools;
 
-pub fn order_cluster<const W: usize>(cluster: &mut Vec<BitSet<W>>) {
+pub fn order_cluster<const W: usize>(cluster: &mut [BitSet<W>]) {
     let Some((first_index, _)) = cluster
         .iter()
         .enumerate()

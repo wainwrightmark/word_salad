@@ -894,11 +894,8 @@ impl FoundWordsState {
                     })
                     .exactly_one();
 
-                match hints {
-                    Ok(hints) => {
-                        return hints;
-                    }
-                    Err(_) => {}
+                if let Ok(hints) = hints {
+                    return hints;
                 }
             }
         }

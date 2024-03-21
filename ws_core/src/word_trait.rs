@@ -15,7 +15,7 @@ pub trait WordTrait {
         //TODO return iter
         //TODO more efficient path if word has no duplicate letters
 
-        let Some(first_char) = characters.get(0) else {
+        let Some(first_char) = characters.first() else {
             return Default::default();
         };
         let mut solutions: Vec<Solution> = vec![];
@@ -97,7 +97,7 @@ pub trait WordTrait {
 
         //TODO more efficient path if word has no duplicate letters
 
-        let first_char = characters.get(0)?;
+        let first_char = characters.first()?;
 
         for first_tile in Tile::iter_by_row().filter(|tile| grid[*tile] == *first_char) {
             let mut path: ArrayVec<Tile, 16> = Default::default();
@@ -161,7 +161,7 @@ pub trait WordTrait {
     }
 
     fn find_solution_with_tiles(&self, grid: &Grid, unneeded_tiles: GridSet) -> Option<Solution> {
-        let mut grid = grid.clone();
+        let mut grid = *grid;
         for tile in unneeded_tiles.iter_true_tiles() {
             grid[tile] = Character::Blank;
         }

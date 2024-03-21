@@ -22,7 +22,7 @@ impl LayoutStructure for LayoutGridTile {
         if tile.rect(context, sizing).contains(point) {
             return Some(tile);
         }
-        return None;
+        None
     }
 
     fn size(&self, _context: &Self::Context<'_>, _sizing: &LayoutSizing) -> Vec2 {

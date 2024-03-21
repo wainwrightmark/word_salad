@@ -76,7 +76,7 @@ impl<'a> Iterator for AutomataIterator<'a> {
         }
 
         loop {
-            let (top_state_index, character) = self.stack.last()?.clone();
+            let (top_state_index, character) = *self.stack.last()?;
 
             // println!(
             //     "{}",
@@ -111,7 +111,7 @@ impl<'a> Iterator for AutomataIterator<'a> {
 
 #[allow(dead_code)]
 impl WordAutomata {
-    pub fn iter<'a>(&'a self) -> AutomataIterator<'a> {
+    pub fn iter(&self) -> AutomataIterator {
         AutomataIterator {
             automata: self,
             stack: vec![(0, Character::Blank)],
@@ -191,7 +191,7 @@ impl WordAutomata {
     }
 
     pub fn contains(&self, w: &impl WordTrait) -> bool {
-        let mut state = self.slab.get(0).unwrap();
+        let mut state = self.slab.first().unwrap();
 
         for c in w.characters().iter() {
             match state.inner.get(*c) {
@@ -221,7 +221,7 @@ impl WordAutomata {
 
                 let next_used_tiles = used_tiles.with_bit_set(&new_tile, true);
 
-                for tile in new_tile.iter_adjacent().filter(|x| !used_tiles.get_bit(&x)) {
+                for tile in new_tile.iter_adjacent().filter(|x| !used_tiles.get_bit(x)) {
                     find_words_inner(
                         wa,
                         results,
@@ -253,7 +253,7 @@ impl WordAutomata {
             )
         }
 
-        return result;
+        result
     }
 
     /// Returns true if the word was added
@@ -283,12 +283,12 @@ impl WordAutomata {
             .inner
             .get(crate::Character::Blank)
         {
-            Some(_) => return false, //word was already present
+            Some(_) => false, //word was already present
             None => {
                 self.slab[state_index]
                     .inner
                     .set(crate::Character::Blank, Some(0));
-                return true; //word was added
+                true //word was added
             }
         }
     }

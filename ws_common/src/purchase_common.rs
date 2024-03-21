@@ -126,16 +126,13 @@ fn handle_product_purchased(
         if !purchases.groups_purchased.contains(&lg) {
             purchases.groups_purchased.insert(lg);
 
-            match level {
-                CurrentLevel::NonLevel(NonLevel::LevelSequenceMustPurchaseGroup(sequence)) => {
-                    if sequence.group() == lg {
-                        let next_level: CurrentLevel = sequence_completion
-                            .get_next_level_index(*sequence, &purchases)
-                            .to_level(*sequence);
-                        change_level_events.send(next_level.into());
-                    }
+            if let CurrentLevel::NonLevel(NonLevel::LevelSequenceMustPurchaseGroup(sequence)) = level {
+                if sequence.group() == lg {
+                    let next_level: CurrentLevel = sequence_completion
+                        .get_next_level_index(*sequence, purchases)
+                        .to_level(*sequence);
+                    change_level_events.send(next_level.into());
                 }
-                _ => {}
             }
 
             platform_specific::show_toast_sync(format!("{lg} add-on Purchased"));

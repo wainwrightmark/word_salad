@@ -76,7 +76,7 @@ impl LevelSequence {
             MLBTeams => NHLTeams,
             NHLTeams => return None,
         };
-        return Some(r);
+        Some(r)
     }
 
     pub fn group(self) -> LevelGroup {
@@ -105,8 +105,6 @@ impl LevelSequence {
 
     pub fn get_level(self, index: usize) -> Option<&'static DesignedLevel> {
         let levels = self.levels();
-
-        let index = index;
         levels.get(index)
     }
 
@@ -120,7 +118,7 @@ impl LevelSequence {
     }
 
     pub(crate) fn levels(self) -> &'static Vec<DesignedLevel> {
-        let levels = match self {
+        (match self {
             LevelSequence::USStates => &*US_STATES,
             LevelSequence::EuropeanCapitals => &*EUROPEAN_CAPITALS,
             LevelSequence::EuropeanCountries => &*EUROPEAN_COUNTRIES,
@@ -143,8 +141,7 @@ impl LevelSequence {
             LevelSequence::NBATeams => &*NBA_TEAMS,
             LevelSequence::MLBTeams => &*MLB_TEAMS,
             LevelSequence::NHLTeams => &*NHL_TEAMS,
-        };
-        levels
+        }) as _
     }
 
     pub fn name(self) -> &'static str {
