@@ -57,7 +57,7 @@ impl MavericRootChildren for HintsRemainingRoot {
             return;
         }
 
-        if !is_word_button_pressed(&context.pressed_button) {
+        if !is_word_button_pressed(&context.pressed_button) &&!context.current_level.is_changed() {
             return;
         }
 

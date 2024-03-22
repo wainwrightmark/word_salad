@@ -115,12 +115,9 @@ fn get_combinations_inner<const W: usize>(
                 .enumerate()
                 .rev()
                 .any(|(word_index, letter_indices)| {
-                    new_combination.can_add(word_index, letter_indices, max_size)
+                    new_combination.can_add_word(word_index, letter_indices, max_size)
                 })
             {
-                // if new_combination.display_string(words) == "Claret, Coral, Cream, Cyan, Gray, Green, Ivory, Lime, Olive, Orange, Teal"{
-                //     panic!("Hello world")
-                // }
                 continue;
             }
 
@@ -198,7 +195,7 @@ impl<const W: usize> WordCombination<W> {
         }
     }
 
-    fn can_add(
+    fn can_add_word(
         &self,
         other_word_index: usize,
         other_word_letters: &LetterCounts,
@@ -207,17 +204,17 @@ impl<const W: usize> WordCombination<W> {
         if self.word_indexes.contains(other_word_index) {
             return false;
         }
-        let Some(letter_counts) = self.letter_counts.try_union(other_word_letters) else {
+        let Some(combined_letter_counts) = self.letter_counts.try_union(other_word_letters) else {
             return false;
         };
-        if letter_counts == self.letter_counts {
+        if combined_letter_counts == self.letter_counts {
             true
         } else {
             if self.total_letters == max_size {
                 return false;
             }
 
-            let diff = letter_counts
+            let diff = combined_letter_counts
                 .try_difference(&self.letter_counts)
                 .unwrap_or_default();
             let new_elements = diff.into_iter().count() as u8;

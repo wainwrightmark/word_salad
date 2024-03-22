@@ -181,4 +181,4 @@ async fn stop_selfie_mode_async(writer: AsyncEventWriter<VideoEvent>) {
     }
 }
 
-pub const ALLOW_VIDEO: bool = { cfg!(target_arch = "wasm32") };
+pub const ALLOW_VIDEO: bool = cfg!(target_arch = "wasm32");
